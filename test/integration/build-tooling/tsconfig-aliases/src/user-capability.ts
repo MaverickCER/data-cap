@@ -1,4 +1,4 @@
-import { buildData, documentData } from "@maverickcer/data-cap"
+import { buildData, documentData } from "data-cap"
 import { userFields } from "@schemas/user.js"
 
 export const userCapability = buildData({ fields: userFields })

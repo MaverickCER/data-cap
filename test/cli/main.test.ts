@@ -31,7 +31,7 @@ beforeEach(async () => {
   // so both the manifest pass and the "missing owner" finding have something real.
   await write(
     "features/identity/user.ts",
-    `import { createData, documentData } from "@maverickcer/data-cap";
+    `import { createData, documentData } from "data-cap";
 
 const fields = { email: "" };
 
@@ -45,7 +45,7 @@ documentData({ fields: fields }, {
   )
   await write(
     "features/orphan/orphan.ts",
-    `import { createData } from "@maverickcer/data-cap";
+    `import { createData } from "data-cap";
 export const orphanCapability = createData({ fields: { note: "" } });
 `,
   )
@@ -151,7 +151,7 @@ describe("main() -- --check", () => {
 
     await write(
       "features/billing/billing.ts",
-      `import { createData, documentData } from "@maverickcer/data-cap";
+      `import { createData, documentData } from "data-cap";
 const fields = { plan: "" };
 export const billingCapability = createData({ fields: fields });
 documentData({ fields: fields }, { owner: "billing-team" });
@@ -399,7 +399,7 @@ describe("main() -- --flow output with a sensitive boundary crossing", () => {
   it("emits SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY for a restricted field with a declared external endpoint", async () => {
     await write(
       "features/payments/payments.ts",
-      `import { createData, documentData } from "@maverickcer/data-cap";
+      `import { createData, documentData } from "data-cap";
 const fields = { cardNumber: "" };
 export const paymentsCapability = createData({
   fields: fields,
@@ -469,7 +469,7 @@ describe("main() -- --tsconfig/--no-tsconfig flow through to generateDataArtifac
     )
     await write(
       "features/alias/alias.ts",
-      `import { createData } from "@maverickcer/data-cap";\nexport const aliasCapability = createData({ fields: { key: "" } });\n`,
+      `import { createData } from "data-cap";\nexport const aliasCapability = createData({ fields: { key: "" } });\n`,
     )
     await write(
       "src/alias-consumer.ts",
@@ -547,7 +547,7 @@ describe("main() -- manifest changes since last execution", () => {
 
     await write(
       "features/identity/user.ts",
-      `import { createData, documentData } from "@maverickcer/data-cap";
+      `import { createData, documentData } from "data-cap";
 
 const fields = { email: "", displayName: "" };
 

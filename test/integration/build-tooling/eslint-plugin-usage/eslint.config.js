@@ -1,5 +1,5 @@
 import tseslint from "typescript-eslint"
-import dataCapPlugin from "@maverickcer/data-cap/eslint-plugin"
+import dataCapPlugin from "data-cap/eslint-plugin"
 
 export default tseslint.config({
   files: ["src/fixtures/**/*.ts"],

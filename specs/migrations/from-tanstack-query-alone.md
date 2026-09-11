@@ -50,7 +50,7 @@ each having its own ad hoc shape.
    single reader and no second source to reconcile — see below.
 
 If you'd rather not hand-write the commit calls in step 3, `createData`
-(`@maverickcer/data-cap/runtime`, ADR 0048) composes `buildData` +
+(`data-cap/runtime`, ADR 0048) composes `buildData` +
 `createDataStore` + a coordinator for you — see
 `examples/application/`.
 

@@ -8,7 +8,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@maverickcer/data-cap": "file:../../../..",
+    "data-cap": "file:../../../..",
     "@tanstack/query-core": "^5.101.4"
   },
   "devDependencies": {

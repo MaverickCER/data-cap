@@ -80,7 +80,7 @@ environments and large monorepos. See
 `./build` never imports `node:fs` itself — every public options object requires a caller-supplied
 `BuildFileSystem` capability. The `data-cap` CLI (`src/cli/`) is the executable boundary that
 constructs the real `node:fs/promises` adapter and hands it in; a consumer running the generators
-from their own Node script imports that same adapter from `@maverickcer/data-cap/node`. This is the
+from their own Node script imports that same adapter from `data-cap/node`. This is the
 same discipline `repo-contract`'s ADR-0011 established for `spawn`/`env`, and mirrors env-cap's own
 ADR 0040. See [ADR 0058](decisions/0058-library-surfaces-do-not-acquire-node-fs.md).
 
@@ -108,18 +108,18 @@ for its own redaction at the point it logs. See [SECURITY.md](../SECURITY.md) an
 
 ```
 src/
-├── core/           @maverickcer/data-cap                 (isomorphic, zero deps)
-├── runtime/        @maverickcer/data-cap/runtime          (optional, standalone state)
-│                   @maverickcer/data-cap/runtime/cache     (optional, separately tree-shaken)
-│                   @maverickcer/data-cap/runtime/retry     (optional, separately tree-shaken)
-├── helpers/        @maverickcer/data-cap/helpers          (optional utilities)
-├── build/          @maverickcer/data-cap/build            (Node-only build tooling, never imports node:fs)
-├── evidence/       @maverickcer/data-cap/evidence         (Evidence Model projections)
-└── eslint-plugin/  @maverickcer/data-cap/eslint-plugin    (lint rules)
+├── core/           data-cap                 (isomorphic, zero deps)
+├── runtime/        data-cap/runtime          (optional, standalone state)
+│                   data-cap/runtime/cache     (optional, separately tree-shaken)
+│                   data-cap/runtime/retry     (optional, separately tree-shaken)
+├── helpers/        data-cap/helpers          (optional utilities)
+├── build/          data-cap/build            (Node-only build tooling, never imports node:fs)
+├── evidence/       data-cap/evidence         (Evidence Model projections)
+└── eslint-plugin/  data-cap/eslint-plugin    (lint rules)
 ```
 
 `src/cli/` (the `data-cap` bin, not a `package.json#exports` subpath) and `src/node/` (the
-`@maverickcer/data-cap/node` executable-context entry) are the two places `node:fs` is acquired —
+`data-cap/node` executable-context entry) are the two places `node:fs` is acquired —
 see [ADR 0058](decisions/0058-library-surfaces-do-not-acquire-node-fs.md).
 
 Dependency direction, enforced by convention and by the tree-shaking/
@@ -340,7 +340,7 @@ API and nothing else. Never imports `node:fs` either — every public options
 object requires a caller-supplied `fs: BuildFileSystem`
 ([ADR 0058](decisions/0058-library-surfaces-do-not-acquire-node-fs.md)); the
 `data-cap` CLI supplies the real `node:fs/promises` adapter, and a
-programmatic consumer imports the same adapter from `@maverickcer/data-cap/node`.
+programmatic consumer imports the same adapter from `data-cap/node`.
 
 - **`discover.ts`** — `discoverCapabilityFiles(options)`: recursively finds
   `.ts`/`.tsx` files under a root, pruning `node_modules`/`.git` (and any

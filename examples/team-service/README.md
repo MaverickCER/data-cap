@@ -64,7 +64,7 @@ npm start
 ```
 
 `npm start` runs real `node:assert/strict` checks against the actual
-installed `@maverickcer/data-cap` build.
+installed `data-cap` build.
 
 ## What it proves
 
@@ -79,7 +79,7 @@ installed `@maverickcer/data-cap` build.
   never routed through that same cache, exactly the coordination gap the
   duplicate-endpoint finding surfaces.
 - `createTask` composes with the real, shipped `withRetry`
-  (`@maverickcer/data-cap/runtime/retry`) the same way `examples/application/`
+  (`data-cap/runtime/retry`) the same way `examples/application/`
   does.
 - `toggleTask`'s optimistic value is visible immediately, before the request
   settles.

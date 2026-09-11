@@ -15,8 +15,8 @@
 // declaration correctness is already verified by `npm run typecheck`
 // against source; this file's job is execution conformance, which
 // `--no-check` still fully exercises.
-import { createData, fields, InvalidFieldDefaultError } from "../../dist/index.js"
-import { createDataStore } from "../../dist/runtime/index.js"
+import { fields } from "../../dist/index.js"
+import { createData, createDataStore, InvalidFieldDefaultError } from "../../dist/runtime/index.js"
 
 function assertEqual<T>(actual: T, expected: T, message: string): void {
   if (actual !== expected) {
@@ -44,14 +44,15 @@ Deno.test(
     const capability = createData({
       fields: { name: "anon", age: fields.nullable(0), nickname: fields.optional("") },
     })
-    assertEqual(capability.fields.name, "anon", "name should keep its declared default")
-    assertEqual(capability.fields.age, null, "a nullable() default should resolve to null")
+    const snapshot = capability.getSnapshot()
+    assertEqual(snapshot.fields.name, "anon", "name should keep its declared default")
+    assertEqual(snapshot.fields.age, null, "a nullable() default should resolve to null")
     assertEqual(
-      capability.fields.nickname,
+      snapshot.fields.nickname,
       undefined,
       "an optional() default should resolve to undefined",
     )
-    assertEqual(Object.keys(capability.info).length, 0, "info should start empty/sparse")
+    assertEqual(Object.keys(snapshot.info).length, 0, "info should start empty/sparse")
   },
 )
 
@@ -70,14 +71,14 @@ Deno.test(
   "the initial DataState is deep-frozen under Deno -- decision 23 holds cross-runtime",
   () => {
     const capability = createData({ fields: { user: { name: "anon" } } })
-    assertEqual(Object.isFrozen(capability), true, "the DataState itself should be frozen")
-    assertEqual(Object.isFrozen(capability.fields), true, "fields should be frozen")
+    const snapshot = capability.getSnapshot()
+    assertEqual(Object.isFrozen(snapshot.fields), true, "fields should be frozen")
     assertEqual(
-      Object.isFrozen(capability.fields.user),
+      Object.isFrozen(snapshot.fields.user),
       true,
       "a nested fields object should be frozen",
     )
-    assertEqual(Object.isFrozen(capability.info), true, "info should be frozen")
+    assertEqual(Object.isFrozen(snapshot.info), true, "info should be frozen")
   },
 )
 

@@ -5,7 +5,7 @@
 Accepted. Implemented: `src/build/types.ts` (`BuildFileSystem`), threaded through
 every `src/build/**` module and every public options object in
 `src/build/index.ts`; `src/cli/filesystem.ts` (the concrete adapter), re-exported
-as the public `@maverickcer/data-cap/node` entry (`src/node/index.ts`) for a
+as the public `data-cap/node` entry (`src/node/index.ts`) for a
 consumer's own build script; `src/build/package-version.ts` + `src/cli/json.ts`
 (version via build-time constant, not a self-read); `src/eslint-plugin/no-node-fs.ts`
 and `no-restricted-imports` in `eslint.config.js`; `scripts/verify-no-ambient-fs.mjs`.
@@ -99,14 +99,14 @@ BuildFileSystem`. Internal positional helpers take it as a parameter, or via
 orchestrator `computeDataArtifacts()` threads its `options.fs` into every
 discovery/link/resolution/citation/write call.
 
-**The Node adapter ships as `@maverickcer/data-cap/node`.** `repo-contract`'s
+**The Node adapter ships as `data-cap/node`.** `repo-contract`'s
 consumers pass an existing npm package (`crossSpawn`, `process.env`); there is
 no equivalent off-the-shelf `node:fs/promises` → `BuildFileSystem` value, so
 data-cap ships one -- `nodeBuildFileSystem`, the same object the CLI uses --
 from a dedicated executable-context entry. `./node` bundles
 `node:fs/promises`; the tarball guard exempts its resolved target exactly as
 it does `bin` and `./eslint-plugin`. `./build` stays clean: a consumer's build
-script does `import { nodeBuildFileSystem } from "@maverickcer/data-cap/node"`
+script does `import { nodeBuildFileSystem } from "data-cap/node"`
 and passes it as `fs`. A non-Node consumer supplies their own
 `BuildFileSystem` and never imports `./node`.
 
@@ -131,7 +131,7 @@ flagged capabilities.
 - **Source-level** (fast feedback): `no-restricted-imports` in
   `eslint.config.js` forbids `fs`/`node:fs`/`fs/promises`/`node:fs/promises`
   under `src/**` except `src/cli/**`. The published
-  `@maverickcer/data-cap/eslint-plugin` also ships `no-node-fs` for a consumer
+  `data-cap/eslint-plugin` also ships `no-node-fs` for a consumer
   to enforce the same discipline on its own code.
 - **Tarball-level** (release-blocking backstop): `scripts/verify-no-ambient-fs.mjs`
   runs `npm pack --ignore-scripts`, extracts it, and greps every `.js`/

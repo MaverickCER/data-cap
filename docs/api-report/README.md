@@ -1,4 +1,4 @@
-# @maverickcer/data-cap
+# data-cap
 
 ## Modules
 

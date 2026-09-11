@@ -70,7 +70,25 @@ function main() {
       ["pack", "--ignore-scripts", "--pack-destination", workDir, "--json"],
       { cwd: repoRoot, encoding: "utf8" },
     )
-    const tarballName = JSON.parse(packOutput)[0].filename
+    // `--ignore-scripts` doesn't reliably suppress `prepare` across npm
+    // versions (confirmed: npm bundled with Node 18/22 still runs it here,
+    // while Node 24's doesn't) -- when it fires, the build's own console
+    // output lands on this same stdout stream ahead of npm's JSON. Find the
+    // real top-level array by trying every `[` in turn: a candidate inside
+    // the JSON itself (e.g. a nested `files` array) leaves trailing content
+    // after it parses, so only the true outermost `[` consumes the rest of
+    // the stream cleanly.
+    const packResult = (() => {
+      for (let i = packOutput.indexOf("["); i !== -1; i = packOutput.indexOf("[", i + 1)) {
+        try {
+          return JSON.parse(packOutput.slice(i))
+        } catch {
+          continue
+        }
+      }
+      throw new Error(`no valid JSON array found in npm pack output:\n${packOutput}`)
+    })()
+    const tarballName = packResult[0].filename
     const tarball = path.join(workDir, tarballName)
     execFileSync("tar", ["-xzf", tarball, "-C", workDir])
 

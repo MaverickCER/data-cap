@@ -9,17 +9,18 @@
 // via `bun test test/cross-runtime/bun.test.ts` after `npm run build` (see
 // .github/workflows/ci.yml's `cross-runtime` job).
 import { expect, test } from "bun:test"
-import { createData, fields, InvalidFieldDefaultError } from "../../dist/index.js"
-import { createDataStore } from "../../dist/runtime/index.js"
+import { fields } from "../../dist/index.js"
+import { createData, createDataStore, InvalidFieldDefaultError } from "../../dist/runtime/index.js"
 
 test("createData resolves synchronously-readable fields with declared defaults, including nullable/optional markers, under Bun", () => {
   const capability = createData({
     fields: { name: "anon", age: fields.nullable(0), nickname: fields.optional("") },
   })
-  expect(capability.fields.name).toBe("anon")
-  expect(capability.fields.age).toBeNull()
-  expect(capability.fields.nickname).toBeUndefined()
-  expect(capability.info).toEqual({})
+  const snapshot = capability.getSnapshot()
+  expect(snapshot.fields.name).toBe("anon")
+  expect(snapshot.fields.age).toBeNull()
+  expect(snapshot.fields.nickname).toBeUndefined()
+  expect(snapshot.info).toEqual({})
 })
 
 test("createData throws InvalidFieldDefaultError synchronously for a function-valued field default, under Bun", () => {
@@ -30,10 +31,10 @@ test("createData throws InvalidFieldDefaultError synchronously for a function-va
 
 test("the initial DataState is deep-frozen under Bun -- decision 23 holds cross-runtime", () => {
   const capability = createData({ fields: { user: { name: "anon" } } })
-  expect(Object.isFrozen(capability)).toBe(true)
-  expect(Object.isFrozen(capability.fields)).toBe(true)
-  expect(Object.isFrozen(capability.fields.user)).toBe(true)
-  expect(Object.isFrozen(capability.info)).toBe(true)
+  const snapshot = capability.getSnapshot()
+  expect(Object.isFrozen(snapshot.fields)).toBe(true)
+  expect(Object.isFrozen(snapshot.fields.user)).toBe(true)
+  expect(Object.isFrozen(snapshot.info)).toBe(true)
 })
 
 test("createDataStore commits atomically and suppresses no-op notifications, under Bun", () => {

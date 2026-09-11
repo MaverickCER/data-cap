@@ -10,8 +10,8 @@
  * proven dependency of `projectData` shows up in this example's own
  * generated `docs/OWNERSHIP.md`.
  */
-import { documentData, fields } from "@maverickcer/data-cap"
-import { createData } from "@maverickcer/data-cap/runtime"
+import { documentData, fields } from "data-cap"
+import { createData } from "data-cap/runtime"
 import type { Project, RawTask } from "../server/projects.js"
 import { assignTaskRemote, createTaskRemote, fetchProjectRemote, toggleTaskRemote } from "../server/projects.js"
 import { memberData } from "./member.capability.js"

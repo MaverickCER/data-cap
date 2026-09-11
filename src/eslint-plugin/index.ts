@@ -3,10 +3,10 @@ import { noRawExternalIo } from "./no-raw-external-io.js"
 import { stableOperationReference } from "./stable-operation-reference.js"
 
 /**
- * `@maverickcer/data-cap/eslint-plugin` -- a flat-config-shaped plugin object
+ * `data-cap/eslint-plugin` -- a flat-config-shaped plugin object
  * ({ rules: { ... } }), consumed as:
  *
- *   import dataCapPlugin from "@maverickcer/data-cap/eslint-plugin";
+ *   import dataCapPlugin from "data-cap/eslint-plugin";
  *   export default [{ plugins: { "data-cap": dataCapPlugin }, rules: { "data-cap/stable-operation-reference": "warn" } }];
  *
  * A 6th public entry point alongside `.`, `./runtime`, `./build`,

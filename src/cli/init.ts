@@ -35,7 +35,7 @@ afterwards with \`node scripts/generate-data.mjs\` or
 \`npx data-cap --location <path>\`.`
 
 const CAPABILITY_TEMPLATE = `// Starter data-cap capability -- expand it: add getters/mutators/subscriptions
-// (switch to createData from "@maverickcer/data-cap/runtime" for the
+// (switch to createData from "data-cap/runtime" for the
 // batteries-included operations layer), split into per-capability files, or
 // keep everything here. data-cap discovers every .ts/.tsx file by default.
 //
@@ -45,7 +45,7 @@ const CAPABILITY_TEMPLATE = `// Starter data-cap capability -- expand it: add ge
 // ownership/flow reports; it is inert at runtime. Keep both call arguments
 // static literals -- data-cap resolves them by static analysis and never
 // executes this file.
-import { buildData, documentData } from "@maverickcer/data-cap"
+import { buildData, documentData } from "data-cap"
 
 const schema = {
   fields: {
@@ -70,8 +70,8 @@ documentData(schema, {
 
 const GENERATOR_TEMPLATE = `// Build-time only. Run with \`node scripts/generate-data.mjs\`, or wire it
 // into a package.json script (e.g. "generate:data"). Never imported by app code.
-import { generateDataArtifacts } from "@maverickcer/data-cap/build"
-import { nodeBuildFileSystem } from "@maverickcer/data-cap/node"
+import { generateDataArtifacts } from "data-cap/build"
+import { nodeBuildFileSystem } from "data-cap/node"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 
@@ -228,7 +228,7 @@ function renderReport(report: InitReport): string {
     "  2. Add operations -- switch buildData to createData for the",
     "     batteries-included getter/mutator/subscription layer:",
     "",
-    '       import { createData } from "@maverickcer/data-cap/runtime"',
+    '       import { createData } from "data-cap/runtime"',
     "",
     "  3. Read fields directly (buildData returns a synchronous snapshot):",
     "     exampleData.fields.example  -- or getSnapshot().fields once on createData",

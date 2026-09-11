@@ -61,7 +61,7 @@ matters for what replaces them:
   `usage-report.ts` (two call sites), `graph-export.ts`, `change-model.ts` -- and,
   critically, `examples/enterprise-platform/reports/litigation-evidence.ts:221`
   (`evidence.dependency?.byCapability.flatMap((c) => c.edges)`), imported from
-  `@maverickcer/data-cap/build` (the real published entry point, resolved through
+  `data-cap/build` (the real published entry point, resolved through
   `package.json`'s `"file:../.."` dependency and the built `dist/`), never an internal
   `src/` path -- confirming this is a genuine public-API-consumption example, not a
   test-only shortcut. Removing `byCapability` without a replacement would be a

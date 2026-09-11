@@ -1,5 +1,5 @@
-// The `@maverickcer/data-cap/node` entry point: the concrete, Node-backed
-// `BuildFileSystem` adapter a caller of `@maverickcer/data-cap/build` hands to
+// The `data-cap/node` entry point: the concrete, Node-backed
+// `BuildFileSystem` adapter a caller of `data-cap/build` hands to
 // `generateDataArtifacts` / `checkArtifacts` (and the standalone generator
 // functions) as the required `fs` capability.
 //
@@ -10,12 +10,12 @@
 // here:
 //
 // ```ts
-// import { generateDataArtifacts } from "@maverickcer/data-cap/build"
-// import { nodeBuildFileSystem } from "@maverickcer/data-cap/node"
+// import { generateDataArtifacts } from "data-cap/build"
+// import { nodeBuildFileSystem } from "data-cap/node"
 //
 // await generateDataArtifacts({ fs: nodeBuildFileSystem, root, ... })
 // ```
 //
 // A consumer in a non-Node runtime supplies their own `BuildFileSystem`
-// (`@maverickcer/data-cap/build` exports the type) instead of importing this.
+// (`data-cap/build` exports the type) instead of importing this.
 export { nodeBuildFileSystem } from "../cli/filesystem.js"

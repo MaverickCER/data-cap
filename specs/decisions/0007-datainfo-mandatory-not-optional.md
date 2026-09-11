@@ -24,7 +24,7 @@ API-shape cost.
 `DataState<TFields> = { readonly fields: TFields; readonly info:
 DataInfo<TFields> }` — both members are always present, always populated
 together (see ADR 0008 for the atomicity half of this). There is no
-separate `@maverickcer/data-cap/info` entry point and no configuration
+separate `data-cap/info` entry point and no configuration
 that removes `info` from a `DataState`. The performance property "don't
 pay for metadata on fields nothing has touched yet" is delivered instead
 by **structural sparsity**: `info` starts as `{}` and only ever grows
@@ -50,7 +50,7 @@ allocated metadata tree at `createData()` time.
   Rejected — this is the design this ADR directly supersedes; it forces
   every consumer to branch on presence for a saving sparsity already
   provides without the branching cost.
-- **A separate `@maverickcer/data-cap/info` entry point, opted into
+- **A separate `data-cap/info` entry point, opted into
   explicitly.** Rejected — `info` is not a separable feature; the store,
   atomicity, and no-op-suppression mechanics (ADR 0008, ADR 0042) all
   depend on `fields` and `info` being one inseparable unit from the start.

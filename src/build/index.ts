@@ -2,7 +2,7 @@
 // required `fs` field -- `./build` never imports `node:fs` (ADR 0058). The
 // `data-cap` CLI supplies a concrete adapter over `node:fs/promises`; a
 // consumer running the generators from their own Node build script imports
-// that same adapter from `@maverickcer/data-cap/node` (`{ nodeBuildFileSystem }`).
+// that same adapter from `data-cap/node` (`{ nodeBuildFileSystem }`).
 export type { BuildDirent, BuildFileSystem, BuildStats } from "./types.js"
 
 export { discoverCapabilityFiles, DEFAULT_INCLUDE } from "./discover.js"
@@ -115,7 +115,7 @@ export type {
   EvidenceProvenance,
 } from "./evidence-model.js"
 // Re-exported from `src/evidence/` (the canonical, isomorphic source) so
-// every existing `@maverickcer/data-cap/build` import keeps working -- see
+// every existing `data-cap/build` import keeps working -- see
 // `src/evidence/index.ts`.
 export { defineEvidenceProjection } from "../evidence/index.js"
 export type {

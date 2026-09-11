@@ -8,7 +8,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@maverickcer/data-cap": "file:../../../.."
+    "data-cap": "file:../../../.."
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

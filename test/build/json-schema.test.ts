@@ -49,7 +49,7 @@ describe.skipIf(distMissing)(
       await fs.rm(fixtureRoot, { recursive: true, force: true })
       await write(
         "features/payments/payments.ts",
-        `import { createData, documentData } from "@maverickcer/data-cap";
+        `import { createData, documentData } from "data-cap";
 const fields = { cardToken: "" };
 export const paymentsCapability = createData({ fields: fields });
 documentData({ fields: fields }, { owner: "payments-team", fields: { cardToken: { description: "Tokenized card reference." } } });
@@ -79,7 +79,7 @@ documentData({ fields: fields }, { owner: "payments-team", fields: { cardToken: 
       await fs.rm(fixtureRoot, { recursive: true, force: true })
       await write(
         "features/payments/payments.ts",
-        `import { createData, documentData } from "@maverickcer/data-cap";
+        `import { createData, documentData } from "data-cap";
 const fields = { cardToken: "" };
 export const paymentsCapability = createData({ fields: fields });
 documentData({ fields: fields }, { owner: "payments-team", fields: { cardToken: { description: "Tokenized card reference." } } });
@@ -106,7 +106,7 @@ documentData({ fields: fields }, { owner: "payments-team", fields: { cardToken: 
       await fs.rm(fixtureRoot, { recursive: true, force: true })
       await write(
         "features/payments/payments.ts",
-        `import { createData, documentData } from "@maverickcer/data-cap";
+        `import { createData, documentData } from "data-cap";
 const fields = { cardNumber: "" };
 export const paymentsCapability = createData({
   fields: fields,

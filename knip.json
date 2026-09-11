@@ -16,7 +16,7 @@
   ],
   "project": ["src/**/*.{ts,tsx}!"],
   "ignore": ["**/*.d.ts", "dist/**", "coverage/**", "reports/**", "examples/**", "benchmarks/**"],
-  "ignoreDependencies": ["@maverickcer/data-cap"],
+  "ignoreDependencies": ["data-cap"],
   // Knip's built-in typedoc plugin only reads the standard `typedoc.{js,cjs,mjs,json,jsonc}`
   // config names by default, so it never sees `typedoc.markdown.json` (our
   // `docs:api:report` config, which extends typedoc.json and adds

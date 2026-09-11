@@ -473,7 +473,7 @@ export async function main(): Promise<void> {
 // have the side effect of running the CLI.
 //
 // npm installs `bin` entries as symlinks (e.g. `node_modules/.bin/data-cap`
-// -> `../@maverickcer/data-cap/dist/cli/index.js`). Node resolves
+// -> `../data-cap/dist/cli/index.js`). Node resolves
 // `import.meta.url` through that symlink to this file's real, on-disk path,
 // but leaves `process.argv[1]` as the symlink path it was actually invoked
 // with -- so comparing the two directly never matches for a real `npx`/`.bin`

@@ -37,7 +37,7 @@ runs:
       run: |
         set +e
         PKG="data-cap"
-        if [ -n "${{ inputs.version }}" ]; then PKG="@maverickcer/data-cap@${{ inputs.version }}"; fi
+        if [ -n "${{ inputs.version }}" ]; then PKG="data-cap@${{ inputs.version }}"; fi
         npx --yes "$PKG" --json ${{ inputs.args }} > "$RUNNER_TEMP/data-cap-result.json"
         echo "exit-code=$?" >> "$GITHUB_OUTPUT"
         set -e

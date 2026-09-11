@@ -1,5 +1,5 @@
 /**
- * Guards `@maverickcer/data-cap/evidence`'s two defining properties: what it
+ * Guards `data-cap/evidence`'s two defining properties: what it
  * exports, and that it is genuinely isomorphic. The second matters more than
  * it looks -- the whole reason this entry point exists separately from
  * `./build` is that a dashboard backend, an edge function, or a browser can

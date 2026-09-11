@@ -12,9 +12,9 @@
  * capability's file to another's (see this example's own generated
  * `docs/OWNERSHIP.md` "Capability-to-capability dependencies" section).
  */
-import { buildData, documentData } from "@maverickcer/data-cap"
-import { createData } from "@maverickcer/data-cap/runtime"
-import { createDataCache } from "@maverickcer/data-cap/runtime/cache"
+import { buildData, documentData } from "data-cap"
+import { createData } from "data-cap/runtime"
+import { createDataCache } from "data-cap/runtime/cache"
 import type { Member } from "../server/members.js"
 import { fetchMembersRemote } from "../server/members.js"
 

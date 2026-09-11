@@ -1982,7 +1982,7 @@ throw-until-ready gate (a deliberate divergence from `@maverickcer/env-cap`'s
 `buildData` is the low-level, pure/synchronous primitive: `config` only ever
 reads `fields` (a `getters`/`mutators`/`subscriptions` section on the same
 object, if present, is simply ignored here -- that's what the batteries-
-included `createData` from `@maverickcer/data-cap/runtime` is for). `data.
+included `createData` from `data-cap/runtime` is for). `data.
 info` is present (mandatory, never optional) but starts empty: nothing has
 executed yet, so there is nothing to report metadata for.
 

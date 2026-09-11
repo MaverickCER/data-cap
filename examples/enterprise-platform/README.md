@@ -105,7 +105,7 @@ npm start
 
 `npm start` is headless: boots a real embedded MongoDB
 (`mongodb-memory-server`) and a real HTTP+SSE server in-process, runs real
-`node:assert/strict` checks against the actual built `@maverickcer/data-cap`
+`node:assert/strict` checks against the actual built `data-cap`
 package -- including generating both reports and proving the CI guard --
 for real, every run.
 

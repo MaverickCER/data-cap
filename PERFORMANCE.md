@@ -71,7 +71,7 @@ own `BUDGETS` array for the authoritative current values.
 
 Two self-contained npm projects under `benchmarks/` — [`performance-runtime/`](benchmarks/performance-runtime/)
 and [`performance-buildtime/`](benchmarks/performance-buildtime/) — each depending on
-`@maverickcer/data-cap` via `file:../..` and importing it by **package name**, never a monorepo-relative
+`data-cap` via `file:../..` and importing it by **package name**, never a monorepo-relative
 `dist/*.js` path. This is a "full package" benchmark: it exercises the actual `exports` map/`package.json`
 a real consumer's `npm install` would resolve.
 

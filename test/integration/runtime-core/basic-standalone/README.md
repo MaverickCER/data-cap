@@ -3,7 +3,7 @@
 **Client-side pattern.** The minimal end-to-end shape: `buildData` declares
 the field contract, `createDataStore` owns state, and a small hand-written
 `runGetUser` function does the actual work the batteries-included `createData`
-(`@maverickcer/data-cap/runtime`, see
+(`data-cap/runtime`, see
 [`examples/application/`](../../../../examples/application/)) would
 otherwise do for you -- fetch, commit a loading status, then commit the
 result or an error. `fetchUser` stands in for
@@ -43,7 +43,7 @@ npm start
 ```
 
 `npm start` runs real `node:assert/strict` checks against the actual
-installed `@maverickcer/data-cap` build and writes `output.json` -- compared
+installed `data-cap` build and writes `output.json` -- compared
 against `expected/output.json` in CI.
 
 ## What it proves

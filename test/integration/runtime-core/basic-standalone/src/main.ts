@@ -13,15 +13,15 @@
  * wiring: fetch, commit a loading status, then commit the result or an
  * error. Reach for this level when you want full control over execution;
  * `examples/capability-operations/` shows the same scenario through the
- * batteries-included `createData` (`@maverickcer/data-cap/runtime`) instead,
+ * batteries-included `createData` (`data-cap/runtime`) instead,
  * which owns this wiring for you. This file's pattern is still meant to be
  * copied and adapted -- most other examples in `examples/` build on it.
  */
 import assert from "node:assert/strict"
 import { writeFileSync } from "node:fs"
 import path from "node:path"
-import { buildData, fields } from "@maverickcer/data-cap"
-import { createDataStore, defaultCoordinator } from "@maverickcer/data-cap/runtime"
+import { buildData, fields } from "data-cap"
+import { createDataStore, defaultCoordinator } from "data-cap/runtime"
 
 interface User {
   readonly name: string

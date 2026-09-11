@@ -118,8 +118,8 @@ provides across components.
 
 ```ts
 import { gql, ApolloClient, NormalizedCacheObject } from "@apollo/client"
-import { buildData } from "@maverickcer/data-cap"
-import { createDataStore } from "@maverickcer/data-cap/runtime"
+import { buildData } from "data-cap"
+import { createDataStore } from "data-cap/runtime"
 
 const GET_USER = gql`
   query GetUser {

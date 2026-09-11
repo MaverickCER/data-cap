@@ -1,0 +1,148 @@
+{
+  "disclaimer": "Machine-generated engineering artifact assembled from statically-provable code facts and author-declared documentation. It can support a security, privacy, or compliance review. It does not itself establish compliance with any standard.",
+  "generatedAt": "2026-09-11T06:00:58.990Z",
+  "scanSurface": {
+    "scanned": [
+      "application source (src/**)"
+    ],
+    "notScanned": "all other dependencies (no --package allow-list configured for this example)"
+  },
+  "fields": [
+    {
+      "capability": "billingData",
+      "field": "invoices",
+      "declared": {
+        "owner": "finance-team",
+        "sensitivity": "confidential",
+        "purpose": "Billing clients and tracking payment/dispute status for financial reporting.",
+        "legalBasis": "contract",
+        "dataResidency": "us",
+        "auditRequired": true,
+        "protections": "Session-authenticated access only; TLS in transit; amounts encrypted at rest.",
+        "retention": "7 years after project closure, per financial recordkeeping policy."
+      },
+      "declarationSite": {
+        "line": 94,
+        "column": 5
+      },
+      "consumptionStatus": "declared-dynamic",
+      "provenAccessSites": [],
+      "indeterminateSites": [],
+      "dynamicAccessCitations": [
+        "src/server/legacy-compliance-sync.ts:26:19"
+      ],
+      "citationIntegrityFindings": [],
+      "handlingByOperation": [
+        {
+          "operation": "getter:listInvoices",
+          "direction": "input",
+          "endpointName": "billing-api",
+          "url": "https://api.example.com/v1/projects/:projectId/invoices",
+          "handling": "encrypted"
+        },
+        {
+          "operation": "mutator:createInvoice",
+          "direction": "output",
+          "endpointName": "billing-api",
+          "url": "https://api.example.com/v1/projects/:projectId/invoices",
+          "handling": "encrypted"
+        },
+        {
+          "operation": "mutator:markInvoicePaid",
+          "direction": "output",
+          "endpointName": "billing-api",
+          "url": "https://api.example.com/v1/projects/:projectId/invoices/:invoiceId/pay",
+          "handling": "encrypted"
+        },
+        {
+          "operation": "mutator:disputeInvoice",
+          "direction": "output",
+          "endpointName": "billing-api",
+          "url": "https://api.example.com/v1/projects/:projectId/invoices/:invoiceId/dispute",
+          "handling": "encrypted"
+        },
+        {
+          "operation": "subscription:subscribeToInvoices",
+          "direction": "input",
+          "endpointName": "billing-api",
+          "url": "https://api.example.com/v1/projects/:projectId/invoices/stream",
+          "handling": "encrypted"
+        }
+      ]
+    },
+    {
+      "capability": "identityData",
+      "field": "currentUser",
+      "declared": {
+        "owner": "platform-security",
+        "sensitivity": "confidential",
+        "purpose": "Authorizing access to every other capability in this platform.",
+        "legalBasis": "contract",
+        "dataResidency": "us",
+        "auditRequired": true,
+        "protections": "Session-authenticated access only; TLS in transit; password never leaves the server."
+      },
+      "declarationSite": {
+        "line": 22,
+        "column": 5
+      },
+      "consumptionStatus": "indeterminate",
+      "provenAccessSites": [],
+      "indeterminateSites": [
+        {
+          "file": "src/server/legacy-compliance-sync.ts",
+          "line": 33,
+          "column": 19
+        }
+      ],
+      "dynamicAccessCitations": [],
+      "citationIntegrityFindings": [],
+      "handlingByOperation": [
+        {
+          "operation": "getter:getCurrentUser",
+          "direction": "input",
+          "endpointName": "identity-api",
+          "url": "https://api.example.com/v1/me",
+          "handling": "plaintext"
+        }
+      ]
+    },
+    {
+      "capability": "projectsData",
+      "field": "projects",
+      "declared": {
+        "owner": "engineering-ops",
+        "sensitivity": "internal",
+        "purpose": "Cross-department project navigation.",
+        "legalBasis": "contract",
+        "dataResidency": "us",
+        "protections": "Session-authenticated access only; TLS in transit."
+      },
+      "declarationSite": {
+        "line": 24,
+        "column": 5
+      },
+      "consumptionStatus": "unconsumed",
+      "provenAccessSites": [],
+      "indeterminateSites": [],
+      "dynamicAccessCitations": [],
+      "citationIntegrityFindings": [],
+      "handlingByOperation": [
+        {
+          "operation": "getter:listProjects",
+          "direction": "input",
+          "endpointName": "projects-api",
+          "url": "https://api.example.com/v1/projects",
+          "handling": "plaintext"
+        },
+        {
+          "operation": "mutator:createProject",
+          "direction": "output",
+          "endpointName": "projects-api",
+          "url": "https://api.example.com/v1/projects",
+          "handling": "plaintext"
+        }
+      ]
+    }
+  ]
+}

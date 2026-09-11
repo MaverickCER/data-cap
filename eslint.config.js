@@ -15,7 +15,7 @@ import eslintConfigPrettier from "eslint-config-prettier/flat"
  * `<category>/<name>.test.ts` wrapper one level up is linted here.
  * `benchmarks/performance-runtime/` and `benchmarks/performance-buildtime/`
  * are the same kind of self-contained npm project too (each its own
- * `package.json` depending on `@maverickcer/data-cap` via `file:../..`,
+ * `package.json` depending on `data-cap` via `file:../..`,
  * installed by its own `npm install`, never the root `npm ci`) -- only
  * `benchmarks/benchmark-fixtures/` and the top-level orchestration scripts
  * directly under `benchmarks/` are linted here, same rationale env-cap
@@ -108,7 +108,7 @@ export default tseslint.config(
     // implicitly -- `./build` accepts a `BuildFileSystem` from its caller
     // instead. Only `src/cli/**` (the executable capability boundary that
     // constructs the `node:fs/promises` adapter) may import `node:fs`. The
-    // published `@maverickcer/data-cap/eslint-plugin` ships `no-node-fs` for
+    // published `data-cap/eslint-plugin` ships `no-node-fs` for
     // a consumer to enforce the same discipline; this `no-restricted-imports`
     // block is data-cap's own, needing no plugin build.
     // `scripts/verify-no-ambient-fs.mjs` is the release-blocking backstop
