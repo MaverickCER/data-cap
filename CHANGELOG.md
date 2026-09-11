@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.0
+
+### Minor Changes
+
+- Bump to unblock publishing -- 0.2.0 was committed via an earlier "Version Packages" PR whose publish step failed (npm OIDC trusted publishing wasn't registered yet), so a retry needs a fresh version number. No functional change beyond the previous release.
+
 ## 0.2.0
 
 ### Minor Changes
