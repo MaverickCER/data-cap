@@ -14,11 +14,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/maverickcer/data-cap.git"
+    "url": "git+https://github.com/MaverickCER/data-cap.git"
   },
-  "homepage": "https://github.com/maverickcer/data-cap#readme",
+  "homepage": "https://github.com/MaverickCER/data-cap#readme",
   "bugs": {
-    "url": "https://github.com/maverickcer/data-cap/issues"
+    "url": "https://github.com/MaverickCER/data-cap/issues"
   },
   "author": "MaverickCER",
   "type": "module",
