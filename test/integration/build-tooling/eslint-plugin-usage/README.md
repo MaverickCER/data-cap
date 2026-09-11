@@ -6,7 +6,7 @@ only stable module-level references (never flagged), one with both
 mistakes the rule exists to catch.
 
 `src/fixtures/*.ts` use a local stub `createData` rather than the real one
-imported from `@maverickcer/data-cap/runtime` -- the rule matches a call's
+imported from `data-cap/runtime` -- the rule matches a call's
 `execute`/`subscribe` keys purely by name (see the rule's own doc comment),
 independent of the real `createData`, so this example stays a pure
 lint-behavior check without also depending on runtime execution (network

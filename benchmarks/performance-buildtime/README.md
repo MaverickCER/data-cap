@@ -13,8 +13,8 @@ npm run build --prefix ../.. # generateDataArtifacts's parsing needs a built dis
 npm run benchmark
 ```
 
-A real `npm install` here (not a monorepo-relative import) -- `@maverickcer/data-cap` is a `file:../..`
-dependency, so `@maverickcer/data-cap/build` resolves exactly as a real consumer's `npm install` would (real
+A real `npm install` here (not a monorepo-relative import) -- `data-cap` is a `file:../..`
+dependency, so `data-cap/build` resolves exactly as a real consumer's `npm install` would (real
 `exports` map, real `dist/build.js`), never a `../../dist/build.js` shortcut.
 
 Writes `results.json` and `RESULTS.md`, both committed. `fixtures/` (the generated `.ts` capability trees

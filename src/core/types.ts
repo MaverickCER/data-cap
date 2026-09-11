@@ -5,7 +5,7 @@
  * exclusion for this file). Mirrors env-cap's own `runtime/types.ts`
  * structurally: this file is the vocabulary read by `build.ts`/`document.ts`,
  * plus the getter/mutator/subscription operation types the runtime's
- * `createData` (`@maverickcer/data-cap/runtime`) executes -- `ownership.ts`/
+ * `createData` (`data-cap/runtime`) executes -- `ownership.ts`/
  * `patch.ts` give those real runtime meaning; this module only ever declares
  * their shape. `buildData` itself only ever reads `fields` off a `DataSchema`
  * -- the operation sections exist for `documentData`/the runtime to consume.
@@ -193,7 +193,7 @@ export interface DataStore<TFields> {
 /*
  * Pure, type-only vocabulary consumed by two different places: `document.ts`
  * (still fully inert -- these types never imply runtime behavior on their
- * own) and `@maverickcer/data-cap/runtime`'s `createData`, which is the only
+ * own) and `data-cap/runtime`'s `createData`, which is the only
  * place any of this actually executes. Living here keeps core genuinely
  * synchronous/stateless (nothing below is itself a function that runs
  * anything) while letting `documentData` and the runtime's `createData`

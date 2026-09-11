@@ -7,6 +7,6 @@
     "benchmark": "node --expose-gc scripts/run-benchmark.mjs"
   },
   "dependencies": {
-    "@maverickcer/data-cap": "file:../.."
+    "data-cap": "file:../.."
   }
 }

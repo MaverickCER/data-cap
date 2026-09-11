@@ -1,7 +1,7 @@
 /**
  * Tier 1 -- "How do I define and consume application data safely?" A single
  * developer's task manager: one capability, the batteries-included
- * `createData` (`@maverickcer/data-cap/runtime`), demonstrating the full
+ * `createData` (`data-cap/runtime`), demonstrating the full
  * individual-developer feature surface end to end -- exact field types
  * (an array field and a nullable field), loading/error/success status,
  * optimistic mutation, `withRetry` composed directly onto a generated
@@ -23,10 +23,10 @@
  * one that does, is a compile error, not a silent gap.
  */
 import assert from "node:assert/strict"
-import { buildData, documentData, fields } from "@maverickcer/data-cap"
-import { createData } from "@maverickcer/data-cap/runtime"
-import { createDataCache } from "@maverickcer/data-cap/runtime/cache"
-import { withRetry } from "@maverickcer/data-cap/runtime/retry"
+import { buildData, documentData, fields } from "data-cap"
+import { createData } from "data-cap/runtime"
+import { createDataCache } from "data-cap/runtime/cache"
+import { withRetry } from "data-cap/runtime/retry"
 
 export interface Task {
   readonly id: string

@@ -25,7 +25,7 @@
  * Each report module is loaded through a **non-literal** dynamic import, on
  * purpose. A literal specifier would pull `examples/enterprise-platform`'s
  * sources into the root `tsc` program, and those import
- * `@maverickcer/data-cap/build` -- which resolves to the *built* `dist/`.
+ * `data-cap/build` -- which resolves to the *built* `dist/`.
  * `npm run verify` runs `typecheck` before `build`, so that would make the
  * root typecheck fail whenever `dist/` is absent or stale, and it would
  * contradict this repo's own stated convention that each example is

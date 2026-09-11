@@ -15,7 +15,7 @@
  * bundler bundling this already-bundled package): importing only
  * `processors` would still ship all of `shape`'s code. A plain object
  * literal of already-imported bindings has no such call in the way, so
- * `import { processors } from "@maverickcer/data-cap/helpers"` alone drops
+ * `import { processors } from "data-cap/helpers"` alone drops
  * `shape`/`identity` entirely.
  */
 import {

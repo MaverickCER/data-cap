@@ -59,8 +59,8 @@ themselves instead of the batteries-included default, `buildData` +
 `createData` is built from, usable directly:
 
 ```ts
-import { buildData, fields } from "@maverickcer/data-cap"
-import { createDataStore, defaultCoordinator } from "@maverickcer/data-cap/runtime"
+import { buildData, fields } from "data-cap"
+import { createDataStore, defaultCoordinator } from "data-cap/runtime"
 
 const capability = buildData({
   fields: {
@@ -121,7 +121,7 @@ and `createData` accept — documentation augments the same capability
 graph, never a loose bag:
 
 ```ts
-import { buildData, documentData } from "@maverickcer/data-cap"
+import { buildData, documentData } from "data-cap"
 
 const userFields = { name: "", email: "" }
 
@@ -139,7 +139,7 @@ documentData(
 ```
 
 `documentData` is inert at runtime (`void config; void docs`) — its only
-consumer is `@maverickcer/data-cap/build`'s static analysis, which
+consumer is `data-cap/build`'s static analysis, which
 correlates a `documentData` call with the `buildData`/`createData`
 capability it documents and reports every mismatch category explicitly
 (undocumented capability, orphaned documentation, duplicate documentation,
@@ -229,7 +229,7 @@ declared identity, never by array index (which shifts under insertion/
 removal/reorder):
 
 ```ts
-import { identity } from "@maverickcer/data-cap/helpers"
+import { identity } from "data-cap/helpers"
 
 const { info, warnings } = identity.reconcileArrayInfo(
   previousInfo,
@@ -258,7 +258,7 @@ acquirers with the same identity reuse it, and it tears down only once
 every acquirer has released:
 
 ```ts
-import { defaultCoordinator } from "@maverickcer/data-cap/runtime"
+import { defaultCoordinator } from "data-cap/runtime"
 
 const release = defaultCoordinator.acquireSubscription(subscribeToFeed, {
   onEvent: (event) =>
@@ -287,7 +287,7 @@ collision. `defaultCoordinator` is a module-level singleton;
 server process, test isolation):
 
 ```ts
-import { createCoordinator } from "@maverickcer/data-cap/runtime"
+import { createCoordinator } from "data-cap/runtime"
 
 const tenantACoordinator = createCoordinator()
 const tenantBCoordinator = createCoordinator()
@@ -307,7 +307,7 @@ Two separately-tree-shaken optional entry points. `runtime/cache` persists
 complete `DataState` (`fields` + `info`) atomically, never raw responses:
 
 ```ts
-import { createDataCache } from "@maverickcer/data-cap/runtime/cache"
+import { createDataCache } from "data-cap/runtime/cache"
 
 const cache = createDataCache<UserFields>({ maxEntries: 100 })
 cache.set(cacheKey, capability) // a full DataState, not just fields
@@ -319,7 +319,7 @@ cache.set(cacheKey, capability) // a full DataState, not just fields
 `(params?, signal?) => Promise<...>` functions:
 
 ```ts
-import { withRetry, isStillDefault } from "@maverickcer/data-cap/runtime/retry"
+import { withRetry, isStillDefault } from "data-cap/runtime/retry"
 
 await withRetry((signal) => userData.getUser({ id: "1" }, signal), controller.signal, {
   maxAttempts: 3,
@@ -334,12 +334,12 @@ See `test/integration/runtime-modules/runtime-cache/`, `test/integration/runtime
 
 ## Helpers
 
-`@maverickcer/data-cap/helpers` ships four separately tree-shakeable
+`data-cap/helpers` ships four separately tree-shakeable
 namespaces — entirely optional, neither `buildData` nor `createData` has
 any knowledge of this module:
 
 ```ts
-import { processors, identity, canonicalize, shape } from "@maverickcer/data-cap/helpers"
+import { processors, identity, canonicalize, shape } from "data-cap/helpers"
 
 processors.toNumber(raw.age) // coercion helpers for a processor
 identity.computeItemIdentity(item, ["id"], [], warnings)
@@ -381,7 +381,7 @@ platform review, never a claim that the review has already been done.
 
 ### Discovery and linking
 
-`@maverickcer/data-cap/build` statically discovers and links
+`data-cap/build` statically discovers and links
 `buildData`/`createData`/`documentData` calls across a project — using the
 TypeScript Compiler API to read each file's AST, never `import()`ing,
 `require()`ing, or `eval()`ing a discovered file
@@ -394,8 +394,8 @@ object requires a caller-supplied `fs: BuildFileSystem`, which the CLI
 supplies automatically:
 
 ```ts
-import { discoverCapabilityFiles, linkCapabilityFiles } from "@maverickcer/data-cap/build"
-import { nodeBuildFileSystem } from "@maverickcer/data-cap/node"
+import { discoverCapabilityFiles, linkCapabilityFiles } from "data-cap/build"
+import { nodeBuildFileSystem } from "data-cap/node"
 
 const files = await discoverCapabilityFiles({ fs: nodeBuildFileSystem, root: "." })
 const { capabilities, warnings } = await linkCapabilityFiles(files, {
@@ -430,7 +430,7 @@ Every generator below reads from one shared model, `buildInventory`'s
 sensitive" is defined once, not re-derived per report:
 
 ```ts
-import { buildInventory } from "@maverickcer/data-cap/build"
+import { buildInventory } from "data-cap/build"
 
 const inventory = buildInventory(
   await linkCapabilityFiles(files, { fs: nodeBuildFileSystem, root: "." }),
@@ -486,8 +486,8 @@ is treated as worse than none, so a blocking finding throws
 every `./build` entry point, `fs` is required:
 
 ```ts
-import { generateDataArtifacts } from "@maverickcer/data-cap/build"
-import { nodeBuildFileSystem } from "@maverickcer/data-cap/node"
+import { generateDataArtifacts } from "data-cap/build"
+import { nodeBuildFileSystem } from "data-cap/node"
 
 await generateDataArtifacts({
   fs: nodeBuildFileSystem,
@@ -498,7 +498,7 @@ await generateDataArtifacts({
 })
 ```
 
-A non-Node consumer supplies its own `BuildFileSystem` (`@maverickcer/data-cap/build` exports the type) instead of importing `./node`.
+A non-Node consumer supplies its own `BuildFileSystem` (`data-cap/build` exports the type) instead of importing `./node`.
 
 ## ESLint plugin
 
@@ -511,7 +511,7 @@ silently stops applying otherwise:
 
 ```js
 // eslint.config.js
-import dataCapPlugin from "@maverickcer/data-cap/eslint-plugin"
+import dataCapPlugin from "data-cap/eslint-plugin"
 
 export default [
   {
@@ -624,7 +624,7 @@ redaction at the point it logs.
 
 ### Error classes
 
-Every thrown error extends `DataCapError` (`@maverickcer/data-cap`) and
+Every thrown error extends `DataCapError` (`data-cap`) and
 carries a stable, non-`instanceof`-dependent `code` — safe to switch on
 across bundling/module-federation boundaries where `instanceof` can fail.
 
@@ -647,7 +647,7 @@ That behavior is intentional
 
 ### "Does `data-cap` ship a built-in getter/mutator execution loop?"
 
-Optionally, yes — `createData` (`@maverickcer/data-cap/runtime`,
+Optionally, yes — `createData` (`data-cap/runtime`,
 Experimental tier) owns dedup, per-operation status, optimistic mutation
 lifecycle, and concurrent-getter execution, composed entirely from the
 Stable primitives (`createDataStore`, `coordinator.dedupe`/

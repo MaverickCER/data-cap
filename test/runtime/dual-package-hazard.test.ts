@@ -1,6 +1,6 @@
 /**
  * The dual-package hazard: if a consumer's dependency tree ends up resolving
- * `@maverickcer/data-cap/runtime` through two different specifiers (one
+ * `data-cap/runtime` through two different specifiers (one
  * import-er getting the ESM build, one require()-er getting the CJS build --
  * e.g. via a mixed ESM/CJS dependency graph, or a re-exporting intermediate
  * package), Node loads two entirely separate module instances. Since

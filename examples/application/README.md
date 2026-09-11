@@ -2,7 +2,7 @@
 
 **Tier 1: "How do I define and consume application data safely?"** A single
 developer's task manager -- one capability, the batteries-included
-`createData` (`@maverickcer/data-cap/runtime`), demonstrating the full
+`createData` (`data-cap/runtime`), demonstrating the full
 individual-developer feature surface end to end: exact field types (an array
 field and a nullable field), loading/error/success status, optimistic
 mutation, `withRetry` composed directly onto a generated mutator method,
@@ -46,7 +46,7 @@ npm start
 ```
 
 `npm start` runs real `node:assert/strict` checks against the actual
-installed `@maverickcer/data-cap` build -- a thrown assertion is a genuine
+installed `data-cap` build -- a thrown assertion is a genuine
 regression signal, not just a diff.
 
 ## What it proves
@@ -61,7 +61,7 @@ regression signal, not just a diff.
 - An externally-supplied `AbortSignal` cancels an in-flight getter call, and
   the rejection never overwrites the last known-good field value.
 - A generated mutator method composes directly with the real, shipped
-  `withRetry` (`@maverickcer/data-cap/runtime/retry`), since it's a plain
+  `withRetry` (`data-cap/runtime/retry`), since it's a plain
   `(params?, signal?) => Promise<...>` function -- the example's simulated
   backend deliberately fails the first `createTask` attempt so the retry
   path is exercised for real, not just asserted about.

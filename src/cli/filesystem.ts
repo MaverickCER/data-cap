@@ -4,7 +4,7 @@ import type { BuildDirent, BuildFileSystem, BuildStats } from "../build/types.js
 /**
  * The concrete `node:fs/promises`-backed {@link BuildFileSystem} the `data-cap`
  * CLI hands to `data-cap/build`. Also re-exported as the public
- * `@maverickcer/data-cap/node` entry point (`src/node/index.ts`) for a
+ * `data-cap/node` entry point (`src/node/index.ts`) for a
  * consumer running the generators from their own Node build script.
  *
  * This is the deliberate injection boundary -- mirrors `repo-contract`'s own

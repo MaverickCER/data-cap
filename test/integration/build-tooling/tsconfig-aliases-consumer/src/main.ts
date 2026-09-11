@@ -10,8 +10,8 @@
 import assert from "node:assert/strict"
 import { writeFileSync } from "node:fs"
 import path from "node:path"
-import { discoverCapabilityFiles, linkCapabilityFiles } from "@maverickcer/data-cap/build"
-import { nodeBuildFileSystem } from "@maverickcer/data-cap/node"
+import { discoverCapabilityFiles, linkCapabilityFiles } from "data-cap/build"
+import { nodeBuildFileSystem } from "data-cap/node"
 
 const root = path.join(import.meta.dirname, "..")
 

@@ -46,7 +46,7 @@ merged, or with a follow-up changeset after.
 One-time, before the very first automated release. Requires npm account
 access, so it can't be done from a PR.
 
-1. On [npmjs.com](https://www.npmjs.com), open `@maverickcer/data-cap`'s
+1. On [npmjs.com](https://www.npmjs.com), open `data-cap`'s
    package settings → **Publishing access** → add a **trusted publisher** for
    GitHub Actions:
    - Organization or user: `maverickcer`
@@ -85,7 +85,7 @@ Nothing is on npm; nothing to undo.
 the version. This is the common failure (OIDC misconfig, a flaky
 `npm run verify`, a registry blip).
 
-1. Confirm npm really doesn't have it: `npm view @maverickcer/data-cap
+1. Confirm npm really doesn't have it: `npm view data-cap
 versions --json` — check the bumped version is absent.
 2. Fix the root cause (see [Common failures](#common-failure-causes)).
 3. Re-run the failed `release.yml` run from the Actions tab
@@ -118,7 +118,7 @@ within 72 hours and only if nothing depends on it, and the version number
 can never be reused). Don't try to unpublish a normal mistake. Instead:
 
 - Wrong contents, right version number: publish a patch (`x.y.z+1`) with a
-  changeset that fixes it, and `npm deprecate @maverickcer/data-cap@x.y.z
+  changeset that fixes it, and `npm deprecate data-cap@x.y.z
 "Broken publish — use x.y.z+1"`.
 - Accidental major/minor bump: it stays. Continue from the new baseline; a
   version number is cheap, a rewritten history is not.

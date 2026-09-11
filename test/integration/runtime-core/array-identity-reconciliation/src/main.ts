@@ -11,11 +11,11 @@
 import assert from "node:assert/strict"
 import { writeFileSync } from "node:fs"
 import path from "node:path"
-import { buildData } from "@maverickcer/data-cap"
-import type { FieldInfo } from "@maverickcer/data-cap"
-import { createDataStore } from "@maverickcer/data-cap/runtime"
-import { identity } from "@maverickcer/data-cap/helpers"
-import type { IdentityWarning } from "@maverickcer/data-cap/helpers"
+import { buildData } from "data-cap"
+import type { FieldInfo } from "data-cap"
+import { createDataStore } from "data-cap/runtime"
+import { identity } from "data-cap/helpers"
+import type { IdentityWarning } from "data-cap/helpers"
 
 interface Comment {
   readonly id: string

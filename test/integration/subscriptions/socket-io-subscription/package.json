@@ -8,7 +8,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@maverickcer/data-cap": "file:../../../..",
+    "data-cap": "file:../../../..",
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1"
   },

@@ -124,7 +124,7 @@ export function realisticParams(index = 0) {
 function renderRuntimeCapability(index) {
   const n = String(index).padStart(4, "0")
   return (
-    `import { createData } from "@maverickcer/data-cap/runtime";\n\n` +
+    `import { createData } from "data-cap/runtime";\n\n` +
     `const identity = (raw) => raw;\n\n` +
     `export const capability = createData({\n` +
     `  fields: {\n` +
@@ -181,8 +181,8 @@ function renderBuildtimeCapability(index) {
   const department = DEPARTMENTS[index % DEPARTMENTS.length]
   const residency = RESIDENCIES[index % RESIDENCIES.length]
 
-  return `import { createData } from "@maverickcer/data-cap/runtime";
-import { documentData } from "@maverickcer/data-cap";
+  return `import { createData } from "data-cap/runtime";
+import { documentData } from "data-cap";
 
 export interface Item${n} {
   readonly id: string;

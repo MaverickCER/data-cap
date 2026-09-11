@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Patches dist/eslint-plugin/index.cjs so `require("@maverickcer/data-cap/eslint-plugin")`
+// Patches dist/eslint-plugin/index.cjs so `require("data-cap/eslint-plugin")`
 // resolves directly to the plugin object, matching the ESM entry point's
 // `import dataCapPlugin from "..."` ergonomics.
 //

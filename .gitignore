@@ -39,5 +39,7 @@ GEMINI.md
 *.fingerprint
 
 # Contract tooling transient output (repo-contract / internal-package-contract).
+# Anchored to root -- unanchored `reports` also matched (and hid from git)
+# examples/enterprise-platform/reports/, which is real example source.
 .stryker-tmp
-reports
+/reports

@@ -9,7 +9,7 @@ in SECURITY.md/ADOPTION.md (Phase 9).
 
 `defaultCoordinator` (ADR 0027) is a module-level singleton — correct and
 useful _within_ one loaded module instance, but a real hazard the moment a
-consumer's dependency tree resolves `@maverickcer/data-cap/runtime`
+consumer's dependency tree resolves `data-cap/runtime`
 through two different specifiers (an ESM importer and a CJS requirer of
 the same logical package, or a re-exporting intermediate package). Node
 loads two entirely separate module instances in that case, each with its

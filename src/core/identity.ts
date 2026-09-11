@@ -41,7 +41,7 @@ export interface IdentityWarning {
 // fallback is needed. A plain function, never a module-top-level
 // `const x = canonicalize(undefined)`: that top-level call is one esbuild can't
 // prove side-effect-free, so it could never be tree-shaken -- forcing every
-// consumer of `@maverickcer/data-cap/helpers` to pay for canonicalize.ts even
+// consumer of `data-cap/helpers` to pay for canonicalize.ts even
 // when they only import `processors`/`shape` (see test/helpers/tree-shaking.test.ts).
 function missingComponentToken(): string {
   const token = canonicalize(undefined)

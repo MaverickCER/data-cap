@@ -23,7 +23,7 @@ own header comment and `specs/architecture.md` framed it as reserved for
 without ever needing it. It was write-only dead code.
 
 Worse, its presence produced a real, reasonable misreading: that
-`@maverickcer/data-cap/build`'s AST scanner depends on this registry to
+`data-cap/build`'s AST scanner depends on this registry to
 discover capabilities, and that skipping `buildData()` (e.g. hand-
 constructing a `DataState` and passing it straight to `createDataStore()`)
 would "opt out" of discovery via some missing runtime registration step.
@@ -57,7 +57,7 @@ is now single-argument.
   passing `{ name: ... }` needs to drop it (pre-1.0, no deprecation window —
   see `VERSIONING.md`).
 - Restates, explicitly, the actual discovery contract for future readers:
-  `@maverickcer/data-cap/build` finds a capability purely by matching a
+  `data-cap/build` finds a capability purely by matching a
   `buildData(...)`/`createData(...)` call expression in your source's AST —
   never by anything that happens at runtime, and never via any runtime
   registration mechanism. `data-cap` has no runtime capability registry at

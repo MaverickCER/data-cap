@@ -59,7 +59,7 @@ capability boundary this package defines.
 
 ## Dual-package hazard
 
-`@maverickcer/data-cap/runtime`'s `defaultCoordinator` is a module-level
+`data-cap/runtime`'s `defaultCoordinator` is a module-level
 singleton. If your dependency tree resolves this package through two
 different specifiers — one importer getting the ESM build, one
 `require()`r getting the CJS build, via a mixed ESM/CJS dependency graph or
@@ -83,7 +83,7 @@ within each instance is.
 
 ## Build-time security model
 
-`@maverickcer/data-cap/build` never imports, `require()`s, or `eval()`s a
+`data-cap/build` never imports, `require()`s, or `eval()`s a
 discovered capability file
 ([ADR 0002](specs/decisions/0002-build-tooling-static-analysis-only.md)).
 Every discovery/linking operation reads a file's AST via the TypeScript

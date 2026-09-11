@@ -106,10 +106,15 @@ function renderOverviewMarkdown(
 export function generateFlow(options: GenerateFlowOptions): GenerateFlowResult {
   const { inventory, root, location, edges, evidencePath } = options
   const flowGraph = buildFlowGraph(inventory, edges)
-  const reviewFindings = [...flowGraph.findings]
-  if (options.additionalFindings !== undefined) {
-    reviewFindings.unshift(...options.additionalFindings)
-  }
+  // Array-literal spread, not `.unshift(...arr)` -- `unshift`/`push` pass a
+  // spread argument list as individual call arguments, which throws
+  // "Maximum call stack size exceeded" (V8's native argument-count limit,
+  // not a real recursion depth) once `additionalFindings` is large enough
+  // (hit at real-world project sizes -- see the extreme-tier benchmark).
+  const reviewFindings =
+    options.additionalFindings !== undefined
+      ? [...options.additionalFindings, ...flowGraph.findings]
+      : [...flowGraph.findings]
 
   const files: GenerateFlowFile[] = []
 

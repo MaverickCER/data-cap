@@ -1,6 +1,6 @@
 ---
 name: data-cap
-description: Guidance for AI coding agents using or extending @maverickcer/data-cap. Load before creating or editing data-cap capability files, core/runtime/build APIs, getters, mutators, subscriptions, processors, or field/identity declarations.
+description: Guidance for AI coding agents using or extending data-cap. Load before creating or editing data-cap capability files, core/runtime/build APIs, getters, mutators, subscriptions, processors, or field/identity declarations.
 ---
 
 ## Purpose
@@ -16,7 +16,7 @@ runs entirely standalone.
 shipped — `core` (`.`), `runtime` (`./runtime`, `./runtime/cache`, `./runtime/retry`),
 `helpers` (`./helpers`), `build` (`./build`), and `eslint-plugin`
 (`./eslint-plugin`). The primary way to use a capability is `createData(schema)`
-(`@maverickcer/data-cap/runtime`, Experimental tier), which composes the low-level
+(`data-cap/runtime`, Experimental tier), which composes the low-level
 primitives (`buildData` + `createDataStore` + a `Coordinator`) into one batteries-
 included call owning dedup, per-operation status, optimistic mutation lifecycle, and
 `runGetters` concurrency (see ADR 0048 for the full behavioral contract). For full

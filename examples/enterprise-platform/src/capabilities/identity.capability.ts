@@ -7,8 +7,8 @@
  * `identityData` is what every OTHER capability implicitly depends on once
  * a session exists, fetched here for real display use (e.g. "signed in as").
  */
-import { documentData, fields } from "@maverickcer/data-cap"
-import { createData } from "@maverickcer/data-cap/runtime"
+import { documentData, fields } from "data-cap"
+import { createData } from "data-cap/runtime"
 import { apiFetch } from "./api-client.js"
 
 export interface CurrentUser {
