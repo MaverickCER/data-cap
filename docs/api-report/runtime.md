@@ -959,3 +959,15 @@ is not the same as the shared execution being cancelled for every caller).
 #### Returns
 
 `Promise`\<`T`\>
+
+## References
+
+### DataCapError
+
+Re-exports [DataCapError](core.md#abstract-datacaperror)
+
+***
+
+### InvalidFieldDefaultError
+
+Re-exports [InvalidFieldDefaultError](core.md#invalidfielddefaulterror)

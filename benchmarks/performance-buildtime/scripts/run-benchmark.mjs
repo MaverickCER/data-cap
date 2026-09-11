@@ -21,6 +21,7 @@ import path from "node:path"
 import { fileURLToPath } from "node:url"
 
 import { discoverCapabilityFiles, generateDataArtifacts } from "data-cap/build"
+import { nodeBuildFileSystem } from "data-cap/node"
 
 import { generateBuildtimeFixtures } from "../../benchmark-fixtures/generator.mjs"
 import { hashFixtureTree } from "../../benchmark-fixtures/fixture-hash.mjs"
@@ -71,7 +72,7 @@ async function runDiscoveryTier(tierName, definitionVersion) {
 
   const { samples, configuration } = await adaptiveSample(async () => {
     const t0 = performance.now()
-    const files = await discoverCapabilityFiles({ root: discoveryRoot })
+    const files = await discoverCapabilityFiles({ root: discoveryRoot, fs: nodeBuildFileSystem })
     const elapsed = performance.now() - t0
     return { elapsed, fileCount: files.length }
   }, SAMPLE_OPTS[tierName])
@@ -98,6 +99,7 @@ async function runArtifactsTier(tierName, definitionVersion) {
     const t0 = performance.now()
     await generateDataArtifacts({
       root: discoveryRoot,
+      fs: nodeBuildFileSystem,
       tsconfig: false,
       location: path.join(artifactsOutputDir, "data.manifest.ts"),
       docs: path.join(artifactsOutputDir, "DATA.md"),
