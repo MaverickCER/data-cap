@@ -1,0 +1,15 @@
+{
+  "name": "data-cap-performance-buildtime",
+  "private": true,
+  "type": "module",
+  "description": "Build-time tooling benchmark: discovery and full generateDataArtifacts (discover -> link -> inventory -> manifest/docs/ownership/flow/evidence) cost as capability-file count scales.",
+  "scripts": {
+    "benchmark": "node --expose-gc scripts/run-benchmark.mjs"
+  },
+  "dependencies": {
+    "@maverickcer/data-cap": "file:../.."
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  }
+}

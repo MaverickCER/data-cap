@@ -1,0 +1,20 @@
+{
+  "name": "data-cap-example-team-service",
+  "private": true,
+  "type": "module",
+  "description": "Tier 2 -- a small engineering team's project tracker, organized by capability (one file per concept). projectData composes memberData directly for assignee names; assignmentsData independently duplicates the same endpoint -- both stay analyzable in the generated report.",
+  "scripts": {
+    "start": "tsx src/main.ts",
+    "typecheck": "tsc --noEmit",
+    "docs": "data-cap --root . --include \"src/**\" --location src/generated/data.manifest.ts --docs docs/DATA.md --ownership docs/OWNERSHIP.md --flow docs/flow --evidence docs/data.evidence.json",
+    "check": "data-cap --root . --include \"src/**\" --location src/generated/data.manifest.ts --docs docs/DATA.md --ownership docs/OWNERSHIP.md --flow docs/flow --evidence docs/data.evidence.json --check"
+  },
+  "dependencies": {
+    "@maverickcer/data-cap": "file:../.."
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.5.0"
+  }
+}

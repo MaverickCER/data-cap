@@ -1,0 +1,160 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://maverickcer.github.io/data-cap/schema/lifecycle-model.schema.json",
+  "title": "data-cap Lifecycle Model",
+  "description": "Canonical, versioned projection of every capability's and field's declared lifecycle data (expiry, deprecation, removal deadline, rename correlation), plus the expiring-soon view. Generated from src/build/lifecycle-model.ts's LifecycleModel type -- never hand-authored.",
+  "$ref": "#/definitions/LifecycleModel",
+  "definitions": {
+    "LifecycleModel": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "number",
+          "const": 1,
+          "description": "Always `LIFECYCLE_MODEL_SCHEMA_VERSION`."
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/LifecycleModelCapability"
+          },
+          "description": "Only capabilities with at least one lifecycle-relevant field set, at the capability level or on at least one field. Sorted by `file` then `exportName`."
+        },
+        "expiring": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ExpiringEntry"
+          },
+          "description": "Every capability-/field-level `expiresAt` within the configured window, soonest-first (already-expired entries sort first, since their `daysRemaining` is negative)."
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "capabilities",
+        "expiring"
+      ],
+      "additionalProperties": false,
+      "description": "`data-cap`'s Lifecycle Model: declared expiry/deprecation/rename data, plus the expiring-soon view."
+    },
+    "LifecycleModelCapability": {
+      "type": "object",
+      "properties": {
+        "file": {
+          "type": "string",
+          "description": "Root-relative POSIX path -- carried through verbatim from `CapabilityNode.file`."
+        },
+        "exportName": {
+          "type": "string",
+          "description": "The binding name the capability is exported as."
+        },
+        "expiresAt": {
+          "type": "string",
+          "description": "Declared ISO-8601 expiry for the capability as a whole."
+        },
+        "deprecated": {
+          "type": "boolean",
+          "description": "Whether the capability is documented as deprecated."
+        },
+        "deprecatedReason": {
+          "type": "string",
+          "description": "Why it's deprecated, when stated."
+        },
+        "retention": {
+          "type": "string",
+          "description": "Declared retention policy at the capability level."
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/LifecycleModelField"
+          },
+          "description": "Only fields with at least one lifecycle field set, sorted by path -- same \"only what's relevant\" scope the rendered report uses."
+        }
+      },
+      "required": [
+        "file",
+        "exportName",
+        "fields"
+      ],
+      "additionalProperties": false,
+      "description": "One capability's declared lifecycle data, plus every lifecycle-bearing field under it."
+    },
+    "LifecycleModelField": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The field's path within its capability -- `readonly string[]`, matching every other model's field addressing (never a flat key string)."
+        },
+        "expiresAt": {
+          "type": "string",
+          "description": "Declared ISO-8601 expiry, unparsed and uninterpreted here."
+        },
+        "deprecated": {
+          "type": "boolean",
+          "description": "Whether the field is documented as deprecated."
+        },
+        "deprecatedReason": {
+          "type": "string",
+          "description": "Why it's deprecated, when stated."
+        },
+        "removeBy": {
+          "type": "string",
+          "description": "Declared ISO-8601 removal deadline -- field-level only (see `core/document.ts`)."
+        },
+        "renamedFrom": {
+          "type": "string",
+          "description": "The field's previous name, when authored -- what `ChangeModel.renamedFields` correlates against."
+        },
+        "retention": {
+          "type": "string",
+          "description": "Declared retention policy -- a policy statement, deliberately independent of `expiresAt`'s temporal constraint (a field can be retained long after its source credential expires, and vice versa)."
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "additionalProperties": false,
+      "description": "One field's declared lifecycle data. Only fields with at least one of these set appear in the model at all."
+    },
+    "ExpiringEntry": {
+      "type": "object",
+      "properties": {
+        "file": {
+          "type": "string",
+          "description": "Root-relative POSIX path of the declaring file."
+        },
+        "exportName": {
+          "type": "string",
+          "description": "The binding name the capability is exported as."
+        },
+        "field": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "`undefined` for a capability-level `expiresAt`, set for a per-field one."
+        },
+        "expiresAt": {
+          "type": "string",
+          "description": "The raw ISO-8601 date string, exactly as declared."
+        },
+        "daysRemaining": {
+          "type": "number",
+          "description": "Whole days from `now` until expiry; negative when already expired."
+        }
+      },
+      "required": [
+        "file",
+        "exportName",
+        "expiresAt",
+        "daysRemaining"
+      ],
+      "additionalProperties": false,
+      "description": "One capability- or field-level `expiresAt` falling within the configured window (or already past it)."
+    }
+  }
+}

@@ -1,0 +1,9 @@
+# See specs/decisions/ for the reasoning behind changes to core/runtime
+# boundaries -- a PR touching src/core, src/runtime, or specs/decisions/
+# should generally reference or add an ADR (see CONTRIBUTING.md).
+#
+# CODE_REVIEW.md is the reviewer-facing companion: what a change to this
+# package must satisfy to be safe to merge (invariants, public-surface
+# review, generated-artifact review, analysis boundaries).
+
+* @maverickcer

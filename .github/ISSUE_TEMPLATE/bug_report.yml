@@ -1,0 +1,66 @@
+name: Bug report
+description: Something behaves differently than the docs/specs say it should
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which part of data-cap is affected?
+      options:
+        - "Core (buildData / documentData / fields)"
+        - "Runtime (createData / createDataStore / coordinator / cache / retry)"
+        - "Build (discoverCapabilityFiles / parseCapabilityFile / linkCapabilityFiles)"
+        - "Helpers (processors / identity / canonicalize / shape)"
+        - "ESLint plugin (stable-operation-reference)"
+        - "Docs / website"
+        - "Something else"
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: data-cap version
+      placeholder: "0.1.0"
+    validations:
+      required: true
+
+  - type: input
+    id: node-version
+    attributes:
+      label: Node.js version (run `node -v`)
+      placeholder: "v22.11.0"
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen? Quote the README/spec/ADR section you expected this to match, if you know it.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What actually happened? Paste the full error, including which error class it was (e.g. `InvalidFieldDefaultError`, or any other `DataCapError` subclass) if applicable.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal reproduction
+      description: A `buildData`/`createData` call + the code path that triggers the issue is usually enough. If it only reproduces with cross-package discovery (the `packages` option) or a tsconfig path alias, please say so explicitly.
+      render: ts
+    validations:
+      required: true
+
+  - type: input
+    id: adr
+    attributes:
+      label: Related ADR (optional)
+      description: If this touches a documented design boundary in specs/decisions/, link it here — it saves a round trip figuring out whether the behavior is intentional.
+      placeholder: "e.g. specs/decisions/0011-explicit-writes-ownership.md"

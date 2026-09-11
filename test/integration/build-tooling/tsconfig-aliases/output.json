@@ -1,0 +1,11 @@
+{
+  "fileCount": 3,
+  "capabilityCount": 1,
+  "warningCount": 0,
+  "exportName": "userCapability",
+  "fieldsShape": {
+    "name": "",
+    "email": ""
+  },
+  "documented": true
+}

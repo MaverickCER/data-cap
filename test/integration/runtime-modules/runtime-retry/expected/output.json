@@ -1,0 +1,20 @@
+{
+  "succeedsAfterRetries": {
+    "result": "ok",
+    "attempts": 3
+  },
+  "givesUpWhenShouldRetryIsFalse": {
+    "rejected": true,
+    "attempts": 1
+  },
+  "neverRetriesAfterAbort": {
+    "rejected": true,
+    "attempts": 1
+  },
+  "isStillDefault": {
+    "sameReference": true,
+    "structurallyEqual": true,
+    "realData": false,
+    "nonCanonicalizable": false
+  }
+}

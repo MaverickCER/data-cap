@@ -1,0 +1,6 @@
+{
+  "fetchCallCountAfterCacheHit": 1,
+  "fetchCallCountAfterSecondKey": 2,
+  "cacheSizeAfterThirdKey": 2,
+  "u1EvictedAfterThirdKey": true
+}

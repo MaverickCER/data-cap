@@ -1,0 +1,15 @@
+%% Capability: projectsData
+flowchart TB
+  subgraph boundary["Trust Boundary (proven, in-repo)"]
+    n0(["projectsData"])
+    n1[/"projects"/]
+    n3(["getter: listProjects"])
+    n4(["mutator: createProject"])
+  end
+  n2[["projects-api<br/><em>api</em>"]]
+  n2 -.->|"declared: projects (plaintext)"| n3
+  n3 -.->|"writes"| n1
+  n1 -.->|"declared"| n4
+  n4 -.->|"declared: projects (plaintext)"| n2
+  linkStyle 0 stroke:#e63946,stroke-width:3px
+  linkStyle 3 stroke:#e63946,stroke-width:3px

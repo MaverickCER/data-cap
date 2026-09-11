@@ -1,0 +1,133 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://maverickcer.github.io/data-cap/schema/dependency-model.schema.json",
+  "title": "data-cap Dependency Model",
+  "description": "Canonical, versioned projection of every statically-proven consumer relationship, indexed by capability and by consuming file (see ADR 0050). Generated from src/build/dependency-model.ts's DependencyModel type -- never hand-authored.",
+  "$ref": "#/definitions/DependencyModel",
+  "definitions": {
+    "DependencyModel": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "number",
+          "const": 3,
+          "description": "Always `DEPENDENCY_MODEL_SCHEMA_VERSION`."
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DependencyEdge"
+          },
+          "description": "Every proven edge, unindexed -- same array `scanDependencies` produced."
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "edges"
+      ],
+      "additionalProperties": false,
+      "description": "`data-cap`'s Dependency Model: every proven `DependencyEdge`, unindexed. See `dependency-projections.ts` for on-demand capability/consumer groupings."
+    },
+    "DependencyEdge": {
+      "type": "object",
+      "properties": {
+        "relationship": {
+          "$ref": "#/definitions/DependencyRelationship",
+          "description": "Which kind of connection this is -- see `DependencyRelationship`."
+        },
+        "from": {
+          "type": "string",
+          "description": "The consuming file, as a root-relative POSIX path (OUT-01, see `display-path.ts`)."
+        },
+        "to": {
+          "type": "object",
+          "properties": {
+            "capability": {
+              "type": "object",
+              "properties": {
+                "file": {
+                  "type": "string",
+                  "description": "Root-relative POSIX path of the file declaring the capability -- the same value `CapabilityNode.file` publishes."
+                },
+                "exportName": {
+                  "type": "string",
+                  "description": "The binding name the capability is exported as."
+                }
+              },
+              "required": [
+                "file",
+                "exportName"
+              ],
+              "additionalProperties": false,
+              "description": "The capability being consumed."
+            },
+            "field": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "The specific field path being read, when `relationship` is `\"reads-field\"`."
+            },
+            "operation": {
+              "type": "string",
+              "description": "The specific operation name being called, when `relationship` is `\"calls-getter\"`/`\"calls-mutator\"`/`\"calls-subscription\"`."
+            }
+          },
+          "required": [
+            "capability"
+          ],
+          "additionalProperties": false,
+          "description": "What this edge connects to."
+        },
+        "resolution": {
+          "type": "string",
+          "enum": [
+            "resolved",
+            "unresolved-consumer",
+            "indeterminate"
+          ],
+          "description": "Whether the consumer reference itself was unambiguously resolved -- see the usage-scan pass for what each value means."
+        },
+        "position": {
+          "$ref": "#/definitions/SourcePosition",
+          "description": "Position of the access site in `from` (file already known via `from`), when this edge originates from a specific identifier reference (every relationship except the file-level `\"imports\"` fallback edge scan-dependencies.ts synthesizes for a consumer with no further resolved usage)."
+        }
+      },
+      "required": [
+        "relationship",
+        "from",
+        "to",
+        "resolution"
+      ],
+      "additionalProperties": false,
+      "description": "A statically-proven connection from one consuming file to a capability (or a specific field/operation on it). Unlike the declared metadata in `core/document.ts` (`source`, `credentials`, `endpoints`), every `DependencyEdge` is derived by AST analysis, never author-declared -- see AGENTS.md's declared-vs-proven invariant. Produced by the usage-scan pass (`scan-dependencies.ts`), not by this module."
+    },
+    "DependencyRelationship": {
+      "type": "string",
+      "enum": [
+        "imports",
+        "reads-field",
+        "calls-getter",
+        "calls-mutator",
+        "calls-subscription"
+      ]
+    },
+    "SourcePosition": {
+      "type": "object",
+      "properties": {
+        "line": {
+          "type": "number"
+        },
+        "column": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "line",
+        "column"
+      ],
+      "additionalProperties": false,
+      "description": "A 1-based line/column within a file already known from context (e.g. `DependencyEdge.from`)."
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "name": "data-cap-example-application",
+  "private": true,
+  "type": "module",
+  "description": "Tier 1 -- an individual developer's task manager. The batteries-included createData (@maverickcer/data-cap/runtime): fields + getters + mutators + subscriptions declared together, with dedup, optimistic lifecycle, retry, and caching all demonstrated end to end.",
+  "scripts": {
+    "start": "tsx src/main.ts",
+    "typecheck": "tsc --noEmit",
+    "docs": "data-cap --root . --include \"src/**\" --location src/generated/data.manifest.ts --docs docs/DATA.md --ownership docs/OWNERSHIP.md --flow docs/flow --evidence docs/data.evidence.json",
+    "check": "data-cap --root . --include \"src/**\" --location src/generated/data.manifest.ts --docs docs/DATA.md --ownership docs/OWNERSHIP.md --flow docs/flow --evidence docs/data.evidence.json --check"
+  },
+  "dependencies": {
+    "@maverickcer/data-cap": "file:../.."
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.5.0"
+  }
+}

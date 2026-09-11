@@ -1,0 +1,36 @@
+%% Sensitivity level: internal
+flowchart TB
+  subgraph boundary["Trust Boundary (proven, in-repo)"]
+    n0(["taskData"])
+    n1[/"tasks"/]
+    n3(["getter: getTasks"])
+    n4(["mutator: createTask"])
+    n5(["mutator: toggleTask"])
+    n6(["mutator: deleteTask"])
+    n8[/"selectedTask"/]
+    n9(["getter: getTask"])
+  end
+  n2[["tasks-api<br/><em>api</em>"]]
+  n7["src/main.ts"]
+  n2 -.->|"declared: tasks (plaintext)"| n3
+  n3 -.->|"writes"| n1
+  n1 -.->|"declared"| n4
+  n4 -.->|"declared: tasks (plaintext)"| n2
+  n1 -.->|"declared"| n5
+  n5 -.->|"declared: tasks (plaintext)"| n2
+  n1 -.->|"declared"| n6
+  n6 -.->|"declared: tasks (plaintext)"| n2
+  n1 -->|"proven: src/main.ts:365:14"| n7
+  n1 -->|"proven: src/main.ts:371:3"| n7
+  n1 -->|"proven: src/main.ts:376:14"| n7
+  n1 -->|"proven: src/main.ts:380:14"| n7
+  n2 -.->|"declared: selectedTask (plaintext)"| n9
+  n9 -.->|"writes"| n8
+  n8 -->|"proven: src/main.ts:339:14"| n7
+  n8 -->|"proven: src/main.ts:341:14"| n7
+  n8 -->|"proven: src/main.ts:351:3"| n7
+  linkStyle 0 stroke:#e63946,stroke-width:3px
+  linkStyle 3 stroke:#e63946,stroke-width:3px
+  linkStyle 5 stroke:#e63946,stroke-width:3px
+  linkStyle 7 stroke:#e63946,stroke-width:3px
+  linkStyle 12 stroke:#e63946,stroke-width:3px

@@ -1,0 +1,14 @@
+{
+  "scenario1": {
+    "fetchCallCount": 2,
+    "fromCallerAEqualsCallerB": true
+  },
+  "scenario2": {
+    "fetchCallCount": 2
+  },
+  "scenario3": {
+    "dRejected": true,
+    "eFulfilled": true,
+    "sharedCallCount": 1
+  }
+}

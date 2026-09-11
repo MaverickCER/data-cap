@@ -1,0 +1,36 @@
+%% Capability: projectData
+flowchart TB
+  subgraph boundary["Trust Boundary (proven, in-repo)"]
+    n0(["projectData"])
+    n1[/"project"/]
+    n3(["getter: getProject"])
+    n5[/"tasks"/]
+    n6(["mutator: createTask"])
+    n7(["mutator: toggleTask"])
+    n8(["mutator: assignTask"])
+  end
+  n2[["projects-api<br/><em>api</em>"]]
+  n4["src/main.ts"]
+  n2 -.->|"declared: project (plaintext)"| n3
+  n3 -.->|"writes"| n1
+  n1 -->|"proven: src/main.ts:78:14"| n4
+  n2 -.->|"declared: tasks (plaintext)"| n3
+  n3 -.->|"writes"| n5
+  n5 -.->|"declared"| n6
+  n6 -.->|"declared: tasks (plaintext)"| n2
+  n5 -.->|"declared"| n7
+  n7 -.->|"declared: tasks (plaintext)"| n2
+  n5 -.->|"declared"| n8
+  n8 -.->|"declared: tasks (plaintext)"| n2
+  n5 -->|"proven: src/main.ts:79:14"| n4
+  n5 -->|"proven: src/main.ts:81:3"| n4
+  n5 -->|"proven: src/main.ts:111:14"| n4
+  n5 -->|"proven: src/main.ts:116:3"| n4
+  n5 -->|"proven: src/main.ts:121:14"| n4
+  n5 -->|"proven: src/main.ts:128:3"| n4
+  n5 -->|"proven: src/main.ts:142:22"| n4
+  linkStyle 0 stroke:#e63946,stroke-width:3px
+  linkStyle 3 stroke:#e63946,stroke-width:3px
+  linkStyle 6 stroke:#e63946,stroke-width:3px
+  linkStyle 8 stroke:#e63946,stroke-width:3px
+  linkStyle 10 stroke:#e63946,stroke-width:3px

@@ -1,0 +1,1164 @@
+{
+  "schemaVersion": 2,
+  "provenance": {
+    "generatedAt": "2026-08-20T02:26:52.718Z",
+    "toolVersion": "0.1.0"
+  },
+  "capability": {
+    "schemaVersion": 3,
+    "capabilities": [
+      {
+        "file": "src/capabilities/billing.capability.ts",
+        "exportName": "billingData",
+        "kind": "createData",
+        "docs": {
+          "name": "billing",
+          "owner": "finance-team",
+          "purpose": "Tracking invoices issued to clients and their payment/dispute status.",
+          "legalBasis": "contract",
+          "dataResidency": "us",
+          "auditRequired": true,
+          "evidence": {
+            "fields": {
+              "invoices": {
+                "dynamicAccess": [
+                  "src/server/legacy-compliance-sync.ts:26:19"
+                ]
+              }
+            }
+          },
+          "fields": {
+            "invoices": {
+              "description": "Every invoice on the current project.",
+              "sensitivity": "confidential",
+              "protections": "Session-authenticated access only; TLS in transit; amounts encrypted at rest.",
+              "retention": "7 years after project closure, per financial recordkeeping policy.",
+              "purpose": "Billing clients and tracking payment/dispute status for financial reporting.",
+              "auditRequired": true
+            }
+          },
+          "getters": {
+            "listInvoices": {
+              "description": "Fetches every invoice on a project.",
+              "source": "billing-api",
+              "endpoints": [
+                {
+                  "direction": "input",
+                  "kind": "api",
+                  "name": "billing-api",
+                  "url": "https://api.example.com/v1/projects/:projectId/invoices",
+                  "handling": "encrypted"
+                }
+              ]
+            }
+          },
+          "mutators": {
+            "createInvoice": {
+              "description": "Issues a new invoice to a client.",
+              "source": "billing-api",
+              "endpoints": [
+                {
+                  "direction": "output",
+                  "kind": "api",
+                  "name": "billing-api",
+                  "url": "https://api.example.com/v1/projects/:projectId/invoices",
+                  "handling": "encrypted"
+                }
+              ]
+            },
+            "markInvoicePaid": {
+              "description": "Marks an invoice paid.",
+              "source": "billing-api",
+              "endpoints": [
+                {
+                  "direction": "output",
+                  "kind": "api",
+                  "name": "billing-api",
+                  "url": "https://api.example.com/v1/projects/:projectId/invoices/:invoiceId/pay",
+                  "handling": "encrypted"
+                }
+              ]
+            },
+            "disputeInvoice": {
+              "description": "Marks an invoice disputed and notifies finance for review.",
+              "source": "billing-api",
+              "endpoints": [
+                {
+                  "direction": "output",
+                  "kind": "api",
+                  "name": "billing-api",
+                  "url": "https://api.example.com/v1/projects/:projectId/invoices/:invoiceId/dispute",
+                  "handling": "encrypted"
+                }
+              ]
+            }
+          },
+          "subscriptions": {
+            "subscribeToInvoices": {
+              "description": "Live invoice status updates from other finance staff viewing the same project.",
+              "endpoints": [
+                {
+                  "direction": "input",
+                  "kind": "api",
+                  "name": "billing-api",
+                  "url": "https://api.example.com/v1/projects/:projectId/invoices/stream",
+                  "handling": "encrypted"
+                }
+              ]
+            }
+          }
+        },
+        "active": true,
+        "declarationPosition": {
+          "line": 200,
+          "column": 28
+        },
+        "fields": [
+          {
+            "path": [
+              "invoices"
+            ],
+            "docs": {
+              "description": "Every invoice on the current project.",
+              "sensitivity": "confidential",
+              "protections": "Session-authenticated access only; TLS in transit; amounts encrypted at rest.",
+              "retention": "7 years after project closure, per financial recordkeeping policy.",
+              "purpose": "Billing clients and tracking payment/dispute status for financial reporting.",
+              "auditRequired": true
+            },
+            "owner": {
+              "value": "finance-team",
+              "declaredOn": "capability"
+            },
+            "sensitivity": {
+              "value": "confidential",
+              "declaredOn": "field"
+            },
+            "purpose": {
+              "value": "Billing clients and tracking payment/dispute status for financial reporting.",
+              "declaredOn": "field"
+            },
+            "legalBasis": {
+              "value": "contract",
+              "declaredOn": "capability"
+            },
+            "dataResidency": {
+              "value": "us",
+              "declaredOn": "capability"
+            },
+            "auditRequired": {
+              "value": true,
+              "declaredOn": "field"
+            },
+            "writtenBy": [
+              {
+                "kind": "getter",
+                "name": "listInvoices"
+              },
+              {
+                "kind": "mutator",
+                "name": "createInvoice"
+              },
+              {
+                "kind": "mutator",
+                "name": "markInvoicePaid"
+              },
+              {
+                "kind": "mutator",
+                "name": "disputeInvoice"
+              },
+              {
+                "kind": "subscription",
+                "name": "subscribeToInvoices"
+              }
+            ],
+            "shape": [],
+            "declarationPosition": {
+              "line": 94,
+              "column": 5
+            }
+          }
+        ],
+        "getters": [
+          {
+            "kind": "getter",
+            "name": "listInvoices",
+            "docs": {
+              "description": "Fetches every invoice on a project.",
+              "source": "billing-api",
+              "endpoints": [
+                {
+                  "direction": "input",
+                  "kind": "api",
+                  "name": "billing-api",
+                  "url": "https://api.example.com/v1/projects/:projectId/invoices",
+                  "handling": "encrypted"
+                }
+              ]
+            },
+            "writes": [
+              [
+                "invoices"
+              ]
+            ],
+            "hasProcessor": true,
+            "hasOptimistic": false,
+            "endpoints": [
+              {
+                "direction": "input",
+                "kind": "api",
+                "name": "billing-api",
+                "url": "https://api.example.com/v1/projects/:projectId/invoices",
+                "handling": "encrypted"
+              }
+            ]
+          }
+        ],
+        "mutators": [
+          {
+            "kind": "mutator",
+            "name": "createInvoice",
+            "docs": {
+              "description": "Issues a new invoice to a client.",
+              "source": "billing-api",
+              "endpoints": [
+                {
+                  "direction": "output",
+                  "kind": "api",
+                  "name": "billing-api",
+                  "url": "https://api.example.com/v1/projects/:projectId/invoices",
+                  "handling": "encrypted"
+                }
+              ]
+            },
+            "writes": [
+              [
+                "invoices"
+              ]
+            ],
+            "hasProcessor": true,
+            "hasOptimistic": false,
+            "endpoints": [
+              {
+                "direction": "output",
+                "kind": "api",
+                "name": "billing-api",
+                "url": "https://api.example.com/v1/projects/:projectId/invoices",
+                "handling": "encrypted"
+              }
+            ]
+          },
+          {
+            "kind": "mutator",
+            "name": "markInvoicePaid",
+            "docs": {
+              "description": "Marks an invoice paid.",
+              "source": "billing-api",
+              "endpoints": [
+                {
+                  "direction": "output",
+                  "kind": "api",
+                  "name": "billing-api",
+                  "url": "https://api.example.com/v1/projects/:projectId/invoices/:invoiceId/pay",
+                  "handling": "encrypted"
+                }
+              ]
+            },
+            "writes": [
+              [
+                "invoices"
+              ]
+            ],
+            "hasProcessor": true,
+            "hasOptimistic": true,
+            "endpoints": [
+              {
+                "direction": "output",
+                "kind": "api",
+                "name": "billing-api",
+                "url": "https://api.example.com/v1/projects/:projectId/invoices/:invoiceId/pay",
+                "handling": "encrypted"
+              }
+            ]
+          },
+          {
+            "kind": "mutator",
+            "name": "disputeInvoice",
+            "docs": {
+              "description": "Marks an invoice disputed and notifies finance for review.",
+              "source": "billing-api",
+              "endpoints": [
+                {
+                  "direction": "output",
+                  "kind": "api",
+                  "name": "billing-api",
+                  "url": "https://api.example.com/v1/projects/:projectId/invoices/:invoiceId/dispute",
+                  "handling": "encrypted"
+                }
+              ]
+            },
+            "writes": [
+              [
+                "invoices"
+              ]
+            ],
+            "hasProcessor": true,
+            "hasOptimistic": false,
+            "endpoints": [
+              {
+                "direction": "output",
+                "kind": "api",
+                "name": "billing-api",
+                "url": "https://api.example.com/v1/projects/:projectId/invoices/:invoiceId/dispute",
+                "handling": "encrypted"
+              }
+            ]
+          }
+        ],
+        "subscriptions": [
+          {
+            "kind": "subscription",
+            "name": "subscribeToInvoices",
+            "docs": {
+              "description": "Live invoice status updates from other finance staff viewing the same project.",
+              "endpoints": [
+                {
+                  "direction": "input",
+                  "kind": "api",
+                  "name": "billing-api",
+                  "url": "https://api.example.com/v1/projects/:projectId/invoices/stream",
+                  "handling": "encrypted"
+                }
+              ]
+            },
+            "writes": [
+              [
+                "invoices"
+              ]
+            ],
+            "hasProcessor": true,
+            "hasOptimistic": false,
+            "endpoints": [
+              {
+                "direction": "input",
+                "kind": "api",
+                "name": "billing-api",
+                "url": "https://api.example.com/v1/projects/:projectId/invoices/stream",
+                "handling": "encrypted"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "file": "src/capabilities/identity.capability.ts",
+        "exportName": "identityData",
+        "kind": "createData",
+        "docs": {
+          "name": "identity",
+          "owner": "platform-security",
+          "purpose": "Identifying which staff member is signed in and what they're authorized to do.",
+          "legalBasis": "contract",
+          "dataResidency": "us",
+          "auditRequired": true,
+          "fields": {
+            "currentUser": {
+              "description": "The signed-in staff member's own profile -- null until the first getCurrentUser().",
+              "sensitivity": "confidential",
+              "protections": "Session-authenticated access only; TLS in transit; password never leaves the server.",
+              "purpose": "Authorizing access to every other capability in this platform.",
+              "auditRequired": true
+            }
+          },
+          "getters": {
+            "getCurrentUser": {
+              "description": "Fetches the currently signed-in staff member's own profile.",
+              "source": "identity-api",
+              "endpoints": [
+                {
+                  "direction": "input",
+                  "kind": "api",
+                  "name": "identity-api",
+                  "url": "https://api.example.com/v1/me",
+                  "handling": "plaintext"
+                }
+              ]
+            }
+          }
+        },
+        "active": true,
+        "declarationPosition": {
+          "line": 35,
+          "column": 29
+        },
+        "fields": [
+          {
+            "path": [
+              "currentUser"
+            ],
+            "docs": {
+              "description": "The signed-in staff member's own profile -- null until the first getCurrentUser().",
+              "sensitivity": "confidential",
+              "protections": "Session-authenticated access only; TLS in transit; password never leaves the server.",
+              "purpose": "Authorizing access to every other capability in this platform.",
+              "auditRequired": true
+            },
+            "owner": {
+              "value": "platform-security",
+              "declaredOn": "capability"
+            },
+            "sensitivity": {
+              "value": "confidential",
+              "declaredOn": "field"
+            },
+            "purpose": {
+              "value": "Authorizing access to every other capability in this platform.",
+              "declaredOn": "field"
+            },
+            "legalBasis": {
+              "value": "contract",
+              "declaredOn": "capability"
+            },
+            "dataResidency": {
+              "value": "us",
+              "declaredOn": "capability"
+            },
+            "auditRequired": {
+              "value": true,
+              "declaredOn": "field"
+            },
+            "writtenBy": [
+              {
+                "kind": "getter",
+                "name": "getCurrentUser"
+              }
+            ],
+            "shape": {
+              "inner": {
+                "id": "",
+                "email": "",
+                "role": "member"
+              }
+            },
+            "declarationPosition": {
+              "line": 22,
+              "column": 5
+            }
+          }
+        ],
+        "getters": [
+          {
+            "kind": "getter",
+            "name": "getCurrentUser",
+            "docs": {
+              "description": "Fetches the currently signed-in staff member's own profile.",
+              "source": "identity-api",
+              "endpoints": [
+                {
+                  "direction": "input",
+                  "kind": "api",
+                  "name": "identity-api",
+                  "url": "https://api.example.com/v1/me",
+                  "handling": "plaintext"
+                }
+              ]
+            },
+            "writes": [
+              [
+                "currentUser"
+              ]
+            ],
+            "hasProcessor": true,
+            "hasOptimistic": false,
+            "endpoints": [
+              {
+                "direction": "input",
+                "kind": "api",
+                "name": "identity-api",
+                "url": "https://api.example.com/v1/me",
+                "handling": "plaintext"
+              }
+            ]
+          }
+        ],
+        "mutators": [],
+        "subscriptions": []
+      },
+      {
+        "file": "src/capabilities/projects.capability.ts",
+        "exportName": "projectsData",
+        "kind": "createData",
+        "docs": {
+          "name": "projects",
+          "owner": "engineering-ops",
+          "purpose": "Letting every department see and open the projects they own.",
+          "legalBasis": "contract",
+          "dataResidency": "us",
+          "fields": {
+            "projects": {
+              "description": "Every project across every department.",
+              "sensitivity": "internal",
+              "protections": "Session-authenticated access only; TLS in transit.",
+              "purpose": "Cross-department project navigation."
+            }
+          },
+          "getters": {
+            "listProjects": {
+              "description": "Fetches every project across every department.",
+              "source": "projects-api",
+              "endpoints": [
+                {
+                  "direction": "input",
+                  "kind": "api",
+                  "name": "projects-api",
+                  "url": "https://api.example.com/v1/projects",
+                  "handling": "plaintext"
+                }
+              ]
+            }
+          },
+          "mutators": {
+            "createProject": {
+              "description": "Opens a new project for a department.",
+              "source": "projects-api",
+              "endpoints": [
+                {
+                  "direction": "output",
+                  "kind": "api",
+                  "name": "projects-api",
+                  "url": "https://api.example.com/v1/projects",
+                  "handling": "plaintext"
+                }
+              ]
+            }
+          }
+        },
+        "active": true,
+        "declarationPosition": {
+          "line": 51,
+          "column": 29
+        },
+        "fields": [
+          {
+            "path": [
+              "projects"
+            ],
+            "docs": {
+              "description": "Every project across every department.",
+              "sensitivity": "internal",
+              "protections": "Session-authenticated access only; TLS in transit.",
+              "purpose": "Cross-department project navigation."
+            },
+            "owner": {
+              "value": "engineering-ops",
+              "declaredOn": "capability"
+            },
+            "sensitivity": {
+              "value": "internal",
+              "declaredOn": "field"
+            },
+            "purpose": {
+              "value": "Cross-department project navigation.",
+              "declaredOn": "field"
+            },
+            "legalBasis": {
+              "value": "contract",
+              "declaredOn": "capability"
+            },
+            "dataResidency": {
+              "value": "us",
+              "declaredOn": "capability"
+            },
+            "auditRequired": {},
+            "writtenBy": [
+              {
+                "kind": "getter",
+                "name": "listProjects"
+              },
+              {
+                "kind": "mutator",
+                "name": "createProject"
+              }
+            ],
+            "shape": [],
+            "declarationPosition": {
+              "line": 24,
+              "column": 5
+            }
+          }
+        ],
+        "getters": [
+          {
+            "kind": "getter",
+            "name": "listProjects",
+            "docs": {
+              "description": "Fetches every project across every department.",
+              "source": "projects-api",
+              "endpoints": [
+                {
+                  "direction": "input",
+                  "kind": "api",
+                  "name": "projects-api",
+                  "url": "https://api.example.com/v1/projects",
+                  "handling": "plaintext"
+                }
+              ]
+            },
+            "writes": [
+              [
+                "projects"
+              ]
+            ],
+            "hasProcessor": true,
+            "hasOptimistic": false,
+            "endpoints": [
+              {
+                "direction": "input",
+                "kind": "api",
+                "name": "projects-api",
+                "url": "https://api.example.com/v1/projects",
+                "handling": "plaintext"
+              }
+            ]
+          }
+        ],
+        "mutators": [
+          {
+            "kind": "mutator",
+            "name": "createProject",
+            "docs": {
+              "description": "Opens a new project for a department.",
+              "source": "projects-api",
+              "endpoints": [
+                {
+                  "direction": "output",
+                  "kind": "api",
+                  "name": "projects-api",
+                  "url": "https://api.example.com/v1/projects",
+                  "handling": "plaintext"
+                }
+              ]
+            },
+            "writes": [
+              [
+                "projects"
+              ]
+            ],
+            "hasProcessor": true,
+            "hasOptimistic": false,
+            "endpoints": [
+              {
+                "direction": "output",
+                "kind": "api",
+                "name": "projects-api",
+                "url": "https://api.example.com/v1/projects",
+                "handling": "plaintext"
+              }
+            ]
+          }
+        ],
+        "subscriptions": []
+      }
+    ],
+    "warnings": []
+  },
+  "lifecycle": {
+    "schemaVersion": 1,
+    "capabilities": [
+      {
+        "file": "src/capabilities/billing.capability.ts",
+        "exportName": "billingData",
+        "fields": [
+          {
+            "path": [
+              "invoices"
+            ],
+            "retention": "7 years after project closure, per financial recordkeeping policy."
+          }
+        ]
+      }
+    ],
+    "expiring": []
+  },
+  "computed": {
+    "dependency": true,
+    "ownership": true,
+    "finding": true,
+    "change": true
+  },
+  "dependency": {
+    "schemaVersion": 3,
+    "edges": [
+      {
+        "relationship": "calls-getter",
+        "from": "src/components/BillingPanel.tsx",
+        "to": {
+          "capability": {
+            "file": "src/capabilities/billing.capability.ts",
+            "exportName": "billingData"
+          },
+          "operation": "listInvoices"
+        },
+        "resolution": "resolved",
+        "position": {
+          "line": 26,
+          "column": 10
+        }
+      },
+      {
+        "relationship": "calls-subscription",
+        "from": "src/components/BillingPanel.tsx",
+        "to": {
+          "capability": {
+            "file": "src/capabilities/billing.capability.ts",
+            "exportName": "billingData"
+          },
+          "operation": "subscribeToInvoices"
+        },
+        "resolution": "resolved",
+        "position": {
+          "line": 27,
+          "column": 21
+        }
+      },
+      {
+        "relationship": "calls-mutator",
+        "from": "src/components/BillingPanel.tsx",
+        "to": {
+          "capability": {
+            "file": "src/capabilities/billing.capability.ts",
+            "exportName": "billingData"
+          },
+          "operation": "markInvoicePaid"
+        },
+        "resolution": "resolved",
+        "position": {
+          "line": 41,
+          "column": 37
+        }
+      },
+      {
+        "relationship": "calls-mutator",
+        "from": "src/components/BillingPanel.tsx",
+        "to": {
+          "capability": {
+            "file": "src/capabilities/billing.capability.ts",
+            "exportName": "billingData"
+          },
+          "operation": "disputeInvoice"
+        },
+        "resolution": "resolved",
+        "position": {
+          "line": 49,
+          "column": 37
+        }
+      },
+      {
+        "relationship": "calls-mutator",
+        "from": "src/components/BillingPanel.tsx",
+        "to": {
+          "capability": {
+            "file": "src/capabilities/billing.capability.ts",
+            "exportName": "billingData"
+          },
+          "operation": "createInvoice"
+        },
+        "resolution": "resolved",
+        "position": {
+          "line": 61,
+          "column": 16
+        }
+      },
+      {
+        "relationship": "calls-getter",
+        "from": "src/components/Login.tsx",
+        "to": {
+          "capability": {
+            "file": "src/capabilities/identity.capability.ts",
+            "exportName": "identityData"
+          },
+          "operation": "getCurrentUser"
+        },
+        "resolution": "resolved",
+        "position": {
+          "line": 32,
+          "column": 13
+        }
+      },
+      {
+        "relationship": "calls-getter",
+        "from": "src/components/ProjectsPanel.tsx",
+        "to": {
+          "capability": {
+            "file": "src/capabilities/projects.capability.ts",
+            "exportName": "projectsData"
+          },
+          "operation": "listProjects"
+        },
+        "resolution": "resolved",
+        "position": {
+          "line": 23,
+          "column": 10
+        }
+      },
+      {
+        "relationship": "calls-mutator",
+        "from": "src/components/ProjectsPanel.tsx",
+        "to": {
+          "capability": {
+            "file": "src/capabilities/projects.capability.ts",
+            "exportName": "projectsData"
+          },
+          "operation": "createProject"
+        },
+        "resolution": "resolved",
+        "position": {
+          "line": 42,
+          "column": 16
+        }
+      },
+      {
+        "relationship": "imports",
+        "from": "src/routes.tsx",
+        "to": {
+          "capability": {
+            "file": "src/capabilities/identity.capability.ts",
+            "exportName": "identityData"
+          }
+        },
+        "resolution": "resolved"
+      },
+      {
+        "relationship": "reads-field",
+        "from": "src/server/legacy-compliance-sync.ts",
+        "to": {
+          "capability": {
+            "file": "src/capabilities/billing.capability.ts",
+            "exportName": "billingData"
+          }
+        },
+        "resolution": "indeterminate",
+        "position": {
+          "line": 26,
+          "column": 19
+        }
+      },
+      {
+        "relationship": "reads-field",
+        "from": "src/server/legacy-compliance-sync.ts",
+        "to": {
+          "capability": {
+            "file": "src/capabilities/identity.capability.ts",
+            "exportName": "identityData"
+          }
+        },
+        "resolution": "indeterminate",
+        "position": {
+          "line": 33,
+          "column": 19
+        }
+      }
+    ]
+  },
+  "ownership": {
+    "schemaVersion": 2,
+    "entries": [
+      {
+        "owner": "engineering-ops",
+        "capabilities": [
+          {
+            "file": "src/capabilities/projects.capability.ts",
+            "exportName": "projectsData"
+          }
+        ],
+        "fields": [
+          {
+            "capability": {
+              "file": "src/capabilities/projects.capability.ts",
+              "exportName": "projectsData"
+            },
+            "field": [
+              "projects"
+            ]
+          }
+        ]
+      },
+      {
+        "owner": "finance-team",
+        "capabilities": [
+          {
+            "file": "src/capabilities/billing.capability.ts",
+            "exportName": "billingData"
+          }
+        ],
+        "fields": [
+          {
+            "capability": {
+              "file": "src/capabilities/billing.capability.ts",
+              "exportName": "billingData"
+            },
+            "field": [
+              "invoices"
+            ]
+          }
+        ]
+      },
+      {
+        "owner": "platform-security",
+        "capabilities": [
+          {
+            "file": "src/capabilities/identity.capability.ts",
+            "exportName": "identityData"
+          }
+        ],
+        "fields": [
+          {
+            "capability": {
+              "file": "src/capabilities/identity.capability.ts",
+              "exportName": "identityData"
+            },
+            "field": [
+              "currentUser"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "finding": {
+    "schemaVersion": 2,
+    "findings": [
+      {
+        "code": "INDETERMINATE_CONSUMER",
+        "family": "usage",
+        "severity": "info",
+        "message": "\"src/server/legacy-compliance-sync.ts\" accesses \"billingData\" using a dynamic/computed property -- can't be statically characterized.",
+        "location": {
+          "kind": "consumer",
+          "capability": {
+            "file": "src/capabilities/billing.capability.ts",
+            "exportName": "billingData"
+          },
+          "source": "src/server/legacy-compliance-sync.ts"
+        }
+      },
+      {
+        "code": "FIELD_DYNAMIC_ACCESS_DECLARED",
+        "family": "usage",
+        "severity": "info",
+        "message": "Per developers, this data point is dynamically accessed at src/server/legacy-compliance-sync.ts:26:19.",
+        "location": {
+          "kind": "field",
+          "capability": {
+            "file": "src/capabilities/billing.capability.ts",
+            "exportName": "billingData"
+          },
+          "field": [
+            "invoices"
+          ],
+          "position": {
+            "line": 94,
+            "column": 5
+          }
+        }
+      },
+      {
+        "code": "INDETERMINATE_CONSUMER",
+        "family": "usage",
+        "severity": "info",
+        "message": "\"src/server/legacy-compliance-sync.ts\" accesses \"identityData\" using a dynamic/computed property -- can't be statically characterized.",
+        "location": {
+          "kind": "consumer",
+          "capability": {
+            "file": "src/capabilities/identity.capability.ts",
+            "exportName": "identityData"
+          },
+          "source": "src/server/legacy-compliance-sync.ts"
+        }
+      },
+      {
+        "code": "FIELD_ACCESS_INDETERMINATE",
+        "family": "usage",
+        "severity": "info",
+        "message": "Field \"currentUser\" on \"identityData\" appears unused, but there are instances of dynamic/computed access on this capability that can't be statically attributed to a specific field -- it may be one of them.",
+        "location": {
+          "kind": "field",
+          "capability": {
+            "file": "src/capabilities/identity.capability.ts",
+            "exportName": "identityData"
+          },
+          "field": [
+            "currentUser"
+          ],
+          "position": {
+            "line": 22,
+            "column": 5
+          },
+          "indeterminateSites": [
+            {
+              "file": "src/server/legacy-compliance-sync.ts",
+              "line": 33,
+              "column": 19
+            }
+          ]
+        }
+      },
+      {
+        "code": "UNCONSUMED_FIELD",
+        "family": "usage",
+        "severity": "warning",
+        "message": "Field \"projects\" on \"projectsData\" is written but never statically read in the scanned project.",
+        "location": {
+          "kind": "field",
+          "capability": {
+            "file": "src/capabilities/projects.capability.ts",
+            "exportName": "projectsData"
+          },
+          "field": [
+            "projects"
+          ],
+          "position": {
+            "line": 24,
+            "column": 5
+          }
+        }
+      },
+      {
+        "code": "SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY",
+        "family": "flow",
+        "severity": "warning",
+        "message": "Field \"invoices\" on \"billingData\" is sensitivity \"confidential\" and has a declared endpoint crossing an external-service/api/queue boundary -- verify this is intentional and adequately protected.",
+        "location": {
+          "kind": "field",
+          "capability": {
+            "file": "src/capabilities/billing.capability.ts",
+            "exportName": "billingData"
+          },
+          "field": [
+            "invoices"
+          ]
+        }
+      },
+      {
+        "code": "SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY",
+        "family": "flow",
+        "severity": "warning",
+        "message": "Field \"currentUser\" on \"identityData\" is sensitivity \"confidential\" and has a declared endpoint crossing an external-service/api/queue boundary -- verify this is intentional and adequately protected.",
+        "location": {
+          "kind": "field",
+          "capability": {
+            "file": "src/capabilities/identity.capability.ts",
+            "exportName": "identityData"
+          },
+          "field": [
+            "currentUser"
+          ]
+        }
+      },
+      {
+        "code": "SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY",
+        "family": "flow",
+        "severity": "warning",
+        "message": "Field \"projects\" on \"projectsData\" is sensitivity \"internal\" and has a declared endpoint crossing an external-service/api/queue boundary -- verify this is intentional and adequately protected.",
+        "location": {
+          "kind": "field",
+          "capability": {
+            "file": "src/capabilities/projects.capability.ts",
+            "exportName": "projectsData"
+          },
+          "field": [
+            "projects"
+          ]
+        }
+      }
+    ]
+  },
+  "change": {
+    "schemaVersion": 2,
+    "manifest": {
+      "addedCapabilities": [],
+      "removedCapabilities": [],
+      "updatedCapabilities": []
+    },
+    "blastRadius": [],
+    "renamedFields": []
+  },
+  "runtimeContract": {
+    "schemaVersion": 1,
+    "packageVersion": "0.1.0",
+    "policies": [
+      {
+        "key": "getter-concurrency",
+        "statement": "A getter's response is discarded if a newer call to the same operation has since started, regardless of completion order (stale-response discard by start order, not completion order).",
+        "governingAdr": "0024",
+        "module": "src/runtime/capability.ts"
+      },
+      {
+        "key": "mutator-concurrency",
+        "statement": "A mutator's response always commits, even if a newer call to the same operation started after it -- whichever call completes last in real time wins, deliberately unlike a getter's start-order discard.",
+        "governingAdr": "0025",
+        "module": "src/runtime/capability.ts"
+      },
+      {
+        "key": "subscription-sharing",
+        "statement": "Concurrent subscribers to the same `subscribe` function identity share one underlying transport connection, ref-counted; the transport tears down only once every subscriber has released, and a late joiner immediately learns the current connection status.",
+        "governingAdr": "0026",
+        "module": "src/runtime/coordinator.ts"
+      },
+      {
+        "key": "subscription-disconnect-isolation",
+        "statement": "A subscription's own disconnect/teardown never mutates `fields` -- only an incoming event, processed through the operation's `processor`, can.",
+        "governingAdr": "0029",
+        "module": "src/runtime/coordinator.ts"
+      },
+      {
+        "key": "coordinator-dedup-key",
+        "statement": "Concurrent calls share one in-flight execution only when both the called function's own identity and their canonicalized params match -- never structural/behavioral equality, and never merely the same operation name.",
+        "governingAdr": "0028",
+        "module": "src/runtime/coordinator.ts"
+      },
+      {
+        "key": "atomic-commit",
+        "statement": "`fields` and `info` are always committed and published as one atomic snapshot -- no code path may update them independently or in separate ticks; a consumer never observes a stale pairing of the two.",
+        "governingAdr": "0008",
+        "module": "src/runtime/store.ts"
+      },
+      {
+        "key": "authoritative-pending-projection",
+        "statement": "Every observable state is `project(authoritativeState, pendingTransitions)`, recomputed fresh on every read, never cached -- authoritative and optimistic-pending state are stored separately and only ever folded together for observation.",
+        "governingAdr": "0021",
+        "module": "src/runtime/store.ts"
+      },
+      {
+        "key": "no-automatic-rollback",
+        "statement": "A failed mutation never automatically reverts a previously-committed value and never invents conflict resolution between concurrent writers -- recovery is always the caller's own responsibility.",
+        "governingAdr": "0023",
+        "module": "src/runtime/store.ts"
+      },
+      {
+        "key": "data-status-state-machine",
+        "statement": "A field's `status` is one of exactly `idle`/`loading`/`success`/`error`/`retrying` -- `retrying` is reserved for a recovering-after-failure attempt, distinct from a field's first-ever `loading` attempt.",
+        "governingAdr": "0016",
+        "module": "src/core/types.ts"
+      },
+      {
+        "key": "data-error-latest-only",
+        "statement": "A field's `error` is always the single latest error from its establishing operation, never a history/array -- it clears on the next successful establishing operation unless a still-newer operation has since set a different one.",
+        "governingAdr": "0015",
+        "module": "src/core/types.ts"
+      },
+      {
+        "key": "cache-contract",
+        "statement": "The optional `./runtime/cache` module caches a complete `DataState` (`fields` + `info`) as one atomic unit, never `fields` alone and never a raw, unvalidated response -- a bounded, least-recently-used-eviction cache keyed by an opaque caller-computed string.",
+        "governingAdr": "0035",
+        "module": "src/runtime/cache.ts"
+      },
+      {
+        "key": "retry-contract",
+        "statement": "The optional `./runtime/retry` module is opt-in and abort-aware: it never retries automatically, never retries past the caller's own `AbortSignal`, never exceeds `maxAttempts`, and never assumes a mutation is idempotent -- the caller's own `shouldRetry` predicate decides what's worth retrying.",
+        "governingAdr": "0036",
+        "module": "src/runtime/retry.ts"
+      }
+    ]
+  }
+}

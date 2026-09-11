@@ -1,0 +1,18 @@
+{
+  "name": "data-cap-example-coordinator-isolation",
+  "private": true,
+  "type": "module",
+  "description": "createCoordinator()'s explicit, opt-in isolated domain -- a multi-tenant server process giving each tenant its own coordination domain instead of sharing the default singleton.",
+  "scripts": {
+    "start": "tsx src/main.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@maverickcer/data-cap": "file:../../../.."
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.5.0"
+  }
+}

@@ -1,0 +1,34 @@
+{
+  // Overrides the bundled internal-package-contract baseline (see
+  // ../internal-package-contract/config/markdownlint.jsonc) for two reasons:
+  //
+  // 1. `ignores` excludes docs/api-report/ -- the committed Markdown API
+  //    report produced verbatim by `typedoc --options typedoc.markdown.json`
+  //    (typedoc-plugin-markdown), drift-checked against that exact output by
+  //    scripts/check-api-report.mjs. Its MD049 (emphasis style) violations
+  //    come from the plugin's own generated syntax (e.g. the `*extends*`
+  //    constraint marker in type-parameter tables) and from asterisk-style
+  //    emphasis in our own JSDoc prose that TypeDoc passes through verbatim;
+  //    its MD034/MD024 hits are likewise inherent to the generated output.
+  //    Hand-editing the generated files would just be overwritten -- and
+  //    immediately flagged as drift -- by the next `npm run docs:api:report`.
+  //    This mirrors .prettierignore's existing exclusion of the same
+  //    directory for the same reason ("reformatting it would make the check
+  //    flap"). Hand-authored docs/**/*.md, if any are added later, stay
+  //    linted.
+  //
+  // 2. `config` reproduces the bundled baseline rule set so hand-authored
+  //    Markdown (root *.md files) keeps exactly the same rules as before --
+  //    this file only changes what's in scope, not how it's linted.
+  "ignores": ["docs/api-report/**"],
+  "config": {
+    "default": true,
+    "MD013": false, // line length
+    "MD033": false, // inline HTML -- badges, <details>, <sub>
+    "MD041": false, // first line must be a heading -- badge blocks come first
+    "MD024": { "siblings_only": true }, // duplicate headings ok across sections
+    "MD029": { "style": "ordered" },
+    "MD004": false, // unordered-list marker style -- preference, not correctness
+    "MD036": false, // emphasis-as-heading -- false-positives on legitimate lead-in bold
+  },
+}

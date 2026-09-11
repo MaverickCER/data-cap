@@ -1,0 +1,651 @@
+{
+  "metadata": {
+    "environment": {
+      "cpuModel": "Apple M3",
+      "cpuArchitecture": "arm64",
+      "processArch": "arm64",
+      "logicalCores": 8,
+      "physicalCores": 8,
+      "cpuFrequencyMHz": 2400,
+      "platform": "darwin",
+      "osRelease": "25.6.0",
+      "totalMemoryMb": 24576,
+      "nodeVersion": "v24.11.0",
+      "timezoneOffsetMinutes": -240,
+      "isCI": false,
+      "runner": "local"
+    },
+    "package": {
+      "coreBundleBytes": 2221,
+      "coreBundleGzipBytes": 866,
+      "runtimeBundleBytes": 22073,
+      "runtimeBundleGzipBytes": 5594,
+      "helpersBundleBytes": 6110,
+      "helpersBundleGzipBytes": 1819
+    },
+    "configuration": {
+      "targetDurationMs": 2000,
+      "minIterations": 5,
+      "maxIterations": 15,
+      "warmupIterations": 0,
+      "gcEnabled": true
+    },
+    "timing": {
+      "startedAtUtc": "2026-08-19T10:48:56.284Z",
+      "finishedAtUtc": "2026-08-19T10:49:10.206Z",
+      "totalSuiteDurationMs": 13922
+    },
+    "generation": {
+      "fixtureSeed": "deterministic-index-v1",
+      "generatorVersion": 1
+    },
+    "versions": {
+      "benchmarkSchemaVersion": 1,
+      "benchmarkSuiteVersion": 1,
+      "benchmarkToolVersion": "1.0.0",
+      "dataCapVersion": "0.1.0"
+    },
+    "git": {
+      "gitCommit": null,
+      "gitBranch": null,
+      "gitDirty": true
+    },
+    "generatedBy": "npm run benchmark"
+  },
+  "benchmarkManifest": [
+    {
+      "id": "runtime-cold-start-baseline-s1-v1",
+      "category": "runtime",
+      "name": "cold-start",
+      "tier": "baseline",
+      "suiteVersion": 1,
+      "definitionVersion": 1
+    },
+    {
+      "id": "runtime-cold-start-stress-s1-v1",
+      "category": "runtime",
+      "name": "cold-start",
+      "tier": "stress",
+      "suiteVersion": 1,
+      "definitionVersion": 1
+    },
+    {
+      "id": "runtime-cold-start-extreme-s1-v1",
+      "category": "runtime",
+      "name": "cold-start",
+      "tier": "extreme",
+      "suiteVersion": 1,
+      "definitionVersion": 1
+    },
+    {
+      "id": "runtime-buildData-fixed-s1-v1",
+      "category": "runtime",
+      "name": "buildData",
+      "tier": "fixed",
+      "suiteVersion": 1,
+      "definitionVersion": 1
+    },
+    {
+      "id": "runtime-commitAuthoritative-array-replace-baseline-s1-v1",
+      "category": "runtime",
+      "name": "commitAuthoritative-array-replace",
+      "tier": "baseline",
+      "suiteVersion": 1,
+      "definitionVersion": 1
+    },
+    {
+      "id": "runtime-commitAuthoritative-array-replace-stress-s1-v1",
+      "category": "runtime",
+      "name": "commitAuthoritative-array-replace",
+      "tier": "stress",
+      "suiteVersion": 1,
+      "definitionVersion": 1
+    },
+    {
+      "id": "runtime-commitAuthoritative-array-replace-extreme-s1-v1",
+      "category": "runtime",
+      "name": "commitAuthoritative-array-replace",
+      "tier": "extreme",
+      "suiteVersion": 1,
+      "definitionVersion": 1
+    },
+    {
+      "id": "runtime-commitAuthoritative-leaf-baseline-s1-v1",
+      "category": "runtime",
+      "name": "commitAuthoritative-leaf",
+      "tier": "baseline",
+      "suiteVersion": 1,
+      "definitionVersion": 1
+    },
+    {
+      "id": "runtime-commitAuthoritative-leaf-stress-s1-v1",
+      "category": "runtime",
+      "name": "commitAuthoritative-leaf",
+      "tier": "stress",
+      "suiteVersion": 1,
+      "definitionVersion": 1
+    },
+    {
+      "id": "runtime-commitAuthoritative-leaf-extreme-s1-v1",
+      "category": "runtime",
+      "name": "commitAuthoritative-leaf",
+      "tier": "extreme",
+      "suiteVersion": 1,
+      "definitionVersion": 1
+    },
+    {
+      "id": "runtime-reconcileArrayInfo-baseline-s1-v1",
+      "category": "runtime",
+      "name": "reconcileArrayInfo",
+      "tier": "baseline",
+      "suiteVersion": 1,
+      "definitionVersion": 1
+    },
+    {
+      "id": "runtime-reconcileArrayInfo-stress-s1-v1",
+      "category": "runtime",
+      "name": "reconcileArrayInfo",
+      "tier": "stress",
+      "suiteVersion": 1,
+      "definitionVersion": 1
+    },
+    {
+      "id": "runtime-reconcileArrayInfo-extreme-s1-v1",
+      "category": "runtime",
+      "name": "reconcileArrayInfo",
+      "tier": "extreme",
+      "suiteVersion": 1,
+      "definitionVersion": 1
+    },
+    {
+      "id": "runtime-getterDispatch-cold-baseline-s1-v1",
+      "category": "runtime",
+      "name": "getterDispatch-cold",
+      "tier": "baseline",
+      "suiteVersion": 1,
+      "definitionVersion": 1
+    },
+    {
+      "id": "runtime-getterDispatch-cold-stress-s1-v1",
+      "category": "runtime",
+      "name": "getterDispatch-cold",
+      "tier": "stress",
+      "suiteVersion": 1,
+      "definitionVersion": 1
+    },
+    {
+      "id": "runtime-getterDispatch-cold-extreme-s1-v1",
+      "category": "runtime",
+      "name": "getterDispatch-cold",
+      "tier": "extreme",
+      "suiteVersion": 1,
+      "definitionVersion": 1
+    },
+    {
+      "id": "runtime-canonicalize-fixed-s1-v1",
+      "category": "runtime",
+      "name": "canonicalize",
+      "tier": "fixed",
+      "suiteVersion": 1,
+      "definitionVersion": 1
+    },
+    {
+      "id": "runtime-dedupeFanIn-fixed-s1-v1",
+      "category": "runtime",
+      "name": "dedupeFanIn",
+      "tier": "fixed",
+      "suiteVersion": 1,
+      "definitionVersion": 1
+    },
+    {
+      "id": "runtime-dedupeFanIn-independent-fixed-s1-v1",
+      "category": "runtime",
+      "name": "dedupeFanIn-independent",
+      "tier": "fixed",
+      "suiteVersion": 1,
+      "definitionVersion": 1
+    },
+    {
+      "id": "runtime-runGettersFanOut-fixed-s1-v1",
+      "category": "runtime",
+      "name": "runGettersFanOut",
+      "tier": "fixed",
+      "suiteVersion": 1,
+      "definitionVersion": 1
+    }
+  ],
+  "results": {
+    "cold-start": {
+      "tiers": {
+        "baseline": {
+          "id": "runtime-cold-start-baseline-s1-v1",
+          "status": "completed",
+          "inputs": {
+            "capabilities": 10
+          },
+          "fixtureHash": "sha256:7a6f99b03960bc9b48efe0b891c01dcf1de78b29016d458e41167e5180a728d4",
+          "fixtureGenerationMs": 3,
+          "totalMs": {
+            "minMs": 53.10699999999997,
+            "medianMs": 53.768167000000005,
+            "p95Ms": 55.94404099999999,
+            "maxMs": 55.94404099999999,
+            "stdDevMs": 0.6740541110168001,
+            "iterations": 15,
+            "warmupIterations": 0
+          },
+          "moduleEvalMs": {
+            "minMs": 5.693584000000001,
+            "medianMs": 5.901542000000003,
+            "p95Ms": 6.175791,
+            "maxMs": 6.175791,
+            "stdDevMs": 0.1318578883696972,
+            "iterations": 15,
+            "warmupIterations": 0
+          },
+          "memoryBeforeBytes": {
+            "rssBytes": 45842432,
+            "heapUsedBytes": 3658600,
+            "heapTotalBytes": 5341184,
+            "externalBytes": 1366945,
+            "arrayBuffersBytes": 10515
+          },
+          "memoryAfterBytes": {
+            "rssBytes": 48496640,
+            "heapUsedBytes": 5567992,
+            "heapTotalBytes": 6389760,
+            "externalBytes": 1457566,
+            "arrayBuffersBytes": 40780
+          }
+        },
+        "stress": {
+          "id": "runtime-cold-start-stress-s1-v1",
+          "status": "completed",
+          "inputs": {
+            "capabilities": 100
+          },
+          "fixtureHash": "sha256:f3684a00e56a9d265b0216218e6b2c26a277f875b9590352804dc49455a2f628",
+          "fixtureGenerationMs": 18,
+          "totalMs": {
+            "minMs": 74.46066700000006,
+            "medianMs": 75.36129199999982,
+            "p95Ms": 167.14770800000008,
+            "maxMs": 167.14770800000008,
+            "stdDevMs": 24.65366079304368,
+            "iterations": 15,
+            "warmupIterations": 0
+          },
+          "moduleEvalMs": {
+            "minMs": 25.598958000000003,
+            "medianMs": 26.267333,
+            "p95Ms": 99.668166,
+            "maxMs": 99.668166,
+            "stdDevMs": 18.35572043915525,
+            "iterations": 15,
+            "warmupIterations": 0
+          },
+          "memoryBeforeBytes": {
+            "rssBytes": 45924352,
+            "heapUsedBytes": 3658600,
+            "heapTotalBytes": 5341184,
+            "externalBytes": 1366945,
+            "arrayBuffersBytes": 10515
+          },
+          "memoryAfterBytes": {
+            "rssBytes": 58916864,
+            "heapUsedBytes": 7088392,
+            "heapTotalBytes": 10584064,
+            "externalBytes": 1457566,
+            "arrayBuffersBytes": 40780
+          }
+        },
+        "extreme": {
+          "id": "runtime-cold-start-extreme-s1-v1",
+          "status": "completed",
+          "inputs": {
+            "capabilities": 500
+          },
+          "fixtureHash": "sha256:bcc78ca3482be41db5dac9509729e66d4dc1359a89c7e11c8df6ddb54d811577",
+          "fixtureGenerationMs": 85,
+          "totalMs": {
+            "minMs": 156.343167,
+            "medianMs": 161.28187500000013,
+            "p95Ms": 292.4999170000001,
+            "maxMs": 292.4999170000001,
+            "stdDevMs": 37.99116221910863,
+            "iterations": 12,
+            "warmupIterations": 0
+          },
+          "moduleEvalMs": {
+            "minMs": 102.84391600000001,
+            "medianMs": 105.571708,
+            "p95Ms": 235.792333,
+            "maxMs": 235.792333,
+            "stdDevMs": 36.45125654702928,
+            "iterations": 12,
+            "warmupIterations": 0
+          },
+          "memoryBeforeBytes": {
+            "rssBytes": 45760512,
+            "heapUsedBytes": 3658600,
+            "heapTotalBytes": 5341184,
+            "externalBytes": 1366945,
+            "arrayBuffersBytes": 10515
+          },
+          "memoryAfterBytes": {
+            "rssBytes": 74465280,
+            "heapUsedBytes": 18612424,
+            "heapTotalBytes": 29982720,
+            "externalBytes": 1457566,
+            "arrayBuffersBytes": 40780
+          }
+        }
+      }
+    },
+    "buildData": {
+      "tiers": {
+        "fixed": {
+          "id": "runtime-buildData-fixed-s1-v1",
+          "status": "completed",
+          "durationMs": {
+            "minMs": 0.016832999999678577,
+            "medianMs": 0.019957999999860476,
+            "p95Ms": 0.053249999999934516,
+            "maxMs": 0.0663750000003347,
+            "stdDevMs": 0.011042404807880383,
+            "iterations": 100,
+            "warmupIterations": 3
+          }
+        }
+      }
+    },
+    "commitAuthoritative-array-replace": {
+      "tiers": {
+        "baseline": {
+          "id": "runtime-commitAuthoritative-array-replace-baseline-s1-v1",
+          "status": "completed",
+          "inputs": {
+            "itemCount": 200
+          },
+          "durationMs": {
+            "minMs": 0.1016669999999067,
+            "medianMs": 0.10670899999968242,
+            "p95Ms": 0.17070800000055897,
+            "maxMs": 0.17395800000031159,
+            "stdDevMs": 0.017480314661410038,
+            "iterations": 60,
+            "warmupIterations": 3
+          }
+        },
+        "stress": {
+          "id": "runtime-commitAuthoritative-array-replace-stress-s1-v1",
+          "status": "completed",
+          "inputs": {
+            "itemCount": 2000
+          },
+          "durationMs": {
+            "minMs": 0.9901250000002619,
+            "medianMs": 1.0119580000000497,
+            "p95Ms": 1.0469169999996666,
+            "maxMs": 1.318583000000217,
+            "stdDevMs": 0.06140695258780342,
+            "iterations": 25,
+            "warmupIterations": 2
+          }
+        },
+        "extreme": {
+          "id": "runtime-commitAuthoritative-array-replace-extreme-s1-v1",
+          "status": "completed",
+          "inputs": {
+            "itemCount": 20000
+          },
+          "durationMs": {
+            "minMs": 9.511499999999614,
+            "medianMs": 9.799541999999747,
+            "p95Ms": 12.058708999999908,
+            "maxMs": 12.058708999999908,
+            "stdDevMs": 0.881108071626286,
+            "iterations": 12,
+            "warmupIterations": 1
+          }
+        }
+      }
+    },
+    "commitAuthoritative-leaf": {
+      "tiers": {
+        "baseline": {
+          "id": "runtime-commitAuthoritative-leaf-baseline-s1-v1",
+          "status": "completed",
+          "inputs": {
+            "itemCount": 200
+          },
+          "durationMs": {
+            "minMs": 0.003416999999899417,
+            "medianMs": 0.005541999999877589,
+            "p95Ms": 0.02045899999939138,
+            "maxMs": 0.023667000000386906,
+            "stdDevMs": 0.00492354017449008,
+            "iterations": 60,
+            "warmupIterations": 3
+          }
+        },
+        "stress": {
+          "id": "runtime-commitAuthoritative-leaf-stress-s1-v1",
+          "status": "completed",
+          "inputs": {
+            "itemCount": 2000
+          },
+          "durationMs": {
+            "minMs": 0.0035420000003796304,
+            "medianMs": 0.004792000000634289,
+            "p95Ms": 0.008625000000392902,
+            "maxMs": 0.010958000000755419,
+            "stdDevMs": 0.0017732975313345333,
+            "iterations": 25,
+            "warmupIterations": 2
+          }
+        },
+        "extreme": {
+          "id": "runtime-commitAuthoritative-leaf-extreme-s1-v1",
+          "status": "completed",
+          "inputs": {
+            "itemCount": 20000
+          },
+          "durationMs": {
+            "minMs": 0.008124999999381544,
+            "medianMs": 0.010416999999506515,
+            "p95Ms": 0.024832999999489402,
+            "maxMs": 0.024832999999489402,
+            "stdDevMs": 0.004702535399872099,
+            "iterations": 12,
+            "warmupIterations": 1
+          }
+        }
+      }
+    },
+    "reconcileArrayInfo": {
+      "tiers": {
+        "baseline": {
+          "id": "runtime-reconcileArrayInfo-baseline-s1-v1",
+          "status": "completed",
+          "inputs": {
+            "itemCount": 200
+          },
+          "durationMs": {
+            "minMs": 0.07554200000049605,
+            "medianMs": 0.12529100000028848,
+            "p95Ms": 0.15070899999955145,
+            "maxMs": 0.17966700000033597,
+            "stdDevMs": 0.014059198389120278,
+            "iterations": 60,
+            "warmupIterations": 3
+          }
+        },
+        "stress": {
+          "id": "runtime-reconcileArrayInfo-stress-s1-v1",
+          "status": "completed",
+          "inputs": {
+            "itemCount": 2000
+          },
+          "durationMs": {
+            "minMs": 0.6711669999995138,
+            "medianMs": 1.160917000000154,
+            "p95Ms": 1.2110409999995682,
+            "maxMs": 1.214082999999846,
+            "stdDevMs": 0.099850721931151,
+            "iterations": 25,
+            "warmupIterations": 2
+          }
+        },
+        "extreme": {
+          "id": "runtime-reconcileArrayInfo-extreme-s1-v1",
+          "status": "completed",
+          "inputs": {
+            "itemCount": 20000
+          },
+          "durationMs": {
+            "minMs": 9.169208000000253,
+            "medianMs": 12.49133299999994,
+            "p95Ms": 13.500375000000531,
+            "maxMs": 13.500375000000531,
+            "stdDevMs": 1.0450465714547639,
+            "iterations": 12,
+            "warmupIterations": 1
+          }
+        }
+      }
+    },
+    "getterDispatch-cold": {
+      "tiers": {
+        "baseline": {
+          "id": "runtime-getterDispatch-cold-baseline-s1-v1",
+          "status": "completed",
+          "inputs": {
+            "itemCount": 200
+          },
+          "durationMs": {
+            "minMs": 0.14479199999914272,
+            "medianMs": 0.17254200000024866,
+            "p95Ms": 0.31124999999974534,
+            "maxMs": 0.35691599999972823,
+            "stdDevMs": 0.04244042965157506,
+            "iterations": 60,
+            "warmupIterations": 3
+          }
+        },
+        "stress": {
+          "id": "runtime-getterDispatch-cold-stress-s1-v1",
+          "status": "completed",
+          "inputs": {
+            "itemCount": 2000
+          },
+          "durationMs": {
+            "minMs": 1.0693750000000364,
+            "medianMs": 1.1099169999997684,
+            "p95Ms": 1.3120829999998023,
+            "maxMs": 1.3809160000000702,
+            "stdDevMs": 0.08102618597898271,
+            "iterations": 25,
+            "warmupIterations": 2
+          }
+        },
+        "extreme": {
+          "id": "runtime-getterDispatch-cold-extreme-s1-v1",
+          "status": "completed",
+          "inputs": {
+            "itemCount": 20000
+          },
+          "durationMs": {
+            "minMs": 9.720499999999447,
+            "medianMs": 10.237250000000131,
+            "p95Ms": 13.10399999999936,
+            "maxMs": 13.10399999999936,
+            "stdDevMs": 0.8711812766445696,
+            "iterations": 12,
+            "warmupIterations": 1
+          }
+        }
+      }
+    },
+    "canonicalize": {
+      "tiers": {
+        "fixed": {
+          "id": "runtime-canonicalize-fixed-s1-v1",
+          "status": "completed",
+          "durationMs": {
+            "minMs": 0.005290999999488122,
+            "medianMs": 0.006124999999883585,
+            "p95Ms": 0.018667000000277767,
+            "maxMs": 0.03029200000128185,
+            "stdDevMs": 0.0045364185154853735,
+            "iterations": 100,
+            "warmupIterations": 3
+          }
+        }
+      }
+    },
+    "dedupeFanIn": {
+      "tiers": {
+        "fixed": {
+          "id": "runtime-dedupeFanIn-fixed-s1-v1",
+          "status": "completed",
+          "inputs": {
+            "itemCount": 200,
+            "concurrency": 25
+          },
+          "durationMs": {
+            "minMs": 0.30587500000001455,
+            "medianMs": 0.34841700000106357,
+            "p95Ms": 0.5389999999988504,
+            "maxMs": 0.713832999999795,
+            "stdDevMs": 0.07630055131403018,
+            "iterations": 100,
+            "warmupIterations": 3
+          }
+        }
+      }
+    },
+    "dedupeFanIn-independent": {
+      "tiers": {
+        "fixed": {
+          "id": "runtime-dedupeFanIn-independent-fixed-s1-v1",
+          "status": "completed",
+          "inputs": {
+            "itemCount": 200,
+            "concurrency": 25
+          },
+          "durationMs": {
+            "minMs": 0.41308399999979883,
+            "medianMs": 0.49654200000077253,
+            "p95Ms": 0.5911660000001575,
+            "maxMs": 0.5911660000001575,
+            "stdDevMs": 0.04699991317514391,
+            "iterations": 11,
+            "warmupIterations": 3
+          }
+        }
+      }
+    },
+    "runGettersFanOut": {
+      "tiers": {
+        "fixed": {
+          "id": "runtime-runGettersFanOut-fixed-s1-v1",
+          "status": "completed",
+          "inputs": {
+            "itemCount": 200,
+            "getterCount": 6
+          },
+          "durationMs": {
+            "minMs": 0.7560410000005504,
+            "medianMs": 0.8031670000000304,
+            "p95Ms": 1.1610000000000582,
+            "maxMs": 1.1654170000001614,
+            "stdDevMs": 0.1338363812724895,
+            "iterations": 41,
+            "warmupIterations": 3
+          }
+        }
+      }
+    }
+  }
+}

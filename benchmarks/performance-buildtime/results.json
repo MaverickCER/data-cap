@@ -1,0 +1,223 @@
+{
+  "metadata": {
+    "environment": {
+      "cpuModel": "Apple M3",
+      "cpuArchitecture": "arm64",
+      "processArch": "arm64",
+      "logicalCores": 8,
+      "physicalCores": 8,
+      "cpuFrequencyMHz": 2400,
+      "platform": "darwin",
+      "osRelease": "25.6.0",
+      "totalMemoryMb": 24576,
+      "nodeVersion": "v24.11.0",
+      "timezoneOffsetMinutes": -240,
+      "isCI": false,
+      "runner": "local"
+    },
+    "package": {
+      "coreBundleBytes": 2221,
+      "coreBundleGzipBytes": 866,
+      "runtimeBundleBytes": 22073,
+      "runtimeBundleGzipBytes": 5594,
+      "helpersBundleBytes": 6110,
+      "helpersBundleGzipBytes": 1819
+    },
+    "configuration": {
+      "targetDurationMs": 3000,
+      "minIterations": 3,
+      "maxIterations": 6,
+      "warmupIterations": 1,
+      "gcEnabled": true
+    },
+    "timing": {
+      "startedAtUtc": "2026-08-19T10:49:10.825Z",
+      "finishedAtUtc": "2026-08-19T10:49:22.520Z",
+      "totalSuiteDurationMs": 11695
+    },
+    "generation": {
+      "fixtureSeed": "deterministic-index-v1",
+      "generatorVersion": 1
+    },
+    "versions": {
+      "benchmarkSchemaVersion": 1,
+      "benchmarkSuiteVersion": 1,
+      "benchmarkToolVersion": "1.0.0",
+      "dataCapVersion": "0.1.0"
+    },
+    "git": {
+      "gitCommit": null,
+      "gitBranch": null,
+      "gitDirty": true
+    },
+    "generatedBy": "npm run benchmark"
+  },
+  "benchmarkManifest": [
+    {
+      "id": "buildtime-discovery-baseline-s1-v1",
+      "category": "buildtime",
+      "name": "discovery",
+      "tier": "baseline",
+      "suiteVersion": 1,
+      "definitionVersion": 1
+    },
+    {
+      "id": "buildtime-discovery-stress-s1-v1",
+      "category": "buildtime",
+      "name": "discovery",
+      "tier": "stress",
+      "suiteVersion": 1,
+      "definitionVersion": 1
+    },
+    {
+      "id": "buildtime-discovery-extreme-s1-v1",
+      "category": "buildtime",
+      "name": "discovery",
+      "tier": "extreme",
+      "suiteVersion": 1,
+      "definitionVersion": 1
+    },
+    {
+      "id": "buildtime-artifacts-baseline-s1-v1",
+      "category": "buildtime",
+      "name": "artifacts",
+      "tier": "baseline",
+      "suiteVersion": 1,
+      "definitionVersion": 1
+    },
+    {
+      "id": "buildtime-artifacts-stress-s1-v1",
+      "category": "buildtime",
+      "name": "artifacts",
+      "tier": "stress",
+      "suiteVersion": 1,
+      "definitionVersion": 1
+    },
+    {
+      "id": "buildtime-artifacts-extreme-s1-v1",
+      "category": "buildtime",
+      "name": "artifacts",
+      "tier": "extreme",
+      "suiteVersion": 1,
+      "definitionVersion": 1
+    }
+  ],
+  "results": {
+    "discovery": {
+      "tiers": {
+        "baseline": {
+          "id": "buildtime-discovery-baseline-s1-v1",
+          "status": "completed",
+          "inputs": {
+            "capabilities": 10
+          },
+          "fixtureHash": "sha256:a2286a0b45e4544758fc2b796459aad36d2eb800762a4cc9091b435bedd4e253",
+          "fixtureGenerationMs": 5,
+          "durationMs": {
+            "minMs": 0.8269170000000372,
+            "medianMs": 0.9729999999999563,
+            "p95Ms": 1.5175409999999943,
+            "maxMs": 1.5175409999999943,
+            "stdDevMs": 0.1521120241213353,
+            "iterations": 20,
+            "warmupIterations": 2
+          }
+        },
+        "stress": {
+          "id": "buildtime-discovery-stress-s1-v1",
+          "status": "completed",
+          "inputs": {
+            "capabilities": 100
+          },
+          "fixtureHash": "sha256:d60d316683a2d72f75a98ca5f193032f44be0a31a7ce6ddeb6b2dfdd99385d06",
+          "fixtureGenerationMs": 31,
+          "durationMs": {
+            "minMs": 4.21245799999997,
+            "medianMs": 4.561874999999986,
+            "p95Ms": 6.610457999999994,
+            "maxMs": 6.610457999999994,
+            "stdDevMs": 0.752700432161331,
+            "iterations": 10,
+            "warmupIterations": 1
+          }
+        },
+        "extreme": {
+          "id": "buildtime-discovery-extreme-s1-v1",
+          "status": "completed",
+          "inputs": {
+            "capabilities": 400
+          },
+          "fixtureHash": "sha256:05a7a0e162b1d4fd1cb218749e4645f8ebc09b2c77a574202e681d4db0baf4b3",
+          "fixtureGenerationMs": 162,
+          "durationMs": {
+            "minMs": 21.11587499999996,
+            "medianMs": 25.399791999999934,
+            "p95Ms": 39.16166599999997,
+            "maxMs": 39.16166599999997,
+            "stdDevMs": 6.317542617263727,
+            "iterations": 6,
+            "warmupIterations": 1
+          }
+        }
+      }
+    },
+    "artifacts": {
+      "tiers": {
+        "baseline": {
+          "id": "buildtime-artifacts-baseline-s1-v1",
+          "status": "completed",
+          "inputs": {
+            "capabilities": 10
+          },
+          "fixtureHash": "sha256:a2286a0b45e4544758fc2b796459aad36d2eb800762a4cc9091b435bedd4e253",
+          "fixtureGenerationMs": 6,
+          "durationMs": {
+            "minMs": 22.148041999999805,
+            "medianMs": 27.09445800000003,
+            "p95Ms": 109.645084,
+            "maxMs": 109.645084,
+            "stdDevMs": 18.451998885789468,
+            "iterations": 20,
+            "warmupIterations": 2
+          }
+        },
+        "stress": {
+          "id": "buildtime-artifacts-stress-s1-v1",
+          "status": "completed",
+          "inputs": {
+            "capabilities": 100
+          },
+          "fixtureHash": "sha256:d60d316683a2d72f75a98ca5f193032f44be0a31a7ce6ddeb6b2dfdd99385d06",
+          "fixtureGenerationMs": 109,
+          "durationMs": {
+            "minMs": 201.09016699999984,
+            "medianMs": 233.17716699999983,
+            "p95Ms": 290.28425000000016,
+            "maxMs": 290.28425000000016,
+            "stdDevMs": 28.386931352922122,
+            "iterations": 9,
+            "warmupIterations": 1
+          }
+        },
+        "extreme": {
+          "id": "buildtime-artifacts-extreme-s1-v1",
+          "status": "completed",
+          "inputs": {
+            "capabilities": 400
+          },
+          "fixtureHash": "sha256:05a7a0e162b1d4fd1cb218749e4645f8ebc09b2c77a574202e681d4db0baf4b3",
+          "fixtureGenerationMs": 320,
+          "durationMs": {
+            "minMs": 1516.583999999999,
+            "medianMs": 1586.6072089999998,
+            "p95Ms": 1696.6383749999995,
+            "maxMs": 1696.6383749999995,
+            "stdDevMs": 74.10929259967497,
+            "iterations": 3,
+            "warmupIterations": 1
+          }
+        }
+      }
+    }
+  }
+}

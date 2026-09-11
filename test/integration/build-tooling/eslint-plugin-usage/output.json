@@ -1,0 +1,9 @@
+{
+  "goodUsageViolationCount": 0,
+  "badUsageViolationCount": 2,
+  "badUsageMessageIds": [
+    "inlineFunctionLiteral",
+    "recreatedPerCall"
+  ],
+  "ruleId": "data-cap/stable-operation-reference"
+}

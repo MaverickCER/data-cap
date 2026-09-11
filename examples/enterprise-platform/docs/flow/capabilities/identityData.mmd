@@ -1,0 +1,11 @@
+%% Capability: identityData
+flowchart TB
+  subgraph boundary["Trust Boundary (proven, in-repo)"]
+    n0(["identityData"])
+    n1[/"currentUser"/]
+    n3(["getter: getCurrentUser"])
+  end
+  n2[["identity-api<br/><em>api</em>"]]
+  n2 -.->|"declared: currentUser (plaintext)"| n3
+  n3 -.->|"writes"| n1
+  linkStyle 0 stroke:#e63946,stroke-width:3px

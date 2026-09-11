@@ -1,0 +1,20 @@
+{
+  "name": "data-cap-example-eslint-plugin-usage",
+  "private": true,
+  "type": "module",
+  "description": "The stable-operation-reference ESLint rule flagging real inline-function and recreated-per-call mistakes, run programmatically against real app code via ESLint's own Node API.",
+  "scripts": {
+    "start": "tsx src/main.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@maverickcer/data-cap": "file:../../../.."
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "eslint": "^9.0.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.5.0",
+    "typescript-eslint": "^8.0.0"
+  }
+}

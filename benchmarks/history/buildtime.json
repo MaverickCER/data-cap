@@ -1,0 +1,36 @@
+{
+  "historySchemaVersion": 1,
+  "entries": [
+    {
+      "timestamp": "2026-08-19T10:49:22.520Z",
+      "gitCommit": null,
+      "dataCapVersion": "0.1.0",
+      "benchmarkSuiteVersion": 1,
+      "runner": "local",
+      "measurements": {
+        "discovery": {
+          "baseline": {
+            "medianMs": 0.9729999999999563
+          },
+          "stress": {
+            "medianMs": 4.561874999999986
+          },
+          "extreme": {
+            "medianMs": 25.399791999999934
+          }
+        },
+        "artifacts": {
+          "baseline": {
+            "medianMs": 27.09445800000003
+          },
+          "stress": {
+            "medianMs": 233.17716699999983
+          },
+          "extreme": {
+            "medianMs": 1586.6072089999998
+          }
+        }
+      }
+    }
+  ]
+}

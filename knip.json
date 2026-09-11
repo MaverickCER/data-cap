@@ -1,0 +1,29 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "entry": [
+    "src/core/index.ts!",
+    "src/runtime/index.ts!",
+    "src/runtime/cache.ts!",
+    "src/runtime/retry.ts!",
+    "src/helpers/index.ts!",
+    "src/build/index.ts!",
+    "src/evidence/index.ts!",
+    "src/eslint-plugin/index.ts!",
+    "src/cli/index.ts!",
+    "src/cli/json.ts!",
+    "scripts/*.mjs",
+    "benchmarks/*.mjs"
+  ],
+  "project": ["src/**/*.{ts,tsx}!"],
+  "ignore": ["**/*.d.ts", "dist/**", "coverage/**", "reports/**", "examples/**", "benchmarks/**"],
+  "ignoreDependencies": ["@maverickcer/data-cap"],
+  // Knip's built-in typedoc plugin only reads the standard `typedoc.{js,cjs,mjs,json,jsonc}`
+  // config names by default, so it never sees `typedoc.markdown.json` (our
+  // `docs:api:report` config, which extends typedoc.json and adds
+  // `"plugin": ["typedoc-plugin-markdown"]`) and flags that devDependency as
+  // unused. It is genuinely used, just declared in the extra config file --
+  // point the plugin at both files instead of exempting the dependency.
+  "typedoc": {
+    "config": ["typedoc.json", "typedoc.markdown.json"]
+  }
+}

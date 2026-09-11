@@ -1,0 +1,103 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://maverickcer.github.io/data-cap/schema/ownership-model.schema.json",
+  "title": "data-cap Ownership Model",
+  "description": "Canonical, versioned owner -> {capabilities, fields} matrix (see ADR 0050). Generated from src/build/ownership-model.ts's OwnershipModel type -- never hand-authored.",
+  "$ref": "#/definitions/OwnershipModel",
+  "definitions": {
+    "OwnershipModel": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "number",
+          "const": 2,
+          "description": "Always `OWNERSHIP_MODEL_SCHEMA_VERSION`."
+        },
+        "entries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/OwnershipMatrixEntry"
+          },
+          "description": "Every owner's row -- see `buildOwnershipMatrix`."
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "entries"
+      ],
+      "additionalProperties": false,
+      "description": "`data-cap`'s Ownership Model: the owner -> {capabilities, fields} matrix, versioned for JSON publication."
+    },
+    "OwnershipMatrixEntry": {
+      "type": "object",
+      "properties": {
+        "owner": {
+          "type": "string",
+          "description": "The owner's name, or `UNOWNED`."
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/OwnershipCapabilityRef"
+          },
+          "description": "Capabilities this owner is accountable for at the capability level."
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/OwnershipFieldRef"
+          },
+          "description": "Individual fields (on capabilities not wholly owned by this owner) they're accountable for."
+        }
+      },
+      "required": [
+        "owner",
+        "capabilities",
+        "fields"
+      ],
+      "additionalProperties": false,
+      "description": "One owner's row in the ownership matrix -- every capability and field they're accountable for."
+    },
+    "OwnershipCapabilityRef": {
+      "type": "object",
+      "properties": {
+        "file": {
+          "type": "string",
+          "description": "Root-relative POSIX path of the file declaring this capability -- carried through verbatim from `CapabilityNode.file` (see `display-path.ts`)."
+        },
+        "exportName": {
+          "type": "string",
+          "description": "The binding name the capability is exported as."
+        }
+      },
+      "required": [
+        "file",
+        "exportName"
+      ],
+      "additionalProperties": false,
+      "description": "Identifies one capability by where it's declared."
+    },
+    "OwnershipFieldRef": {
+      "type": "object",
+      "properties": {
+        "capability": {
+          "$ref": "#/definitions/OwnershipCapabilityRef",
+          "description": "The capability that owns this field."
+        },
+        "field": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The field's path within its capability."
+        }
+      },
+      "required": [
+        "capability",
+        "field"
+      ],
+      "additionalProperties": false,
+      "description": "Identifies one field, owned by a specific capability."
+    }
+  }
+}

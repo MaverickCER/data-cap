@@ -1,0 +1,27 @@
+{
+  "snapshotSchemaVersion": 2,
+  "capabilities": [
+    {
+      "file": "src/main.ts",
+      "exportName": "taskData",
+      "active": true,
+      "owner": "productivity-team",
+      "fields": [
+        "selectedTask",
+        "tasks"
+      ],
+      "getters": [
+        "getTask",
+        "getTasks"
+      ],
+      "mutators": [
+        "createTask",
+        "deleteTask",
+        "toggleTask"
+      ],
+      "subscriptions": [
+        "subscribeToTask"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "fields": {
+    "user": {
+      "id": "u1",
+      "name": "Grace Hopper",
+      "email": "grace.hopper@example.com",
+      "role": "admin"
+    }
+  },
+  "info": {
+    "userStatus": "success",
+    "userSource": "updateUserEmail"
+  },
+  "databaseRow": {
+    "id": "u1",
+    "name": "Grace Hopper",
+    "email": "grace.hopper@example.com",
+    "role": "admin"
+  },
+  "notifications": 4,
+  "frozen": {
+    "snapshot": true,
+    "user": true
+  }
+}

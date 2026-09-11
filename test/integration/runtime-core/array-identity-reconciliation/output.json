@@ -1,0 +1,23 @@
+{
+  "comment2InfoReferencePreserved": true,
+  "commentsAfterSecondFetch": [
+    {
+      "id": "1",
+      "body": "first (edited)"
+    },
+    {
+      "id": "2",
+      "body": "second"
+    },
+    {
+      "id": "3",
+      "body": "third"
+    }
+  ],
+  "infoKeyCountAfterSecondFetch": 3,
+  "malformedWarningReasons": [
+    "missing-key"
+  ],
+  "duplicateIdentityDetected": true,
+  "distinctIdentitySlotsForMalformedBatch": 3
+}

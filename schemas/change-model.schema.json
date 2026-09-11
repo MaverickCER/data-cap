@@ -1,0 +1,175 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://maverickcer.github.io/data-cap/schema/change-model.schema.json",
+  "title": "data-cap Change Model",
+  "description": "Canonical, versioned manifest diff plus an optional blast-radius index (see ADR 0050). Generated from src/build/change-model.ts's ChangeModel type -- never hand-authored.",
+  "$ref": "#/definitions/ChangeModel",
+  "definitions": {
+    "ChangeModel": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "number",
+          "const": 2,
+          "description": "Always `CHANGE_MODEL_SCHEMA_VERSION`."
+        },
+        "manifest": {
+          "$ref": "#/definitions/ManifestChangeReport",
+          "description": "The underlying manifest diff -- see `diffManifestSnapshots`."
+        },
+        "blastRadius": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/BlastRadiusEntry"
+          },
+          "description": "One entry per added/updated capability, or `undefined` when no `DependencyModel` was supplied -- an optional layer, matching `--ownership`/`--flow`'s existing opt-in cost model (the usage scan isn't free)."
+        },
+        "renamedFields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RenamedField"
+          },
+          "description": "Every added-field/removed-field pair this run's currently-declared `renamedFrom` values correlate into a single rename, sorted by capability key then current name."
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "manifest",
+        "renamedFields"
+      ],
+      "additionalProperties": false,
+      "description": "`data-cap`'s Change Model: the manifest diff, plus an optional blast-radius index."
+    },
+    "ManifestChangeReport": {
+      "type": "object",
+      "properties": {
+        "addedCapabilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Capability keys present in the new snapshot but not the previous one."
+        },
+        "removedCapabilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Capability keys present in the previous snapshot but not the new one."
+        },
+        "updatedCapabilities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ManifestCapabilityUpdate"
+          },
+          "description": "Capability keys present in both snapshots whose shape changed."
+        }
+      },
+      "required": [
+        "addedCapabilities",
+        "removedCapabilities",
+        "updatedCapabilities"
+      ],
+      "additionalProperties": false,
+      "description": "The diff between two `ManifestSnapshot`s, in a fixed Added/Removed/Updated shape."
+    },
+    "ManifestCapabilityUpdate": {
+      "type": "object",
+      "properties": {
+        "capability": {
+          "type": "string",
+          "description": "The capability key (`file#exportName`) that changed."
+        },
+        "changes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Human-readable description of each individual change (e.g. `\"owner changed from... to...\"`)."
+        },
+        "fields": {
+          "$ref": "#/definitions/ManifestFieldDiff",
+          "description": "The same field-level diff `changes` describes in prose, as data (EVD-05). Added so `ChangeModel`'s rename correlation has something to match against without re-parsing a human-readable sentence -- a report deriving structure back out of its own prose is exactly the kind of fragility this codebase avoids. `changes` is unaffected and still reads the same."
+        }
+      },
+      "required": [
+        "capability",
+        "changes",
+        "fields"
+      ],
+      "additionalProperties": false,
+      "description": "One capability whose snapshot shape changed between two runs."
+    },
+    "ManifestFieldDiff": {
+      "type": "object",
+      "properties": {
+        "added": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Field names present now but not in the previous snapshot, sorted."
+        },
+        "removed": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Field names present in the previous snapshot but not now, sorted."
+        }
+      },
+      "required": [
+        "added",
+        "removed"
+      ],
+      "additionalProperties": false,
+      "description": "The structured added/removed field-name diff for one changed capability."
+    },
+    "BlastRadiusEntry": {
+      "type": "object",
+      "properties": {
+        "capability": {
+          "type": "string",
+          "description": "The capability key (`file#exportName`) -- matches `ManifestChangeReport`'s own key convention."
+        },
+        "consumers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Distinct consuming files known (from Dependency Model) to depend on this capability right now, sorted."
+        }
+      },
+      "required": [
+        "capability",
+        "consumers"
+      ],
+      "additionalProperties": false,
+      "description": "One changed capability's known current consumers."
+    },
+    "RenamedField": {
+      "type": "object",
+      "properties": {
+        "capability": {
+          "type": "string",
+          "description": "The owning capability's key (`file#exportName`) -- a rename never crosses capabilities."
+        },
+        "previousName": {
+          "type": "string",
+          "description": "The field's name before the rename -- matches a `removed` entry in that capability's own field diff."
+        },
+        "currentName": {
+          "type": "string",
+          "description": "The field's name after the rename -- matches an `added` entry in the same diff."
+        }
+      },
+      "required": [
+        "capability",
+        "previousName",
+        "currentName"
+      ],
+      "additionalProperties": false,
+      "description": "One added-field/removed-field pair correlated into a single rename via the current declaration's `renamedFrom` (EVD-05)."
+    }
+  }
+}

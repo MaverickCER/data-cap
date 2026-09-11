@@ -1,0 +1,37 @@
+{
+  "name": "data-cap-example-enterprise-platform",
+  "private": true,
+  "type": "module",
+  "description": "Tier 3 -- Atlas, an org-wide work-management platform (TanStack Start + MongoDB/Mongoose) with three independently-owned capabilities (identity/projects/billing), a real running service, and two generated governance reports (litigation-evidence, audit-prep) plus a real --strict-docs/--strict-flow CI guard.",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "start": "tsx main-headless.ts",
+    "typecheck": "tsc --noEmit",
+    "docs": "data-cap --root . --include \"src/**\" --location src/generated/data.manifest.ts --docs docs/DATA.md --ownership docs/OWNERSHIP.md --flow docs/flow --evidence docs/data.evidence.json",
+    "reports": "tsx reports/litigation-evidence.ts && tsx reports/audit-prep.ts",
+    "check": "data-cap --root . --include \"src/**\" --location src/generated/data.manifest.ts --docs docs/DATA.md --ownership docs/OWNERSHIP.md --flow docs/flow --evidence docs/data.evidence.json --check && tsx reports/litigation-evidence.ts --check && tsx reports/audit-prep.ts --check",
+    "guard": "data-cap --root . --include \"src/**\" --docs .guard-check/DATA.md --strict-docs"
+  },
+  "dependencies": {
+    "@maverickcer/data-cap": "file:../..",
+    "@tanstack/react-router": "^1.170.0",
+    "@tanstack/react-start": "^1.168.0",
+    "mongoose": "^9.0.0",
+    "pino": "^9.5.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "resend": "^4.0.1",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "mongodb-memory-server": "^11.2.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.5.0",
+    "vite": "^7.0.0"
+  }
+}

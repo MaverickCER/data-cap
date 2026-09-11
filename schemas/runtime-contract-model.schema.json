@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://maverickcer.github.io/data-cap/schema/runtime-contract-model.schema.json",
+  "title": "data-cap Runtime Contract Model",
+  "description": "Canonical, versioned, package-level (not per-project) description of data-cap's own documented execution guarantees (see ADR 0050). Generated from src/build/runtime-contract-model.ts's RuntimeContractModel type -- never hand-authored.",
+  "$ref": "#/definitions/RuntimeContractModel",
+  "definitions": {
+    "RuntimeContractModel": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "number",
+          "const": 1,
+          "description": "Always `RUNTIME_CONTRACT_MODEL_SCHEMA_VERSION`."
+        },
+        "packageVersion": {
+          "type": "string",
+          "description": "The `data-cap` package version this model describes -- read from `package.json`, the same way `cli/json.ts`'s `TOOL_VERSION` is."
+        },
+        "policies": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RuntimePolicyFact"
+          },
+          "description": "Every documented runtime policy fact."
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "packageVersion",
+        "policies"
+      ],
+      "additionalProperties": false,
+      "description": "`data-cap`'s Runtime Contract Model: the package's own documented execution guarantees."
+    },
+    "RuntimePolicyFact": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "description": "A short, stable identifier for this fact (e.g. `\"getter-concurrency\"`)."
+        },
+        "statement": {
+          "type": "string",
+          "description": "Human-readable statement of the guarantee."
+        },
+        "governingAdr": {
+          "type": "string",
+          "description": "The ADR number (e.g. `\"0024\"`) that governs this fact -- always a real file under `specs/decisions/`."
+        },
+        "module": {
+          "type": "string",
+          "description": "The source file that implements this guarantee, root-relative."
+        }
+      },
+      "required": [
+        "key",
+        "statement",
+        "governingAdr",
+        "module"
+      ],
+      "additionalProperties": false,
+      "description": "One documented runtime guarantee, traced to the ADR that governs it."
+    }
+  }
+}

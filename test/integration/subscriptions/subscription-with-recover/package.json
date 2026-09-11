@@ -1,0 +1,18 @@
+{
+  "name": "data-cap-example-subscription-with-recover",
+  "private": true,
+  "type": "module",
+  "description": "An optional recover getter racing a live subscription event after reconnect -- both settle via ordinary atomic commit ordering, with no invented replay/priority guarantee.",
+  "scripts": {
+    "start": "tsx src/main.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@maverickcer/data-cap": "file:../../../.."
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.5.0"
+  }
+}

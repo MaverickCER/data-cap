@@ -1,0 +1,10 @@
+{
+  "afterScenarioA": {
+    "price": 101,
+    "source": "liveEvent"
+  },
+  "afterScenarioB": {
+    "price": 100,
+    "source": "recover"
+  }
+}

@@ -1,0 +1,1205 @@
+{
+  "schemaVersion": 2,
+  "provenance": {
+    "generatedAt": "2026-08-20T02:26:43.212Z",
+    "toolVersion": "0.1.0"
+  },
+  "capability": {
+    "schemaVersion": 3,
+    "capabilities": [
+      {
+        "file": "src/capabilities/assignments.capability.ts",
+        "exportName": "assignmentsData",
+        "kind": "createData",
+        "docs": {
+          "name": "assignments",
+          "owner": "notifications-team",
+          "purpose": "Showing one team member their own currently-assigned tasks.",
+          "legalBasis": "contract",
+          "dataResidency": "us",
+          "fields": {
+            "myTasks": {
+              "description": "The current member's own assigned tasks, with names resolved for display.",
+              "sensitivity": "internal",
+              "protections": "Session-authenticated access only; TLS in transit."
+            }
+          },
+          "getters": {
+            "getMyTasks": {
+              "description": "Fetches one member's own assigned tasks.",
+              "source": "assignments-api",
+              "endpoints": [
+                {
+                  "direction": "input",
+                  "kind": "api",
+                  "name": "assignments-api",
+                  "url": "https://api.example.com/v1/my-tasks",
+                  "handling": "plaintext"
+                },
+                {
+                  "direction": "input",
+                  "kind": "api",
+                  "name": "members-api",
+                  "url": "https://api.example.com/v1/members",
+                  "handling": "plaintext"
+                }
+              ]
+            }
+          }
+        },
+        "active": true,
+        "declarationPosition": {
+          "line": 64,
+          "column": 32
+        },
+        "fields": [
+          {
+            "path": [
+              "myTasks"
+            ],
+            "docs": {
+              "description": "The current member's own assigned tasks, with names resolved for display.",
+              "sensitivity": "internal",
+              "protections": "Session-authenticated access only; TLS in transit."
+            },
+            "owner": {
+              "value": "notifications-team",
+              "declaredOn": "capability"
+            },
+            "sensitivity": {
+              "value": "internal",
+              "declaredOn": "field"
+            },
+            "purpose": {
+              "value": "Showing one team member their own currently-assigned tasks.",
+              "declaredOn": "capability"
+            },
+            "legalBasis": {
+              "value": "contract",
+              "declaredOn": "capability"
+            },
+            "dataResidency": {
+              "value": "us",
+              "declaredOn": "capability"
+            },
+            "auditRequired": {},
+            "writtenBy": [
+              {
+                "kind": "getter",
+                "name": "getMyTasks"
+              }
+            ],
+            "shape": [],
+            "declarationPosition": {
+              "line": 51,
+              "column": 5
+            }
+          }
+        ],
+        "getters": [
+          {
+            "kind": "getter",
+            "name": "getMyTasks",
+            "docs": {
+              "description": "Fetches one member's own assigned tasks.",
+              "source": "assignments-api",
+              "endpoints": [
+                {
+                  "direction": "input",
+                  "kind": "api",
+                  "name": "assignments-api",
+                  "url": "https://api.example.com/v1/my-tasks",
+                  "handling": "plaintext"
+                },
+                {
+                  "direction": "input",
+                  "kind": "api",
+                  "name": "members-api",
+                  "url": "https://api.example.com/v1/members",
+                  "handling": "plaintext"
+                }
+              ]
+            },
+            "writes": [
+              [
+                "myTasks"
+              ]
+            ],
+            "hasProcessor": true,
+            "hasOptimistic": false,
+            "endpoints": [
+              {
+                "direction": "input",
+                "kind": "api",
+                "name": "assignments-api",
+                "url": "https://api.example.com/v1/my-tasks",
+                "handling": "plaintext"
+              },
+              {
+                "direction": "input",
+                "kind": "api",
+                "name": "members-api",
+                "url": "https://api.example.com/v1/members",
+                "handling": "plaintext"
+              }
+            ]
+          }
+        ],
+        "mutators": [],
+        "subscriptions": []
+      },
+      {
+        "file": "src/capabilities/member.capability.ts",
+        "exportName": "memberData",
+        "kind": "createData",
+        "docs": {
+          "name": "members",
+          "owner": "platform-team",
+          "purpose": "Letting any project resolve who's on the team, by id.",
+          "legalBasis": "contract",
+          "dataResidency": "us",
+          "fields": {
+            "members": {
+              "description": "The full team member directory.",
+              "sensitivity": "internal",
+              "protections": "Session-authenticated access only; TLS in transit.",
+              "purpose": "Resolving assignee names for display across every project."
+            }
+          },
+          "getters": {
+            "listMembers": {
+              "description": "Fetches the full team member directory, cached across remounts.",
+              "source": "members-api",
+              "endpoints": [
+                {
+                  "direction": "input",
+                  "kind": "api",
+                  "name": "members-api",
+                  "url": "https://api.example.com/v1/members",
+                  "handling": "plaintext"
+                }
+              ]
+            }
+          }
+        },
+        "active": true,
+        "declarationPosition": {
+          "line": 49,
+          "column": 27
+        },
+        "fields": [
+          {
+            "path": [
+              "members"
+            ],
+            "docs": {
+              "description": "The full team member directory.",
+              "sensitivity": "internal",
+              "protections": "Session-authenticated access only; TLS in transit.",
+              "purpose": "Resolving assignee names for display across every project."
+            },
+            "owner": {
+              "value": "platform-team",
+              "declaredOn": "capability"
+            },
+            "sensitivity": {
+              "value": "internal",
+              "declaredOn": "field"
+            },
+            "purpose": {
+              "value": "Resolving assignee names for display across every project.",
+              "declaredOn": "field"
+            },
+            "legalBasis": {
+              "value": "contract",
+              "declaredOn": "capability"
+            },
+            "dataResidency": {
+              "value": "us",
+              "declaredOn": "capability"
+            },
+            "auditRequired": {},
+            "writtenBy": [
+              {
+                "kind": "getter",
+                "name": "listMembers"
+              }
+            ],
+            "shape": [],
+            "declarationPosition": {
+              "line": 36,
+              "column": 5
+            }
+          }
+        ],
+        "getters": [
+          {
+            "kind": "getter",
+            "name": "listMembers",
+            "docs": {
+              "description": "Fetches the full team member directory, cached across remounts.",
+              "source": "members-api",
+              "endpoints": [
+                {
+                  "direction": "input",
+                  "kind": "api",
+                  "name": "members-api",
+                  "url": "https://api.example.com/v1/members",
+                  "handling": "plaintext"
+                }
+              ]
+            },
+            "writes": [
+              [
+                "members"
+              ]
+            ],
+            "hasProcessor": true,
+            "hasOptimistic": false,
+            "endpoints": [
+              {
+                "direction": "input",
+                "kind": "api",
+                "name": "members-api",
+                "url": "https://api.example.com/v1/members",
+                "handling": "plaintext"
+              }
+            ]
+          }
+        ],
+        "mutators": [],
+        "subscriptions": []
+      },
+      {
+        "file": "src/capabilities/project.capability.ts",
+        "exportName": "projectData",
+        "kind": "createData",
+        "docs": {
+          "name": "project",
+          "owner": "project-team",
+          "purpose": "Tracking one project's own case tasks and their assignees.",
+          "legalBasis": "contract",
+          "dataResidency": "us",
+          "fields": {
+            "project": {
+              "description": "The current project's own metadata -- null until the first getProject().",
+              "sensitivity": "internal",
+              "protections": "Session-authenticated access only; TLS in transit."
+            },
+            "tasks": {
+              "description": "Every task on the current project, with assignee names resolved.",
+              "sensitivity": "internal",
+              "protections": "Session-authenticated access only; TLS in transit.",
+              "purpose": "Displaying and managing the project's own work items."
+            }
+          },
+          "getters": {
+            "getProject": {
+              "description": "Fetches a project and its tasks, resolving each task's assignee name.",
+              "source": "projects-api",
+              "endpoints": [
+                {
+                  "direction": "input",
+                  "kind": "api",
+                  "name": "projects-api",
+                  "url": "https://api.example.com/v1/projects/:id",
+                  "handling": "plaintext"
+                }
+              ]
+            }
+          },
+          "mutators": {
+            "createTask": {
+              "description": "Adds a new task to the project.",
+              "source": "projects-api",
+              "endpoints": [
+                {
+                  "direction": "output",
+                  "kind": "api",
+                  "name": "projects-api",
+                  "url": "https://api.example.com/v1/projects/:id/tasks",
+                  "handling": "plaintext"
+                }
+              ]
+            },
+            "toggleTask": {
+              "description": "Marks a task complete or incomplete.",
+              "source": "projects-api",
+              "endpoints": [
+                {
+                  "direction": "output",
+                  "kind": "api",
+                  "name": "projects-api",
+                  "url": "https://api.example.com/v1/projects/:id/tasks/:taskId/toggle",
+                  "handling": "plaintext"
+                }
+              ]
+            },
+            "assignTask": {
+              "description": "Reassigns a task to a different team member.",
+              "source": "projects-api",
+              "endpoints": [
+                {
+                  "direction": "output",
+                  "kind": "api",
+                  "name": "projects-api",
+                  "url": "https://api.example.com/v1/projects/:id/tasks/:taskId/assign",
+                  "handling": "plaintext"
+                }
+              ]
+            }
+          },
+          "subscriptions": {
+            "subscribeToProject": {
+              "description": "Live connection status for the current project."
+            }
+          }
+        },
+        "active": true,
+        "declarationPosition": {
+          "line": 140,
+          "column": 28
+        },
+        "fields": [
+          {
+            "path": [
+              "project"
+            ],
+            "docs": {
+              "description": "The current project's own metadata -- null until the first getProject().",
+              "sensitivity": "internal",
+              "protections": "Session-authenticated access only; TLS in transit."
+            },
+            "owner": {
+              "value": "project-team",
+              "declaredOn": "capability"
+            },
+            "sensitivity": {
+              "value": "internal",
+              "declaredOn": "field"
+            },
+            "purpose": {
+              "value": "Tracking one project's own case tasks and their assignees.",
+              "declaredOn": "capability"
+            },
+            "legalBasis": {
+              "value": "contract",
+              "declaredOn": "capability"
+            },
+            "dataResidency": {
+              "value": "us",
+              "declaredOn": "capability"
+            },
+            "auditRequired": {},
+            "writtenBy": [
+              {
+                "kind": "getter",
+                "name": "getProject"
+              },
+              {
+                "kind": "subscription",
+                "name": "subscribeToProject"
+              }
+            ],
+            "shape": {
+              "inner": {
+                "id": "",
+                "name": ""
+              }
+            },
+            "declarationPosition": {
+              "line": 40,
+              "column": 5
+            }
+          },
+          {
+            "path": [
+              "tasks"
+            ],
+            "docs": {
+              "description": "Every task on the current project, with assignee names resolved.",
+              "sensitivity": "internal",
+              "protections": "Session-authenticated access only; TLS in transit.",
+              "purpose": "Displaying and managing the project's own work items."
+            },
+            "owner": {
+              "value": "project-team",
+              "declaredOn": "capability"
+            },
+            "sensitivity": {
+              "value": "internal",
+              "declaredOn": "field"
+            },
+            "purpose": {
+              "value": "Displaying and managing the project's own work items.",
+              "declaredOn": "field"
+            },
+            "legalBasis": {
+              "value": "contract",
+              "declaredOn": "capability"
+            },
+            "dataResidency": {
+              "value": "us",
+              "declaredOn": "capability"
+            },
+            "auditRequired": {},
+            "writtenBy": [
+              {
+                "kind": "getter",
+                "name": "getProject"
+              },
+              {
+                "kind": "mutator",
+                "name": "createTask"
+              },
+              {
+                "kind": "mutator",
+                "name": "toggleTask"
+              },
+              {
+                "kind": "mutator",
+                "name": "assignTask"
+              }
+            ],
+            "shape": [],
+            "declarationPosition": {
+              "line": 41,
+              "column": 5
+            }
+          }
+        ],
+        "getters": [
+          {
+            "kind": "getter",
+            "name": "getProject",
+            "docs": {
+              "description": "Fetches a project and its tasks, resolving each task's assignee name.",
+              "source": "projects-api",
+              "endpoints": [
+                {
+                  "direction": "input",
+                  "kind": "api",
+                  "name": "projects-api",
+                  "url": "https://api.example.com/v1/projects/:id",
+                  "handling": "plaintext"
+                }
+              ]
+            },
+            "writes": [
+              [
+                "project"
+              ],
+              [
+                "tasks"
+              ]
+            ],
+            "hasProcessor": true,
+            "hasOptimistic": false,
+            "endpoints": [
+              {
+                "direction": "input",
+                "kind": "api",
+                "name": "projects-api",
+                "url": "https://api.example.com/v1/projects/:id",
+                "handling": "plaintext"
+              }
+            ]
+          }
+        ],
+        "mutators": [
+          {
+            "kind": "mutator",
+            "name": "createTask",
+            "docs": {
+              "description": "Adds a new task to the project.",
+              "source": "projects-api",
+              "endpoints": [
+                {
+                  "direction": "output",
+                  "kind": "api",
+                  "name": "projects-api",
+                  "url": "https://api.example.com/v1/projects/:id/tasks",
+                  "handling": "plaintext"
+                }
+              ]
+            },
+            "writes": [
+              [
+                "tasks"
+              ]
+            ],
+            "hasProcessor": true,
+            "hasOptimistic": false,
+            "endpoints": [
+              {
+                "direction": "output",
+                "kind": "api",
+                "name": "projects-api",
+                "url": "https://api.example.com/v1/projects/:id/tasks",
+                "handling": "plaintext"
+              }
+            ]
+          },
+          {
+            "kind": "mutator",
+            "name": "toggleTask",
+            "docs": {
+              "description": "Marks a task complete or incomplete.",
+              "source": "projects-api",
+              "endpoints": [
+                {
+                  "direction": "output",
+                  "kind": "api",
+                  "name": "projects-api",
+                  "url": "https://api.example.com/v1/projects/:id/tasks/:taskId/toggle",
+                  "handling": "plaintext"
+                }
+              ]
+            },
+            "writes": [
+              [
+                "tasks"
+              ]
+            ],
+            "hasProcessor": true,
+            "hasOptimistic": true,
+            "endpoints": [
+              {
+                "direction": "output",
+                "kind": "api",
+                "name": "projects-api",
+                "url": "https://api.example.com/v1/projects/:id/tasks/:taskId/toggle",
+                "handling": "plaintext"
+              }
+            ]
+          },
+          {
+            "kind": "mutator",
+            "name": "assignTask",
+            "docs": {
+              "description": "Reassigns a task to a different team member.",
+              "source": "projects-api",
+              "endpoints": [
+                {
+                  "direction": "output",
+                  "kind": "api",
+                  "name": "projects-api",
+                  "url": "https://api.example.com/v1/projects/:id/tasks/:taskId/assign",
+                  "handling": "plaintext"
+                }
+              ]
+            },
+            "writes": [
+              [
+                "tasks"
+              ]
+            ],
+            "hasProcessor": true,
+            "hasOptimistic": false,
+            "endpoints": [
+              {
+                "direction": "output",
+                "kind": "api",
+                "name": "projects-api",
+                "url": "https://api.example.com/v1/projects/:id/tasks/:taskId/assign",
+                "handling": "plaintext"
+              }
+            ]
+          }
+        ],
+        "subscriptions": [
+          {
+            "kind": "subscription",
+            "name": "subscribeToProject",
+            "docs": {
+              "description": "Live connection status for the current project."
+            },
+            "writes": [
+              [
+                "project"
+              ]
+            ],
+            "hasProcessor": false,
+            "hasOptimistic": false,
+            "endpoints": []
+          }
+        ]
+      }
+    ],
+    "warnings": [
+      {
+        "file": "src/main.ts",
+        "message": "buildData() assigned to \"taskOrderCapability\" is not exported -- build tooling can only discover exported capabilities."
+      }
+    ]
+  },
+  "lifecycle": {
+    "schemaVersion": 1,
+    "capabilities": [],
+    "expiring": []
+  },
+  "computed": {
+    "dependency": true,
+    "ownership": true,
+    "finding": true,
+    "change": true
+  },
+  "dependency": {
+    "schemaVersion": 3,
+    "edges": [
+      {
+        "relationship": "calls-getter",
+        "from": "src/capabilities/project.capability.ts",
+        "to": {
+          "capability": {
+            "file": "src/capabilities/member.capability.ts",
+            "exportName": "memberData"
+          },
+          "operation": "listMembers"
+        },
+        "resolution": "resolved",
+        "position": {
+          "line": 30,
+          "column": 9
+        }
+      },
+      {
+        "relationship": "reads-field",
+        "from": "src/capabilities/project.capability.ts",
+        "to": {
+          "capability": {
+            "file": "src/capabilities/member.capability.ts",
+            "exportName": "memberData"
+          },
+          "field": [
+            "members"
+          ]
+        },
+        "resolution": "resolved",
+        "position": {
+          "line": 31,
+          "column": 19
+        }
+      },
+      {
+        "relationship": "calls-getter",
+        "from": "src/main.ts",
+        "to": {
+          "capability": {
+            "file": "src/capabilities/project.capability.ts",
+            "exportName": "projectData"
+          },
+          "operation": "getProject"
+        },
+        "resolution": "resolved",
+        "position": {
+          "line": 77,
+          "column": 7
+        }
+      },
+      {
+        "relationship": "reads-field",
+        "from": "src/main.ts",
+        "to": {
+          "capability": {
+            "file": "src/capabilities/project.capability.ts",
+            "exportName": "projectData"
+          },
+          "field": [
+            "project"
+          ]
+        },
+        "resolution": "resolved",
+        "position": {
+          "line": 78,
+          "column": 14
+        }
+      },
+      {
+        "relationship": "reads-field",
+        "from": "src/main.ts",
+        "to": {
+          "capability": {
+            "file": "src/capabilities/project.capability.ts",
+            "exportName": "projectData"
+          },
+          "field": [
+            "tasks"
+          ]
+        },
+        "resolution": "resolved",
+        "position": {
+          "line": 79,
+          "column": 14
+        }
+      },
+      {
+        "relationship": "reads-field",
+        "from": "src/main.ts",
+        "to": {
+          "capability": {
+            "file": "src/capabilities/project.capability.ts",
+            "exportName": "projectData"
+          },
+          "field": [
+            "tasks"
+          ]
+        },
+        "resolution": "resolved",
+        "position": {
+          "line": 81,
+          "column": 3
+        }
+      },
+      {
+        "relationship": "calls-getter",
+        "from": "src/main.ts",
+        "to": {
+          "capability": {
+            "file": "src/capabilities/assignments.capability.ts",
+            "exportName": "assignmentsData"
+          },
+          "operation": "getMyTasks"
+        },
+        "resolution": "resolved",
+        "position": {
+          "line": 90,
+          "column": 7
+        }
+      },
+      {
+        "relationship": "reads-field",
+        "from": "src/main.ts",
+        "to": {
+          "capability": {
+            "file": "src/capabilities/assignments.capability.ts",
+            "exportName": "assignmentsData"
+          },
+          "field": [
+            "myTasks"
+          ]
+        },
+        "resolution": "resolved",
+        "position": {
+          "line": 91,
+          "column": 14
+        }
+      },
+      {
+        "relationship": "calls-getter",
+        "from": "src/main.ts",
+        "to": {
+          "capability": {
+            "file": "src/capabilities/member.capability.ts",
+            "exportName": "memberData"
+          },
+          "operation": "listMembers"
+        },
+        "resolution": "resolved",
+        "position": {
+          "line": 100,
+          "column": 7
+        }
+      },
+      {
+        "relationship": "calls-mutator",
+        "from": "src/main.ts",
+        "to": {
+          "capability": {
+            "file": "src/capabilities/project.capability.ts",
+            "exportName": "projectData"
+          },
+          "operation": "createTask"
+        },
+        "resolution": "resolved",
+        "position": {
+          "line": 107,
+          "column": 15
+        }
+      },
+      {
+        "relationship": "reads-field",
+        "from": "src/main.ts",
+        "to": {
+          "capability": {
+            "file": "src/capabilities/project.capability.ts",
+            "exportName": "projectData"
+          },
+          "field": [
+            "tasks"
+          ]
+        },
+        "resolution": "resolved",
+        "position": {
+          "line": 111,
+          "column": 14
+        }
+      },
+      {
+        "relationship": "calls-mutator",
+        "from": "src/main.ts",
+        "to": {
+          "capability": {
+            "file": "src/capabilities/project.capability.ts",
+            "exportName": "projectData"
+          },
+          "operation": "toggleTask"
+        },
+        "resolution": "resolved",
+        "position": {
+          "line": 114,
+          "column": 23
+        }
+      },
+      {
+        "relationship": "reads-field",
+        "from": "src/main.ts",
+        "to": {
+          "capability": {
+            "file": "src/capabilities/project.capability.ts",
+            "exportName": "projectData"
+          },
+          "field": [
+            "tasks"
+          ]
+        },
+        "resolution": "resolved",
+        "position": {
+          "line": 116,
+          "column": 3
+        }
+      },
+      {
+        "relationship": "reads-field",
+        "from": "src/main.ts",
+        "to": {
+          "capability": {
+            "file": "src/capabilities/project.capability.ts",
+            "exportName": "projectData"
+          },
+          "field": [
+            "tasks"
+          ]
+        },
+        "resolution": "resolved",
+        "position": {
+          "line": 121,
+          "column": 14
+        }
+      },
+      {
+        "relationship": "calls-mutator",
+        "from": "src/main.ts",
+        "to": {
+          "capability": {
+            "file": "src/capabilities/project.capability.ts",
+            "exportName": "projectData"
+          },
+          "operation": "assignTask"
+        },
+        "resolution": "resolved",
+        "position": {
+          "line": 126,
+          "column": 7
+        }
+      },
+      {
+        "relationship": "reads-field",
+        "from": "src/main.ts",
+        "to": {
+          "capability": {
+            "file": "src/capabilities/project.capability.ts",
+            "exportName": "projectData"
+          },
+          "field": [
+            "tasks"
+          ]
+        },
+        "resolution": "resolved",
+        "position": {
+          "line": 128,
+          "column": 3
+        }
+      },
+      {
+        "relationship": "calls-subscription",
+        "from": "src/main.ts",
+        "to": {
+          "capability": {
+            "file": "src/capabilities/project.capability.ts",
+            "exportName": "projectData"
+          },
+          "operation": "subscribeToProject"
+        },
+        "resolution": "resolved",
+        "position": {
+          "line": 133,
+          "column": 28
+        }
+      },
+      {
+        "relationship": "reads-field",
+        "from": "src/main.ts",
+        "to": {
+          "capability": {
+            "file": "src/capabilities/project.capability.ts",
+            "exportName": "projectData"
+          },
+          "field": [
+            "tasks"
+          ]
+        },
+        "resolution": "resolved",
+        "position": {
+          "line": 142,
+          "column": 22
+        }
+      }
+    ]
+  },
+  "ownership": {
+    "schemaVersion": 2,
+    "entries": [
+      {
+        "owner": "notifications-team",
+        "capabilities": [
+          {
+            "file": "src/capabilities/assignments.capability.ts",
+            "exportName": "assignmentsData"
+          }
+        ],
+        "fields": [
+          {
+            "capability": {
+              "file": "src/capabilities/assignments.capability.ts",
+              "exportName": "assignmentsData"
+            },
+            "field": [
+              "myTasks"
+            ]
+          }
+        ]
+      },
+      {
+        "owner": "platform-team",
+        "capabilities": [
+          {
+            "file": "src/capabilities/member.capability.ts",
+            "exportName": "memberData"
+          }
+        ],
+        "fields": [
+          {
+            "capability": {
+              "file": "src/capabilities/member.capability.ts",
+              "exportName": "memberData"
+            },
+            "field": [
+              "members"
+            ]
+          }
+        ]
+      },
+      {
+        "owner": "project-team",
+        "capabilities": [
+          {
+            "file": "src/capabilities/project.capability.ts",
+            "exportName": "projectData"
+          }
+        ],
+        "fields": [
+          {
+            "capability": {
+              "file": "src/capabilities/project.capability.ts",
+              "exportName": "projectData"
+            },
+            "field": [
+              "project"
+            ]
+          },
+          {
+            "capability": {
+              "file": "src/capabilities/project.capability.ts",
+              "exportName": "projectData"
+            },
+            "field": [
+              "tasks"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "finding": {
+    "schemaVersion": 2,
+    "findings": [
+      {
+        "code": "DUPLICATE_ENDPOINT_ACROSS_CAPABILITIES",
+        "family": "structural",
+        "severity": "info",
+        "message": "Endpoint \"https://api.example.com/v1/members\" is declared by both \"assignmentsData\"'s getter \"getMyTasks\" and \"memberData\"'s getter \"listMembers\" -- possibly a duplicate network fetch across independently-declared capabilities; worth a look if that wasn't intentional.",
+        "location": {
+          "kind": "operation",
+          "capability": {
+            "file": "src/capabilities/assignments.capability.ts",
+            "exportName": "assignmentsData"
+          },
+          "operation": "getMyTasks"
+        }
+      },
+      {
+        "code": "SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY",
+        "family": "flow",
+        "severity": "warning",
+        "message": "Field \"myTasks\" on \"assignmentsData\" is sensitivity \"internal\" and has a declared endpoint crossing an external-service/api/queue boundary -- verify this is intentional and adequately protected.",
+        "location": {
+          "kind": "field",
+          "capability": {
+            "file": "src/capabilities/assignments.capability.ts",
+            "exportName": "assignmentsData"
+          },
+          "field": [
+            "myTasks"
+          ]
+        }
+      },
+      {
+        "code": "SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY",
+        "family": "flow",
+        "severity": "warning",
+        "message": "Field \"members\" on \"memberData\" is sensitivity \"internal\" and has a declared endpoint crossing an external-service/api/queue boundary -- verify this is intentional and adequately protected.",
+        "location": {
+          "kind": "field",
+          "capability": {
+            "file": "src/capabilities/member.capability.ts",
+            "exportName": "memberData"
+          },
+          "field": [
+            "members"
+          ]
+        }
+      },
+      {
+        "code": "SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY",
+        "family": "flow",
+        "severity": "warning",
+        "message": "Field \"project\" on \"projectData\" is sensitivity \"internal\" and has a declared endpoint crossing an external-service/api/queue boundary -- verify this is intentional and adequately protected.",
+        "location": {
+          "kind": "field",
+          "capability": {
+            "file": "src/capabilities/project.capability.ts",
+            "exportName": "projectData"
+          },
+          "field": [
+            "project"
+          ]
+        }
+      },
+      {
+        "code": "SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY",
+        "family": "flow",
+        "severity": "warning",
+        "message": "Field \"tasks\" on \"projectData\" is sensitivity \"internal\" and has a declared endpoint crossing an external-service/api/queue boundary -- verify this is intentional and adequately protected.",
+        "location": {
+          "kind": "field",
+          "capability": {
+            "file": "src/capabilities/project.capability.ts",
+            "exportName": "projectData"
+          },
+          "field": [
+            "tasks"
+          ]
+        }
+      }
+    ]
+  },
+  "change": {
+    "schemaVersion": 2,
+    "manifest": {
+      "addedCapabilities": [],
+      "removedCapabilities": [],
+      "updatedCapabilities": []
+    },
+    "blastRadius": [],
+    "renamedFields": []
+  },
+  "runtimeContract": {
+    "schemaVersion": 1,
+    "packageVersion": "0.1.0",
+    "policies": [
+      {
+        "key": "getter-concurrency",
+        "statement": "A getter's response is discarded if a newer call to the same operation has since started, regardless of completion order (stale-response discard by start order, not completion order).",
+        "governingAdr": "0024",
+        "module": "src/runtime/capability.ts"
+      },
+      {
+        "key": "mutator-concurrency",
+        "statement": "A mutator's response always commits, even if a newer call to the same operation started after it -- whichever call completes last in real time wins, deliberately unlike a getter's start-order discard.",
+        "governingAdr": "0025",
+        "module": "src/runtime/capability.ts"
+      },
+      {
+        "key": "subscription-sharing",
+        "statement": "Concurrent subscribers to the same `subscribe` function identity share one underlying transport connection, ref-counted; the transport tears down only once every subscriber has released, and a late joiner immediately learns the current connection status.",
+        "governingAdr": "0026",
+        "module": "src/runtime/coordinator.ts"
+      },
+      {
+        "key": "subscription-disconnect-isolation",
+        "statement": "A subscription's own disconnect/teardown never mutates `fields` -- only an incoming event, processed through the operation's `processor`, can.",
+        "governingAdr": "0029",
+        "module": "src/runtime/coordinator.ts"
+      },
+      {
+        "key": "coordinator-dedup-key",
+        "statement": "Concurrent calls share one in-flight execution only when both the called function's own identity and their canonicalized params match -- never structural/behavioral equality, and never merely the same operation name.",
+        "governingAdr": "0028",
+        "module": "src/runtime/coordinator.ts"
+      },
+      {
+        "key": "atomic-commit",
+        "statement": "`fields` and `info` are always committed and published as one atomic snapshot -- no code path may update them independently or in separate ticks; a consumer never observes a stale pairing of the two.",
+        "governingAdr": "0008",
+        "module": "src/runtime/store.ts"
+      },
+      {
+        "key": "authoritative-pending-projection",
+        "statement": "Every observable state is `project(authoritativeState, pendingTransitions)`, recomputed fresh on every read, never cached -- authoritative and optimistic-pending state are stored separately and only ever folded together for observation.",
+        "governingAdr": "0021",
+        "module": "src/runtime/store.ts"
+      },
+      {
+        "key": "no-automatic-rollback",
+        "statement": "A failed mutation never automatically reverts a previously-committed value and never invents conflict resolution between concurrent writers -- recovery is always the caller's own responsibility.",
+        "governingAdr": "0023",
+        "module": "src/runtime/store.ts"
+      },
+      {
+        "key": "data-status-state-machine",
+        "statement": "A field's `status` is one of exactly `idle`/`loading`/`success`/`error`/`retrying` -- `retrying` is reserved for a recovering-after-failure attempt, distinct from a field's first-ever `loading` attempt.",
+        "governingAdr": "0016",
+        "module": "src/core/types.ts"
+      },
+      {
+        "key": "data-error-latest-only",
+        "statement": "A field's `error` is always the single latest error from its establishing operation, never a history/array -- it clears on the next successful establishing operation unless a still-newer operation has since set a different one.",
+        "governingAdr": "0015",
+        "module": "src/core/types.ts"
+      },
+      {
+        "key": "cache-contract",
+        "statement": "The optional `./runtime/cache` module caches a complete `DataState` (`fields` + `info`) as one atomic unit, never `fields` alone and never a raw, unvalidated response -- a bounded, least-recently-used-eviction cache keyed by an opaque caller-computed string.",
+        "governingAdr": "0035",
+        "module": "src/runtime/cache.ts"
+      },
+      {
+        "key": "retry-contract",
+        "statement": "The optional `./runtime/retry` module is opt-in and abort-aware: it never retries automatically, never retries past the caller's own `AbortSignal`, never exceeds `maxAttempts`, and never assumes a mutation is idempotent -- the caller's own `shouldRetry` predicate decides what's worth retrying.",
+        "governingAdr": "0036",
+        "module": "src/runtime/retry.ts"
+      }
+    ]
+  }
+}

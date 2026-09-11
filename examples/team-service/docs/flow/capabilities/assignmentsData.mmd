@@ -1,0 +1,17 @@
+%% Capability: assignmentsData
+flowchart TB
+  subgraph boundary["Trust Boundary (proven, in-repo)"]
+    n0(["assignmentsData"])
+    n1[/"myTasks"/]
+    n3(["getter: getMyTasks"])
+  end
+  n2[["assignments-api<br/><em>api</em>"]]
+  n4[["members-api<br/><em>api</em>"]]
+  n5["src/main.ts"]
+  n2 -.->|"declared: myTasks (plaintext)"| n3
+  n3 -.->|"writes"| n1
+  n4 -.->|"declared: myTasks (plaintext)"| n3
+  n3 -.->|"writes"| n1
+  n1 -->|"proven: src/main.ts:91:14"| n5
+  linkStyle 0 stroke:#e63946,stroke-width:3px
+  linkStyle 2 stroke:#e63946,stroke-width:3px

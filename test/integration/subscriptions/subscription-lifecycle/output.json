@@ -1,0 +1,12 @@
+{
+  "connectionCount": 1,
+  "disconnectionCount": 1,
+  "consumer1Statuses": [
+    "connecting",
+    "connected"
+  ],
+  "consumer2Statuses": [
+    "connecting",
+    "connected"
+  ]
+}

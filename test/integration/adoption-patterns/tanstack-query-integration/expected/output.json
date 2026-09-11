@@ -1,0 +1,10 @@
+{
+  "concurrentDedupCallCount": 1,
+  "defaultStaleTimeRefetchCallCount": 1,
+  "infiniteStaleTimeCallCount": 1,
+  "finalUser": {
+    "name": "Ada Lovelace",
+    "email": "ada@example.com"
+  },
+  "finalSource": "tanstack-query"
+}

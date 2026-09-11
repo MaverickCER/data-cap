@@ -1,0 +1,65 @@
+{
+  "snapshotSchemaVersion": 2,
+  "capabilities": [
+    {
+      "file": "src/capabilities/billing.capability.ts",
+      "exportName": "billingData",
+      "active": true,
+      "owner": "finance-team",
+      "fields": [
+        "invoices"
+      ],
+      "getters": [
+        "listInvoices"
+      ],
+      "mutators": [
+        "createInvoice",
+        "disputeInvoice",
+        "markInvoicePaid"
+      ],
+      "subscriptions": [
+        "subscribeToInvoices"
+      ],
+      "citationSnapshots": {
+        "invoices": [
+          {
+            "file": "src/server/legacy-compliance-sync.ts",
+            "line": 26,
+            "column": 19,
+            "hash": "0bdbd6581db971d63bd417290c6b5b9500b41b96ee0f0f3813adee7f92098151"
+          }
+        ]
+      }
+    },
+    {
+      "file": "src/capabilities/identity.capability.ts",
+      "exportName": "identityData",
+      "active": true,
+      "owner": "platform-security",
+      "fields": [
+        "currentUser"
+      ],
+      "getters": [
+        "getCurrentUser"
+      ],
+      "mutators": [],
+      "subscriptions": []
+    },
+    {
+      "file": "src/capabilities/projects.capability.ts",
+      "exportName": "projectsData",
+      "active": true,
+      "owner": "engineering-ops",
+      "fields": [
+        "projects"
+      ],
+      "getters": [
+        "listProjects"
+      ],
+      "mutators": [
+        "createProject"
+      ],
+      "subscriptions": []
+    }
+  ]
+}

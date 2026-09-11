@@ -1,0 +1,45 @@
+%% System overview -- declared endpoints and proven consumers per capability
+flowchart TB
+  subgraph boundary["Trust Boundary (proven, in-repo)"]
+    n0(["billingData"])
+    n1[/"invoices"/]
+    n3(["getter: listInvoices"])
+    n4(["subscription: subscribeToInvoices"])
+    n5(["mutator: createInvoice"])
+    n6(["mutator: markInvoicePaid"])
+    n7(["mutator: disputeInvoice"])
+    n8(["identityData"])
+    n9[/"currentUser"/]
+    n11(["getter: getCurrentUser"])
+    n12(["projectsData"])
+    n13[/"projects"/]
+    n15(["getter: listProjects"])
+    n16(["mutator: createProject"])
+  end
+  n2[["billing-api<br/><em>api</em>"]]
+  n10[["identity-api<br/><em>api</em>"]]
+  n14[["projects-api<br/><em>api</em>"]]
+  n2 -.->|"declared: invoices (encrypted)"| n3
+  n3 -.->|"writes"| n1
+  n2 -.->|"declared: invoices (encrypted)"| n4
+  n4 -.->|"writes"| n1
+  n1 -.->|"declared"| n5
+  n5 -.->|"declared: invoices (encrypted)"| n2
+  n1 -.->|"declared"| n6
+  n6 -.->|"declared: invoices (encrypted)"| n2
+  n1 -.->|"declared"| n7
+  n7 -.->|"declared: invoices (encrypted)"| n2
+  n10 -.->|"declared: currentUser (plaintext)"| n11
+  n11 -.->|"writes"| n9
+  n14 -.->|"declared: projects (plaintext)"| n15
+  n15 -.->|"writes"| n13
+  n13 -.->|"declared"| n16
+  n16 -.->|"declared: projects (plaintext)"| n14
+  linkStyle 0 stroke:#e63946,stroke-width:3px
+  linkStyle 2 stroke:#e63946,stroke-width:3px
+  linkStyle 5 stroke:#e63946,stroke-width:3px
+  linkStyle 7 stroke:#e63946,stroke-width:3px
+  linkStyle 9 stroke:#e63946,stroke-width:3px
+  linkStyle 10 stroke:#e63946,stroke-width:3px
+  linkStyle 12 stroke:#e63946,stroke-width:3px
+  linkStyle 15 stroke:#e63946,stroke-width:3px

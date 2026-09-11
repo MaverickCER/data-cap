@@ -1,0 +1,18 @@
+{
+  "name": "data-cap-example-runtime-cache",
+  "private": true,
+  "type": "module",
+  "description": "The optional bounded runtime/cache persisting full DataState (fields + info) atomically, never raw responses, with least-recently-used eviction.",
+  "scripts": {
+    "start": "tsx src/main.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@maverickcer/data-cap": "file:../../../.."
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.5.0"
+  }
+}

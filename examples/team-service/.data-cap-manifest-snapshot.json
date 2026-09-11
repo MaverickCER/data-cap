@@ -1,0 +1,54 @@
+{
+  "snapshotSchemaVersion": 2,
+  "capabilities": [
+    {
+      "file": "src/capabilities/assignments.capability.ts",
+      "exportName": "assignmentsData",
+      "active": true,
+      "owner": "notifications-team",
+      "fields": [
+        "myTasks"
+      ],
+      "getters": [
+        "getMyTasks"
+      ],
+      "mutators": [],
+      "subscriptions": []
+    },
+    {
+      "file": "src/capabilities/member.capability.ts",
+      "exportName": "memberData",
+      "active": true,
+      "owner": "platform-team",
+      "fields": [
+        "members"
+      ],
+      "getters": [
+        "listMembers"
+      ],
+      "mutators": [],
+      "subscriptions": []
+    },
+    {
+      "file": "src/capabilities/project.capability.ts",
+      "exportName": "projectData",
+      "active": true,
+      "owner": "project-team",
+      "fields": [
+        "project",
+        "tasks"
+      ],
+      "getters": [
+        "getProject"
+      ],
+      "mutators": [
+        "assignTask",
+        "createTask",
+        "toggleTask"
+      ],
+      "subscriptions": [
+        "subscribeToProject"
+      ]
+    }
+  ]
+}

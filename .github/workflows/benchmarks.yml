@@ -1,0 +1,140 @@
+name: Benchmarks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 6 * * 0" # weekly stale-benchmark-branch cleanup
+
+# Separate workflow from ci.yml's verify matrix. Only a main push ever
+# produces a committed artifact -- PRs never get a commit pushed to them,
+# and main itself is only ever updated through a review PR. No step here
+# ever fails the job because of a performance number -- see
+# benchmarks/README.md's "How regressions are surfaced".
+permissions:
+  contents: read
+
+jobs:
+  benchmark-pr:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22.x
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+
+      - working-directory: benchmarks/performance-runtime
+        run: npm install
+      - working-directory: benchmarks/performance-buildtime
+        run: npm install
+
+      - name: Snapshot main's committed results as "previous"
+        run: |
+          git show origin/main:benchmarks/performance-runtime/results.json > /tmp/previous-runtime.json || echo '{}' > /tmp/previous-runtime.json
+          git show origin/main:benchmarks/performance-buildtime/results.json > /tmp/previous-buildtime.json || echo '{}' > /tmp/previous-buildtime.json
+
+      - run: npm run benchmark
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: benchmark-results
+          path: |
+            benchmarks/performance-runtime/results.json
+            benchmarks/performance-runtime/RESULTS.md
+            benchmarks/performance-buildtime/results.json
+            benchmarks/performance-buildtime/RESULTS.md
+          retention-days: 14
+
+      - name: Post or update the marker-tagged summary comment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node benchmarks/render-benchmark-summary.mjs /tmp/previous-runtime.json benchmarks/performance-runtime/results.json /tmp/previous-buildtime.json benchmarks/performance-buildtime/results.json > /tmp/summary.md
+          PR="${{ github.event.pull_request.number }}"
+          EXISTING=$(gh api "repos/${{ github.repository }}/issues/${PR}/comments" --jq '.[] | select(.body | startswith("<!-- data-cap-benchmark-summary -->")) | .id' | head -n1)
+          if [ -n "$EXISTING" ]; then
+            gh api "repos/${{ github.repository }}/issues/comments/${EXISTING}" -X PATCH -f body=@/tmp/summary.md
+          else
+            gh api "repos/${{ github.repository }}/issues/${PR}/comments" -X POST -f body=@/tmp/summary.md
+          fi
+
+  benchmark-main:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22.x
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+
+      - working-directory: benchmarks/performance-runtime
+        run: npm install
+      - working-directory: benchmarks/performance-buildtime
+        run: npm install
+
+      - name: Snapshot the currently-committed results as "previous"
+        run: |
+          cp benchmarks/performance-runtime/results.json /tmp/previous-runtime.json
+          cp benchmarks/performance-buildtime/results.json /tmp/previous-buildtime.json
+
+      - run: npm run benchmark
+
+      - name: Open a benchmark-results PR (globally-unique branch -- no races)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --quiet -- benchmarks/performance-runtime/results.json benchmarks/performance-buildtime/results.json; then
+            echo "No change in results.json -- nothing to open a PR for."
+            exit 0
+          fi
+
+          node benchmarks/render-benchmark-summary.mjs /tmp/previous-runtime.json benchmarks/performance-runtime/results.json /tmp/previous-buildtime.json benchmarks/performance-buildtime/results.json > /tmp/summary.md
+          node benchmarks/append-benchmark-history.mjs benchmarks/performance-runtime/results.json benchmarks/history/runtime.json
+          node benchmarks/append-benchmark-history.mjs benchmarks/performance-buildtime/results.json benchmarks/history/buildtime.json
+
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          BRANCH="ci/benchmark-results/${{ github.run_id }}-${SHORT_SHA}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$BRANCH"
+          git add benchmarks/performance-runtime/results.json benchmarks/performance-runtime/RESULTS.md benchmarks/performance-buildtime/results.json benchmarks/performance-buildtime/RESULTS.md benchmarks/history/runtime.json benchmarks/history/buildtime.json
+          git commit -m "chore(benchmarks): refresh results.json from main@${SHORT_SHA} [skip ci]"
+          git push origin "$BRANCH"
+          gh pr create --base main --head "$BRANCH" --title "chore(benchmarks): refresh results.json (${SHORT_SHA})" --body-file /tmp/summary.md
+
+  cleanup-stale-benchmark-branches:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for branch in $(git ls-remote --heads origin 'ci/benchmark-results/*' | sed 's#.*refs/heads/##'); do
+            state=$(gh pr list --head "$branch" --state all --json state --jq '.[0].state // "NONE"')
+            if [ "$state" = "MERGED" ] || [ "$state" = "CLOSED" ]; then
+              git push origin --delete "$branch"
+            fi
+          done

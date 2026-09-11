@@ -1,0 +1,55 @@
+name: "data-cap report"
+description: "Runs data-cap and turns the result into PR annotations and a summary comment."
+inputs:
+  args:
+    description: "Arguments passed to `data-cap --json`, e.g. '--docs docs/DATA.md --ownership docs/OWNERSHIP.md --flow docs/flow --strict-flow'"
+    required: true
+  working-directory:
+    description: "Directory to run data-cap from."
+    required: false
+    default: "."
+  version:
+    description: "data-cap version to use via npx if not already a local devDependency."
+    required: false
+    default: ""
+  comment:
+    description: "Upsert a sticky PR summary comment."
+    required: false
+    default: "true"
+  report-key:
+    description: "Identifies this invocation's sticky comment, so multiple calls against the same PR (e.g. one per package in a monorepo) don't overwrite each other. Empty defaults to working-directory (resolved in report.mjs, not here -- action.yml input defaults can't reliably reference another input)."
+    required: false
+    default: ""
+  annotations:
+    description: "Emit inline ::warning/::error PR annotations."
+    required: false
+    default: "true"
+  github-token:
+    description: "Token used for `gh` PR-comment calls."
+    required: false
+    default: ${{ github.token }}
+runs:
+  using: "composite"
+  steps:
+    - id: run
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        set +e
+        PKG="data-cap"
+        if [ -n "${{ inputs.version }}" ]; then PKG="@maverickcer/data-cap@${{ inputs.version }}"; fi
+        npx --yes "$PKG" --json ${{ inputs.args }} > "$RUNNER_TEMP/data-cap-result.json"
+        echo "exit-code=$?" >> "$GITHUB_OUTPUT"
+        set -e
+    - shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        RESULT_PATH: ${{ runner.temp }}/data-cap-result.json
+        DO_COMMENT: ${{ inputs.comment }}
+        DO_ANNOTATIONS: ${{ inputs.annotations }}
+        REPORT_KEY: ${{ inputs.report-key }}
+        WORKING_DIRECTORY: ${{ inputs.working-directory }}
+      run: node "${{ github.action_path }}/scripts/github-action/report.mjs"
+    - shell: bash
+      run: exit ${{ steps.run.outputs.exit-code }}

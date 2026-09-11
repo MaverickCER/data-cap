@@ -1,0 +1,19 @@
+{
+  "name": "data-cap-example-tsconfig-aliases-consumer",
+  "private": true,
+  "type": "module",
+  "description": "linkCapabilityFiles discovering a capability schema published by a different, allow-listed package via its own package.json#dataCap.schema field.",
+  "scripts": {
+    "start": "tsx src/main.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@maverickcer/data-cap": "file:../../../..",
+    "shared-schema-package": "file:./shared-schema-package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.5.0"
+  }
+}

@@ -1,0 +1,43 @@
+node_modules
+dist
+coverage
+.guard-check
+api-docs
+# The rendered HTML API reference is generated fresh in CI's Pages deploy
+# job (never committed). The Markdown API report (docs/api-report/) IS
+# committed and drift-checked -- see scripts/check-api-report.mjs.
+docs/api
+benchmarks/performance-runtime/fixtures
+benchmarks/performance-buildtime/fixtures
+# Written on the fly by test/build/json-schema.test.ts and left behind for
+# post-mortem inspection -- a transient fixture project, never source.
+test/build/fixtures-json-schema
+*.log
+.DS_Store
+.env
+.env.*
+!.env.example
+.claude
+.continue
+.github/copilot-instructions.md
+.cursor
+.windsurf
+.clinerules
+.cline
+.aider.conf.yml
+.aider
+.amazonq
+.roo
+.roo-code
+GEMINI.md
+.idea
+.tabnine
+
+# Evidence-cache sidecars (`evidence-cache.ts`'s `<evidence-path>.fingerprint`)
+# are a local, machine-specific cache key, never a committed golden artifact --
+# see src/build/evidence-cache.ts.
+*.fingerprint
+
+# Contract tooling transient output (repo-contract / internal-package-contract).
+.stryker-tmp
+reports

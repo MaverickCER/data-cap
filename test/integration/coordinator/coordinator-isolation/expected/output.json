@@ -1,0 +1,5 @@
+{
+  "crossTenantCallCount": 2,
+  "withinTenantCallCount": 1,
+  "tenantVsDefaultCallCount": 2
+}

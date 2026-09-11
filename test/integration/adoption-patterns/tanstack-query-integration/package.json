@@ -1,0 +1,19 @@
+{
+  "name": "data-cap-example-tanstack-query-integration",
+  "private": true,
+  "type": "module",
+  "description": "Wiring a DataStore as a TanStack Query external data source -- an adoption pattern, not a shipped adapter. TanStack Query drives fetching/caching/dedup; its results flow into data-cap's own DataState shape.",
+  "scripts": {
+    "start": "tsx src/main.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@maverickcer/data-cap": "file:../../../..",
+    "@tanstack/query-core": "^5.101.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.5.0"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "afterB": {
+    "count": 11,
+    "userEmail": "new@example.com"
+  },
+  "afterA": {
+    "userEmail": "new@example.com",
+    "count": 11,
+    "userOptimistic": false,
+    "countOptimistic": false
+  },
+  "afterFailedC": {
+    "nickname": "original-nickname",
+    "nicknameStatus": "error"
+  }
+}

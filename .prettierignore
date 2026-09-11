@@ -1,0 +1,57 @@
+# Mirrors .gitignore for build output / installed deps.
+node_modules
+dist
+coverage
+
+# Generated verbatim by `typedoc --options typedoc.markdown.json` and
+# drift-checked against that exact output -- reformatting it would make the
+# check flap. See scripts/check-api-report.mjs.
+docs/api-report
+docs/api
+
+# examples/ are separate, self-contained npm projects with their own
+# tooling -- not part of this package's own format scope, same rationale
+# eslint.config.js already uses to exclude them from lint. Each
+# test/integration/<category>/<name>/ fixture (relocated out of examples/,
+# see examples/README.md) is the same kind of project; only the flat
+# <category>/<name>.test.ts wrapper one level up stays in scope.
+# benchmarks/performance-runtime and benchmarks/performance-buildtime are
+# the same kind of self-contained project too (each its own package.json,
+# installed by its own npm install) -- benchmarks/benchmark-fixtures/ and
+# the top-level orchestration scripts directly under benchmarks/ stay in
+# scope.
+examples
+benchmarks/performance-runtime
+benchmarks/performance-buildtime
+test/integration/runtime-core/basic-standalone
+test/integration/runtime-core/server-database-integration
+test/integration/runtime-core/optimistic-mutation-concurrency
+test/integration/runtime-core/array-identity-reconciliation
+test/integration/subscriptions/subscription-lifecycle
+test/integration/subscriptions/subscription-with-recover
+test/integration/subscriptions/multi-capability-shared-transport
+test/integration/subscriptions/socket-io-subscription
+test/integration/coordinator/coordinator-dedup
+test/integration/coordinator/coordinator-isolation
+test/integration/runtime-modules/runtime-cache
+test/integration/runtime-modules/runtime-retry
+test/integration/adoption-patterns/tanstack-query-integration
+test/integration/build-tooling/tsconfig-aliases
+test/integration/build-tooling/tsconfig-aliases-consumer
+test/integration/build-tooling/eslint-plugin-usage
+
+# Generated, never hand-authored -- reformatting drifts it from its
+# generator instead of the other way around. One schema per canonical fact
+# model (ADR 0050) plus the original --json envelope schema, all written by
+# the same script (scripts/generate-json-schema.mjs).
+schemas/*.schema.json
+
+# Changesets-managed; reformatting past entries creates noise unrelated to
+# the actual change.
+CHANGELOG.md
+
+# Lockfile -- npm owns its formatting.
+package-lock.json
+
+# Benchmark run history -- appended by the benchmark runner, not hand-authored.
+benchmarks/history

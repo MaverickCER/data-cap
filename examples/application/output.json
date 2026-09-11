@@ -1,0 +1,10 @@
+{
+  "userDashboardStatus": "success",
+  "postDashboardStatus": "success",
+  "mixedResultStatus": "error",
+  "updateAttempts": 2,
+  "finalEmail": "ada+updated@example.com",
+  "finalOptimisticFlag": false,
+  "finalSubscriptionStatus": "disconnected",
+  "notifications": true
+}

@@ -1,0 +1,12 @@
+{
+  "name": "data-cap-performance-runtime",
+  "private": true,
+  "type": "module",
+  "description": "Runtime performance benchmark: cold-start cost as capability count scales, plus the sync-core/async-dispatch suite as fetched collection size scales.",
+  "scripts": {
+    "benchmark": "node --expose-gc scripts/run-benchmark.mjs"
+  },
+  "dependencies": {
+    "@maverickcer/data-cap": "file:../.."
+  }
+}

@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script>
+      // Synchronous, inline, as early as possible -- prevents a flash of the
+      // wrong theme when a stored localStorage choice (data-cap-theme) disagrees
+      // with prefers-color-scheme, which script.js's own theme logic (loaded at
+      // the end of <body>) would otherwise only correct after first paint.
+      ;(function () {
+        try {
+          var stored = window.localStorage.getItem("data-cap-theme")
+          var isDark =
+            stored === "dark"
+              ? true
+              : stored === "light"
+                ? false
+                : window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
+          document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light")
+        } catch (error) {
+          // localStorage/matchMedia unavailable -- leave [data-theme] unset;
+          // styles.css's prefers-color-scheme media query still applies.
+        }
+      })()
+    </script>
+    <title>data-cap — capability-owned data contracts</title>
+    <meta
+      name="description"
+      content="Your application's data should have an owner. data-cap treats a piece of application data as one capability-owned contract, independent of whatever database, transport, framework, or state-management library is on the other end — and sits next to TanStack Query, Redux, or plain fetch, not instead of them."
+    />
+    <link rel="canonical" href="https://maverickcer.github.io/data-cap/" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://maverickcer.github.io/data-cap/" />
+    <meta property="og:title" content="data-cap — capability-owned data contracts" />
+    <meta
+      property="og:description"
+      content="Your application's data should have an owner. You keep everything you have — data-cap sits underneath, or next to, TanStack Query, Redux, Zustand, or plain fetch-and-useState."
+    />
+    <meta
+      property="og:image"
+      content="https://maverickcer.github.io/data-cap/assets/og-image.png"
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="data-cap — capability-owned data contracts" />
+    <meta
+      name="twitter:description"
+      content="Your application's data should have an owner. You keep everything you have — data-cap sits underneath, or next to, TanStack Query, Redux, Zustand, or plain fetch-and-useState."
+    />
+    <meta
+      name="twitter:image"
+      content="https://maverickcer.github.io/data-cap/assets/og-image.png"
+    />
+
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="favicon.png" type="image/png" sizes="48x48" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header">
+      <div class="container">
+        <a class="site-logo" href="#top">data-cap</a>
+
+        <nav class="primary-nav" id="primary-nav" aria-label="Primary">
+          <ul class="primary-nav-list">
+            <li><a href="#why">Why it exists</a></li>
+            <li><a href="#how">How it works</a></li>
+            <li><a href="#see-it">See it</a></li>
+            <li><a href="#proof">Proof</a></li>
+          </ul>
+        </nav>
+
+        <div class="header-actions">
+          <button class="icon-button" type="button" id="theme-toggle" aria-pressed="false">
+            <span aria-hidden="true" class="theme-toggle-icon">◐</span>
+            <span class="sr-only">Toggle dark mode</span>
+          </button>
+          <a class="github-link" href="https://github.com/maverickcer/data-cap">GitHub ↗</a>
+          <a
+            class="button button--primary button--header"
+            href="https://github.com/maverickcer/data-cap#readme"
+          >
+            Read the README
+          </a>
+          <button
+            class="nav-toggle"
+            type="button"
+            aria-expanded="false"
+            aria-controls="primary-nav"
+          >
+            Menu
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main id="main">
+      <!-- Hero -->
+      <section class="hero" id="top" aria-labelledby="hero-heading">
+        <div class="container">
+          <p class="section-eyebrow">Data, owned</p>
+
+          <h1 id="hero-heading">Your application's data should have an owner.</h1>
+
+          <p class="hero-lede">
+            data-cap treats a piece of application data — its fields, and the
+            getters/mutators/subscriptions that acquire, mutate, or continuously observe it — as one
+            capability-owned contract, independent of whatever database, transport, framework, or
+            state-management library is on the other end.
+          </p>
+
+          <p class="hero-support">
+            You keep everything you have. No database change, no transport change, no
+            state-management library to rip out — data-cap doesn't replace TanStack Query, Redux,
+            Zustand, or a plain <code>fetch</code>-and-<code>useState</code>; it sits underneath, or
+            next to, whichever of those you're already using.
+          </p>
+
+          <div class="code-block">
+            <div class="code-block-header">
+              <span class="code-block-filename">One call, batteries included</span>
+              <button class="copy-button" type="button" data-copy-target="hero-init-snippet">
+                Copy
+              </button>
+            </div>
+
+            <!-- prettier-ignore -->
+            <pre><code id="hero-init-snippet">npm install @maverickcer/data-cap
+npx data-cap init</code></pre>
+          </div>
+
+          <div class="hero-actions">
+            <a class="button button--primary" href="#see-it">See it in action</a>
+            <a
+              class="button button--secondary button--on-dark"
+              href="https://github.com/maverickcer/data-cap#readme"
+            >
+              Read the README
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Why it exists -->
+      <section class="section" id="why" aria-labelledby="why-heading">
+        <div class="container container--narrow">
+          <p class="section-eyebrow">Why it exists</p>
+
+          <h2 id="why-heading">Fetching and state libraries answer different questions.</h2>
+
+          <p class="section-lede">
+            A fetching library dedupes requests. A state-management library gives you a store.
+            Neither one answers:
+          </p>
+
+          <ul class="principles-list">
+            <li>
+              Which piece of application data does this component actually own, versus merely
+              consume?
+            </li>
+            <li>
+              Is this mutation's optimistic value going to silently disagree with what two other
+              components expect?
+            </li>
+            <li>
+              Which capability is this subscription's transport shared with, and does tearing one
+              down affect the other?
+            </li>
+          </ul>
+
+          <div class="callout callout--note">
+            <p class="callout-title">The cost of not answering them</p>
+            <p>
+              As soon as more than one consumer — two components, a client and a server, two teams —
+              needs to agree on the shape of a piece of data and its current status, that agreement
+              usually ends up re-derived independently in each place, with no single source of truth
+              for what "loading" or "stale" means. data-cap makes the agreement itself the artifact:
+              a capability declares its fields and the operations that touch them, and every
+              consumer reads the same synchronously-available snapshot.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- How it works -->
+      <section class="section section--muted" id="how" aria-labelledby="how-heading">
+        <div class="container container--narrow">
+          <p class="section-eyebrow">How it works</p>
+
+          <h2 id="how-heading">Full manual control, or batteries included — same primitives.</h2>
+
+          <p class="section-lede">
+            <code>buildData</code> + <code>createDataStore</code> + <code>coordinator</code> are the
+            same Stable primitives <code>createData</code> composes — start wherever matches how
+            much control the capability actually needs.
+          </p>
+
+          <div class="diagram">
+            <p class="sr-only">
+              The same Stable primitives can be composed manually for full control, or used through
+              createData for a batteries-included dedup, status, and optimistic-mutation lifecycle.
+            </p>
+
+            <ol class="diagram-tree" aria-hidden="true">
+              <li>
+                Capability schema
+                <ol class="diagram-branches">
+                  <li>
+                    <span class="diagram-branch-label">Manual path (Stable)</span>
+                    <ol>
+                      <li>buildData</li>
+                      <li>createDataStore</li>
+                      <li>coordinator — full control over execution, retry, caching</li>
+                    </ol>
+                  </li>
+                  <li>
+                    <span class="diagram-branch-label">Batteries-included path (Experimental)</span>
+                    <ol>
+                      <li>createData</li>
+                      <li>dedup, per-operation status, optimistic mutation lifecycle</li>
+                      <li>Synchronously-readable snapshot</li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+            </ol>
+          </div>
+
+          <p>
+            Neither path is "the" way — pick per capability. Fields are always synchronously
+            readable from the moment <code>buildData()</code>/<code>createData()</code> returns,
+            with no throw-until-ready gate; <code>info</code> is mandatory on every
+            <code>DataState</code>, so consumers never special-case whether metadata has been
+            allocated yet.
+          </p>
+        </div>
+      </section>
+
+      <!-- Why not TanStack Query / Redux / manual fetch -->
+      <section class="section" id="why-not-x" aria-labelledby="why-not-x-heading">
+        <div class="container">
+          <p class="section-eyebrow">
+            Why not just TanStack Query, Redux, or manual fetch-and-state?
+          </p>
+
+          <h2 id="why-not-x-heading">You keep all of them.</h2>
+
+          <p class="section-lede">
+            data-cap doesn't replace your transport or your store — it adds the layer none of them
+            cover.
+          </p>
+
+          <div class="table-scroll">
+            <table class="comparison-table">
+              <caption>
+                Where common approaches stop and data-cap begins
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Tool</th>
+                  <th scope="col">What it solves</th>
+                  <th scope="col">What it doesn't</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">Manual <code>fetch</code> + <code>useState</code></th>
+                  <td>Gets data on screen</td>
+                  <td>
+                    No shared status vocabulary, no dedup, no optimistic-update contract — every
+                    component re-derives its own version
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">TanStack Query</th>
+                  <td>Fetching, caching, request dedup</td>
+                  <td>
+                    Says nothing about mutation-driven data your app owns outside a query, or how
+                    two consumers agree on ownership
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">Redux / Zustand / a global store</th>
+                  <td>One shared place to put state</td>
+                  <td>
+                    Doesn't distinguish declared ownership from incidental access — anything can
+                    write anywhere
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p>
+            See
+            <a
+              href="https://github.com/maverickcer/data-cap/tree/main/test/integration/adoption-patterns/tanstack-query-integration"
+              >tanstack-query-integration</a
+            >
+            for TanStack Query driving fetch/cache/dedup while its results flow into a data-cap
+            store. What data-cap adds is the layer none of the above cover: one capability-owned
+            contract every consumer reads the same synchronous snapshot from, plus a static-analysis
+            pass that turns it into ownership and dependency evidence.
+          </p>
+        </div>
+      </section>
+
+      <!-- See it -->
+      <section class="section section--muted" id="see-it" aria-labelledby="see-it-heading">
+        <div class="container container--narrow">
+          <p class="section-eyebrow">See it</p>
+
+          <h2 id="see-it-heading">Not a mockup — real output from this repository.</h2>
+
+          <p class="section-lede">
+            Run against
+            <a href="https://github.com/maverickcer/data-cap/tree/main/examples/application"
+              >examples/application</a
+            >
+            in this repo:
+          </p>
+
+          <div class="code-block">
+            <div class="code-block-header">
+              <span class="code-block-filename">npx data-cap --docs ... --ownership ...</span>
+              <button class="copy-button" type="button" data-copy-target="demo-output">Copy</button>
+            </div>
+
+            <!-- prettier-ignore -->
+            <pre><code id="demo-output">Wrote manifest: src/generated/data.manifest.ts
+Discovered 1 active capability(ies).
+
+Manifest changes since last execution:
+  No changes.
+Wrote docs: docs/DATA.md
+Wrote dependency & ownership report: docs/OWNERSHIP.md</code></pre>
+          </div>
+
+          <p>
+            A manifest of every active capability, a documentation catalog, and a dependency &
+            ownership report — statically derived from real code, not hand-maintained.
+          </p>
+        </div>
+      </section>
+
+      <!-- Adoption -->
+      <section class="section" id="adoption" aria-labelledby="adoption-heading">
+        <div class="container container--narrow">
+          <p class="section-eyebrow">Adoption</p>
+
+          <h2 id="adoption-heading">From manual control to batteries-included.</h2>
+
+          <p class="section-lede">
+            Most applications start with whichever primitive matches how much control a capability
+            needs — full manual control (<code>buildData</code> + <code>createDataStore</code> +
+            <code>coordinator</code>) or the batteries-included <code>createData</code>. Neither is
+            "the" way; pick per capability, and migrate one capability at a time.
+          </p>
+
+          <div class="callout callout--note">
+            <p class="callout-title">You probably don't need it when</p>
+            <p>
+              Your application is small, one team owns the entire data layer, and there's little
+              reason to separate business capabilities from their storage/fetching implementation. A
+              conventional fetch-and-<code>useState</code> pattern, or your existing
+              state-management library alone, may be simpler.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Proof -->
+      <section class="section section--muted" id="proof" aria-labelledby="proof-heading">
+        <div class="container">
+          <p class="section-eyebrow">Proof, not promises</p>
+
+          <h2 id="proof-heading">data-cap uses data-cap.</h2>
+
+          <p class="section-lede">
+            The project is self-hosted and covered by 3 flagship end-to-end examples plus 16 further
+            independently-installed regression fixtures. The implementation, tests, architecture
+            documentation, and decision records are the evidence behind everything on this page.
+          </p>
+
+          <div class="adoption-grid">
+            <a class="adoption-card" href="https://github.com/maverickcer/data-cap#readme">
+              <span class="adoption-card-title">README</span>
+              <span class="adoption-card-desc">
+                The pitch, a minimal first capability, and when data-cap is and isn't worth
+                adopting.
+              </span>
+              <span class="external-link-note">Read the README ↗</span>
+            </a>
+
+            <a
+              class="adoption-card"
+              href="https://github.com/maverickcer/data-cap/blob/main/GUIDE.md"
+            >
+              <span class="adoption-card-title">Guide</span>
+              <span class="adoption-card-desc">
+                Fields & info, optimistic mutations, array identity, subscriptions, the coordinator,
+                cache & retry, build tooling, and the CLI.
+              </span>
+              <span class="external-link-note">Read the Guide ↗</span>
+            </a>
+
+            <a
+              class="adoption-card"
+              href="https://github.com/maverickcer/data-cap/blob/main/specs/architecture.md"
+            >
+              <span class="adoption-card-title">Architecture</span>
+              <span class="adoption-card-desc">
+                The core invariants — one atomic snapshot per commit, one subscriber notification
+                only if changed, and why the build tool never executes discovered code.
+              </span>
+              <span class="external-link-note">Read architecture.md ↗</span>
+            </a>
+
+            <a
+              class="adoption-card"
+              href="https://github.com/maverickcer/data-cap/blob/main/SECURITY.md"
+            >
+              <span class="adoption-card-title">Security model</span>
+              <span class="adoption-card-desc">
+                Warn-not-throw ownership enforcement, static-analysis-only build tooling, and the
+                dual-package hazard.
+              </span>
+              <span class="external-link-note">Read the security model ↗</span>
+            </a>
+
+            <a
+              class="adoption-card"
+              href="https://github.com/maverickcer/data-cap/blob/main/ADOPTION.md"
+            >
+              <span class="adoption-card-title">Adoption guide</span>
+              <span class="adoption-card-desc">
+                A decision-maker summary: security posture, bundle size, and versioning/LTS stance.
+              </span>
+              <span class="external-link-note">Read ADOPTION.md ↗</span>
+            </a>
+
+            <a class="adoption-card" href="api/">
+              <span class="adoption-card-title">API reference</span>
+              <span class="adoption-card-desc">
+                Every exported symbol, generated from source so it cannot drift.
+              </span>
+              <span class="external-link-note">Read the API reference ↗</span>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Final CTA -->
+      <section class="section" id="fit" aria-labelledby="fit-heading">
+        <div class="container container--narrow">
+          <p class="section-eyebrow">Next</p>
+
+          <h2 id="fit-heading">See whether this model fits your data layer.</h2>
+
+          <p class="section-lede">
+            data-cap is pre-1.0. Per <code>VERSIONING.md</code>, a minor release may still change a
+            Stable API before 1.0 — pin accordingly and read the changelog on every minor upgrade.
+          </p>
+
+          <div class="hero-actions">
+            <a class="button button--primary" href="https://github.com/maverickcer/data-cap#readme">
+              Read the README
+            </a>
+            <a
+              class="button button--secondary"
+              href="https://github.com/maverickcer/data-cap/tree/main/examples"
+            >
+              View the examples
+            </a>
+            <a class="button button--secondary" href="api/">Browse the API</a>
+            <a class="button button--secondary" href="https://github.com/maverickcer/data-cap">
+              View on GitHub
+            </a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+      <div class="container footer-inner">
+        <ul class="footer-nav">
+          <li><a href="#why">Why it exists</a></li>
+          <li><a href="#how">How it works</a></li>
+          <li><a href="#see-it">See it</a></li>
+          <li><a href="#proof">Proof</a></li>
+          <li><a href="api/">API reference</a></li>
+          <li><a href="https://github.com/maverickcer/data-cap#readme">README ↗</a></li>
+          <li><a href="https://github.com/maverickcer/data-cap">GitHub ↗</a></li>
+          <li><a href="https://github.com/maverickcer/data-cap/issues">Issues ↗</a></li>
+        </ul>
+
+        <p class="footer-meta">
+          <span>© data-cap contributors</span>
+          <span>
+            <a href="https://github.com/maverickcer/data-cap/blob/main/LICENSE">MIT License</a>
+          </span>
+        </p>
+      </div>
+    </footer>
+
+    <!-- Announces copy-button confirmations to screen readers; the button's
+       own visible "Copied" text change alone is silent to assistive tech. -->
+    <div class="sr-only" role="status" aria-live="polite" id="copy-status"></div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

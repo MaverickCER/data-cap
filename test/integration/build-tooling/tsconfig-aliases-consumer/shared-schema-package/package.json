@@ -1,0 +1,12 @@
+{
+  "name": "shared-schema-package",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "A separate 'published' package declaring the one schema file it owns via its own package.json#dataCap.schema field -- for tsconfig-aliases-consumer's cross-package discovery demo. Never actually npm-published for real.",
+  "main": "./src/product.schema.ts",
+  "types": "./src/product.schema.ts",
+  "dataCap": {
+    "schema": "src/product.schema.ts"
+  }
+}

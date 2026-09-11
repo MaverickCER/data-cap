@@ -1,0 +1,57 @@
+{
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    // "DOM" is included only for ambient standard-API types (AbortSignal/
+    // AbortController) that core's operation context relies on -- Node
+    // implements these natively too; this is a type-only addition and never
+    // implies a runtime browser/DOM dependency (core remains zero-dependency
+    // and platform-neutral -- see specs/architecture.md). ES2022 is required
+    // for `Object.hasOwn` -- the package's `engines.node` floor (>=18) has
+    // shipped it natively since Node 16.9/18.0, and the ownership algorithm's
+    // core safety property depends on it over `in`/truthiness checks.
+    "lib": ["ES2022", "DOM"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "noEmit": true,
+    "noImplicitReturns": true,
+    // Load-bearing for the AST-walking code in src/build/ -- `node.arguments[0]`,
+    // `entries.keys().next().value`, and similar array/index accesses are
+    // frequently genuinely absent (an empty argument list, an empty Map),
+    // and this codebase's defensive runtime checks for that must be checked
+    // by the compiler too, not just trusted.
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "ES2022",
+    "types": ["node"],
+    "verbatimModuleSyntax": true
+  },
+  "include": ["src", "test"],
+  "exclude": [
+    // Bun's own native test runner (bun:test) and Deno's global `Deno`
+    // namespace execute these -- neither is part of this project's
+    // Node-targeted compiler options, and each runtime does its own
+    // type-checking (or deliberately skips it) when actually running the
+    // file.
+    "test/cross-runtime",
+    // Each `test/integration/<category>/<name>/` directory is its own
+    // self-contained npm project (mirrors `examples/`), typechecked by its
+    // own `npm run typecheck` in CI's `integration-fixtures` job, not by
+    // this root config -- only the flat `<category>/<name>.test.ts` wrapper
+    // one level up is meant to be typechecked here. The glob's three `*`
+    // segments (category/name/anything-inside) match every file inside a
+    // fixture project without matching the wrapper `.test.ts` file itself,
+    // which has only two segments below `test/integration/`.
+    "test/integration/*/*/*",
+    // Written on the fly by test/build/json-schema.test.ts (a throwaway
+    // consumer project the built CLI is run against) and deliberately left
+    // on disk afterwards for post-mortem inspection. It imports the
+    // *installed* package, not this source tree, so typechecking it here
+    // would fail against whatever `dist/` currently holds.
+    "test/build/fixtures-json-schema"
+  ]
+}

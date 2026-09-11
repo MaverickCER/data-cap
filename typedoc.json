@@ -1,0 +1,25 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": [
+    "src/core/index.ts",
+    "src/runtime/index.ts",
+    "src/build/index.ts",
+    "src/helpers/index.ts",
+    "src/eslint-plugin/index.ts"
+  ],
+  "out": "docs/api",
+  "readme": "none",
+  "plugin": ["./scripts/typedoc-a11y-search-label.mjs"],
+  "validation": {
+    "notExported": true,
+    "notDocumented": true,
+    "invalidLink": true
+  },
+  "intentionallyNotExported": [
+    "DeepPartial",
+    "CapabilityBase",
+    "CapabilityGetterMethods",
+    "CapabilityMutatorMethods",
+    "CapabilitySubscriptionMethods"
+  ]
+}

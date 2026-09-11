@@ -1,0 +1,13 @@
+%% Capability: memberData
+flowchart TB
+  subgraph boundary["Trust Boundary (proven, in-repo)"]
+    n0(["memberData"])
+    n1[/"members"/]
+    n3(["getter: listMembers"])
+  end
+  n2[["members-api<br/><em>api</em>"]]
+  n4["src/capabilities/project.capability.ts"]
+  n2 -.->|"declared: members (plaintext)"| n3
+  n3 -.->|"writes"| n1
+  n1 -->|"proven: src/capabilities/project.capability.ts:31:19"| n4
+  linkStyle 0 stroke:#e63946,stroke-width:3px

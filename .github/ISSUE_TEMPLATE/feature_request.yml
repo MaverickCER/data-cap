@@ -1,0 +1,36 @@
+name: Feature request
+description: Propose new behavior, an API addition, or a new build-time capability
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: Describe the concrete situation, not just the desired API. data-cap's design intentionally rejects some conveniences (see specs/decisions/) when they'd require executing discovered capability files, adding a `.value`/proxy wrapper, or inventing an automatic conflict-resolution policy — knowing the underlying problem helps find a solution consistent with those constraints.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed API or behavior
+      description: Sketch the call site you'd want to write (a `buildData`/`createData` shape, a helper signature, etc.).
+      render: ts
+
+  - type: dropdown
+    id: stability
+    attributes:
+      label: Would this be a change to a stable surface, or could it ship Experimental first?
+      description: See VERSIONING.md. `createData` itself shipped Experimental first, composed entirely out of Stable primitives — a reasonable model for a new higher-level convenience.
+      options:
+        - "Not sure"
+        - "Should be stable from day one"
+        - "Fine shipping Experimental first"
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you've already considered
+      description: Existing helpers/processors, a userland workaround, or a similar feature in another tool (manual fetch + useState, TanStack Query, SWR, Redux/Zustand as a global store) — helps avoid re-litigating an already-rejected approach from specs/decisions/.
