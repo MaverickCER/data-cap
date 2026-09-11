@@ -74,21 +74,31 @@ function main() {
     // versions (confirmed: npm bundled with Node 18/22 still runs it here,
     // while Node 24's doesn't) -- when it fires, the build's own console
     // output lands on this same stdout stream ahead of npm's JSON. Find the
-    // real top-level array by trying every `[` in turn: a candidate inside
-    // the JSON itself (e.g. a nested `files` array) leaves trailing content
-    // after it parses, so only the true outermost `[` consumes the rest of
-    // the stream cleanly.
-    const packResult = (() => {
-      for (let i = packOutput.indexOf("["); i !== -1; i = packOutput.indexOf("[", i + 1)) {
+    // real top-level JSON value by trying every `[`/`{` in turn: a candidate
+    // inside the JSON itself (e.g. a nested `files` array) leaves trailing
+    // content after it parses, so only the true outermost one consumes the
+    // rest of the stream cleanly.
+    //
+    // `npm pack --json`'s top-level shape itself isn't stable either: most
+    // npm versions return an array (`[{...}]`), but the very latest npm
+    // (confirmed via release.yml's own `npm install -g npm@latest`, used by
+    // changesets/action's publish step) returns an object keyed by package
+    // name instead (`{"data-cap": {...}}`) for this exact single-package
+    // invocation. Handle both.
+    const packEntry = (() => {
+      const candidates = [...packOutput.matchAll(/[[{]/g)].map((m) => m.index)
+      for (const i of candidates) {
         try {
-          return JSON.parse(packOutput.slice(i))
+          const parsed = JSON.parse(packOutput.slice(i))
+          const entry = Array.isArray(parsed) ? parsed[0] : Object.values(parsed)[0]
+          if (entry && typeof entry.filename === "string") return entry
         } catch {
-          continue
+          // fall through to the next candidate
         }
       }
-      throw new Error(`no valid JSON array found in npm pack output:\n${packOutput}`)
+      throw new Error(`no valid npm pack manifest found in npm pack output:\n${packOutput}`)
     })()
-    const tarballName = packResult[0].filename
+    const tarballName = packEntry.filename
     const tarball = path.join(workDir, tarballName)
     execFileSync("tar", ["-xzf", tarball, "-C", workDir])
 
