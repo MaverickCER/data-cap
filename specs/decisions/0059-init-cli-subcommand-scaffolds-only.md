@@ -39,7 +39,7 @@ init` takes no arguments except `--help`.
   placeholder field group). `src/` if that directory already exists,
   project root otherwise.
 - `scripts/generate-data.mjs` — a runnable artifact generator calling
-  `generateDataArtifacts()` with the `@maverickcer/data-cap/node`
+  `generateDataArtifacts()` with the `data-cap/node`
   filesystem adapter (manifest + docs + ownership).
 
 It is **filesystem-only and non-executing**: no subprocess, no

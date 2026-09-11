@@ -29,8 +29,8 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import path from "node:path"
 import { MongoMemoryServer } from "mongodb-memory-server"
-import { DataProjectGenerationError, generateDataArtifacts } from "@maverickcer/data-cap/build"
-import { nodeBuildFileSystem } from "@maverickcer/data-cap/node"
+import { DataProjectGenerationError, generateDataArtifacts } from "data-cap/build"
+import { nodeBuildFileSystem } from "data-cap/node"
 import { connectDb, disconnectDb } from "./src/server/db.js"
 import { handleRequest } from "./src/server/http-handler.js"
 import { seedUser } from "./src/server/functions.js"
@@ -268,8 +268,8 @@ const guardFixtureDir = await mkdtemp(path.join(tmpdir(), "data-cap-guard-demo-"
 try {
   await writeFile(
     path.join(guardFixtureDir, "bad.capability.ts"),
-    `import { documentData } from "@maverickcer/data-cap"
-import { createData } from "@maverickcer/data-cap/runtime"
+    `import { documentData } from "data-cap"
+import { createData } from "data-cap/runtime"
 
 const schema = {
   fields: { ssn: "" },

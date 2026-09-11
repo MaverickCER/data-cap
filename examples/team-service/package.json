@@ -10,7 +10,7 @@
     "check": "data-cap --root . --include \"src/**\" --location src/generated/data.manifest.ts --docs docs/DATA.md --ownership docs/OWNERSHIP.md --flow docs/flow --evidence docs/data.evidence.json --check"
   },
   "dependencies": {
-    "@maverickcer/data-cap": "file:../.."
+    "data-cap": "file:../.."
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

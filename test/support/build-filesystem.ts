@@ -4,7 +4,7 @@ import { nodeBuildFileSystem } from "../../src/node/index.js"
 
 /**
  * The real `node:fs/promises`-backed {@link BuildFileSystem} for tests -- the
- * exact adapter the package publishes as `@maverickcer/data-cap/node` (and the
+ * exact adapter the package publishes as `data-cap/node` (and the
  * `data-cap` CLI's own `fs` capability). Integration/golden tests that need
  * real disk behavior use this; importing it here also gives the published
  * `./node` entry real test coverage.

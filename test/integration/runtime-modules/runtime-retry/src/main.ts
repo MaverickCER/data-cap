@@ -12,7 +12,7 @@
 import assert from "node:assert/strict"
 import { writeFileSync } from "node:fs"
 import path from "node:path"
-import { withRetry, isStillDefault } from "@maverickcer/data-cap/runtime/retry"
+import { withRetry, isStillDefault } from "data-cap/runtime/retry"
 
 // -- withRetry: succeeds after two transient failures --
 let attemptCount = 0

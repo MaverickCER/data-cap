@@ -1,7 +1,7 @@
 # Examples
 
 Three real, standalone npm projects, each depending on the root package via
-`"@maverickcer/data-cap": "file:../.."`. npm installs a `file:` dependency
+`"data-cap": "file:../.."`. npm installs a `file:` dependency
 pointing at a local directory as a symlink back to that directory (not a
 filtered, packed copy), so each example always runs against whatever
 `npm run build` at the repo root most recently produced -- run `npm run
@@ -141,7 +141,7 @@ another simulated fetch.
 
 | Example | Side | Demonstrates |
 | --- | --- | --- |
-| [`application`](application) | Client | The batteries-included `createData` (`@maverickcer/data-cap/runtime`) -- fields/getters/mutators/subscriptions declared together via a shared, type-checked schema; dedup, optimistic mutation + `withRetry`, request cancellation, caching |
+| [`application`](application) | Client | The batteries-included `createData` (`data-cap/runtime`) -- fields/getters/mutators/subscriptions declared together via a shared, type-checked schema; dedup, optimistic mutation + `withRetry`, request cancellation, caching |
 | [`team-service`](team-service) | Client | Capability-per-file ownership; `projectData` composing `memberData` directly for a real, proven cross-capability dependency; `assignmentsData` independently duplicating the same endpoint, caught by `DUPLICATE_ENDPOINT_ACROSS_CAPABILITIES`; identity-stable array reconciliation via `createDataStore` |
 | [`enterprise-platform`](enterprise-platform) | Server | Atlas -- a real TanStack Start + MongoDB/Mongoose service with three independently-owned capabilities (`identityData`/`projectsData`/`billingData`), declared per-endpoint `handling` (plaintext/masked/redacted/hashed/encrypted) feeding a real field-lifecycle table, and two generated reports (`litigation-evidence`, `audit-prep`) plus a real `--strict-docs`/`--strict-flow` CI guard proven against a synthetic gap |
 

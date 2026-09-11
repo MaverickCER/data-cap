@@ -8,7 +8,7 @@
 // ../../render-benchmark-summary.mjs's job, run separately by CI.
 //
 // Imports data-cap's build tooling via its PACKAGE NAME
-// (`@maverickcer/data-cap/build`), resolved through this directory's own
+// (`data-cap/build`), resolved through this directory's own
 // `node_modules` (a `file:../..` dependency, installed by `npm install`
 // here) -- the "full package" benchmark, exercising the real published
 // `./build` entry point a real consumer's `npm install` would resolve, not
@@ -20,7 +20,7 @@ import fs from "node:fs/promises"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 
-import { discoverCapabilityFiles, generateDataArtifacts } from "@maverickcer/data-cap/build"
+import { discoverCapabilityFiles, generateDataArtifacts } from "data-cap/build"
 
 import { generateBuildtimeFixtures } from "../../benchmark-fixtures/generator.mjs"
 import { hashFixtureTree } from "../../benchmark-fixtures/fixture-hash.mjs"

@@ -91,8 +91,8 @@ return <Spinner />`), you're not benefiting much from fields being
 
 ```ts
 // user-capability.ts -- declared once, shared by every consumer
-import { buildData } from "@maverickcer/data-cap"
-import { createDataStore, defaultCoordinator } from "@maverickcer/data-cap/runtime"
+import { buildData } from "data-cap"
+import { createDataStore, defaultCoordinator } from "data-cap/runtime"
 
 export const userCapability = buildData({ fields: { user: { name: "", email: "" } } })
 export const userStore = createDataStore(userCapability)

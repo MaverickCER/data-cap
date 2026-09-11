@@ -1,7 +1,7 @@
 /**
  * Two real mistakes the rule catches -- see good-usage.ts for why this uses
  * a local stub `createData`, not the real one imported from
- * `@maverickcer/data-cap/runtime`.
+ * `data-cap/runtime`.
  */
 function createData(config: unknown): unknown {
   return config

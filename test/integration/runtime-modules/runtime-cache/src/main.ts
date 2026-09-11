@@ -10,9 +10,9 @@
 import assert from "node:assert/strict"
 import { writeFileSync } from "node:fs"
 import path from "node:path"
-import { buildData } from "@maverickcer/data-cap"
-import { createDataCache } from "@maverickcer/data-cap/runtime/cache"
-import { canonicalize } from "@maverickcer/data-cap/helpers"
+import { buildData } from "data-cap"
+import { createDataCache } from "data-cap/runtime/cache"
+import { canonicalize } from "data-cap/helpers"
 
 interface UserFields {
   readonly user: { readonly id: string; readonly name: string }

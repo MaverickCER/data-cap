@@ -22,12 +22,12 @@
  * exactly what problem it solves here.
  */
 import assert from "node:assert/strict"
-import type { FieldInfo } from "@maverickcer/data-cap"
-import { buildData } from "@maverickcer/data-cap"
-import { createDataStore } from "@maverickcer/data-cap/runtime"
-import { withRetry } from "@maverickcer/data-cap/runtime/retry"
-import { canonicalize, identity } from "@maverickcer/data-cap/helpers"
-import type { IdentityWarning } from "@maverickcer/data-cap/helpers"
+import type { FieldInfo } from "data-cap"
+import { buildData } from "data-cap"
+import { createDataStore } from "data-cap/runtime"
+import { withRetry } from "data-cap/runtime/retry"
+import { canonicalize, identity } from "data-cap/helpers"
+import type { IdentityWarning } from "data-cap/helpers"
 import { assignmentsData } from "./capabilities/assignments.capability.js"
 import { memberData } from "./capabilities/member.capability.js"
 import { projectData } from "./capabilities/project.capability.js"

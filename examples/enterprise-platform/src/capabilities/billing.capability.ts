@@ -14,8 +14,8 @@
  * access path is accounted for, not evidence that data-cap independently
  * verified what the utility does with the value.
  */
-import { documentData, fields } from "@maverickcer/data-cap"
-import { createData } from "@maverickcer/data-cap/runtime"
+import { documentData, fields } from "data-cap"
+import { createData } from "data-cap/runtime"
 import { apiFetch, apiUrl, currentSessionCookie } from "./api-client.js"
 
 export interface Invoice {

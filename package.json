@@ -1,6 +1,6 @@
 {
-  "name": "@maverickcer/data-cap",
-  "version": "0.1.0",
+  "name": "data-cap",
+  "version": "0.2.0",
   "description": "Executable, analyzable data contracts. Capabilities declare the fields they own and the getters/mutators/subscriptions that acquire, mutate, or observe them, independent of databases, transports, frameworks, and state-management libraries.",
   "keywords": [
     "data",
@@ -188,7 +188,7 @@
     "eslint-config-prettier": "10.1.8",
     "espree": "^11.2.0",
     "globals": "^17.9.0",
-    "internal-package-contract": "file:../internal-package-contract",
+    "internal-package-contract": "git+https://github.com/MaverickCER/internal-package-contract.git#main",
     "prettier": "3.9.6",
     "ts-json-schema-generator": "^2.9.0",
     "tsup": "^8.0.0",

@@ -14,8 +14,8 @@
 import assert from "node:assert/strict"
 import { writeFileSync } from "node:fs"
 import path from "node:path"
-import { buildData, documentData } from "@maverickcer/data-cap"
-import { createDataStore, defaultCoordinator } from "@maverickcer/data-cap/runtime"
+import { buildData, documentData } from "data-cap"
+import { createDataStore, defaultCoordinator } from "data-cap/runtime"
 
 interface UserRow {
   readonly id: string

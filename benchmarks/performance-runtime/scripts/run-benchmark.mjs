@@ -8,7 +8,7 @@
 // ../../render-benchmark-summary.mjs's job, run separately by CI.
 //
 // Imports data-cap via its PACKAGE NAME, resolved through this directory's
-// own `node_modules/@maverickcer/data-cap` (a `file:../..` dependency,
+// own `node_modules/data-cap` (a `file:../..` dependency,
 // installed by `npm install` here) -- never a relative `../../dist/*.js`
 // path. This is the "full package" benchmark: it exercises the actual
 // published entry points/exports map a real consumer's `npm install` would
@@ -19,9 +19,9 @@ import fs from "node:fs/promises"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 
-import { buildData } from "@maverickcer/data-cap"
-import { createDataStore, createData, createCoordinator } from "@maverickcer/data-cap/runtime"
-import { canonicalize, identity } from "@maverickcer/data-cap/helpers"
+import { buildData } from "data-cap"
+import { createDataStore, createData, createCoordinator } from "data-cap/runtime"
+import { canonicalize, identity } from "data-cap/helpers"
 
 import {
   generateRecords,

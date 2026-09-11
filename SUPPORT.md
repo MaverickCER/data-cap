@@ -1,6 +1,6 @@
 # Support
 
-Thank you for using `@maverickcer/data-cap`.
+Thank you for using `data-cap`.
 
 This document explains how to get help, report issues, and request improvements.
 
@@ -32,7 +32,7 @@ If you believe you have found a bug, please open a **GitHub Issue**.
 
 When reporting a bug, include:
 
-- The version of `@maverickcer/data-cap`
+- The version of `data-cap`
 - Your Node.js version
 - Your operating system
 - Steps to reproduce the issue
@@ -69,6 +69,6 @@ Older releases may receive limited support or no updates.
 
 ## Response Expectations
 
-`@maverickcer/data-cap` is maintained as an open source project.
+`data-cap` is maintained as an open source project.
 
 While all Issues and Discussions are appreciated, response times cannot be guaranteed. Community participation is encouraged, and well-documented bug reports and feature proposals help improve the project for everyone.

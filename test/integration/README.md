@@ -2,7 +2,7 @@
 
 Answers one question: **does data-cap actually work?** Sixteen real,
 standalone npm projects (the same self-contained-project shape `examples/`
-uses -- each depends on the root package via `"@maverickcer/data-cap":
+uses -- each depends on the root package via `"data-cap":
 "file:../../../.."` and is installed/typechecked separately, never by the
 root `npm ci`), each proving exactly one specific mechanism against the
 real, built package. Relocated here, unmodified in substance, from what used

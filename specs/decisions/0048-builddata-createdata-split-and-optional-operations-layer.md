@@ -52,7 +52,7 @@ Stable-tier semver coverage — only its name and file changed, plus its
 returned type `DataCapability<T>` is renamed `BuiltData<T>`.
 
 **`createData()`** is reclaimed for a new, batteries-included, stateful
-entry point exported from `@maverickcer/data-cap/runtime` (never from
+entry point exported from `data-cap/runtime` (never from
 core — core must stay synchronous/stateless, the one half of the original
 "no execution loop" invariant that was never actually in question). It
 composes `buildData` + `createDataStore` + a `Coordinator` internally — no
@@ -245,7 +245,7 @@ control over execution, retry, and caching policy.
   behaviorally unchanged. All 15 pre-existing examples still pass,
   mechanically renamed (`createData` → `buildData` at their own call
   sites) with no logic changes.
-- `@maverickcer/data-cap/runtime`'s gzip budget (`scripts/check-size.mjs`)
+- `data-cap/runtime`'s gzip budget (`scripts/check-size.mjs`)
   rose from 4 KB to 6 KB (measured ~5.5 KB) to accommodate `createData`'s
   real code, landing in the same entry as `createDataStore`/`coordinator`
   rather than a separate tree-shaken sub-path the way `runtime/cache`/

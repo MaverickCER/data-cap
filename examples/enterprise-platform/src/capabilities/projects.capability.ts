@@ -7,8 +7,8 @@
  * capabilities (`billing.capability.ts` is finance's own), all
  * independently analyzable together.
  */
-import { documentData } from "@maverickcer/data-cap"
-import { createData } from "@maverickcer/data-cap/runtime"
+import { documentData } from "data-cap"
+import { createData } from "data-cap/runtime"
 import { apiFetch } from "./api-client.js"
 
 export interface Project {

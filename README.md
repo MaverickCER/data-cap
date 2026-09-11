@@ -1,22 +1,10 @@
 # data-cap
 
-<!-- TODO(readme-badges): uncomment once @maverickcer/data-cap has been published to npm
-     for the first time (release.yml's first successful `npm publish`). The CI, license,
-     coverage, size, TypeScript, zero-deps, and Node-version badges below would all
-     already render correctly before that point too (none of them depend on npm
-     registry data) -- they're bundled into this same commented block anyway so the
-     badge row appears all at once, rather than rolling out in a visibly staggered,
-     half-finished-looking way across two separate edits. -->
-<!--
 [![CI](https://img.shields.io/github/actions/workflow/status/maverickcer/data-cap/ci.yml?branch=main&label=CI)](https://github.com/maverickcer/data-cap/actions/workflows/ci.yml)
-[![npm version](https://img.shields.io/npm/v/%40maverickcer%2Fdata-cap)](https://www.npmjs.com/package/@maverickcer/data-cap)
+[![npm version](https://img.shields.io/npm/v/data-cap)](https://www.npmjs.com/package/data-cap)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Coverage](https://img.shields.io/endpoint?url=https://maverickcer.github.io/data-cap/coverage-badge.json)](https://github.com/maverickcer/data-cap/actions/workflows/ci.yml)
 [![Bundle size](https://img.shields.io/endpoint?url=https://maverickcer.github.io/data-cap/size-badge.json)](scripts/check-size.mjs)
-[![Zero runtime dependencies](https://img.shields.io/badge/runtime_deps-0-brightgreen)](package.json)
 [![TypeScript](https://img.shields.io/badge/TypeScript-ready-3178c6)](#installation)
-[![Node](https://img.shields.io/badge/node-%3E%3D18-brightgreen)](#installation)
--->
 
 **Your application's data should have an owner.**
 
@@ -88,7 +76,7 @@ Existing data tools answer different questions. Fetching libraries retrieve data
 Install the package:
 
 ```bash
-npm install @maverickcer/data-cap
+npm install data-cap
 ```
 
 Define a capability around data your application owns:

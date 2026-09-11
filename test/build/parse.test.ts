@@ -68,7 +68,7 @@ describe("parseCapabilityFile -- createData discovery", () => {
   it("recognizes a namespace-qualified call (dataCap.createData(...))", () => {
     const result = parseCapabilityFile(
       "/project/user.ts",
-      `import * as dataCap from "@maverickcer/data-cap";\nexport const userCapability = dataCap.createData({ fields: {} });`,
+      `import * as dataCap from "data-cap";\nexport const userCapability = dataCap.createData({ fields: {} });`,
     )
     expect(result.createDataCalls).toHaveLength(1)
   })
@@ -290,50 +290,41 @@ describe("parseCapabilityFile -- import binding collection", () => {
   })
 
   it("collects a named import", () => {
-    const result = parseCapabilityFile(
-      "/project/user.ts",
-      `import { createData } from "@maverickcer/data-cap";`,
-    )
+    const result = parseCapabilityFile("/project/user.ts", `import { createData } from "data-cap";`)
     expect(result.imports).toContainEqual({
       localName: "createData",
       importedName: "createData",
-      moduleSpecifier: "@maverickcer/data-cap",
+      moduleSpecifier: "data-cap",
     })
   })
 
   it("collects a renamed named import, tracking both the local and imported names", () => {
     const result = parseCapabilityFile(
       "/project/user.ts",
-      `import { createData as makeData } from "@maverickcer/data-cap";`,
+      `import { createData as makeData } from "data-cap";`,
     )
     expect(result.imports).toContainEqual({
       localName: "makeData",
       importedName: "createData",
-      moduleSpecifier: "@maverickcer/data-cap",
+      moduleSpecifier: "data-cap",
     })
   })
 
   it("collects a default import", () => {
-    const result = parseCapabilityFile(
-      "/project/user.ts",
-      `import dataCap from "@maverickcer/data-cap";`,
-    )
+    const result = parseCapabilityFile("/project/user.ts", `import dataCap from "data-cap";`)
     expect(result.imports).toContainEqual({
       localName: "dataCap",
       importedName: "default",
-      moduleSpecifier: "@maverickcer/data-cap",
+      moduleSpecifier: "data-cap",
     })
   })
 
   it("collects a namespace import", () => {
-    const result = parseCapabilityFile(
-      "/project/user.ts",
-      `import * as dataCap from "@maverickcer/data-cap";`,
-    )
+    const result = parseCapabilityFile("/project/user.ts", `import * as dataCap from "data-cap";`)
     expect(result.imports).toContainEqual({
       localName: "dataCap",
       importedName: "*",
-      moduleSpecifier: "@maverickcer/data-cap",
+      moduleSpecifier: "data-cap",
     })
   })
 

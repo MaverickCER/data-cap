@@ -11,7 +11,7 @@ npm install
 npm run benchmark
 ```
 
-A real `npm install` here (not a monorepo-relative import) -- `@maverickcer/data-cap` is a `file:../..`
+A real `npm install` here (not a monorepo-relative import) -- `data-cap` is a `file:../..`
 dependency, so every benchmark below runs against the package as an actual consumer's `npm install` would
 resolve it (real `exports` map, real `package.json`, real `dist/`), never a `../../dist/*.js` shortcut.
 

@@ -4,12 +4,12 @@
 project confidence tooling, not adoption samples like the flagships under [`examples/`](../examples/) --
 they exist to answer "does this scale," "did that regress," and "did that architectural decision actually
 pay off," for maintainers and prospective adopters evaluating data-cap at real-world scale. Each is a
-self-contained npm project (its own `package.json`, depending on `@maverickcer/data-cap` via `file:../..`)
+self-contained npm project (its own `package.json`, depending on `data-cap` via `file:../..`)
 -- run `npm install && npm run benchmark` inside either directory, or `npm run benchmark` from the repo
 root, which drives both via [`run-benchmarks.mjs`](run-benchmarks.mjs).
 
 **"Full package" benchmarks, deliberately**: both examples import data-cap by its published PACKAGE NAME
-(`@maverickcer/data-cap`, `@maverickcer/data-cap/runtime`, `@maverickcer/data-cap/build`, ...), resolved
+(`data-cap`, `data-cap/runtime`, `data-cap/build`, ...), resolved
 through their own `node_modules` after a real `npm install` -- never a monorepo-relative `../../dist/*.js`
 shortcut. This exercises the actual `exports` map/`package.json` a real consumer's `npm install` would
 resolve, not an approximation of it.

@@ -16,8 +16,8 @@
  * never "fixes" it automatically, and never claims the two calls are
  * provably identical at runtime, only that both DECLARE the same URL.
  */
-import { documentData } from "@maverickcer/data-cap"
-import { createData } from "@maverickcer/data-cap/runtime"
+import { documentData } from "data-cap"
+import { createData } from "data-cap/runtime"
 import { fetchMembersRemoteForAssignments } from "../server/members.js"
 
 export interface AssignedTask {

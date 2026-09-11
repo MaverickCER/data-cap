@@ -18,8 +18,8 @@
 import assert from "node:assert/strict"
 import { writeFileSync } from "node:fs"
 import path from "node:path"
-import { buildData } from "@maverickcer/data-cap"
-import { createDataStore } from "@maverickcer/data-cap/runtime"
+import { buildData } from "data-cap"
+import { createDataStore } from "data-cap/runtime"
 
 const capability = buildData({ fields: { price: 0, source: "" } })
 const store = createDataStore(capability)

@@ -11,8 +11,8 @@ import assert from "node:assert/strict"
 import { writeFileSync } from "node:fs"
 import path from "node:path"
 import { QueryClient } from "@tanstack/query-core"
-import { buildData } from "@maverickcer/data-cap"
-import { createDataStore } from "@maverickcer/data-cap/runtime"
+import { buildData } from "data-cap"
+import { createDataStore } from "data-cap/runtime"
 
 interface User {
   readonly name: string

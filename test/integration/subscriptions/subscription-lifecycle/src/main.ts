@@ -10,8 +10,8 @@
 import assert from "node:assert/strict"
 import { writeFileSync } from "node:fs"
 import path from "node:path"
-import { defaultCoordinator } from "@maverickcer/data-cap/runtime"
-import type { SubscriptionHandlers } from "@maverickcer/data-cap/runtime"
+import { defaultCoordinator } from "data-cap/runtime"
+import type { SubscriptionHandlers } from "data-cap/runtime"
 
 interface FeedEvent {
   readonly message: string

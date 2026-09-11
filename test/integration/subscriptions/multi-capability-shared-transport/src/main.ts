@@ -20,9 +20,9 @@
 import assert from "node:assert/strict"
 import { writeFileSync } from "node:fs"
 import path from "node:path"
-import { buildData } from "@maverickcer/data-cap"
-import { createDataStore, defaultCoordinator } from "@maverickcer/data-cap/runtime"
-import type { SubscriptionHandlers } from "@maverickcer/data-cap/runtime"
+import { buildData } from "data-cap"
+import { createDataStore, defaultCoordinator } from "data-cap/runtime"
+import type { SubscriptionHandlers } from "data-cap/runtime"
 
 interface PriceEvent {
   readonly rawPrice: number
