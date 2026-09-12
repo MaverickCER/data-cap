@@ -4,7 +4,7 @@
 [![npm version](https://img.shields.io/npm/v/data-cap)](https://www.npmjs.com/package/data-cap)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Bundle size](https://img.shields.io/endpoint?url=https://maverickcer.github.io/data-cap/size-badge.json)](scripts/check-size.mjs)
-[![TypeScript](https://img.shields.io/badge/TypeScript-ready-3178c6)](#installation)
+[![TypeScript](https://img.shields.io/badge/TypeScript-ready-3178c6)](#quick-start)
 
 **Your application's data should have an owner.**
 
