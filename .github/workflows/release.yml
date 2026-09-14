@@ -1,3 +1,8 @@
+# internal-package-contract caller workflow. Runs the shared Changesets + npm OIDC
+# trusted-publishing release flow on every push to main. Replace nothing -- the real
+# logic lives in the shared, centrally-maintained reusable workflow this calls; a fix
+# or improvement there reaches every consumer without a per-repo edit. See
+# https://github.com/MaverickCER/internal-package-contract/blob/main/.github/workflows/release-npm-changesets.yml
 name: Release
 
 on:
@@ -8,49 +13,12 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
   release:
-    runs-on: ubuntu-latest
     permissions:
       contents: write
       pull-requests: write
-      # Enables npm's OIDC trusted publishing (GA since July 2025) -- no
-      # NPM_TOKEN secret exists or is needed. npm verifies this exact
-      # workflow/repo against a trusted-publisher registration made once,
-      # manually, on npmjs.com (see CONTRIBUTING.md).
+      # Enables npm's OIDC trusted publishing -- see the called workflow's own
+      # comment. Required here too: GitHub caps the called workflow's effective
+      # permissions at the intersection of what this caller grants and what it
+      # itself declares.
       id-token: write
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          fetch-depth: 0
-
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: 24.x
-          cache: npm
-
-      - run: npm ci
-
-      # OIDC trusted publishing requires npm CLI >=11.5.1 and Node >=22.14 --
-      # don't rely on whatever version happens to be bundled.
-      - run: npm install -g npm@latest
-
-      - name: Create Release Pull Request or Publish
-        id: changesets
-        uses: changesets/action@ce079ea084e08a340947ed4d6ecedb2433c8f293 # v1
-        with:
-          publish: npm run release
-          version: npm run version
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # Rolls the floating `v1` tag documented in the README's/action.yml's
-      # `uses: maverickcer/data-cap@v1` example forward to this commit, standard
-      # GitHub Actions convention (e.g. `actions/checkout@v4`). This versions the
-      # composite Action's own interface (action.yml's inputs/outputs), which is
-      # independent of the npm package's own pre-1.0 semver -- it only needs to move
-      # when action.yml itself has a breaking change, which hasn't happened yet, so
-      # every successful publish rolls it forward unconditionally.
-      - name: Roll floating v1 Action tag
-        if: steps.changesets.outputs.published == 'true'
-        run: |
-          git tag -f v1
-          git push origin v1 --force
+    uses: MaverickCER/internal-package-contract/.github/workflows/release-npm-changesets.yml@main

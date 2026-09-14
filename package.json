@@ -199,7 +199,11 @@
     "vitest": "^3.2.7"
   },
   "overrides": {
-    "esbuild": "^0.28.1"
+    "esbuild": "^0.28.1",
+    "tar": "^7.5.22",
+    "pa11y": {
+      "puppeteer": "npm:puppeteer-core@^25.9.0"
+    }
   },
   "publishConfig": {
     "access": "public"
