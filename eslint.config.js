@@ -129,6 +129,28 @@ export default tseslint.config(
     },
   },
   {
+    // Same discipline as the node:fs ban above, for node:child_process --
+    // but with no src/cli/** exemption: unlike node:fs (which the CLI
+    // legitimately needs to construct the fs adapter it hands to ./build),
+    // data-cap has no legitimate reason to spawn a process anywhere,
+    // including its own CLI. This mechanically enforces "the consumer
+    // provides shell access, this package never defaults to it" as a
+    // standing guarantee rather than resting on today's absence of usage.
+    files: ["src/**/*.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: ["child_process", "node:child_process"].map((name) => ({
+            name,
+            message:
+              "data-cap never spawns a process itself -- there is no capability-injection escape hatch for this one, unlike node:fs. If a real need appears, it belongs in dev/build tooling (scripts/), never in src/.",
+          })),
+        },
+      ],
+    },
+  },
+  {
     // Every coercion here exists specifically to turn a raw `unknown` value
     // into a target type -- `String(value)` is the deliberate, correct way
     // to do that (well-defined for every JS value, unlike a bare template
