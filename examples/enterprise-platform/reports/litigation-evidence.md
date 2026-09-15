@@ -4,7 +4,7 @@
 
 > This report is illustrative only. It is not legal advice and does not itself establish compliance with any law or regulation -- it demonstrates the mechanism data-cap provides for producing source-cited evidence, nothing more.
 
-Generated: 2026-09-11T20:52:29.641Z
+Generated: 2026-09-15T16:04:17.439Z
 
 Scanned: application source (src/**)
 Not scanned: all other dependencies (no --package allow-list configured for this example)
