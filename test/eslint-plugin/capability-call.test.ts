@@ -30,7 +30,7 @@ function firstCall(code: string): TSESTree.CallExpression {
   const visit = (node: unknown): void => {
     if (found || node === null || typeof node !== "object") return
     const record = node as Record<string, unknown>
-    if (record.type === "CallExpression") {
+    if (record["type"] === "CallExpression") {
       found = node as TSESTree.CallExpression
       return
     }

@@ -42,6 +42,7 @@ jobs:
       - run: npm run test:coverage
       - run: npm run size
       - run: npm run verify:no-ambient-fs
+      - run: npm run verify:no-ambient-child-process
       # The committed Markdown API report (docs/api-report/) must match a
       # fresh `typedoc --options typedoc.markdown.json` -- a public API
       # change can't land without the report, and the PR diff, updated too.
@@ -63,6 +64,45 @@ jobs:
       - run: npm run build
       - run: npm test
       - run: npm run size
+
+  # The org-wide governance gate: internal-package-contract's own 27 checks
+  # (mutation, coverage, security-deps/secrets/socket, accessibility,
+  # dead-code, docs, licenses, ...) run against this package for real, not
+  # just declared as a devDependency. Node 24.x to match
+  # internal-package-contract's own engines.node floor.
+  contract:
+    needs: [verify]
+    runs-on: ubuntu-latest
+    steps:
+      # fetch-depth: 0 -- the Commits check reads origin/main..HEAD.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24.x
+          cache: npm
+
+      - run: npm ci
+      - run: npm run contract
+
+      # A contract run is not a pure read: Format/Lint auto-fix, and
+      # SecurityDeps/SecuritySocket reconcile .repo-contract/exceptions/*.json
+      # (scaffolding a blank stub for any new finding, surfacing a stale
+      # record). CI starts from a clean checkout, so any post-run working-tree
+      # change means an ungoverned finding or an un-added exception stub
+      # slipped through -- fail loudly rather than let it ride along with a
+      # green run, matching repo-contract's own identical guard.
+      - name: Working tree is clean after the contract run
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "::error::The contract run left the working tree dirty. A new finding needs its exception stub filled in and committed (.repo-contract/exceptions/), or a file needs formatting. Run 'npm run contract' locally and commit the result."
+            git status --porcelain
+            git diff
+            exit 1
+          fi
 
   cross-runtime:
     runs-on: ubuntu-latest

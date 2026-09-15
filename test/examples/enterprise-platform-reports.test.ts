@@ -426,7 +426,7 @@ describe.skipIf(!runnable)("example: enterprise-platform report scripts", () => 
       expect(audit.findingsBySeverity).toEqual(recounted)
       // This example is a real `--strict-docs`/`--strict-flow` CI subject: it
       // must stay free of blocking errors or its own `guard` script breaks.
-      expect(audit.findingsBySeverity?.error ?? 0).toBe(0)
+      expect(audit.findingsBySeverity?.["error"] ?? 0).toBe(0)
     })
   })
 

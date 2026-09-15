@@ -195,7 +195,44 @@
     },
     "LooseCapabilityDocs": {
       "type": "object",
+      "additionalProperties": false,
       "properties": {
+        "fields": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/Loosen%3CFieldDocs%3E"
+          }
+        },
+        "getters": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/Loosen%3COperationDocs%3E"
+          }
+        },
+        "mutators": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/Loosen%3COperationDocs%3E"
+          }
+        },
+        "subscriptions": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/Loosen%3COperationDocs%3E"
+          }
+        },
+        "evidence": {
+          "type": "object",
+          "properties": {
+            "fields": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/definitions/Loosen%3CEvidenceFieldDocs%3E"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
         "name": {
           "type": "string",
           "description": "Display name -- falls back to the export/binding name when omitted."
@@ -274,63 +311,10 @@
           "type": "object",
           "additionalProperties": {},
           "description": "Free-form extension bag for anything data-cap itself has no named concept for -- opaque, never inspected or validated by any code path in this package (e.g. jurisdiction-specific regulatory classification: `{ regulatory: \"GDPR,PCI-DSS\" }`). Once a concept matters enough for data-cap to reason about, it gets its own named field above (as `purpose`/`legalBasis`/`dataResidency`/`auditRequired` did); everything else stays here."
-        },
-        "evidence": {
-          "type": "object",
-          "properties": {
-            "fields": {
-              "type": "object",
-              "additionalProperties": {
-                "$ref": "#/definitions/EvidenceFieldDocs"
-              }
-            }
-          },
-          "additionalProperties": false,
-          "description": "Developer-supplied evidence assertions -- verified over time, unlike every other field above, which is declared-only. Kept structurally separate for exactly that reason (see `EvidenceFieldDocs`)."
-        },
-        "fields": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/definitions/FieldDocs"
-          }
-        },
-        "getters": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/definitions/OperationDocs"
-          }
-        },
-        "mutators": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/definitions/OperationDocs"
-          }
-        },
-        "subscriptions": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/definitions/OperationDocs"
-          }
         }
-      },
-      "additionalProperties": false,
-      "description": "`CapabilityDocs` is parameterized by the real `documentData()` schema type so authored calls get `keyof`-checked field/getter/mutator/subscription names -- but this module (and `inventory.ts`/`link.ts`, which reuse this exact type) deals only in already-parsed AST facts, with no compile-time schema of its own to check against. `LooseCapabilityDocs` is the build- tool-internal equivalent of \"structurally shaped like docs, unconstrained\" the old bare `Record<string, unknown>` parameter gave: every OTHER property comes from `CapabilityDocs` itself (via `Omit`), but `fields`/`getters`/`mutators`/`subscriptions` are redeclared as plain `Record<string, X>` maps rather than routed through `CapabilityDocs`' own `keyof`-checked generics -- `DataSchema`'s `getters`/etc. are themselves optional properties, which resolve to \"no keys allowed\" (not \"any key allowed\") once `CapabilityDocs` requires a concrete schema type, exactly backwards from what an unconstrained AST-parsed fact needs here."
+      }
     },
-    "EvidenceFieldDocs": {
-      "type": "object",
-      "properties": {
-        "dynamicAccess": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Citations of where this field is accessed in a way static analysis can't see on its own (e.g. a truly dynamic key derived at runtime), each `\"<relative-path>:<line>:<column>\"`. Re-verified every run: a citation whose file no longer exists, or whose cited line has visibly changed since the citation was written, is downgraded and flagged, never trusted forever."
-        }
-      },
-      "additionalProperties": false,
-      "description": "Developer-supplied evidence assertions for one field -- categorically different from every field on `FieldDocs`: those are declared-and-never- verified (ADR 0049's own invariant), while `dynamicAccess` is re-checked against reality every run (see the build-tooling side of this feature). Kept structurally separate, in `CapabilityDocs.evidence` rather than folded into `FieldDocs`, specifically so this different epistemic status is visible in the shape itself, not just in a doc comment (ADR 0053)."
-    },
-    "FieldDocs": {
+    "Loosen<FieldDocs>": {
       "type": "object",
       "properties": {
         "description": {
@@ -406,9 +390,9 @@
         }
       },
       "additionalProperties": false,
-      "description": "Documentation metadata for one field.\n\n`owner`, `sensitivity`, and `protections` override the capability-level value of the same name for this field specifically -- not every field in a capability is equally sensitive or equally owned. `protections` and `retention` are documentation-presence signals only: a generator may say a safeguard/policy is \"documented\" or \"not documented,\" never that it is adequate, correct, or enforced. `purpose`/`legalBasis`/`dataResidency`/ `auditRequired` carry the same presence-only discipline -- declared governance facts, never a claim that data-cap has determined they satisfy any law (see `specs/decisions/0051-documentdata-metadata-and-governance-fields.md`).\n\nThe boundary this interface draws is deliberate: a named property here is reserved for a concept data-cap itself understands, projects, or reports on. Anything else -- organization-specific detail with no data-cap-defined meaning -- belongs in `metadata`, never as an ad hoc extra property, so this vocabulary stays bounded instead of accreting one-off keys over time.\n\nNote what is deliberately absent: there is no per-field `validate`/ `validator` property, and no `helpers.validators` combinator library backing one, unlike `@maverickcer/env-cap`'s `EnvVarDocs`. That is a design choice, not a gap. `env-cap` validates on a reject-and-throw pipeline, where a failing validator must carry a message explaining the rejection; `data-cap` has no reject path to write a message for -- invalid processor/operation output resets the field to its declared default via `core/schema.ts`'s `checkValueAgainstSchema`, keeping fields synchronously readable (AGENTS.md invariant 2) and surfacing the mismatch through `DataInfo`. See `helpers/shape.ts`'s own module comment for the full reasoning."
+      "description": "Every property here is always assigned (never conditionally omitted -- see extractCapabilityDocs()/extractOperationDocsMap()/ extractEvidenceFieldsMap() below), just sometimes with an `undefined` value when the AST literal didn't declare it. exactOptionalPropertyTypes distinguishes \"key absent\" from \"key present holding undefined\"; widening every property to explicitly include `| undefined` (rather than routing every assignment through a conditional-spread \"omit if absent\" instead) matches what this type actually represents: a raw, unconstrained parse result, not a validated CapabilityDocs."
     },
-    "OperationDocs": {
+    "Loosen<OperationDocs>": {
       "type": "object",
       "properties": {
         "description": {
@@ -440,8 +424,15 @@
           "description": "Free-form extension bag for anything data-cap itself has no named concept for -- opaque, never inspected or validated by any code path in this package. The index signature below remains for the same reason it always has (documenting never fights the type checker); `metadata` is the recommended place for new extension data going forward."
         }
       },
-      "additionalProperties": {},
-      "description": "Documentation metadata for one getter/mutator/subscription. Reserved keys are explicitly typed (mirroring the vocabulary real capabilities tend to document -- what it does, where it talks to, what it costs to call) while still accepting arbitrary extra keys for anything project-specific, so documenting never fights the type checker.\n\n`credentials` is descriptive only -- documenting `credentials: \"user session\"` is never proof that authorization is actually enforced. `endpoints` is likewise author-declared, never verified."
+      "additionalProperties": {
+        "anyOf": [
+          {},
+          {
+            "not": {}
+          }
+        ]
+      },
+      "description": "Every property here is always assigned (never conditionally omitted -- see extractCapabilityDocs()/extractOperationDocsMap()/ extractEvidenceFieldsMap() below), just sometimes with an `undefined` value when the AST literal didn't declare it. exactOptionalPropertyTypes distinguishes \"key absent\" from \"key present holding undefined\"; widening every property to explicitly include `| undefined` (rather than routing every assignment through a conditional-spread \"omit if absent\" instead) matches what this type actually represents: a raw, unconstrained parse result, not a validated CapabilityDocs."
     },
     "DataFlowEndpoint": {
       "type": "object",
@@ -504,6 +495,20 @@
         "internal"
       ],
       "description": "What kind of boundary a declared data-flow endpoint crosses -- a data store (`database`/`cache`/`storage`/`queue`), an external entity (`api`/`external-service`/`user-input`), or something internal to this codebase (`computed`/`internal`)."
+    },
+    "Loosen<EvidenceFieldDocs>": {
+      "type": "object",
+      "properties": {
+        "dynamicAccess": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Citations of where this field is accessed in a way static analysis can't see on its own (e.g. a truly dynamic key derived at runtime), each `\"<relative-path>:<line>:<column>\"`. Re-verified every run: a citation whose file no longer exists, or whose cited line has visibly changed since the citation was written, is downgraded and flagged, never trusted forever."
+        }
+      },
+      "additionalProperties": false,
+      "description": "Every property here is always assigned (never conditionally omitted -- see extractCapabilityDocs()/extractOperationDocsMap()/ extractEvidenceFieldsMap() below), just sometimes with an `undefined` value when the AST literal didn't declare it. exactOptionalPropertyTypes distinguishes \"key absent\" from \"key present holding undefined\"; widening every property to explicitly include `| undefined` (rather than routing every assignment through a conditional-spread \"omit if absent\" instead) matches what this type actually represents: a raw, unconstrained parse result, not a validated CapabilityDocs."
     },
     "SourcePosition": {
       "type": "object",
@@ -607,6 +612,84 @@
         "shape"
       ],
       "additionalProperties": false
+    },
+    "FieldDocs": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string",
+          "description": "Why this field exists / what it's for."
+        },
+        "owner": {
+          "type": "string",
+          "description": "Overrides the capability's own `owner` for this field specifically."
+        },
+        "sensitivity": {
+          "type": "string",
+          "description": "Overrides the capability's own `sensitivity` for this field specifically."
+        },
+        "protections": {
+          "type": "string",
+          "description": "Overrides the capability's own `protections` for this field specifically."
+        },
+        "retention": {
+          "type": "string",
+          "description": "Documented retention policy for this field -- presence only, never an enforcement claim."
+        },
+        "purpose": {
+          "type": "string",
+          "description": "The declared reason this field's data is collected/retained. Declared only -- data-cap never verifies the stated purpose matches actual usage. Overrides the capability's own `purpose` for this field specifically."
+        },
+        "legalBasis": {
+          "type": "string",
+          "description": "The declared legal basis asserted for processing this field (e.g. `\"consent\"`, `\"contract\"`, `\"legitimate interest\"`). Records that a basis was declared -- never that data-cap has determined the basis is legally valid. Overrides the capability's own `legalBasis` for this field specifically."
+        },
+        "dataResidency": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ],
+          "description": "The declared jurisdiction(s) this field's data is permitted/expected to be *stored* in -- a policy constraint, not an observed fact, not a processing-location claim, not a data-subject-location claim. Overrides the capability's own `dataResidency` for this field specifically."
+        },
+        "auditRequired": {
+          "type": "boolean",
+          "description": "Whether access to this field is documented as requiring an audit trail. Declared only, same presence-only discipline as `protections`/ `retention`. Overrides the capability's own `auditRequired` for this field specifically."
+        },
+        "expiresAt": {
+          "type": "string",
+          "description": "When this field's data (or the credential/source behind it) is declared to stop being valid, as an ISO-8601 date (`\"2026-12-31\"`). Declared only: nothing expires anything at runtime, and `data-cap` never fetches a real expiry from a provider. Build tooling reads it to report what is expiring soon (see the Lifecycle Model) -- a date that has already passed is reported as expired, never acted on."
+        },
+        "deprecated": {
+          "type": "boolean",
+          "description": "Whether this field is documented as deprecated. Presence-only, same discipline as every other declared fact here -- nothing warns at runtime."
+        },
+        "deprecatedReason": {
+          "type": "string",
+          "description": "Why this field is deprecated, and what to use instead. Only meaningful alongside `deprecated`."
+        },
+        "removeBy": {
+          "type": "string",
+          "description": "The date by which a deprecated field is intended to be removed, ISO-8601. Field-level only: a removal deadline is about one specific field's own migration, and a capability-wide `removeBy` would say nothing about which of its fields still need work."
+        },
+        "renamedFrom": {
+          "type": "string",
+          "description": "The previous name of this field, when it was renamed. Field-level only, for the same reason as `removeBy`. Build tooling uses this to correlate an added-field/removed-field pair across two runs into one rename rather than reporting an unrelated addition and deletion -- see `ChangeModel`'s `renamedFields`. Only ever populated from an *authored* value, never guessed from name similarity."
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {},
+          "description": "Free-form extension bag for anything data-cap itself has no named concept for -- opaque, never inspected or validated by any code path in this package. Once a concept matters enough for data-cap to reason about, it gets its own named field above; everything else stays here."
+        }
+      },
+      "additionalProperties": false,
+      "description": "Documentation metadata for one field.\n\n`owner`, `sensitivity`, and `protections` override the capability-level value of the same name for this field specifically -- not every field in a capability is equally sensitive or equally owned. `protections` and `retention` are documentation-presence signals only: a generator may say a safeguard/policy is \"documented\" or \"not documented,\" never that it is adequate, correct, or enforced. `purpose`/`legalBasis`/`dataResidency`/ `auditRequired` carry the same presence-only discipline -- declared governance facts, never a claim that data-cap has determined they satisfy any law (see `specs/decisions/0051-documentdata-metadata-and-governance-fields.md`).\n\nThe boundary this interface draws is deliberate: a named property here is reserved for a concept data-cap itself understands, projects, or reports on. Anything else -- organization-specific detail with no data-cap-defined meaning -- belongs in `metadata`, never as an ad hoc extra property, so this vocabulary stays bounded instead of accreting one-off keys over time.\n\nNote what is deliberately absent: there is no per-field `validate`/ `validator` property, and no `helpers.validators` combinator library backing one, unlike `@maverickcer/env-cap`'s `EnvVarDocs`. That is a design choice, not a gap. `env-cap` validates on a reject-and-throw pipeline, where a failing validator must carry a message explaining the rejection; `data-cap` has no reject path to write a message for -- invalid processor/operation output resets the field to its declared default via `core/schema.ts`'s `checkValueAgainstSchema`, keeping fields synchronously readable (AGENTS.md invariant 2) and surfacing the mismatch through `DataInfo`. See `helpers/shape.ts`'s own module comment for the full reasoning."
     },
     "ResolvedGovernanceValue<string>": {
       "type": "object",
@@ -731,6 +814,41 @@
       ],
       "additionalProperties": false,
       "description": "One getter/mutator/subscription operation, resolved from the inventory's shared model."
+    },
+    "OperationDocs": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string",
+          "description": "What this operation does."
+        },
+        "source": {
+          "type": "string",
+          "description": "Short identifier for where this operation acquires/sends data (e.g. `\"stripe-api\"`, `\"postgres:users\"`), not prose."
+        },
+        "credentials": {
+          "type": "string",
+          "description": "What's required to call this operation -- descriptive only, never an authorization/enforcement claim."
+        },
+        "response": {
+          "type": "string",
+          "description": "Documented shape of what this operation returns/produces."
+        },
+        "endpoints": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DataFlowEndpoint"
+          },
+          "description": "Declared data-flow boundaries this operation crosses -- see `DataFlowEndpoint`."
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {},
+          "description": "Free-form extension bag for anything data-cap itself has no named concept for -- opaque, never inspected or validated by any code path in this package. The index signature below remains for the same reason it always has (documenting never fights the type checker); `metadata` is the recommended place for new extension data going forward."
+        }
+      },
+      "additionalProperties": {},
+      "description": "Documentation metadata for one getter/mutator/subscription. Reserved keys are explicitly typed (mirroring the vocabulary real capabilities tend to document -- what it does, where it talks to, what it costs to call) while still accepting arbitrary extra keys for anything project-specific, so documenting never fights the type checker.\n\n`credentials` is descriptive only -- documenting `credentials: \"user session\"` is never proof that authorization is actually enforced. `endpoints` is likewise author-declared, never verified."
     },
     "ParseWarning": {
       "type": "object",

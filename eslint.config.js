@@ -1,3 +1,4 @@
+import baseline from "internal-package-contract/eslint"
 import js from "@eslint/js"
 import globals from "globals"
 import tseslint from "typescript-eslint"
@@ -20,8 +21,33 @@ import eslintConfigPrettier from "eslint-config-prettier/flat"
  * `benchmarks/benchmark-fixtures/` and the top-level orchestration scripts
  * directly under `benchmarks/` are linted here, same rationale env-cap
  * uses for its own `benchmark/performance-runtime`/`performance-buildtime`.
+ *
+ * Extends internal-package-contract's org-wide baseline (`js.configs.
+ * recommended` + untyped `tseslint.configs.recommended` + Node globals,
+ * deliberately non-type-checked -- see that package's own eslint.config.mjs
+ * for why) rather than duplicating it. `baseline` is spread first; every
+ * block below layers stricter, package-specific rules on top for the files
+ * it targets -- flat config applies later same-file blocks after earlier
+ * ones, so this package's own stricter tier and `eslintConfigPrettier`
+ * (last, so Prettier still wins) both still take effect exactly as before.
  */
 export default tseslint.config(
+  ...baseline,
+  // Baseline's own `tseslint.configs.recommended` matches every `**/*.ts`
+  // file with no `tsconfigRootDir` of its own (deliberately -- it's meant
+  // to work unmodified in any consuming project). Once this package's own
+  // node_modules contains another package (internal-package-contract) that
+  // also ships a tsconfig.json, typescript-eslint's auto-detection for
+  // root-level `.ts` config files this repo's own blocks don't otherwise
+  // scope becomes genuinely ambiguous between the two candidate roots --
+  // same fix as env-cap's identical eslint.config.js migration. Setting it
+  // explicitly, globally, removes the ambiguity without touching baseline's
+  // own file matching.
+  {
+    languageOptions: {
+      parserOptions: { tsconfigRootDir: import.meta.dirname },
+    },
+  },
   {
     // test/cross-runtime/**: Bun's own native test runner (bun:test) and
     // Deno's global `Deno` namespace execute these -- neither is part of
@@ -34,6 +60,18 @@ export default tseslint.config(
       "node_modules",
       "**/node_modules",
       "test/cross-runtime",
+      // Pre-existing gap, surfaced (not caused) by extending
+      // internal-package-contract's baseline below: that baseline's own
+      // js.configs.recommended applies no-undef globally (no `files`
+      // restriction, by design -- see its own eslint.config.mjs), which is
+      // the first rule ever applied broadly enough to reach docs/ at all.
+      // docs/api/** is typedoc-generated output, never hand-edited;
+      // docs/script.js is hand-authored browser code needing
+      // window/document globals this Node-focused TS toolchain doesn't
+      // configure -- the website is reviewed separately, not part of this
+      // TypeScript project. Matches env-cap's identical, already-correct
+      // exclusion.
+      "docs",
       "examples",
       "benchmarks/performance-runtime",
       "benchmarks/performance-buildtime",

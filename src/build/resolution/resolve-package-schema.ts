@@ -118,7 +118,7 @@ export async function locatePackageManifest(
       // decoded string is identical to the previous Buffer.toString("utf8").
       // Stryker disable next-line StringLiteral
       const parsed: unknown = JSON.parse(await fs.readFile(candidate, "utf8"))
-      if (isRecord(parsed) && parsed.name === packageName) {
+      if (isRecord(parsed) && parsed["name"] === packageName) {
         return { packageJsonPath: candidate, packageDir: dir }
       }
     } catch {
@@ -185,10 +185,10 @@ export function classifyManifest(
     }
   }
 
-  const dataCapField = manifest.dataCap
+  const dataCapField = manifest["dataCap"]
   const declaredField =
-    isRecord(dataCapField) && typeof dataCapField.schema === "string"
-      ? dataCapField.schema
+    isRecord(dataCapField) && typeof dataCapField["schema"] === "string"
+      ? dataCapField["schema"]
       : undefined
   if (declaredField === undefined) {
     return {

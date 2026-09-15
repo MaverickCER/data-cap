@@ -31,7 +31,7 @@ describe("resolveFieldDefaults", () => {
 
   it("throws InvalidFieldDefaultError, with its exact message, for a cyclic reference", () => {
     const cyclic: Record<string, unknown> = {}
-    cyclic.self = cyclic
+    cyclic["self"] = cyclic
     expect(() => resolveFieldDefaults(cyclic, [], new Set())).toThrow(
       "cyclic field defaults are not supported",
     )

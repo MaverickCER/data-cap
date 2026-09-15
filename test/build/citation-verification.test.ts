@@ -107,9 +107,9 @@ describe("citation-verification", () => {
       })
       const snapshots = await buildCitationSnapshots(inventory([cap]), root, nodeBuildFs)
       const byField = snapshots.get("/project/user.ts#userCapability")
-      expect(byField?.email).toHaveLength(1)
-      expect(byField?.email?.[0]).toMatchObject({ file: "src/legacy.ts", line: 5, column: 3 })
-      expect(typeof byField?.email?.[0]?.hash).toBe("string")
+      expect(byField?.["email"]).toHaveLength(1)
+      expect(byField?.["email"]?.[0]).toMatchObject({ file: "src/legacy.ts", line: 5, column: 3 })
+      expect(typeof byField?.["email"]?.[0]?.hash).toBe("string")
     })
 
     it("omits a citation whose file does not resolve, without throwing", async () => {
@@ -133,11 +133,11 @@ describe("citation-verification", () => {
         docs: { evidence: { fields: { email: { dynamicAccess: ["src/legacy.ts:1:1"] } } } },
       })
       const first = await buildCitationSnapshots(inventory([cap]), root, nodeBuildFs)
-      const firstHash = first.get("/project/user.ts#userCapability")?.email?.[0]?.hash
+      const firstHash = first.get("/project/user.ts#userCapability")?.["email"]?.[0]?.hash
 
       await fs.writeFile(filePath, "changed content\n", "utf8")
       const second = await buildCitationSnapshots(inventory([cap]), root, nodeBuildFs)
-      const secondHash = second.get("/project/user.ts#userCapability")?.email?.[0]?.hash
+      const secondHash = second.get("/project/user.ts#userCapability")?.["email"]?.[0]?.hash
 
       expect(firstHash).toBeDefined()
       expect(secondHash).toBeDefined()
@@ -188,7 +188,7 @@ describe("citation-verification", () => {
         docs: { evidence: { fields: { email: { dynamicAccess: ["src/legacy.ts:1:1"] } } } },
       })
       const snapshots = await buildCitationSnapshots(inventory([cap]), root, nodeBuildFs)
-      const entry = snapshots.get("/project/user.ts#userCapability")?.email
+      const entry = snapshots.get("/project/user.ts#userCapability")?.["email"]
       const previous: ManifestSnapshot = {
         snapshotSchemaVersion: 2,
         capabilities: [snapshotCapability({ citationSnapshots: { email: entry ?? [] } })],
@@ -211,7 +211,7 @@ describe("citation-verification", () => {
         docs: { evidence: { fields: { email: { dynamicAccess: ["src/legacy.ts:1:1"] } } } },
       })
       const snapshots = await buildCitationSnapshots(inventory([cap]), root, nodeBuildFs)
-      const entry = snapshots.get("/project/user.ts#userCapability")?.email
+      const entry = snapshots.get("/project/user.ts#userCapability")?.["email"]
       const previous: ManifestSnapshot = {
         snapshotSchemaVersion: 2,
         capabilities: [snapshotCapability({ citationSnapshots: { email: entry ?? [] } })],
@@ -299,7 +299,10 @@ describe("citation-verification", () => {
         root,
         nodeBuildFs,
       )
-      expect(findings[0]).toMatchObject({ field: ["ghost"], position: undefined })
+      expect(findings[0]).toMatchObject({ field: ["ghost"] })
+      // exactOptionalPropertyTypes: absent, not present-as-undefined, when
+      // no field matches the evidence key.
+      expect(findings[0]).not.toHaveProperty("position")
     })
 
     it("emits DYNAMIC_ACCESS_CITATION_STALE verbatim", async () => {
@@ -312,7 +315,9 @@ describe("citation-verification", () => {
         snapshotSchemaVersion: 2,
         capabilities: [
           snapshotCapability({
-            citationSnapshots: { email: snap.get("/project/user.ts#userCapability")?.email ?? [] },
+            citationSnapshots: {
+              email: snap.get("/project/user.ts#userCapability")?.["email"] ?? [],
+            },
           }),
         ],
       }
@@ -406,7 +411,7 @@ describe("citation-verification", () => {
         docs: { evidence: { fields: { email: { dynamicAccess: ["src/legacy.ts:1:1"] } } } },
       })
       const snap = await buildCitationSnapshots(inventory([cap]), root, nodeBuildFs)
-      const emailEntry = snap.get("/project/user.ts#userCapability")?.email ?? []
+      const emailEntry = snap.get("/project/user.ts#userCapability")?.["email"] ?? []
       const previous: ManifestSnapshot = {
         snapshotSchemaVersion: 2,
         capabilities: [
@@ -449,14 +454,14 @@ describe("citation-verification", () => {
         capabilities: [
           snapshotCapability({
             citationSnapshots: {
-              contact: build.get("/project/user.ts#userCapability")?.contact ?? [],
+              contact: build.get("/project/user.ts#userCapability")?.["contact"] ?? [],
             },
           }),
           snapshotCapability({
             file: "/project/g.ts",
             exportName: "ghostCapability",
             citationSnapshots: {
-              missingField: build.get("/project/g.ts#ghostCapability")?.missingField ?? [],
+              missingField: build.get("/project/g.ts#ghostCapability")?.["missingField"] ?? [],
             },
           }),
         ],
@@ -470,8 +475,11 @@ describe("citation-verification", () => {
       )
       expect(findings).toMatchObject([
         { field: ["contact", "email"], position: { line: 8, column: 2 } },
-        { field: ["missingField"], position: undefined },
+        { field: ["missingField"] },
       ])
+      // exactOptionalPropertyTypes: absent, not present-as-undefined, when
+      // no field matches.
+      expect(findings[1]).not.toHaveProperty("position")
     })
 
     it("treats a prior capability with no citationSnapshots at all as 'no prior hash'", async () => {
@@ -481,7 +489,7 @@ describe("citation-verification", () => {
       })
       const previous: ManifestSnapshot = {
         snapshotSchemaVersion: 2,
-        capabilities: [snapshotCapability({ citationSnapshots: undefined })],
+        capabilities: [snapshotCapability()],
       }
       await fs.writeFile(filePath, "v2\n", "utf8")
       expect(
@@ -495,7 +503,7 @@ describe("citation-verification", () => {
         docs: { evidence: { fields: { email: { dynamicAccess: ["src/legacy.ts:120:345"] } } } },
       })
       const snap = await buildCitationSnapshots(inventory([cap]), root, nodeBuildFs)
-      expect(snap.get("/project/user.ts#userCapability")?.email?.[0]).toMatchObject({
+      expect(snap.get("/project/user.ts#userCapability")?.["email"]?.[0]).toMatchObject({
         file: "src/legacy.ts",
         line: 120,
         column: 345,

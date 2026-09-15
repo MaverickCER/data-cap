@@ -128,7 +128,7 @@ describe("canonicalize -- example-based", () => {
     expect(canonicalize(() => undefined)).toBeUndefined()
     expect(canonicalize(Symbol("x"))).toBeUndefined()
     const cyclic: Record<string, unknown> = {}
-    cyclic.self = cyclic
+    cyclic["self"] = cyclic
     expect(canonicalize(cyclic)).toBeUndefined()
   })
 

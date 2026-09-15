@@ -69,12 +69,18 @@ export function buildSarifLog(findingModel: FindingModel): SarifLog {
             rules: ruleIds.map((id) => ({ id })),
           },
         },
-        results: findingModel.findings.map((finding) => ({
-          ruleId: finding.code,
-          level: sarifLevel(finding.severity),
-          message: { text: finding.message },
-          locations: sarifLocations(finding),
-        })),
+        // exactOptionalPropertyTypes: spread `locations` in only when
+        // sarifLocations() actually has one, rather than ever setting the
+        // key to `undefined` explicitly.
+        results: findingModel.findings.map((finding) => {
+          const locations = sarifLocations(finding)
+          return {
+            ruleId: finding.code,
+            level: sarifLevel(finding.severity),
+            message: { text: finding.message },
+            ...(locations === undefined ? {} : { locations }),
+          }
+        }),
       },
     ],
   }

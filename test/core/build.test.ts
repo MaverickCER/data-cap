@@ -79,7 +79,7 @@ describe("buildData", () => {
 
   it("throws InvalidFieldDefaultError for a cyclic field default", () => {
     const cyclic: Record<string, unknown> = {}
-    cyclic.self = cyclic
+    cyclic["self"] = cyclic
     expect(() => buildData({ fields: { thing: cyclic } })).toThrow(InvalidFieldDefaultError)
   })
 

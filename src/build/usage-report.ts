@@ -158,7 +158,9 @@ export function deriveUsageFindings(
             message: `Per developers, this data point is dynamically accessed at ${citation}.`,
             capability: ref,
             field: field.path,
-            position: field.declarationPosition,
+            ...(field.declarationPosition !== undefined
+              ? { position: field.declarationPosition }
+              : {}),
           })
         }
         continue
@@ -172,7 +174,9 @@ export function deriveUsageFindings(
           message: `Field "${field.path.join(".")}" on "${capability.exportName}" appears unused, but there are instances of dynamic/computed access on this capability that can't be statically attributed to a specific field -- it may be one of them.`,
           capability: ref,
           field: field.path,
-          position: field.declarationPosition,
+          ...(field.declarationPosition !== undefined
+            ? { position: field.declarationPosition }
+            : {}),
           indeterminateSites,
         })
         continue
@@ -185,7 +189,7 @@ export function deriveUsageFindings(
         message: `Field "${field.path.join(".")}" on "${capability.exportName}" is written but never statically read in the scanned project.`,
         capability: ref,
         field: field.path,
-        position: field.declarationPosition,
+        ...(field.declarationPosition !== undefined ? { position: field.declarationPosition } : {}),
       })
     }
   }

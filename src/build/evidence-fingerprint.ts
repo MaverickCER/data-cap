@@ -62,7 +62,12 @@ export async function computeSourceFingerprint(
   // Stryker disable next-line ArrayDeclaration
   const { fs, root, include = DEFAULT_INCLUDE, exclude, packages = [] } = options
 
-  const localFiles = await discoverCapabilityFiles({ fs, root, include, exclude })
+  const localFiles = await discoverCapabilityFiles({
+    fs,
+    root,
+    include,
+    ...(exclude !== undefined ? { exclude } : {}),
+  })
   const packageCache = new Map<string, Promise<PackageSchemaResolutionResult>>()
   const { files: packageFiles } = await resolveAllowlistedPackages(packages, root, packageCache, fs)
   const allFiles = [

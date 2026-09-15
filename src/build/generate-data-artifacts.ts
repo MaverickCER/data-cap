@@ -201,8 +201,8 @@ export async function computeDataArtifacts(
   const localFiles = await discoverCapabilityFiles({
     fs: options.fs,
     root: options.root,
-    include: options.include,
-    exclude: options.exclude,
+    ...(options.include !== undefined ? { include: options.include } : {}),
+    ...(options.exclude !== undefined ? { exclude: options.exclude } : {}),
   })
   const packageCache = new Map<string, Promise<PackageSchemaResolutionResult>>()
   const { files: packageFiles, warnings: packageWarnings } = await resolveAllowlistedPackages(
@@ -219,7 +219,7 @@ export async function computeDataArtifacts(
   const linkResult = await linkCapabilityFiles(files, {
     fs: options.fs,
     root: options.root,
-    tsconfig: options.tsconfig,
+    ...(options.tsconfig !== undefined ? { tsconfig: options.tsconfig } : {}),
     packages,
   })
   const inventory: CapabilityInventory = buildInventory(linkResult)
@@ -303,8 +303,13 @@ export async function computeDataArtifacts(
       inventory,
       location: options.ownership,
       files,
-      scan: { fs: options.fs, root: options.root, tsconfig: options.tsconfig, packages },
-      evidencePath: options.evidence,
+      scan: {
+        fs: options.fs,
+        root: options.root,
+        ...(options.tsconfig !== undefined ? { tsconfig: options.tsconfig } : {}),
+        packages,
+      },
+      ...(options.evidence !== undefined ? { evidencePath: options.evidence } : {}),
     })
     if (options.ownership !== undefined) {
       writes.push({ path: options.ownership, content: usage.content })
@@ -321,9 +326,9 @@ export async function computeDataArtifacts(
       inventory,
       root: options.root,
       location: options.docs,
-      changes: manifest?.changes,
-      edges: usage?.edges,
-      evidencePath: options.evidence,
+      ...(manifest?.changes !== undefined ? { changes: manifest.changes } : {}),
+      ...(usage?.edges !== undefined ? { edges: usage.edges } : {}),
+      ...(options.evidence !== undefined ? { evidencePath: options.evidence } : {}),
       expiringWithinDays,
       generatedAt,
     })
@@ -343,7 +348,7 @@ export async function computeDataArtifacts(
       // Stryker disable next-line OptionalChaining, ArrayDeclaration
       edges: usage?.edges ?? [],
       additionalFindings: [...staticFindings, ...usageFindings],
-      evidencePath: options.evidence,
+      ...(options.evidence !== undefined ? { evidencePath: options.evidence } : {}),
     })
     for (const file of flow.files) writes.push(file)
   }
@@ -395,10 +400,10 @@ export async function computeDataArtifacts(
     {
       capability: inventory,
       lifecycle: lifecycleModel,
-      dependency: dependencyModel,
+      ...(dependencyModel !== undefined ? { dependency: dependencyModel } : {}),
       ownership: ownershipModel,
       finding: findingModel,
-      change: changeModel,
+      ...(changeModel !== undefined ? { change: changeModel } : {}),
     },
     {
       generatedAt: generatedAt.toISOString(),
@@ -467,9 +472,9 @@ export async function generateDataArtifacts(
       await computeSourceFingerprint({
         fs: options.fs,
         root: options.root,
-        include: options.include,
-        exclude: options.exclude,
-        packages: options.packages,
+        ...(options.include !== undefined ? { include: options.include } : {}),
+        ...(options.exclude !== undefined ? { exclude: options.exclude } : {}),
+        ...(options.packages !== undefined ? { packages: options.packages } : {}),
       }),
       options.fs,
     )

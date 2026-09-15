@@ -117,8 +117,10 @@ export function locationOf(finding: ReportFinding): FindingLocation {
       kind: "field",
       capability: finding.capability,
       field: finding.field,
-      position: finding.position,
-      indeterminateSites: finding.indeterminateSites,
+      ...(finding.position !== undefined ? { position: finding.position } : {}),
+      ...(finding.indeterminateSites !== undefined
+        ? { indeterminateSites: finding.indeterminateSites }
+        : {}),
     }
   }
   if (finding.operation !== undefined) {
@@ -126,13 +128,17 @@ export function locationOf(finding: ReportFinding): FindingLocation {
       kind: "operation",
       capability: finding.capability,
       operation: finding.operation,
-      position: finding.position,
+      ...(finding.position !== undefined ? { position: finding.position } : {}),
     }
   }
   if (finding.source !== undefined) {
     return { kind: "consumer", capability: finding.capability, source: finding.source }
   }
-  return { kind: "capability", capability: finding.capability, position: finding.position }
+  return {
+    kind: "capability",
+    capability: finding.capability,
+    ...(finding.position !== undefined ? { position: finding.position } : {}),
+  }
 }
 
 /** Projects `findings` into `data-cap`'s Finding Model, replacing each finding's flat locators with one structured `location`. */

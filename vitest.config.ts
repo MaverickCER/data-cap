@@ -41,7 +41,13 @@ export default defineConfig({
         "src/build/dependency-types.ts",
         "src/build/types.ts",
       ],
-      reporter: ["text", "html", "lcov", "json-summary"],
+      // "json" (not just "json-summary") is load-bearing: it's what actually
+      // writes coverage/coverage-final.json, the per-file raw coverage data
+      // internal-package-contract's Crap check hands to `crap4ts --coverage`.
+      // Without it, Crap can't tell "genuinely no coverage produced" apart
+      // from "Tests failed" and warns with a misleading message either way.
+      // Same fix as env-cap's identical gap.
+      reporter: ["text", "html", "lcov", "json", "json-summary"],
       // Starting floor, matching env-cap's own ratchet-up-only policy (see
       // CONTRIBUTING.md) -- raised as real coverage improves, never lowered
       // to accommodate a drop.

@@ -603,8 +603,8 @@ describe("linkCapabilityFiles", () => {
       expect(docs?.owner).toBe("identity-team")
       expect(docs?.sensitivity).toBe("restricted")
       expect(docs?.protections).toBe("encrypted at rest")
-      expect(docs?.fields?.email?.owner).toBe("identity-team")
-      expect(docs?.fields?.email?.sensitivity).toBe("restricted")
+      expect(docs?.fields?.["email"]?.owner).toBe("identity-team")
+      expect(docs?.fields?.["email"]?.sensitivity).toBe("restricted")
     })
 
     it("leaves docs undefined for an undocumented capability", async () => {

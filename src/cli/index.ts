@@ -353,9 +353,11 @@ type CliOptions = ReturnType<typeof resolveOptions>
 /** @internal Exported for direct unit coverage. */
 export function resolveOptions(args: ParsedArgs) {
   const root = args.root !== undefined ? path.resolve(args.root) : process.cwd()
-  const resolve = (p: string | undefined): string | undefined =>
-    p !== undefined ? path.resolve(root, p) : undefined
 
+  // exactOptionalPropertyTypes: GenerateDataArtifactsOptions declares every
+  // one of these as optional-without-explicit-undefined (`include?: T`, not
+  // `include?: T | undefined`) -- omit each key entirely when there's no
+  // value, rather than ever setting it to `undefined`.
   return {
     // The deliberate injection boundary (ADR 0058): `./build` never imports
     // `node:fs` -- the CLI, an executable-context entry, constructs the
@@ -363,16 +365,22 @@ export function resolveOptions(args: ParsedArgs) {
     // repo-contract's `spawn: crossSpawn, env: process.env`.
     fs: nodeBuildFileSystem,
     root,
-    include: args.include.length > 0 ? args.include : undefined,
-    exclude: args.exclude.length > 0 ? args.exclude : undefined,
-    packages: args.packages.length > 0 ? args.packages : undefined,
-    tsconfig: args.tsconfig,
-    location: resolve(args.location),
-    docs: resolve(args.docs),
-    ownership: resolve(args.ownership),
-    flow: resolve(args.flow),
-    evidence: resolve(args.evidence),
-    expiringWithinDays: args.expiringWithinDays,
+    ...(args.include.length > 0 ? { include: args.include } : {}),
+    ...(args.exclude.length > 0 ? { exclude: args.exclude } : {}),
+    ...(args.packages.length > 0 ? { packages: args.packages } : {}),
+    ...(args.tsconfig !== undefined ? { tsconfig: args.tsconfig } : {}),
+    // Inlined path.resolve() rather than the resolve() helper above: that
+    // helper's own return type is `string | undefined` regardless of its
+    // argument (it's shared with call sites that do want that), which would
+    // widen these conditionally-spread values right back to `| undefined`.
+    ...(args.location !== undefined ? { location: path.resolve(root, args.location) } : {}),
+    ...(args.docs !== undefined ? { docs: path.resolve(root, args.docs) } : {}),
+    ...(args.ownership !== undefined ? { ownership: path.resolve(root, args.ownership) } : {}),
+    ...(args.flow !== undefined ? { flow: path.resolve(root, args.flow) } : {}),
+    ...(args.evidence !== undefined ? { evidence: path.resolve(root, args.evidence) } : {}),
+    ...(args.expiringWithinDays !== undefined
+      ? { expiringWithinDays: args.expiringWithinDays }
+      : {}),
     strict: args.strict,
     strictDocs: args.strictDocs,
     strictOwnership: args.strictOwnership,

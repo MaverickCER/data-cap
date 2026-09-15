@@ -883,7 +883,7 @@ describe("extractCapabilityDocs", () => {
   it("warns with the full contextLabel.sectionLabel.key label for a bad operation-docs field", () => {
     const warnings: ParseWarning[] = []
     const docs = extract(`{ getters: { getUser: { description: someVariable } } }`, warnings)
-    expect(docs?.getters?.getUser?.description).toBeUndefined()
+    expect(docs?.getters?.["getUser"]?.description).toBeUndefined()
     expect(warnings).toHaveLength(1)
     expect(warnings[0]!.message).toContain('"userCapability.getters.getUser"')
   })
@@ -1001,7 +1001,7 @@ describe("extractCapabilityDocs", () => {
     it("warns with the full contextLabel.fields.key label for a bad field-docs field", () => {
       const warnings: ParseWarning[] = []
       const docs = extract(`{ fields: { email: { description: someVariable } } }`, warnings)
-      expect(docs?.fields?.email?.description).toBeUndefined()
+      expect(docs?.fields?.["email"]?.description).toBeUndefined()
       expect(warnings).toHaveLength(1)
       expect(warnings[0]!.message).toContain('"userCapability.fields.email"')
     })
@@ -1066,7 +1066,7 @@ describe("extractCapabilityDocs", () => {
             },
           },
         }`)
-        expect(docs?.getters?.getUser?.endpoints).toEqual([
+        expect(docs?.getters?.["getUser"]?.endpoints).toEqual([
           { direction: "input", kind: "api", name: "identity-service" },
         ])
       })
@@ -1074,7 +1074,7 @@ describe("extractCapabilityDocs", () => {
       it("warns and omits endpoints when not an inline array literal", () => {
         const warnings: ParseWarning[] = []
         const docs = extract(`{ getters: { getUser: { endpoints: someVariable } } }`, warnings)
-        expect(docs?.getters?.getUser?.endpoints).toBeUndefined()
+        expect(docs?.getters?.["getUser"]?.endpoints).toBeUndefined()
         expect(warnings.some((w) => w.message.includes('"endpoints"'))).toBe(true)
       })
 
@@ -1084,7 +1084,7 @@ describe("extractCapabilityDocs", () => {
           `{ getters: { getUser: { endpoints: [{ direction: "input", kind: "api", name: "a" }, ...rest] } } }`,
           warnings,
         )
-        expect(docs?.getters?.getUser?.endpoints).toEqual([
+        expect(docs?.getters?.["getUser"]?.endpoints).toEqual([
           { direction: "input", kind: "api", name: "a" },
         ])
         expect(warnings.some((w) => w.message.includes("spread"))).toBe(true)
@@ -1093,7 +1093,7 @@ describe("extractCapabilityDocs", () => {
       it("drops a non-object endpoint entry", () => {
         const warnings: ParseWarning[] = []
         const docs = extract(`{ getters: { getUser: { endpoints: ["not-an-object"] } } }`, warnings)
-        expect(docs?.getters?.getUser?.endpoints).toEqual([])
+        expect(docs?.getters?.["getUser"]?.endpoints).toEqual([])
         expect(warnings.some((w) => w.message.includes("object literal"))).toBe(true)
       })
 
@@ -1113,7 +1113,7 @@ describe("extractCapabilityDocs", () => {
           }`,
           warnings,
         )
-        expect(docs?.getters?.getUser?.endpoints).toEqual([])
+        expect(docs?.getters?.["getUser"]?.endpoints).toEqual([])
         expect(warnings.filter((w) => w.message.includes("unrecognized")).length).toBe(3)
       })
 
@@ -1131,7 +1131,7 @@ describe("extractCapabilityDocs", () => {
             },
           },
         }`)
-        expect(docs?.getters?.getUser?.endpoints).toEqual([
+        expect(docs?.getters?.["getUser"]?.endpoints).toEqual([
           {
             direction: "input",
             kind: "api",
@@ -1148,8 +1148,8 @@ describe("extractCapabilityDocs", () => {
           `{ getters: { getUser: { endpoints: [{ direction: "input", kind: "api", name: "a" }] } } }`,
           warnings,
         )
-        expect(docs?.getters?.getUser?.endpoints?.[0]?.url).toBeUndefined()
-        expect(docs?.getters?.getUser?.endpoints?.[0]?.handling).toBeUndefined()
+        expect(docs?.getters?.["getUser"]?.endpoints?.[0]?.url).toBeUndefined()
+        expect(docs?.getters?.["getUser"]?.endpoints?.[0]?.handling).toBeUndefined()
         expect(warnings).toEqual([])
       })
 
@@ -1159,7 +1159,7 @@ describe("extractCapabilityDocs", () => {
           `{ getters: { getUser: { endpoints: [{ direction: "input", kind: "api", name: "a", handling: "invisible" }] } } }`,
           warnings,
         )
-        expect(docs?.getters?.getUser?.endpoints).toEqual([
+        expect(docs?.getters?.["getUser"]?.endpoints).toEqual([
           { direction: "input", kind: "api", name: "a" },
         ])
         expect(warnings.some((w) => w.message.includes("handling"))).toBe(true)
@@ -1171,7 +1171,7 @@ describe("extractCapabilityDocs", () => {
           `{ getters: { getUser: { endpoints: [{ direction: "input", kind: "api", name: "a", url: 5 }] } } }`,
           warnings,
         )
-        expect(docs?.getters?.getUser?.endpoints).toEqual([
+        expect(docs?.getters?.["getUser"]?.endpoints).toEqual([
           { direction: "input", kind: "api", name: "a" },
         ])
         expect(warnings.some((w) => w.message.includes("url"))).toBe(true)
@@ -1195,7 +1195,7 @@ describe("extractCapabilityDocs", () => {
         `{ evidence: { fields: { email: { dynamicAccess: ["ok.ts:1:1", "not-a-citation", 5] } } } }`,
         warnings,
       )
-      expect(docs?.evidence?.fields?.email?.dynamicAccess).toEqual(["ok.ts:1:1"])
+      expect(docs?.evidence?.fields?.["email"]?.dynamicAccess).toEqual(["ok.ts:1:1"])
       expect(warnings.filter((w) => w.message.includes("dynamicAccess")).length).toBe(2)
     })
 
@@ -1205,7 +1205,7 @@ describe("extractCapabilityDocs", () => {
         `{ evidence: { fields: { email: { dynamicAccess: someVariable } } } }`,
         warnings,
       )
-      expect(docs?.evidence?.fields?.email?.dynamicAccess).toBeUndefined()
+      expect(docs?.evidence?.fields?.["email"]?.dynamicAccess).toBeUndefined()
       expect(warnings.some((w) => w.message.includes('"dynamicAccess"'))).toBe(true)
     })
 
@@ -1219,7 +1219,7 @@ describe("extractCapabilityDocs", () => {
         `{ evidence: { fields: { email: { dynamicAccess: { not: "an array" } } } } }`,
         warnings,
       )
-      expect(docs?.evidence?.fields?.email?.dynamicAccess).toBeUndefined()
+      expect(docs?.evidence?.fields?.["email"]?.dynamicAccess).toBeUndefined()
       expect(
         warnings.some((w) =>
           w.message.includes('"dynamicAccess" for "userCapability.evidence.fields.email"'),
@@ -1247,7 +1247,7 @@ describe("extractCapabilityDocs", () => {
 
     it("leaves dynamicAccess undefined when the key is absent from the field entry entirely", () => {
       const docs = extract(`{ evidence: { fields: { email: {} } } }`)
-      expect(docs?.evidence?.fields?.email).toEqual({ dynamicAccess: undefined })
+      expect(docs?.evidence?.fields?.["email"]).toEqual({ dynamicAccess: undefined })
     })
 
     it("returns an empty evidence object when 'fields' is absent", () => {

@@ -331,7 +331,7 @@ describe("generateDataArtifacts", () => {
       const snapshotAfterFirst = JSON.parse(
         await fs.readFile(path.join(root, ".data-cap-manifest-snapshot.json"), "utf8"),
       ) as { capabilities: { citationSnapshots?: Record<string, unknown> }[] }
-      expect(snapshotAfterFirst.capabilities[0]?.citationSnapshots?.email).toBeDefined()
+      expect(snapshotAfterFirst.capabilities[0]?.citationSnapshots?.["email"]).toBeDefined()
 
       // The cited file changes underneath the citation.
       await writeFile("legacy.ts", "// this file has now changed\nconst x = 2;\n")

@@ -249,7 +249,7 @@ function identityProcessor(raw: unknown): unknown {
 /** @internal True in every environment except an explicit production `NODE_ENV` -- isomorphic-safe (no bare `process` reference in an environment that lacks it). Exported for direct unit coverage. */
 export function isDevMode(): boolean {
   const proc = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process
-  return proc?.env?.NODE_ENV !== "production"
+  return proc?.env?.["NODE_ENV"] !== "production"
 }
 
 /** @internal Exported for direct unit coverage. */

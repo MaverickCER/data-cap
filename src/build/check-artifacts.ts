@@ -55,7 +55,7 @@ function normalizeForComparison(content: string): string {
   }
   if (typeof parsed !== "object" || parsed === null) return content
   const model: Record<string, unknown> = parsed as Record<string, unknown>
-  const provenance: unknown = model.provenance
+  const provenance: unknown = model["provenance"]
   // Bypassing (any variant of) this guard is a pure behavioral no-op, not a
   // real gap: JS's object-spread of `null`/`undefined`/a non-object
   // primitive never throws (`{...null}` and `{..."x"}` are both valid,
