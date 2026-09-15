@@ -1,6 +1,6 @@
 {
   "name": "data-cap",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Executable, analyzable data contracts. Capabilities declare the fields they own and the getters/mutators/subscriptions that acquire, mutate, or observe them, independent of databases, transports, frameworks, and state-management libraries.",
   "keywords": [
     "data",
