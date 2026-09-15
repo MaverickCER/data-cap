@@ -159,7 +159,7 @@
     "verify": "npm run typecheck && npm run lint && npm run format:check && npm run build && npm run schema && npm run test:coverage && npm run size && npm run verify:no-ambient-fs && npm run docs:api:report:check",
     "precommit": "npm run typecheck && npm run lint && npm run format && npm run build && npm run schema && npm run test:coverage && npm run size && npm run verify:no-ambient-fs && npm run docs:api:report:check",
     "prepublishOnly": "npm run verify",
-    "version": "changeset version",
+    "version": "changeset version && npm run build && npm run examples:update-golden",
     "release": "changeset publish"
   },
   "peerDependencies": {

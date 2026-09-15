@@ -1,8 +1,17 @@
 #!/usr/bin/env node
 // Regenerates real, committed golden output from a fresh run. Deliberately
-// NOT part of `npm run verify`/CI -- this is a human-invoked "I
-// intentionally changed the observed behavior, here's the new golden" step.
-// See examples/README.md.
+// NOT part of `npm run verify`/CI -- for a real code change, this stays a
+// human-invoked "I intentionally changed the observed behavior, here's the
+// new golden" step, so a regression can never get silently re-goldened. See
+// examples/README.md.
+//
+// It IS invoked automatically by `npm run version` (`changeset version &&
+// examples:update-golden`), immediately after Changesets bumps the version --
+// safe specifically because a version-bump commit is, by Changesets' own
+// contract, never bundled with unrelated source changes: the only content
+// that can differ is package.json/CHANGELOG.md plus whatever these goldens
+// embed (toolVersion, generatedAt). There is no code change in that commit
+// for a rewritten golden to accidentally paper over.
 //
 // Two maps, not one: FLAGSHIPS are the 3 curated `examples/` projects;
 // FIXTURES are the 16 real-mechanism regression fixtures relocated into
