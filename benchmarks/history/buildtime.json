@@ -31,6 +31,37 @@
           }
         }
       }
+    },
+    {
+      "timestamp": "2026-09-15T17:16:39.875Z",
+      "gitCommit": "55b9e7c7984c6e7295b44c15615115afe7b7398c",
+      "dataCapVersion": "0.3.1",
+      "benchmarkSuiteVersion": 1,
+      "runner": "GitHub Actions",
+      "measurements": {
+        "discovery": {
+          "baseline": {
+            "medianMs": 1.1141529999999875
+          },
+          "stress": {
+            "medianMs": 5.631416999999999
+          },
+          "extreme": {
+            "medianMs": 19.143326000000002
+          }
+        },
+        "artifacts": {
+          "baseline": {
+            "medianMs": 37.145282999999836
+          },
+          "stress": {
+            "medianMs": 248.23089900000014
+          },
+          "extreme": {
+            "medianMs": 1862.109872
+          }
+        }
+      }
     }
   ]
 }
