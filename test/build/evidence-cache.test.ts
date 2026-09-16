@@ -117,6 +117,18 @@ describe("evidence cache", () => {
       )
     })
 
+    it("ignores a file matched by an explicit exclude glob", async () => {
+      await seedCapability()
+      const withoutExtra = await computeSourceFingerprint({ fs: nodeBuildFs, root })
+      await writeFile("src/scratch.ts", `export const scratch = 1;`)
+      const excluded = await computeSourceFingerprint({
+        fs: nodeBuildFs,
+        root,
+        exclude: ["src/scratch.ts"],
+      })
+      expect(excluded).toBe(withoutExtra)
+    })
+
     it("treats an omitted packages list identically to an explicit empty one", async () => {
       await seedCapability()
       expect(await computeSourceFingerprint({ fs: nodeBuildFs, root })).toBe(
