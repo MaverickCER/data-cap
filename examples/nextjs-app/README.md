@@ -27,10 +27,13 @@ src/
       todos/route.ts        <- GET/POST/PATCH/DELETE; the real authorization logic
   generated/
     data.manifest.ts      <- generated, do not edit
+scripts/
+  nist-privacy-framework/ <- reads docs/data.evidence.json, writes the report below
 docs/
   DATA.md                 <- generated
   OWNERSHIP.md            <- generated
   data.evidence.json      <- generated, the full EvidenceModel
+  ISO-IEC-27701-2025.md   <- generated (npm run docs:privacy); see below
 ```
 
 ## The authorization model
@@ -84,6 +87,29 @@ The field genuinely is read and displayed; this is a real gap in what the
 static scan can see through, not a bug in this example. Documented here
 rather than papered over with a redundant, unused direct read added only to
 satisfy the checker.
+
+## The privacy-framework alignment report
+
+`npm run docs:privacy` (and `npm run build`, which chains it) regenerates
+[`docs/ISO-IEC-27701-2025.md`](docs/ISO-IEC-27701-2025.md) — an
+**informational evidence report, not a certification** — by running this
+app's own `docs/data.evidence.json` through `data-cap`'s five published
+reference evidence projections (`data-cap/build`: Classification, Privacy,
+Retention, Compliance, Audit) and mapping the results against the openly
+published [NIST Privacy Framework](https://doi.org/10.6028/NIST.CSWP.01162020)'s
+five Functions (a US federal government work, public domain). ISO/IEC
+27701:2025 itself is a copyrighted, purchasable standard the report never
+quotes; NIST's open framework is the actual evidence substrate, chosen
+because both cover the same general subject area (govern / identify /
+control / communicate / protect data processing) — see the report's own
+opening disclaimer and [`scripts/nist-privacy-framework/`](scripts/nist-privacy-framework/)
+for the full reasoning.
+
+Every "Evidence found" row traces to a real, computed fact (a projection's
+own entry count, a declared retention policy's actual text); every "No
+evidence" row says so honestly, most often because this deliberately
+minimal app has no third-party data ecosystem, no formal risk-assessment
+process, or no encryption-at-rest facts to report — never silently omitted.
 
 ## What it took to get `next start` actually working
 
