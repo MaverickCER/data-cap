@@ -178,6 +178,17 @@ jobs:
           npm install
           npm run typecheck
 
+      # Not a fourth tier -- see examples/README.md's "Framework integration"
+      # section. `npm run build` (which chains `docs` -> `next build`) is the
+      # real assertion: it exercises `useSyncExternalStore`'s SSR path and
+      # the globalThis-keyed session secret this example's own README
+      # documents finding and fixing, not just a typecheck.
+      - name: nextjs-app
+        working-directory: examples/nextjs-app
+        run: |
+          npm install
+          npm run build
+
       - run: npx vitest run test/examples/
 
   # The 16 real-mechanism regression fixtures relocated out of `examples/`

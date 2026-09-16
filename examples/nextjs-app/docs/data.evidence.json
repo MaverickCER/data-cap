@@ -1,0 +1,521 @@
+{
+  "schemaVersion": 2,
+  "provenance": {
+    "generatedAt": "2026-09-16T06:02:39.543Z",
+    "toolVersion": "0.3.1"
+  },
+  "capability": {
+    "schemaVersion": 3,
+    "capabilities": [
+      {
+        "file": "src/features/todos/data.schema.ts",
+        "exportName": "todoData",
+        "kind": "createData",
+        "docs": {
+          "name": "todos",
+          "owner": "productivity-team",
+          "purpose": "Letting a signed-in user track and complete their own work items.",
+          "legalBasis": "contract",
+          "dataResidency": "us",
+          "fields": {
+            "todos": {
+              "description": "The current session's own todos -- a regular user's own list, or, for an admin who explicitly requested it (?all=true), every user's todos. Server-side authorization (src/app/api/todos/route.ts), not this client capability, is what decides which rows a given response actually contains.",
+              "sensitivity": "internal",
+              "protections": "Session-authenticated access only; the server enforces per-user ownership and admin-only cross-user access -- this field never receives data the requesting session isn't authorized to see.",
+              "retention": "Deleted when the owning user deletes the todo, or deletes their account.",
+              "purpose": "Displaying and managing work items in the todo list UI."
+            }
+          },
+          "getters": {
+            "getTodos": {
+              "description": "Fetches the current session's todos (own-only for a user; all, only if explicitly requested, for an admin).",
+              "source": "todos-api",
+              "endpoints": [
+                {
+                  "direction": "input",
+                  "kind": "api",
+                  "name": "todos-api",
+                  "url": "/api/todos",
+                  "handling": "plaintext"
+                }
+              ]
+            }
+          },
+          "mutators": {
+            "createTodo": {
+              "description": "Adds a new todo, owned by the current session's user.",
+              "source": "todos-api",
+              "endpoints": [
+                {
+                  "direction": "output",
+                  "kind": "api",
+                  "name": "todos-api",
+                  "url": "/api/todos",
+                  "handling": "plaintext"
+                }
+              ]
+            },
+            "toggleTodo": {
+              "description": "Marks a todo complete or incomplete -- the owner, or an admin.",
+              "source": "todos-api",
+              "endpoints": [
+                {
+                  "direction": "output",
+                  "kind": "api",
+                  "name": "todos-api",
+                  "url": "/api/todos",
+                  "handling": "plaintext"
+                }
+              ]
+            },
+            "deleteTodo": {
+              "description": "Removes a todo -- the owner, or an admin.",
+              "source": "todos-api",
+              "endpoints": [
+                {
+                  "direction": "output",
+                  "kind": "api",
+                  "name": "todos-api",
+                  "url": "/api/todos",
+                  "handling": "plaintext"
+                }
+              ]
+            }
+          }
+        },
+        "active": true,
+        "declarationPosition": {
+          "line": 124,
+          "column": 25
+        },
+        "fields": [
+          {
+            "path": [
+              "todos"
+            ],
+            "docs": {
+              "description": "The current session's own todos -- a regular user's own list, or, for an admin who explicitly requested it (?all=true), every user's todos. Server-side authorization (src/app/api/todos/route.ts), not this client capability, is what decides which rows a given response actually contains.",
+              "sensitivity": "internal",
+              "protections": "Session-authenticated access only; the server enforces per-user ownership and admin-only cross-user access -- this field never receives data the requesting session isn't authorized to see.",
+              "retention": "Deleted when the owning user deletes the todo, or deletes their account.",
+              "purpose": "Displaying and managing work items in the todo list UI."
+            },
+            "owner": {
+              "value": "productivity-team",
+              "declaredOn": "capability"
+            },
+            "sensitivity": {
+              "value": "internal",
+              "declaredOn": "field"
+            },
+            "purpose": {
+              "value": "Displaying and managing work items in the todo list UI.",
+              "declaredOn": "field"
+            },
+            "legalBasis": {
+              "value": "contract",
+              "declaredOn": "capability"
+            },
+            "dataResidency": {
+              "value": "us",
+              "declaredOn": "capability"
+            },
+            "auditRequired": {},
+            "writtenBy": [
+              {
+                "kind": "getter",
+                "name": "getTodos"
+              },
+              {
+                "kind": "mutator",
+                "name": "createTodo"
+              },
+              {
+                "kind": "mutator",
+                "name": "toggleTodo"
+              },
+              {
+                "kind": "mutator",
+                "name": "deleteTodo"
+              }
+            ],
+            "shape": [],
+            "declarationPosition": {
+              "line": 61,
+              "column": 5
+            }
+          }
+        ],
+        "getters": [
+          {
+            "kind": "getter",
+            "name": "getTodos",
+            "docs": {
+              "description": "Fetches the current session's todos (own-only for a user; all, only if explicitly requested, for an admin).",
+              "source": "todos-api",
+              "endpoints": [
+                {
+                  "direction": "input",
+                  "kind": "api",
+                  "name": "todos-api",
+                  "url": "/api/todos",
+                  "handling": "plaintext"
+                }
+              ]
+            },
+            "writes": [
+              [
+                "todos"
+              ]
+            ],
+            "hasProcessor": true,
+            "hasOptimistic": false,
+            "endpoints": [
+              {
+                "direction": "input",
+                "kind": "api",
+                "name": "todos-api",
+                "url": "/api/todos",
+                "handling": "plaintext"
+              }
+            ]
+          }
+        ],
+        "mutators": [
+          {
+            "kind": "mutator",
+            "name": "createTodo",
+            "docs": {
+              "description": "Adds a new todo, owned by the current session's user.",
+              "source": "todos-api",
+              "endpoints": [
+                {
+                  "direction": "output",
+                  "kind": "api",
+                  "name": "todos-api",
+                  "url": "/api/todos",
+                  "handling": "plaintext"
+                }
+              ]
+            },
+            "writes": [
+              [
+                "todos"
+              ]
+            ],
+            "hasProcessor": true,
+            "hasOptimistic": false,
+            "endpoints": [
+              {
+                "direction": "output",
+                "kind": "api",
+                "name": "todos-api",
+                "url": "/api/todos",
+                "handling": "plaintext"
+              }
+            ]
+          },
+          {
+            "kind": "mutator",
+            "name": "toggleTodo",
+            "docs": {
+              "description": "Marks a todo complete or incomplete -- the owner, or an admin.",
+              "source": "todos-api",
+              "endpoints": [
+                {
+                  "direction": "output",
+                  "kind": "api",
+                  "name": "todos-api",
+                  "url": "/api/todos",
+                  "handling": "plaintext"
+                }
+              ]
+            },
+            "writes": [
+              [
+                "todos"
+              ]
+            ],
+            "hasProcessor": true,
+            "hasOptimistic": true,
+            "endpoints": [
+              {
+                "direction": "output",
+                "kind": "api",
+                "name": "todos-api",
+                "url": "/api/todos",
+                "handling": "plaintext"
+              }
+            ]
+          },
+          {
+            "kind": "mutator",
+            "name": "deleteTodo",
+            "docs": {
+              "description": "Removes a todo -- the owner, or an admin.",
+              "source": "todos-api",
+              "endpoints": [
+                {
+                  "direction": "output",
+                  "kind": "api",
+                  "name": "todos-api",
+                  "url": "/api/todos",
+                  "handling": "plaintext"
+                }
+              ]
+            },
+            "writes": [
+              [
+                "todos"
+              ]
+            ],
+            "hasProcessor": true,
+            "hasOptimistic": true,
+            "endpoints": [
+              {
+                "direction": "output",
+                "kind": "api",
+                "name": "todos-api",
+                "url": "/api/todos",
+                "handling": "plaintext"
+              }
+            ]
+          }
+        ],
+        "subscriptions": []
+      }
+    ],
+    "warnings": []
+  },
+  "lifecycle": {
+    "schemaVersion": 1,
+    "capabilities": [
+      {
+        "file": "src/features/todos/data.schema.ts",
+        "exportName": "todoData",
+        "fields": [
+          {
+            "path": [
+              "todos"
+            ],
+            "retention": "Deleted when the owning user deletes the todo, or deletes their account."
+          }
+        ]
+      }
+    ],
+    "expiring": []
+  },
+  "computed": {
+    "dependency": true,
+    "ownership": true,
+    "finding": true,
+    "change": true
+  },
+  "dependency": {
+    "schemaVersion": 3,
+    "edges": [
+      {
+        "relationship": "calls-getter",
+        "from": "src/app/todo-app.tsx",
+        "to": {
+          "capability": {
+            "file": "src/features/todos/data.schema.ts",
+            "exportName": "todoData"
+          },
+          "operation": "getTodos"
+        },
+        "resolution": "resolved",
+        "position": {
+          "line": 40,
+          "column": 20
+        }
+      },
+      {
+        "relationship": "calls-mutator",
+        "from": "src/app/todo-app.tsx",
+        "to": {
+          "capability": {
+            "file": "src/features/todos/data.schema.ts",
+            "exportName": "todoData"
+          },
+          "operation": "createTodo"
+        },
+        "resolution": "resolved",
+        "position": {
+          "line": 63,
+          "column": 11
+        }
+      },
+      {
+        "relationship": "calls-mutator",
+        "from": "src/app/todo-app.tsx",
+        "to": {
+          "capability": {
+            "file": "src/features/todos/data.schema.ts",
+            "exportName": "todoData"
+          },
+          "operation": "toggleTodo"
+        },
+        "resolution": "resolved",
+        "position": {
+          "line": 119,
+          "column": 38
+        }
+      },
+      {
+        "relationship": "calls-mutator",
+        "from": "src/app/todo-app.tsx",
+        "to": {
+          "capability": {
+            "file": "src/features/todos/data.schema.ts",
+            "exportName": "todoData"
+          },
+          "operation": "deleteTodo"
+        },
+        "resolution": "resolved",
+        "position": {
+          "line": 126,
+          "column": 35
+        }
+      }
+    ]
+  },
+  "ownership": {
+    "schemaVersion": 2,
+    "entries": [
+      {
+        "owner": "productivity-team",
+        "capabilities": [
+          {
+            "file": "src/features/todos/data.schema.ts",
+            "exportName": "todoData"
+          }
+        ],
+        "fields": [
+          {
+            "capability": {
+              "file": "src/features/todos/data.schema.ts",
+              "exportName": "todoData"
+            },
+            "field": [
+              "todos"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "finding": {
+    "schemaVersion": 2,
+    "findings": [
+      {
+        "code": "UNCONSUMED_FIELD",
+        "family": "usage",
+        "severity": "warning",
+        "message": "Field \"todos\" on \"todoData\" is written but never statically read in the scanned project.",
+        "location": {
+          "kind": "field",
+          "capability": {
+            "file": "src/features/todos/data.schema.ts",
+            "exportName": "todoData"
+          },
+          "field": [
+            "todos"
+          ],
+          "position": {
+            "line": 61,
+            "column": 5
+          }
+        }
+      }
+    ]
+  },
+  "change": {
+    "schemaVersion": 2,
+    "manifest": {
+      "addedCapabilities": [],
+      "removedCapabilities": [],
+      "updatedCapabilities": []
+    },
+    "blastRadius": [],
+    "renamedFields": []
+  },
+  "runtimeContract": {
+    "schemaVersion": 1,
+    "packageVersion": "0.3.1",
+    "policies": [
+      {
+        "key": "getter-concurrency",
+        "statement": "A getter's response is discarded if a newer call to the same operation has since started, regardless of completion order (stale-response discard by start order, not completion order).",
+        "governingAdr": "0024",
+        "module": "src/runtime/capability.ts"
+      },
+      {
+        "key": "mutator-concurrency",
+        "statement": "A mutator's response always commits, even if a newer call to the same operation started after it -- whichever call completes last in real time wins, deliberately unlike a getter's start-order discard.",
+        "governingAdr": "0025",
+        "module": "src/runtime/capability.ts"
+      },
+      {
+        "key": "subscription-sharing",
+        "statement": "Concurrent subscribers to the same `subscribe` function identity share one underlying transport connection, ref-counted; the transport tears down only once every subscriber has released, and a late joiner immediately learns the current connection status.",
+        "governingAdr": "0026",
+        "module": "src/runtime/coordinator.ts"
+      },
+      {
+        "key": "subscription-disconnect-isolation",
+        "statement": "A subscription's own disconnect/teardown never mutates `fields` -- only an incoming event, processed through the operation's `processor`, can.",
+        "governingAdr": "0029",
+        "module": "src/runtime/coordinator.ts"
+      },
+      {
+        "key": "coordinator-dedup-key",
+        "statement": "Concurrent calls share one in-flight execution only when both the called function's own identity and their canonicalized params match -- never structural/behavioral equality, and never merely the same operation name.",
+        "governingAdr": "0028",
+        "module": "src/runtime/coordinator.ts"
+      },
+      {
+        "key": "atomic-commit",
+        "statement": "`fields` and `info` are always committed and published as one atomic snapshot -- no code path may update them independently or in separate ticks; a consumer never observes a stale pairing of the two.",
+        "governingAdr": "0008",
+        "module": "src/runtime/store.ts"
+      },
+      {
+        "key": "authoritative-pending-projection",
+        "statement": "Every observable state is `project(authoritativeState, pendingTransitions)`, recomputed fresh on every read, never cached -- authoritative and optimistic-pending state are stored separately and only ever folded together for observation.",
+        "governingAdr": "0021",
+        "module": "src/runtime/store.ts"
+      },
+      {
+        "key": "no-automatic-rollback",
+        "statement": "A failed mutation never automatically reverts a previously-committed value and never invents conflict resolution between concurrent writers -- recovery is always the caller's own responsibility.",
+        "governingAdr": "0023",
+        "module": "src/runtime/store.ts"
+      },
+      {
+        "key": "data-status-state-machine",
+        "statement": "A field's `status` is one of exactly `idle`/`loading`/`success`/`error`/`retrying` -- `retrying` is reserved for a recovering-after-failure attempt, distinct from a field's first-ever `loading` attempt.",
+        "governingAdr": "0016",
+        "module": "src/core/types.ts"
+      },
+      {
+        "key": "data-error-latest-only",
+        "statement": "A field's `error` is always the single latest error from its establishing operation, never a history/array -- it clears on the next successful establishing operation unless a still-newer operation has since set a different one.",
+        "governingAdr": "0015",
+        "module": "src/core/types.ts"
+      },
+      {
+        "key": "cache-contract",
+        "statement": "The optional `./runtime/cache` module caches a complete `DataState` (`fields` + `info`) as one atomic unit, never `fields` alone and never a raw, unvalidated response -- a bounded, least-recently-used-eviction cache keyed by an opaque caller-computed string.",
+        "governingAdr": "0035",
+        "module": "src/runtime/cache.ts"
+      },
+      {
+        "key": "retry-contract",
+        "statement": "The optional `./runtime/retry` module is opt-in and abort-aware: it never retries automatically, never retries past the caller's own `AbortSignal`, never exceeds `maxAttempts`, and never assumes a mutation is idempotent -- the caller's own `shouldRetry` predicate decides what's worth retrying.",
+        "governingAdr": "0036",
+        "module": "src/runtime/retry.ts"
+      }
+    ]
+  }
+}
