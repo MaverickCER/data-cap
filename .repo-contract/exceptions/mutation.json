@@ -386,6 +386,132 @@
       "mutator": "ConditionalExpression",
       "original": "relative !== \"..\"",
       "replacement": "true"
+    },
+    {
+      "id": "mutation:src/build/resolution/resolve-package-schema.ts:ConditionalExpression:6a4b9fd3a415",
+      "version": 1,
+      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-17 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the real test suite -- multiple real tests genuinely fail (including a hard hang/timeout in the real-filesystem-root walk test) since the ancestor-walk loop never executes at all, yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
+      "file": "src/build/resolution/resolve-package-schema.ts",
+      "mutator": "ConditionalExpression",
+      "original": "i < PACKAGE_JSON_ANCESTOR_SEARCH_LIMIT",
+      "replacement": "false"
+    },
+    {
+      "id": "mutation:src/build/resolution/resolve-package-schema.ts:UpdateOperator:c334d2afc493",
+      "version": 1,
+      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-17 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the real test suite -- multiple real tests genuinely fail -- the loop-exhaustion test asserts undefined but gets a real match, and the real-filesystem-root walk test hangs (the loop bound i < LIMIT never flips false as i walks away from it), yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
+      "file": "src/build/resolution/resolve-package-schema.ts",
+      "mutator": "UpdateOperator",
+      "original": "i++",
+      "replacement": "i--"
+    },
+    {
+      "id": "mutation:src/build/resolution/resolve-package-schema.ts:BlockStatement:53f9fcc0d971",
+      "version": 1,
+      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-17 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the real test suite -- multiple real tests genuinely fail (the decoy-walk-match tests expect a resolved package.json but get none), yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
+      "file": "src/build/resolution/resolve-package-schema.ts",
+      "mutator": "BlockStatement",
+      "original": "{\n        return { packageJsonPath: candidate, packageDir: dir }\n      }",
+      "replacement": "{}"
+    },
+    {
+      "id": "mutation:src/build/resolution/resolve-package-schema.ts:ConditionalExpression:2a188297b247",
+      "version": 1,
+      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-17 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the real test suite -- the dedicated non-object-manifest test genuinely fails (expects MALFORMED_PACKAGE_JSON, gets FIELD_MISSING instead since the guard never fires), yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
+      "file": "src/build/resolution/resolve-package-schema.ts",
+      "mutator": "ConditionalExpression",
+      "original": "!isRecord(manifest)",
+      "replacement": "false"
+    },
+    {
+      "id": "mutation:src/build/resolution/resolve-package-schema.ts:StringLiteral:d02be310b359",
+      "version": 1,
+      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-17 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the real test suite -- the dedicated invalid-extension tests genuinely fail (expect the \"INVALID_EXTENSION\" code, get an empty string instead), yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
+      "file": "src/build/resolution/resolve-package-schema.ts",
+      "mutator": "StringLiteral",
+      "original": "\"INVALID_EXTENSION\"",
+      "replacement": "\"\""
+    },
+    {
+      "id": "mutation:src/build/resolution/resolve-package-schema.ts:ConditionalExpression:2d9969d60ce3",
+      "version": 1,
+      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-17 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the real test suite -- the dedicated outside-package-via-symlink tests genuinely fail (expect an OUTSIDE_PACKAGE failure, get an ok result instead since the guard never fires), yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
+      "file": "src/build/resolution/resolve-package-schema.ts",
+      "mutator": "ConditionalExpression",
+      "original": "!probe.withinPackage",
+      "replacement": "false"
+    },
+    {
+      "id": "mutation:src/build/resolution/resolve-package-schema.ts:MethodExpression:ba29ec3113ec",
+      "version": 1,
+      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-17 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the real test suite -- the dedicated subpath-specifier test genuinely fails (a subpath specifier like \"@fixtures/simple-pkg/whatever\" no longer matches its own allow-listed package name), yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
+      "file": "src/build/resolution/resolve-package-schema.ts",
+      "mutator": "MethodExpression",
+      "original": "specifier.startsWith(`${pkg}/`)",
+      "replacement": "specifier.endsWith(`${pkg}/`)"
+    },
+    {
+      "id": "mutation:src/build/resolution/resolve-package-schema.ts:LogicalOperator:7fa2e843edf5",
+      "version": 1,
+      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-17 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the real test suite -- the decoy-walk-match tests genuinely fail (a decoy package.json with no matching name now satisfies the guard on its own), yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
+      "file": "src/build/resolution/resolve-package-schema.ts",
+      "mutator": "LogicalOperator",
+      "original": "isRecord(parsed) && parsed[\"name\"] === packageName",
+      "replacement": "isRecord(parsed) || parsed[\"name\"] === packageName"
+    },
+    {
+      "id": "mutation:src/build/resolution/resolve-package-schema.ts:ObjectLiteral:478478628c42",
+      "version": 1,
+      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-17 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the real test suite -- the non-object-manifest test genuinely fails (expects MALFORMED_PACKAGE_JSON with a specific reason, gets an incomplete result instead), yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
+      "file": "src/build/resolution/resolve-package-schema.ts",
+      "mutator": "ObjectLiteral",
+      "original": "{\n      found: false,\n      failure: failure(\n        \"MALFORMED_PACKAGE_JSON\",\n        `\"${packageJsonPath}\" does not contain a JSON object.`,\n      ),\n    }",
+      "replacement": "{}"
+    },
+    {
+      "id": "mutation:src/build/resolution/resolve-package-schema.ts:BlockStatement:36c69675d807",
+      "version": 1,
+      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-17 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the real test suite -- the non-object-manifest test genuinely fails (expects MALFORMED_PACKAGE_JSON, gets FIELD_MISSING instead since the guard never returns), yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
+      "file": "src/build/resolution/resolve-package-schema.ts",
+      "mutator": "BlockStatement",
+      "original": "{\n    return {\n      found: false,\n      failure: failure(\n        \"MALFORMED_PACKAGE_JSON\",\n        `\"${packageJsonPath}\" does not contain a JSON object.`,\n      ),\n    }\n  }",
+      "replacement": "{}"
+    },
+    {
+      "id": "mutation:src/build/resolution/resolve-package-schema.ts:StringLiteral:f1a0e1ec67b2",
+      "version": 1,
+      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-17 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the real test suite -- the OUTSIDE_PACKAGE reason-message tests (realpathFailedFailure/statFailedFailure, and classifyManifest OUTSIDE_PACKAGE) genuinely fail on their exact reason-string assertions, yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
+      "file": "src/build/resolution/resolve-package-schema.ts",
+      "mutator": "StringLiteral",
+      "original": "`\"${packageName}\"'s \"dataCap.schema\" (\"${declaredField}\")`",
+      "replacement": "``"
+    },
+    {
+      "id": "mutation:src/build/resolution/resolve-package-schema.ts:ConditionalExpression:8488faee8323",
+      "version": 1,
+      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-17 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the real test suite -- multiple real tests genuinely fail, including one that throws a real TypeError deeper in path.resolve() once a non-string schema field is no longer rejected, yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
+      "file": "src/build/resolution/resolve-package-schema.ts",
+      "mutator": "ConditionalExpression",
+      "original": "isRecord(dataCapField) && typeof dataCapField[\"schema\"] === \"string\"",
+      "replacement": "true"
+    },
+    {
+      "id": "mutation:src/build/resolution/resolve-package-schema.ts:BlockStatement:4e5d4a046c6f",
+      "version": 1,
+      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-17 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the real test suite -- the outside-package-via-symlink test genuinely fails (expects an OUTSIDE_PACKAGE failure, gets an ok result instead since the guard never returns), yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
+      "file": "src/build/resolution/resolve-package-schema.ts",
+      "mutator": "BlockStatement",
+      "original": "{\n    return failure(\n      \"OUTSIDE_PACKAGE\",\n      `${ref} resolves, after following symlinks, outside its own package directory.`,\n    )\n  }",
+      "replacement": "{}"
+    },
+    {
+      "id": "mutation:src/build/resolution/resolve-package-schema.ts:ConditionalExpression:c74cd5ff78a6",
+      "version": 1,
+      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-17 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the real test suite -- the dedicated FILE_TOO_LARGE boundary test genuinely fails (a file one byte over the cap is no longer rejected), yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
+      "file": "src/build/resolution/resolve-package-schema.ts",
+      "mutator": "ConditionalExpression",
+      "original": "probe.size > MAX_PACKAGE_SCHEMA_FILE_BYTES",
+      "replacement": "false"
     }
   ]
 }
