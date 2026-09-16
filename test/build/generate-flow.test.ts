@@ -167,6 +167,33 @@ describe("generateFlow", () => {
     expect(result.findings[0]!.code).toBe("SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY")
   })
 
+  it("folds its own findings into the rendered Security Data-Flow Review even when additionalFindings is omitted", () => {
+    const result = generateFlow({
+      inventory: inventory([
+        capability({
+          fields: [
+            field({
+              path: ["ssn"],
+              docs: { sensitivity: "restricted" },
+              sensitivity: { value: "restricted", declaredOn: "field" },
+            }),
+          ],
+          getters: [
+            operation({
+              writes: [["ssn"]],
+              endpoints: [{ direction: "input", kind: "api", name: "x", handling: "encrypted" }],
+            }),
+          ],
+        }),
+      ]),
+      root: "/project",
+      location: "/project/docs/flow",
+      edges: [],
+    })
+    const overview = result.files.find((f) => f.path.endsWith("overview.md"))!
+    expect(overview.content).toContain("SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY")
+  })
+
   it("folds both its own and additionalFindings into the rendered Security Data-Flow Review", () => {
     const result = generateFlow({
       inventory: inventory([capability()]),

@@ -90,7 +90,22 @@ export function parseArgs(argv: string[]): ParsedArgs {
     "-h": (a) => (a.help = true),
   }
 
-  for (let i = 0; i < argv.length; i++) {
+  // `steps`, not `i`, bounds the loop: `i` is manually advanced (`++i`
+  // below, to consume a value-flag's argument) and a mutation flipping its
+  // `i++` to `i--` would otherwise walk it away from `argv.length` forever,
+  // looping until Stryker's own timeout instead of producing an observably
+  // wrong result a normal test could catch. `steps` always moves forward by
+  // exactly one per iteration regardless, so it still reaches its own
+  // generous ceiling fast under that same mutation.
+  for (let i = 0, steps = 0; i < argv.length; i++, steps++) {
+    // This guard exists only to fail a mutated `i++` fast instead of
+    // hanging -- under real argv input it can never trip (`steps` and `i`
+    // always advance together), so no test can observably distinguish this
+    // condition from `false` without itself mutating `i`'s advancement.
+    // Stryker disable next-line EqualityOperator
+    if (steps > argv.length + 1) {
+      throw new Error("parseArgs: argument index stopped advancing toward argv.length.")
+    }
     // `i < argv.length` guarantees `argv[i]` is a real string; the `?? ""` only
     // exists to satisfy `noUncheckedIndexedAccess` and is never taken.
     // Stryker disable next-line StringLiteral
@@ -368,6 +383,13 @@ export function resolveOptions(args: ParsedArgs) {
     ...(args.include.length > 0 ? { include: args.include } : {}),
     ...(args.exclude.length > 0 ? { exclude: args.exclude } : {}),
     ...(args.packages.length > 0 ? { packages: args.packages } : {}),
+    // computeDataArtifacts forwards this straight through to
+    // linkCapabilityFiles, which reads `options.tsconfig` via plain
+    // property access -- present-but-undefined and absent are
+    // indistinguishable there, so "spread only when defined" and "always
+    // spread" are behaviorally identical. Hand-verified: forcing this guard
+    // to `true` and running the real suite passes unchanged.
+    // Stryker disable next-line ConditionalExpression
     ...(args.tsconfig !== undefined ? { tsconfig: args.tsconfig } : {}),
     // Inlined path.resolve() rather than the resolve() helper above: that
     // helper's own return type is `string | undefined` regardless of its

@@ -19,11 +19,28 @@ import { InvalidFieldDefaultError } from "./errors.js"
  * passes Date/URL/RegExp instances through untouched as opaque leaves (never
  * decomposed into a plain object).
  */
+
+// A hard, generous fail-safe wholly independent of the `stack.has()` cycle
+// check below -- not a policy limit (a real field schema never nests
+// anywhere close to this deep) but a backstop against that check itself
+// being broken: a mutation neutralizing `stack.has(schemaNode)` would
+// otherwise let a genuine cyclic reference recurse until a real stack
+// overflow, which takes long enough to manifest that it reads as a hang
+// (Stryker's own per-mutant timeout) rather than an observably wrong
+// result. `path` already grows by exactly one at every recursive call
+// site, independent of `stack`, so it still reaches this ceiling fast
+// under that same mutation.
+const MAX_FIELD_DEPTH = 200
+
 export function resolveFieldDefaults(
   schemaNode: unknown,
   path: readonly string[],
   stack: Set<object>,
 ): unknown {
+  if (path.length > MAX_FIELD_DEPTH) {
+    throw new InvalidFieldDefaultError(path, "cyclic field defaults are not supported")
+  }
+
   if (typeof schemaNode === "function") {
     throw new InvalidFieldDefaultError(path, "functions are not valid field values")
   }

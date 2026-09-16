@@ -512,6 +512,15 @@
       "mutator": "ConditionalExpression",
       "original": "probe.size > MAX_PACKAGE_SCHEMA_FILE_BYTES",
       "replacement": "false"
+    },
+    {
+      "id": "mutation:src/build/resolution/resolve-tsconfig-paths.ts:EqualityOperator:ebcbbb0e31e8",
+      "version": 1,
+      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-17 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the full trimmed suite -- 4 real tests genuinely fail, yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
+      "file": "src/build/resolution/resolve-tsconfig-paths.ts",
+      "mutator": "EqualityOperator",
+      "original": "baseUrl === undefined",
+      "replacement": "baseUrl !== undefined"
     }
   ]
 }
