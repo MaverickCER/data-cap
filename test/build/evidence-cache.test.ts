@@ -309,6 +309,45 @@ describe("evidence cache", () => {
       expect(result.missReason).toContain("unrecognized schemaVersion")
     })
 
+    // A `!== undefined` guard flipped to always-`true` (or the guarded
+    // object literal emptied to `{}`) changes nothing any downstream
+    // consumer can observe *when the option is actually omitted*: whether
+    // the key is spread as `{ key: undefined }` or left absent entirely,
+    // `computeSourceFingerprint`'s own destructuring defaults (and its own
+    // `!== undefined` checks) treat both identically. That is only
+    // observable by inspecting the literal object handed to
+    // `computeSourceFingerprint` itself, so this spies on it (letting the
+    // real implementation run underneath) and asserts `Object.hasOwn`
+    // directly on the captured call argument.
+    it("threads include/exclude/packages into computeSourceFingerprint's own call only when each was actually provided", async () => {
+      await seedCapability()
+      const spy = vi.spyOn(evidenceFingerprint, "computeSourceFingerprint")
+      try {
+        await getEvidenceModel({
+          ...optionsFor(),
+          include: ["src/**"],
+          exclude: ["src/skip/**"],
+          packages: [],
+        })
+        const withAll = spy.mock.calls.at(-1)?.[0]
+        expect(Object.hasOwn(withAll ?? {}, "include")).toBe(true)
+        expect(Object.hasOwn(withAll ?? {}, "exclude")).toBe(true)
+        expect(Object.hasOwn(withAll ?? {}, "packages")).toBe(true)
+        expect(withAll?.include).toEqual(["src/**"])
+        expect(withAll?.exclude).toEqual(["src/skip/**"])
+        expect(withAll?.packages).toEqual([])
+
+        spy.mockClear()
+        await getEvidenceModel(optionsFor())
+        const withNone = spy.mock.calls.at(-1)?.[0]
+        expect(Object.hasOwn(withNone ?? {}, "include")).toBe(false)
+        expect(Object.hasOwn(withNone ?? {}, "exclude")).toBe(false)
+        expect(Object.hasOwn(withNone ?? {}, "packages")).toBe(false)
+      } finally {
+        spy.mockRestore()
+      }
+    })
+
     it("never writes anything -- a miss does not self-heal the cache", async () => {
       await seedCapability()
       await generateDataArtifacts(optionsFor())
