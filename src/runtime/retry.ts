@@ -68,8 +68,27 @@ export async function withRetry<T>(
     throw abortReason(signal)
   }
 
+  // A hard, generous iteration ceiling -- deliberately bounded by a fixed
+  // array's length, not a manually incremented/decremented counter compared
+  // against a limit: an `UpdateOperator` mutation flipping `iterations++` to
+  // `iterations--` would walk such a counter away from its bound instead of
+  // toward it, looping until Stryker's own timeout rather than producing an
+  // observably wrong result a normal test could catch. Iterator protocol has
+  // no exposed counter for that class of mutation to target (same rationale
+  // as env-cap's `compatibility.ts`/`exclusive-group.ts` pairwise loops).
+  // Also deliberately NOT derived from `maxAttempts` -- a pathological
+  // caller-supplied `maxAttempts` of `Infinity`/`NaN` must not turn this
+  // into an unbounded loop too. Not a policy limit (a caller's
+  // `maxAttempts`/`shouldRetry`/signal abort already enforce that; correct
+  // code with any sane, finite `maxAttempts` always exits via
+  // `attempt > maxAttempts` by iteration `maxAttempts + 1`, far short of
+  // this) but a fast-failing backstop against a broken loop-exit condition
+  // -- or a broken `maxAttempts` itself -- spinning forever instead of
+  // failing fast. See mutation-testing notes in retry.test.ts.
+  const iterationCeiling = 100
   let attempt = 0
-  for (;;) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- the loop variable itself is irrelevant; only the fixed array length bounds the loop
+  for (const _iteration of Array.from({ length: iterationCeiling + 1 })) {
     try {
       return await fn(signal)
     } catch (error) {
@@ -94,6 +113,13 @@ export async function withRetry<T>(
       }
     }
   }
+  // Unreachable by any correct exit path: `attempt > maxAttempts` above
+  // always throws well before the loop could ever exhaust `iterationCeiling`
+  // iterations. Reaching here means the exit condition itself is broken --
+  // fail fast and say so, rather than hang.
+  throw new Error(
+    `withRetry: exceeded ${String(iterationCeiling)} loop iterations without ever honoring maxAttempts=${String(maxAttempts)} -- the retry loop's own exit condition is broken, or maxAttempts itself is not a sane finite number.`,
+  )
 }
 
 /**
