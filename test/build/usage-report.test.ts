@@ -182,6 +182,34 @@ describe("deriveUsageFindings", () => {
     )
   })
 
+  it("never attaches a position key to an UNCONSUMED_FIELD finding when the field has none", () => {
+    const findings = deriveUsageFindings(
+      inventory([
+        capability({
+          fields: [
+            field({
+              path: ["email"],
+              writtenBy: [{ kind: "getter", name: "getUser" }],
+              declarationPosition: undefined,
+            }),
+          ],
+        }),
+      ]),
+      [
+        edge({
+          relationship: "calls-getter",
+          to: {
+            capability: { file: "/project/user.ts", exportName: "userCapability" },
+            operation: "getUser",
+          },
+        }),
+      ],
+    )
+    const finding = findings.find((f) => f.code === "UNCONSUMED_FIELD")
+    expect(finding).toBeDefined()
+    expect("position" in (finding ?? {})).toBe(false)
+  })
+
   describe("FIELD_ACCESS_INDETERMINATE (ADR 0052 five-state model)", () => {
     it("downgrades an otherwise-unconsumed field to indeterminate when a capability-level dynamic access exists", () => {
       const findings = deriveUsageFindings(
@@ -208,6 +236,8 @@ describe("deriveUsageFindings", () => {
           indeterminateSites: [{ file: "/project/consumer.ts", line: 3, column: 5 }],
         }),
       )
+      const finding = findings.find((f) => f.code === "FIELD_ACCESS_INDETERMINATE")
+      expect("position" in (finding ?? {})).toBe(false)
     })
 
     it("downgrades an otherwise-unconsumed field to indeterminate when a field-level dynamic access (.fields[computed]) exists", () => {
@@ -313,6 +343,8 @@ describe("deriveUsageFindings", () => {
           message: "Per developers, this data point is dynamically accessed at src/legacy.ts:12:5.",
         }),
       )
+      const finding = findings.find((f) => f.code === "FIELD_DYNAMIC_ACCESS_DECLARED")
+      expect("position" in (finding ?? {})).toBe(false)
     })
 
     it("a declared dynamicAccess citation takes precedence over FIELD_ACCESS_INDETERMINATE too", () => {
