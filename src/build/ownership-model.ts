@@ -76,6 +76,16 @@ function capabilityKey(ref: OwnershipCapabilityRef): string {
 }
 
 function sortCapabilityRefs(refs: readonly OwnershipCapabilityRef[]): OwnershipCapabilityRef[] {
+  // `.slice()` before `.sort()` (matching sortFieldRefs's identical
+  // defensive copy below, which IS load-bearing -- its own caller passes
+  // `bucket.fields` directly, not a fresh copy): this function's own sole
+  // current call site already spreads `bucket.capabilities.values()` into
+  // a fresh array first, so removing this specific `.slice()` wouldn't
+  // observably mutate anything a caller holds today. Kept for parity with
+  // sortFieldRefs and as a real guard against a future caller that doesn't
+  // copy first. Hand-verified: removing it and running the real suite
+  // passes unchanged.
+  // Stryker disable next-line MethodExpression
   return refs
     .slice()
     .sort((a, b) => a.file.localeCompare(b.file) || a.exportName.localeCompare(b.exportName))
