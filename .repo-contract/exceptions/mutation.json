@@ -28,6 +28,15 @@
       "replacement": "refs"
     },
     {
+      "id": "mutation:src/build/resolution/resolve-package-schema.ts:BlockStatement:31709bc8819e",
+      "version": 1,
+      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-16 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the real test suite -- one or more real tests genuinely fail, yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
+      "file": "src/build/resolution/resolve-package-schema.ts",
+      "mutator": "BlockStatement",
+      "original": "{\n  return `\"${packageName}\"'s \"dataCap.schema\" (\"${declaredField}\")`\n}",
+      "replacement": "{}"
+    },
+    {
       "id": "mutation:src/build/resolution/resolve-package-schema.ts:BlockStatement:502b02b26d7e",
       "version": 1,
       "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-10 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the real test suite -- one or more real tests genuinely fail, yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
@@ -37,12 +46,30 @@
       "replacement": "{}"
     },
     {
+      "id": "mutation:src/build/resolution/resolve-package-schema.ts:BlockStatement:5f5746bb7e24",
+      "version": 1,
+      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-16 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the real test suite -- one or more real tests genuinely fail, yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
+      "file": "src/build/resolution/resolve-package-schema.ts",
+      "mutator": "BlockStatement",
+      "original": "{\n    return statFailedFailure(packageName, declaredField)\n  }",
+      "replacement": "{}"
+    },
+    {
       "id": "mutation:src/build/resolution/resolve-package-schema.ts:BlockStatement:af494da98b8f",
       "version": 1,
       "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-10 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the real test suite -- a real test genuinely fails, yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
       "file": "src/build/resolution/resolve-package-schema.ts",
       "mutator": "BlockStatement",
       "original": "{\n  return failure(\n    \"OUTSIDE_PACKAGE\",\n    `${schemaRef(packageName, declaredField)} does not resolve to a file that exists.`,\n  )\n}",
+      "replacement": "{}"
+    },
+    {
+      "id": "mutation:src/build/resolution/resolve-package-schema.ts:BlockStatement:b2e1276e69e4",
+      "version": 1,
+      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-16 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the real test suite -- one or more real tests genuinely fail, yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
+      "file": "src/build/resolution/resolve-package-schema.ts",
+      "mutator": "BlockStatement",
+      "original": "{\n    return realpathFailedFailure(packageName, declaredField)\n  }",
       "replacement": "{}"
     },
     {
@@ -82,6 +109,15 @@
       "replacement": "false"
     },
     {
+      "id": "mutation:src/build/resolution/resolve-package-schema.ts:ConditionalExpression:31b145dc71de",
+      "version": 1,
+      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-16 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the real test suite -- one or more real tests genuinely fail, yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
+      "file": "src/build/resolution/resolve-package-schema.ts",
+      "mutator": "ConditionalExpression",
+      "original": "value !== null",
+      "replacement": "true"
+    },
+    {
       "id": "mutation:src/build/resolution/resolve-package-schema.ts:ConditionalExpression:3be205f31398",
       "version": 1,
       "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-10 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the real test suite -- a real test genuinely fails, yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
@@ -89,6 +125,51 @@
       "mutator": "ConditionalExpression",
       "original": "seenRealpaths.has(file)",
       "replacement": "false"
+    },
+    {
+      "id": "mutation:src/build/resolution/resolve-package-schema.ts:ConditionalExpression:7a1dfc87bbe0",
+      "version": 1,
+      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-16 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the real test suite -- one or more real tests genuinely fail, yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
+      "file": "src/build/resolution/resolve-package-schema.ts",
+      "mutator": "ConditionalExpression",
+      "original": "isRecord(parsed) && parsed[\"name\"] === packageName",
+      "replacement": "false"
+    },
+    {
+      "id": "mutation:src/build/resolution/resolve-package-schema.ts:ConditionalExpression:a8dcf208b44e",
+      "version": 1,
+      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-16 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the real test suite -- one or more real tests genuinely fail, yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
+      "file": "src/build/resolution/resolve-package-schema.ts",
+      "mutator": "ConditionalExpression",
+      "original": "!cached",
+      "replacement": "true"
+    },
+    {
+      "id": "mutation:src/build/resolution/resolve-package-schema.ts:ConditionalExpression:b105e58bf3fe",
+      "version": 1,
+      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-16 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the real test suite -- one or more real tests genuinely fail, yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
+      "file": "src/build/resolution/resolve-package-schema.ts",
+      "mutator": "ConditionalExpression",
+      "original": "isRecord(parsed) && parsed[\"name\"] === packageName",
+      "replacement": "true"
+    },
+    {
+      "id": "mutation:src/build/resolution/resolve-package-schema.ts:ConditionalExpression:edc2ae7f42ed",
+      "version": 1,
+      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-16 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the real test suite -- one or more real tests genuinely fail, yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
+      "file": "src/build/resolution/resolve-package-schema.ts",
+      "mutator": "ConditionalExpression",
+      "original": "parsed[\"name\"] === packageName",
+      "replacement": "true"
+    },
+    {
+      "id": "mutation:src/build/resolution/resolve-package-schema.ts:EqualityOperator:05d1a1945cfb",
+      "version": 1,
+      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-16 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the real test suite -- one or more real tests genuinely fail, yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
+      "file": "src/build/resolution/resolve-package-schema.ts",
+      "mutator": "EqualityOperator",
+      "original": "parsed[\"name\"] === packageName",
+      "replacement": "parsed[\"name\"] !== packageName"
     },
     {
       "id": "mutation:src/build/resolution/resolve-package-schema.ts:EqualityOperator:45fed3ee68e7",
@@ -107,6 +188,15 @@
       "mutator": "EqualityOperator",
       "original": "i < PACKAGE_JSON_ANCESTOR_SEARCH_LIMIT",
       "replacement": "i <= PACKAGE_JSON_ANCESTOR_SEARCH_LIMIT"
+    },
+    {
+      "id": "mutation:src/build/resolution/resolve-package-schema.ts:LogicalOperator:92486de70386",
+      "version": 1,
+      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-16 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the real test suite -- one or more real tests genuinely fail, yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
+      "file": "src/build/resolution/resolve-package-schema.ts",
+      "mutator": "LogicalOperator",
+      "original": "typeof value === \"object\" && value !== null",
+      "replacement": "typeof value === \"object\" || value !== null"
     },
     {
       "id": "mutation:src/build/resolution/resolve-package-schema.ts:ObjectLiteral:150436523e9f",
@@ -154,6 +244,24 @@
       "replacement": "\"\""
     },
     {
+      "id": "mutation:src/build/resolution/resolve-package-schema.ts:StringLiteral:112df0b47c53",
+      "version": 1,
+      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-16 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the real test suite -- one or more real tests genuinely fail, yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
+      "file": "src/build/resolution/resolve-package-schema.ts",
+      "mutator": "StringLiteral",
+      "original": "`\"${packageJsonPath}\" is not valid JSON.`",
+      "replacement": "``"
+    },
+    {
+      "id": "mutation:src/build/resolution/resolve-package-schema.ts:StringLiteral:236b0d271aac",
+      "version": 1,
+      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-16 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the real test suite -- one or more real tests genuinely fail, yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
+      "file": "src/build/resolution/resolve-package-schema.ts",
+      "mutator": "StringLiteral",
+      "original": "\"package.json\"",
+      "replacement": "\"\""
+    },
+    {
       "id": "mutation:src/build/resolution/resolve-package-schema.ts:StringLiteral:2f49ff3037fb",
       "version": 1,
       "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-10 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the real test suite -- a real test genuinely fails, yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
@@ -170,6 +278,15 @@
       "mutator": "StringLiteral",
       "original": "\"FIELD_MISSING\"",
       "replacement": "\"\""
+    },
+    {
+      "id": "mutation:src/build/resolution/resolve-package-schema.ts:StringLiteral:579a83412bb3",
+      "version": 1,
+      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-16 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the real test suite -- one or more real tests genuinely fail, yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
+      "file": "src/build/resolution/resolve-package-schema.ts",
+      "mutator": "StringLiteral",
+      "original": "`${schemaRef(packageName, declaredField)} must be a ${SCHEMA_FILE_EXTENSIONS.join(\"/\")} file, not compiled/bundled output.`",
+      "replacement": "``"
     },
     {
       "id": "mutation:src/build/resolution/resolve-package-schema.ts:StringLiteral:5a038622abec",
@@ -224,6 +341,15 @@
       "mutator": "StringLiteral",
       "original": "`\"${packageJsonPath}\" does not contain a JSON object.`",
       "replacement": "``"
+    },
+    {
+      "id": "mutation:src/build/resolution/resolve-package-schema.ts:StringLiteral:dc008144b648",
+      "version": 1,
+      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-16 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the real test suite -- one or more real tests genuinely fail, yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
+      "file": "src/build/resolution/resolve-package-schema.ts",
+      "mutator": "StringLiteral",
+      "original": "\"name\"",
+      "replacement": "\"\""
     },
     {
       "id": "mutation:src/build/resolution/resolve-tsconfig-paths.ts:ConditionalExpression:1ea2622c979e",

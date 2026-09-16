@@ -277,6 +277,27 @@ describe("generateDataArtifacts", () => {
     })
   })
 
+  it("threads the usage scan's real edges into --docs's consumption column, distinguishing scanned-but-empty from never-scanned", async () => {
+    await writeFile(
+      "user.ts",
+      `export const userCapability = createData({ fields: { email: "" } });\ndocumentData({ fields: { email: "" } }, { owner: "team" });`,
+    )
+    const docs = path.join(root, "generated", "CAPABILITIES.md")
+
+    const docsOnly = await generateDataArtifacts({ fs: nodeBuildFs, root, tsconfig: false, docs })
+    expect(docsOnly.documentation?.content).toContain("(not scanned)")
+
+    const docsAndOwnership = await generateDataArtifacts({
+      fs: nodeBuildFs,
+      root,
+      tsconfig: false,
+      docs,
+      ownership: path.join(root, "generated", "OWNERSHIP.md"),
+    })
+    expect(docsAndOwnership.documentation?.content).not.toContain("(not scanned)")
+    expect(docsAndOwnership.documentation?.content).toContain("(none found)")
+  })
+
   it("computes zero artifacts and zero writes when nothing is requested, but still runs static rules", async () => {
     await writeFile(
       "user.ts",
@@ -615,6 +636,167 @@ describe("generateDataArtifacts", () => {
         generateDataArtifacts({ fs: nodeBuildFs, root, tsconfig: false, evidence: evidencePath }),
       ).rejects.toThrow(DataProjectGenerationError)
       await expect(fs.access(evidencePath)).rejects.toThrow()
+    })
+
+    it("threads --evidence's path into the ownership report's projection note, not just the manifest", async () => {
+      await writeFile(
+        "user.ts",
+        `export const userCapability = createData({ fields: { email: "" } });`,
+      )
+      const ownership = path.join(root, "generated", "OWNERSHIP.md")
+      const evidencePath = path.join(root, "evidence.json")
+
+      const withEvidence = await generateDataArtifacts({
+        fs: nodeBuildFs,
+        root,
+        tsconfig: false,
+        ownership,
+        evidence: evidencePath,
+      })
+      expect(withEvidence.usage?.content).toContain(`This run also wrote it to`)
+      expect(withEvidence.usage?.content).toContain("evidence.json")
+
+      const withoutEvidence = await generateDataArtifacts({
+        fs: nodeBuildFs,
+        root,
+        tsconfig: false,
+        ownership,
+      })
+      expect(withoutEvidence.usage?.content).not.toContain("This run also wrote it to")
+    })
+
+    it("threads --evidence's path into the documentation catalog's projection note", async () => {
+      await writeFile(
+        "user.ts",
+        `export const userCapability = createData({ fields: { email: "" } });`,
+      )
+      const docs = path.join(root, "generated", "CAPABILITIES.md")
+      const evidencePath = path.join(root, "evidence.json")
+
+      const withEvidence = await generateDataArtifacts({
+        fs: nodeBuildFs,
+        root,
+        tsconfig: false,
+        docs,
+        evidence: evidencePath,
+      })
+      expect(withEvidence.documentation?.content).toContain("This run also wrote it to")
+      expect(withEvidence.documentation?.content).toContain("evidence.json")
+
+      const withoutEvidence = await generateDataArtifacts({
+        fs: nodeBuildFs,
+        root,
+        tsconfig: false,
+        docs,
+      })
+      expect(withoutEvidence.documentation?.content).not.toContain("This run also wrote it to")
+    })
+
+    it("threads --evidence's path into the flow report set's projection note", async () => {
+      await writeFile(
+        "user.ts",
+        `export const userCapability = createData({ fields: { email: "" } });`,
+      )
+      const flowDir = path.join(root, "generated", "flow")
+      const evidencePath = path.join(root, "evidence.json")
+
+      const withEvidence = await generateDataArtifacts({
+        fs: nodeBuildFs,
+        root,
+        tsconfig: false,
+        flow: flowDir,
+        evidence: evidencePath,
+      })
+      const overviewWith =
+        withEvidence.flow?.files.find((f) => f.path.endsWith("overview.md"))?.content ?? ""
+      expect(overviewWith).toContain("This run also wrote it to")
+      expect(overviewWith).toContain("evidence.json")
+
+      const withoutEvidence = await generateDataArtifacts({
+        fs: nodeBuildFs,
+        root,
+        tsconfig: false,
+        flow: flowDir,
+      })
+      const overviewWithout =
+        withoutEvidence.flow?.files.find((f) => f.path.endsWith("overview.md"))?.content ?? ""
+      expect(overviewWithout).not.toContain("This run also wrote it to")
+    })
+
+    it("--evidence's fingerprint sidecar reflects real --include/--exclude/--packages values, not the defaults", async () => {
+      await writeFile("only.ts", `export const a = createData({ fields: { x: "" } });`)
+      await writeFile("other.ts", `export const b = createData({ fields: { y: "" } });`)
+      const evidencePath = path.join(root, "evidence.json")
+      const fingerprintPath = `${evidencePath}.fingerprint`
+
+      await generateDataArtifacts({
+        fs: nodeBuildFs,
+        root,
+        tsconfig: false,
+        evidence: evidencePath,
+        include: ["only.ts"],
+        exclude: ["other.ts"],
+      })
+      const narrowFingerprint = await fs.readFile(fingerprintPath, "utf8")
+
+      await fs.rm(evidencePath)
+      await fs.rm(fingerprintPath)
+
+      await generateDataArtifacts({ fs: nodeBuildFs, root, tsconfig: false, evidence: evidencePath })
+      const defaultFingerprint = await fs.readFile(fingerprintPath, "utf8")
+
+      expect(narrowFingerprint).not.toBe(defaultFingerprint)
+    })
+
+    it("--evidence's fingerprint sidecar reflects a real --packages allowlist, not the default empty one", async () => {
+      await writeFile("package.json", JSON.stringify({ name: "fixture-root", private: true }))
+      await writeFile("user.ts", `export const userCapability = createData({ fields: { id: "" } });`)
+      await writeFile(
+        "node_modules/@fixtures/pkg-a/package.json",
+        JSON.stringify({
+          name: "@fixtures/pkg-a",
+          main: "./index.js",
+          dataCap: { schema: "./data.schema.ts" },
+        }),
+      )
+      await writeFile("node_modules/@fixtures/pkg-a/index.js", "module.exports = {};\n")
+      await writeFile(
+        "node_modules/@fixtures/pkg-a/data.schema.ts",
+        `export const pkgACapability = createData({ fields: { pkgId: "" } });`,
+      )
+      const evidencePath = path.join(root, "evidence.json")
+      const fingerprintPath = `${evidencePath}.fingerprint`
+
+      await generateDataArtifacts({
+        fs: nodeBuildFs,
+        root,
+        tsconfig: false,
+        evidence: evidencePath,
+        packages: ["@fixtures/pkg-a"],
+      })
+      const withPackageFingerprint = await fs.readFile(fingerprintPath, "utf8")
+
+      await fs.rm(evidencePath)
+      await fs.rm(fingerprintPath)
+
+      await generateDataArtifacts({ fs: nodeBuildFs, root, tsconfig: false, evidence: evidencePath })
+      const withoutPackageFingerprint = await fs.readFile(fingerprintPath, "utf8")
+
+      expect(withPackageFingerprint).not.toBe(withoutPackageFingerprint)
+    })
+
+    it("result.evidence.change stays undefined when no --location ran, even alongside other options", async () => {
+      await writeFile(
+        "user.ts",
+        `export const userCapability = createData({ fields: { email: "" } });`,
+      )
+      const result = await generateDataArtifacts({
+        fs: nodeBuildFs,
+        root,
+        tsconfig: false,
+        docs: path.join(root, "d.md"),
+      })
+      expect(result.evidence.change).toBeUndefined()
     })
 
     it("--evidence participates in --check's staleness detection like every other artifact", async () => {
