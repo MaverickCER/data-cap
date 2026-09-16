@@ -91,33 +91,6 @@
       "replacement": "false"
     },
     {
-      "id": "mutation:src/build/resolution/resolve-package-schema.ts:ConditionalExpression:3c745ae90fab",
-      "version": 1,
-      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-10 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the real test suite -- a real test genuinely fails, yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
-      "file": "src/build/resolution/resolve-package-schema.ts",
-      "mutator": "ConditionalExpression",
-      "original": "isRecord(parsed) && parsed.name === packageName",
-      "replacement": "true"
-    },
-    {
-      "id": "mutation:src/build/resolution/resolve-package-schema.ts:ConditionalExpression:49a0a045687e",
-      "version": 1,
-      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-10 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the real test suite -- a real test genuinely fails, yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
-      "file": "src/build/resolution/resolve-package-schema.ts",
-      "mutator": "ConditionalExpression",
-      "original": "isRecord(dataCapField) && typeof dataCapField.schema === \"string\"",
-      "replacement": "true"
-    },
-    {
-      "id": "mutation:src/build/resolution/resolve-package-schema.ts:ConditionalExpression:abf5fd867eac",
-      "version": 1,
-      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-10 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the real test suite -- one or more real tests genuinely fail, yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
-      "file": "src/build/resolution/resolve-package-schema.ts",
-      "mutator": "ConditionalExpression",
-      "original": "typeof dataCapField.schema === \"string\"",
-      "replacement": "true"
-    },
-    {
       "id": "mutation:src/build/resolution/resolve-package-schema.ts:EqualityOperator:45fed3ee68e7",
       "version": 1,
       "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-10 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the real test suite -- a real test genuinely fails (including the boundary test written specifically to guard this operator), yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
@@ -125,15 +98,6 @@
       "mutator": "EqualityOperator",
       "original": "probe.size > MAX_PACKAGE_SCHEMA_FILE_BYTES",
       "replacement": "probe.size >= MAX_PACKAGE_SCHEMA_FILE_BYTES"
-    },
-    {
-      "id": "mutation:src/build/resolution/resolve-package-schema.ts:EqualityOperator:5e31554d3847",
-      "version": 1,
-      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-10 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the real test suite -- a real test genuinely fails, yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
-      "file": "src/build/resolution/resolve-package-schema.ts",
-      "mutator": "EqualityOperator",
-      "original": "parsed.name === packageName",
-      "replacement": "parsed.name !== packageName"
     },
     {
       "id": "mutation:src/build/resolution/resolve-package-schema.ts:EqualityOperator:a471d5b7eb79",

@@ -644,16 +644,20 @@ describe("main() -- init subcommand dispatch", () => {
   })
 
   it("scaffolds into the current directory and exits 0", async () => {
+    // Mocks the `process.cwd` FUNCTION rather than calling the real
+    // `process.chdir()` -- the latter genuinely cannot run under a
+    // `worker_threads`-pooled test runner (Node itself throws
+    // "process.chdir() is not supported in workers"), which is exactly the
+    // pool Stryker's own coverageAnalysis dry run uses. Mocking the
+    // function is ordinary object patching, unaffected by that
+    // restriction, while still exercising `runInitCommand`'s real
+    // `process.cwd()`-reading default path (see src/cli/init.ts).
     process.argv = ["node", "data-cap", "init"]
-    const originalCwd = process.cwd()
     await fs.mkdir(fixtureRoot, { recursive: true })
     await fs.writeFile(path.join(fixtureRoot, "package.json"), '{"name": "demo"}')
-    process.chdir(fixtureRoot)
-    try {
-      await main()
-    } finally {
-      process.chdir(originalCwd)
-    }
+    vi.spyOn(process, "cwd").mockReturnValue(fixtureRoot)
+
+    await main()
 
     expect(process.exitCode).toBe(0)
     expect(writes.join("")).toContain("data-cap initialized")
