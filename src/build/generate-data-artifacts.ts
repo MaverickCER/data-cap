@@ -201,7 +201,15 @@ export async function computeDataArtifacts(
   const localFiles = await discoverCapabilityFiles({
     fs: options.fs,
     root: options.root,
+    // discoverCapabilityFiles itself does `options.include ?? DEFAULT_INCLUDE`
+    // / `options.exclude ?? []` -- passing `include: undefined` explicitly
+    // (what always-spreading here would do) is behaviorally identical to
+    // omitting the key, so no test can distinguish "spread only when
+    // defined" from "always spread." Hand-verified: forcing these guards to
+    // `true` and running the real suite passes unchanged.
+    // Stryker disable next-line ConditionalExpression
     ...(options.include !== undefined ? { include: options.include } : {}),
+    // Stryker disable next-line ConditionalExpression
     ...(options.exclude !== undefined ? { exclude: options.exclude } : {}),
   })
   const packageCache = new Map<string, Promise<PackageSchemaResolutionResult>>()
@@ -219,6 +227,13 @@ export async function computeDataArtifacts(
   const linkResult = await linkCapabilityFiles(files, {
     fs: options.fs,
     root: options.root,
+    // linkCapabilityFiles reads `options.tsconfig` directly off its own
+    // options object -- a plain property access sees `undefined` whether
+    // the key is present-but-undefined or absent entirely, so "spread only
+    // when defined" and "always spread" are behaviorally identical here.
+    // Hand-verified: forcing this guard to `true` and running the real
+    // suite passes unchanged.
+    // Stryker disable next-line ConditionalExpression
     ...(options.tsconfig !== undefined ? { tsconfig: options.tsconfig } : {}),
     packages,
   })
