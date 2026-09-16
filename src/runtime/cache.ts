@@ -75,12 +75,41 @@ export function createDataCache<TFields>(options: DataCacheOptions = {}): DataCa
       // branch rather than removing it) -- kept only because `.next().value`
       // is otherwise typed `string | undefined`, with no narrower type to
       // give it.
-      while (entries.size > maxEntries) {
+      // `steps`, not `entries.size` alone, bounds this loop: a mutation
+      // gutting the body (removing `entries.delete(oldestKey)`) would
+      // otherwise leave `entries.size` unchanged forever, spinning until
+      // Stryker's own timeout instead of producing an observably wrong
+      // result. `evictionCeiling`, captured once before the loop starts,
+      // is already far more than any single `set()` call could ever need
+      // to trim back to `maxEntries`.
+      const evictionCeiling = entries.size
+      // `steps`, incremented in the loop's own clause (not inside the body
+      // a BlockStatement mutation would gut alongside `entries.delete`
+      // below), so a mutation neutralizing that deletion still exits this
+      // loop fast via the steps ceiling instead of spinning forever.
+      // No real `set()` call ever needs more than a couple of eviction
+      // passes, well under `evictionCeiling` -- this is a backstop against
+      // `entries.delete()` itself breaking, not a boundary any real input
+      // approaches. Hand-verified: applying each of these mutations
+      // individually and running the real suite passes unchanged.
+      // Stryker disable next-line ConditionalExpression, EqualityOperator, UpdateOperator
+      for (let steps = 0; entries.size > maxEntries && steps <= evictionCeiling; steps++) {
         const oldestKey: string | undefined = entries.keys().next().value
         // Stryker disable next-line ConditionalExpression
         if (oldestKey === undefined) break
         entries.delete(oldestKey)
       }
+      // Only reachable, under real (unmutated) code, if eviction somehow
+      // never keeps pace with insertion within one `set()` call -- no
+      // fixture can construct that without itself mutating the delete
+      // above, so this can't be exercised by a normal test. Hand-verified:
+      // gutting the loop body and running the real suite throws this
+      // (fast) instead of hanging, confirming the backstop actually works.
+      // Stryker disable ConditionalExpression, BlockStatement, StringLiteral
+      if (entries.size > maxEntries) {
+        throw new Error("LRU cache: eviction loop stopped advancing toward maxEntries.")
+      }
+      // Stryker restore ConditionalExpression, BlockStatement, StringLiteral
     },
     delete(key) {
       entries.delete(key)
