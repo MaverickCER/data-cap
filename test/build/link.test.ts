@@ -6,11 +6,14 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest"
 import {
   checkDocFieldsAgainstShape,
   checkDocOperationsAgainstShape,
+  LinkContext,
   linkCapabilityFiles,
   sameIdentifierRef,
   schemaRefFromExpression,
 } from "../../src/build/link.js"
-import type { ParseWarning } from "../../src/build/parse.js"
+import { parseCapabilityFile } from "../../src/build/parse.js"
+import type { ParseWarning, ParseResult } from "../../src/build/parse.js"
+import { createAliasResolutionCache } from "../../src/build/resolution/resolve-tsconfig-paths.js"
 import { nodeBuildFs } from "../support/build-filesystem.js"
 
 describe("linkCapabilityFiles", () => {
@@ -812,6 +815,84 @@ describe("linkCapabilityFiles", () => {
       expect(warnings.some((w) => w.message.includes("exceeds the maximum resolvable depth"))).toBe(
         true,
       )
+    })
+
+    it("resolveFieldsShape fails fast with a clear error instead of looping forever when its own totalHops fail-safe is exhausted", async () => {
+      // MAX_IDENTIFIER_CHAIN_DEPTH always resolves first for any real (even
+      // maximally deep or cyclic) identifier chain reachable through
+      // `linkCapabilityFiles`, so this internal fail-safe can only be
+      // organically exercised by starting `totalHops` already past its
+      // ceiling directly -- an "unresolvable" ref hits the guard before
+      // `ref.kind` is even inspected, so nothing else about the context
+      // needs to be real.
+      const context = new LinkContext({
+        fs: nodeBuildFs,
+        root: "/nonexistent",
+        packages: [],
+        cache: new Map(),
+        tsconfigPaths: undefined,
+        aliasCache: createAliasResolutionCache(),
+      })
+      const dummyParsed: ParseResult = {
+        file: "x.ts",
+        createDataCalls: [],
+        documentDataCalls: [],
+        localConsts: new Map(),
+        imports: [],
+        warnings: [],
+      }
+      await expect(
+        context.resolveFieldsShape(
+          { kind: "unresolvable", reason: "test" },
+          "x.ts",
+          dummyParsed,
+          0,
+          1_000_000,
+        ),
+      ).rejects.toThrow("exceeded 50 total resolution hops")
+    })
+
+    it("resolveFieldsShape's totalHops fail-safe requires BOTH recursive call sites' own +1 -- starting one short of the ceiling still trips it", async () => {
+      // A single same-file identifier hop ("x" -> its own literal) passes
+      // through both of resolveFieldsShape's internal `totalHops + 1` call
+      // sites (the "local const" branch into `resolveExpression`, then
+      // `resolveExpression`'s own call back into `resolveFieldsShape`) --
+      // exactly two hops. Starting `totalHops` already at the ceiling means
+      // *both* increments are needed to exceed it: if either one were
+      // mutated away, this resolves successfully instead of throwing.
+      const context = new LinkContext({
+        fs: nodeBuildFs,
+        root: "/nonexistent",
+        packages: [],
+        cache: new Map(),
+        tsconfigPaths: undefined,
+        aliasCache: createAliasResolutionCache(),
+      })
+      const parsed = parseCapabilityFile("x.ts", `const x = { id: "" };`)
+      await expect(
+        context.resolveFieldsShape({ kind: "identifier", name: "x" }, "x.ts", parsed, 0, 50),
+      ).rejects.toThrow("exceeded 50 total resolution hops")
+    })
+
+    it("resolveFieldsShape's totalHops fail-safe also requires the cross-file import branch's own +1", async () => {
+      // Same shape as the previous test, but for the *other* branch that
+      // calls `resolveExpression` -- a cross-file import hop, not a
+      // same-file local const. Requires real files on disk since
+      // `resolveImportSpecifier` does real resolution.
+      await writeFile("imported.ts", `export const x = { id: "" };`)
+      const mainFile = await writeFile("main.ts", `import { x } from "./imported.js";`)
+      const context = new LinkContext({
+        fs: nodeBuildFs,
+        root,
+        packages: [],
+        cache: new Map(),
+        tsconfigPaths: undefined,
+        aliasCache: createAliasResolutionCache(),
+      })
+      const parsed = await context.getParsed(mainFile)
+      await expect(
+        context.resolveFieldsShape({ kind: "identifier", name: "x" }, mainFile, parsed, 0, 50),
+      ).rejects.toThrow("exceeded 50 total resolution hops")
     })
 
     it("resolves a same-file alias identifier by its real name (const a = b; const b = { ... })", async () => {
