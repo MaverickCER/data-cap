@@ -231,5 +231,5 @@ for them.
 ## Full reference
 
 For architecture rationale and the complete decision history, see
-[`specs/architecture.md`](specs/architecture.md), [`specs/decisions/`](specs/decisions/)
-(55 ADRs), and [`skills/data-cap/SKILL.md`](skills/data-cap/SKILL.md).
+[`specs/architecture.md`](specs/architecture.md), [`specs/decisions/`](specs/decisions/),
+and [`skills/data-cap/SKILL.md`](skills/data-cap/SKILL.md).

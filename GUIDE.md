@@ -2,7 +2,7 @@
 
 The reference manual: the documented example, fields & info, optimistic mutations, array identity, subscriptions, the coordinator, cache & retry, helpers, TanStack Query/Socket.IO patterns, build tooling & the CLI, the ESLint plugin, the GitHub Action, architecture, migration, the security model, troubleshooting, and performance characteristics.
 
-For the pitch, quick start, and adoption reasoning, see [README.md](README.md). For why the package is built the way it is, see [specs/architecture.md](specs/architecture.md) and the [55 ADRs](specs/decisions/).
+For the pitch, quick start, and adoption reasoning, see [README.md](README.md). For why the package is built the way it is, see [specs/architecture.md](specs/architecture.md) and the [ADRs](specs/decisions/).
 
 - [Runtime support matrix](#runtime-support-matrix)
 - [AI-Assisted Integration](#ai-assisted-integration)
