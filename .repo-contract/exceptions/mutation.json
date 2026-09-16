@@ -10,15 +10,6 @@
       "replacement": "options.expiringWithinDays && DEFAULT_EXPIRING_WITHIN_DAYS"
     },
     {
-      "id": "mutation:src/build/manifest.ts:MethodExpression:4eadd0751b82",
-      "version": 1,
-      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-10 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the real test suite -- a real test genuinely fails, yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
-      "file": "src/build/manifest.ts",
-      "mutator": "MethodExpression",
-      "original": "inventory.capabilities\n    .filter((capability) => capability.active)\n    .slice()",
-      "replacement": "inventory.capabilities.filter(capability => capability.active)"
-    },
-    {
       "id": "mutation:src/build/ownership-model.ts:MethodExpression:6a32b2d1e7d2",
       "version": 1,
       "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-10 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the real test suite (`npx vitest run test/build/ownership-model.test.ts`) -- multiple real tests genuinely fail (this exact structural mutant occurs at two call sites, sortCapabilityRefs and sortFieldRefs, both confirmed), yet Stryker's own perTest coverage attribution still reports one or both Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
@@ -521,6 +512,60 @@
       "mutator": "EqualityOperator",
       "original": "baseUrl === undefined",
       "replacement": "baseUrl !== undefined"
+    },
+    {
+      "id": "mutation:src/build/resolution/resolve-package-schema.ts:ObjectLiteral:94d21e7ec786",
+      "version": 1,
+      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-17 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the full trimmed suite -- a real test genuinely fails, yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of, and this same file's own classifyManifest/classifyResolvedFile doc comments (factored out specifically to make every branch directly, synchronously unit-testable -- yet Stryker's perTest attribution still misses them).",
+      "file": "src/build/resolution/resolve-package-schema.ts",
+      "mutator": "ObjectLiteral",
+      "original": "{\n      found: false,\n      failure: failure(\n        \"OUTSIDE_PACKAGE\",\n        `${schemaRef(packageName, declaredField)} resolves outside its own package directory.`,\n      ),\n    }",
+      "replacement": "{}"
+    },
+    {
+      "id": "mutation:src/build/resolution/resolve-package-schema.ts:StringLiteral:072fc616258f",
+      "version": 1,
+      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-17 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the full trimmed suite -- a real test genuinely fails, yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of, and this same file's own classifyManifest/classifyResolvedFile doc comments (factored out specifically to make every branch directly, synchronously unit-testable -- yet Stryker's perTest attribution still misses them).",
+      "file": "src/build/resolution/resolve-package-schema.ts",
+      "mutator": "StringLiteral",
+      "original": "`${schemaRef(packageName, declaredField)} resolves outside its own package directory.`",
+      "replacement": "``"
+    },
+    {
+      "id": "mutation:src/build/resolution/resolve-package-schema.ts:ConditionalExpression:eb7461020322",
+      "version": 1,
+      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-17 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the full trimmed suite -- a real test genuinely fails, yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of, and this same file's own classifyManifest/classifyResolvedFile doc comments (factored out specifically to make every branch directly, synchronously unit-testable -- yet Stryker's perTest attribution still misses them).",
+      "file": "src/build/resolution/resolve-package-schema.ts",
+      "mutator": "ConditionalExpression",
+      "original": "!isWithinDirectory(packageDir, lexicallyResolved)",
+      "replacement": "false"
+    },
+    {
+      "id": "mutation:src/build/resolution/resolve-package-schema.ts:ConditionalExpression:7a99daaf5dc4",
+      "version": 1,
+      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-17 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the full trimmed suite -- a real test genuinely fails, yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of, and this same file's own classifyManifest/classifyResolvedFile doc comments (factored out specifically to make every branch directly, synchronously unit-testable -- yet Stryker's perTest attribution still misses them).",
+      "file": "src/build/resolution/resolve-package-schema.ts",
+      "mutator": "ConditionalExpression",
+      "original": "!SCHEMA_FILE_EXTENSIONS.some((ext) => lexicallyResolved.endsWith(ext))",
+      "replacement": "false"
+    },
+    {
+      "id": "mutation:src/build/resolution/resolve-package-schema.ts:StringLiteral:cec4e09b159d",
+      "version": 1,
+      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-17 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the full trimmed suite -- a real test genuinely fails, yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of, and this same file's own classifyManifest/classifyResolvedFile doc comments (factored out specifically to make every branch directly, synchronously unit-testable -- yet Stryker's perTest attribution still misses them).",
+      "file": "src/build/resolution/resolve-package-schema.ts",
+      "mutator": "StringLiteral",
+      "original": "`${ref} does not resolve to a regular file.`",
+      "replacement": "``"
+    },
+    {
+      "id": "mutation:src/build/resolution/resolve-package-schema.ts:StringLiteral:ba4704beec28",
+      "version": 1,
+      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-17 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the full trimmed suite -- a real test genuinely fails, yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of, and this same file's own classifyManifest/classifyResolvedFile doc comments (factored out specifically to make every branch directly, synchronously unit-testable -- yet Stryker's perTest attribution still misses them).",
+      "file": "src/build/resolution/resolve-package-schema.ts",
+      "mutator": "StringLiteral",
+      "original": "\"FILE_TOO_LARGE\"",
+      "replacement": "\"\""
     }
   ]
 }

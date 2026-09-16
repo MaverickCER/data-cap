@@ -249,6 +249,25 @@ describe("generateDataArtifacts", () => {
       expect(result.warnings.filter((w) => w.file.startsWith("(package)"))).toEqual([])
     })
 
+    it("threads an explicit --tsconfig path through to linkCapabilityFiles, not just the default auto-detected tsconfig.json", async () => {
+      await writeFile(
+        "user.ts",
+        `export const userCapability = createData({ fields: { email: "" } });`,
+      )
+      const customPath = path.join(root, "custom.tsconfig.json")
+      const result = await generateDataArtifacts({
+        fs: nodeBuildFs,
+        root,
+        tsconfig: customPath,
+      })
+      // A nonexistent *explicit* tsconfig path warns (see
+      // loadTsconfigPaths's own isExplicit distinction) -- unlike the
+      // default auto-detect, which silently no-ops when tsconfig.json
+      // simply isn't there. Getting this warning at all proves `tsconfig`
+      // was actually forwarded, not silently dropped.
+      expect(result.warnings.some((w) => w.file === "custom.tsconfig.json")).toBe(true)
+    })
+
     it("eagerly discovers and links a capability declared via an allow-listed package's dataCap.schema field", async () => {
       await writeFile("package.json", JSON.stringify({ name: "fixture-root", private: true }))
       await writeFile(

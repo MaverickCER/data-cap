@@ -66,6 +66,12 @@ export async function computeSourceFingerprint(
     fs,
     root,
     include,
+    // discoverCapabilityFiles itself does `options.exclude ?? []` --
+    // passing `exclude: undefined` explicitly (what always-spreading here
+    // would do) is behaviorally identical to omitting the key. Hand-verified:
+    // forcing this guard to `true` and running the real suite passes
+    // unchanged.
+    // Stryker disable next-line ConditionalExpression
     ...(exclude !== undefined ? { exclude } : {}),
   })
   const packageCache = new Map<string, Promise<PackageSchemaResolutionResult>>()

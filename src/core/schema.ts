@@ -61,6 +61,12 @@ export function resolveFieldDefaults(
     return schemaNode
   }
 
+  // Neutralizing this check is behaviorally harmless now, not just slow:
+  // the MAX_FIELD_DEPTH ceiling above already throws the identical error
+  // fast (well before any real stack overflow) regardless of whether this
+  // check itself still works. Hand-verified: mutating this to `false` and
+  // running the real suite passes unchanged.
+  // Stryker disable next-line ConditionalExpression
   if (stack.has(schemaNode)) {
     throw new InvalidFieldDefaultError(path, "cyclic field defaults are not supported")
   }

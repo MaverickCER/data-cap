@@ -47,6 +47,11 @@ describe("resolveFieldDefaults", () => {
     )
   })
 
+  it("does not trip the depth ceiling at exactly MAX_FIELD_DEPTH -- the boundary is strictly '>'", () => {
+    const exactlyAtLimit = Array.from({ length: 200 }, (_, i) => String(i))
+    expect(resolveFieldDefaults("leaf", exactlyAtLimit, new Set())).toBe("leaf")
+  })
+
   it("names the offending path segment: an object key", () => {
     expect(() => resolveFieldDefaults({ nested: () => undefined }, [], new Set())).toThrow(/nested/)
   })
