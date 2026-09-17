@@ -595,15 +595,6 @@
       "replacement": "``"
     },
     {
-      "id": "mutation:src/build/resolution/resolve-package-schema.ts:BlockStatement:d56e8dcd125f",
-      "version": 1,
-      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-17 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the full trimmed suite -- a real test genuinely fails, yet Stryker's own perTest coverage attribution still reports this mutant Survived. See this same file's own locatePackageManifest doc comment (the ancestor-search loop this mutant is inside).",
-      "file": "src/build/resolution/resolve-package-schema.ts",
-      "mutator": "BlockStatement",
-      "original": "{\n      // \"utf8\" is required by the BuildFileSystem contract; JSON.parse over the\n      // decoded string is identical to the previous Buffer.toString(\"utf8\").\n      // Stryker disable next-line StringLiteral\n      const parsed: unknown = JSON.parse(await fs.readFile(candidate, \"utf8\"))\n      if (isRecord(parsed) && parsed[\"name\"] === packageName) {\n        return { packageJsonPath: candidate, packageDir: dir }\n      }\n    }",
-      "replacement": "{}"
-    },
-    {
       "id": "mutation:src/build/resolution/resolve-tsconfig-paths.ts:ObjectLiteral:21841942bc83",
       "version": 1,
       "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-17 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the full trimmed suite -- a real test genuinely fails, yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",

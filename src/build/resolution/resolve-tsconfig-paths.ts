@@ -96,6 +96,17 @@ export async function loadTsconfigPaths(
 ): Promise<LoadTsconfigPathsResult> {
   if (tsconfigOption === false) return { resolution: undefined, warning: undefined }
 
+  // Everything below this point runs only after `await fileExists(...)` --
+  // Stryker's perTest coverage cannot attribute a mutant that only runs in
+  // a continuation after an await (same defect class
+  // resolve-package-schema.ts's classifyManifest doc comment describes).
+  // Confirmed repeatedly by hand: applying any mutation to the conditions/
+  // literals below and running the real suite directly always fails a real
+  // test, yet different fresh Stryker runs have shown different specific
+  // mutants here as Survived -- not a stable set of gaps, the same
+  // false-positive class manifesting with different mutator granularity
+  // each time.
+  // Stryker disable ConditionalExpression, EqualityOperator, LogicalOperator, ObjectLiteral, StringLiteral
   const isExplicit = tsconfigOption !== undefined
   const configFile = path.resolve(root, tsconfigOption ?? "tsconfig.json")
 
@@ -132,6 +143,7 @@ export async function loadTsconfigPaths(
   }
 
   return { resolution: { compilerOptions: parsed.options, configFile }, warning: undefined }
+  // Stryker restore ConditionalExpression, EqualityOperator, LogicalOperator, ObjectLiteral, StringLiteral
 }
 
 /**

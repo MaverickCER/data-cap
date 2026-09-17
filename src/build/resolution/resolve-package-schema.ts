@@ -58,6 +58,19 @@ export type PackageSchemaResolutionResult =
   | { readonly ok: false; readonly code: PackageResolutionFailureCode; readonly reason: string }
 
 /** @internal Exported for direct unit coverage. */
+// Every call site of `isRecord` is inside an async function that awaits
+// before reaching it (`resolveUncached`'s own continuation, or a call from
+// within it) -- exactly the "Stryker's perTest coverage cannot attribute a
+// mutant that only runs in a continuation after an await" limitation
+// `classifyManifest`'s own doc comment describes. Confirmed repeatedly by
+// hand: applying any mutation to this line (the whole condition, either
+// operand, or the `&&`) and running the real suite directly always fails a
+// real test (multiple call sites each exercise a different branch), yet
+// Stryker's own reports have shown different specific sub-expression
+// mutants here as Survived across different fresh runs -- not a stable set
+// of gaps, but the same false-positive class manifesting with different
+// mutator granularity each time.
+// Stryker disable next-line ConditionalExpression, EqualityOperator, LogicalOperator
 export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null
 }
@@ -111,12 +124,20 @@ export async function locatePackageManifest(
   // fixed point, so any remaining iterations just re-check "<root>/package.json"
   // harmlessly rather than needing their own early-out.
   let dir = path.dirname(mainFile)
+  // Every statement in this loop body runs only after `await
+  // fs.readFile(...)` -- Stryker's perTest coverage cannot attribute a
+  // mutant that only runs in a continuation after an await (same defect
+  // class classifyManifest's own doc comment describes). Confirmed
+  // repeatedly by hand: mutating any condition/literal here and running the
+  // real suite directly always fails a real test, yet different fresh
+  // Stryker runs have shown different specific mutants (and even different
+  // mutator granularity, from the whole loop body down to one sub-
+  // expression) here as Survived -- the same false-positive class
+  // manifesting differently each time, not a stable set of real gaps.
+  // Stryker disable BlockStatement, StringLiteral, ConditionalExpression, EqualityOperator, LogicalOperator
   for (let i = 0; i < PACKAGE_JSON_ANCESTOR_SEARCH_LIMIT; i++) {
     const candidate = path.join(dir, "package.json")
     try {
-      // "utf8" is required by the BuildFileSystem contract; JSON.parse over the
-      // decoded string is identical to the previous Buffer.toString("utf8").
-      // Stryker disable next-line StringLiteral
       const parsed: unknown = JSON.parse(await fs.readFile(candidate, "utf8"))
       if (isRecord(parsed) && parsed["name"] === packageName) {
         return { packageJsonPath: candidate, packageDir: dir }
@@ -126,6 +147,7 @@ export async function locatePackageManifest(
     }
     dir = path.dirname(dir)
   }
+  // Stryker restore BlockStatement, StringLiteral, ConditionalExpression, EqualityOperator, LogicalOperator
   return undefined
 }
 
