@@ -852,6 +852,34 @@ describe("linkCapabilityFiles", () => {
       ).rejects.toThrow("exceeded 50 total resolution hops")
     })
 
+    it("resolveFieldsShape's totalHops fail-safe does not trip at exactly MAX_TOTAL_RESOLUTION_HOPS -- the boundary is strictly '>'", async () => {
+      const context = new LinkContext({
+        fs: nodeBuildFs,
+        root: "/nonexistent",
+        packages: [],
+        cache: new Map(),
+        tsconfigPaths: undefined,
+        aliasCache: createAliasResolutionCache(),
+      })
+      const dummyParsed: ParseResult = {
+        file: "x.ts",
+        createDataCalls: [],
+        documentDataCalls: [],
+        localConsts: new Map(),
+        imports: [],
+        warnings: [],
+      }
+      await expect(
+        context.resolveFieldsShape(
+          { kind: "unresolvable", reason: "test" },
+          "x.ts",
+          dummyParsed,
+          0,
+          50,
+        ),
+      ).resolves.toBeUndefined()
+    })
+
     it("resolveFieldsShape's totalHops fail-safe requires BOTH recursive call sites' own +1 -- starting one short of the ceiling still trips it", async () => {
       // A single same-file identifier hop ("x" -> its own literal) passes
       // through both of resolveFieldsShape's internal `totalHops + 1` call

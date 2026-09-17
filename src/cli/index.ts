@@ -96,7 +96,13 @@ export function parseArgs(argv: string[]): ParsedArgs {
   // looping until Stryker's own timeout instead of producing an observably
   // wrong result a normal test could catch. `steps` always moves forward by
   // exactly one per iteration regardless, so it still reaches its own
-  // generous ceiling fast under that same mutation.
+  // generous ceiling fast under that same mutation. `steps`'s own
+  // advancement being mutated in isolation (`steps--` instead of `steps++`)
+  // is itself harmless -- `i` still advances normally, so the loop still
+  // terminates correctly via `i < argv.length`, unaffected by `steps` going
+  // negative. Hand-verified: mutating this in isolation and running the
+  // real suite passes unchanged.
+  // Stryker disable next-line UpdateOperator
   for (let i = 0, steps = 0; i < argv.length; i++, steps++) {
     // This guard exists only to fail a mutated `i++` fast instead of
     // hanging -- under real argv input it can never trip (`steps` and `i`
@@ -404,6 +410,12 @@ export function resolveOptions(args: ParsedArgs) {
     ...(args.ownership !== undefined ? { ownership: path.resolve(root, args.ownership) } : {}),
     ...(args.flow !== undefined ? { flow: path.resolve(root, args.flow) } : {}),
     ...(args.evidence !== undefined ? { evidence: path.resolve(root, args.evidence) } : {}),
+    // generateDataArtifacts itself does `options.expiringWithinDays ??
+    // DEFAULT_EXPIRING_WITHIN_DAYS` -- passing `expiringWithinDays: undefined`
+    // explicitly (what always-spreading here would do) is behaviorally
+    // identical to omitting the key. Hand-verified: forcing this guard to
+    // `true` and running the real suite passes unchanged.
+    // Stryker disable next-line ConditionalExpression
     ...(args.expiringWithinDays !== undefined
       ? { expiringWithinDays: args.expiringWithinDays }
       : {}),

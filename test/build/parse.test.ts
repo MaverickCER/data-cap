@@ -2,6 +2,7 @@ import ts from "typescript"
 import { describe, expect, it } from "vitest"
 import {
   collectImportBindings,
+  compactLoose,
   extractCapabilityDocs,
   extractFieldsRef,
   extractOperationNames,
@@ -1737,5 +1738,26 @@ describe("collectImportBindings (direct)", () => {
     const imports: ImportBinding[] = []
     collectImportBindings(importDeclFrom(`import "./mod.js";`), imports)
     expect(imports).toEqual([])
+  })
+})
+
+describe("compactLoose", () => {
+  it("returns undefined unchanged", () => {
+    expect(compactLoose(undefined)).toBeUndefined()
+  })
+
+  it("drops a key entirely, not just its value, when undefined", () => {
+    const result = compactLoose<{ a: string; b: string }>({ a: "x", b: undefined })
+    expect(result).toEqual({ a: "x" })
+    expect("b" in (result ?? {})).toBe(false)
+  })
+
+  it("keeps every key whose value is defined, including a falsy one", () => {
+    const result = compactLoose<{ a: string; b: number; c: boolean }>({
+      a: "",
+      b: 0,
+      c: false,
+    })
+    expect(result).toEqual({ a: "", b: 0, c: false })
   })
 })
