@@ -766,7 +766,12 @@ describe("generateDataArtifacts", () => {
       await fs.rm(evidencePath)
       await fs.rm(fingerprintPath)
 
-      await generateDataArtifacts({ fs: nodeBuildFs, root, tsconfig: false, evidence: evidencePath })
+      await generateDataArtifacts({
+        fs: nodeBuildFs,
+        root,
+        tsconfig: false,
+        evidence: evidencePath,
+      })
       const defaultFingerprint = await fs.readFile(fingerprintPath, "utf8")
 
       expect(narrowFingerprint).not.toBe(defaultFingerprint)
@@ -774,7 +779,10 @@ describe("generateDataArtifacts", () => {
 
     it("--evidence's fingerprint sidecar reflects a real --packages allowlist, not the default empty one", async () => {
       await writeFile("package.json", JSON.stringify({ name: "fixture-root", private: true }))
-      await writeFile("user.ts", `export const userCapability = createData({ fields: { id: "" } });`)
+      await writeFile(
+        "user.ts",
+        `export const userCapability = createData({ fields: { id: "" } });`,
+      )
       await writeFile(
         "node_modules/@fixtures/pkg-a/package.json",
         JSON.stringify({
@@ -803,7 +811,12 @@ describe("generateDataArtifacts", () => {
       await fs.rm(evidencePath)
       await fs.rm(fingerprintPath)
 
-      await generateDataArtifacts({ fs: nodeBuildFs, root, tsconfig: false, evidence: evidencePath })
+      await generateDataArtifacts({
+        fs: nodeBuildFs,
+        root,
+        tsconfig: false,
+        evidence: evidencePath,
+      })
       const withoutPackageFingerprint = await fs.readFile(fingerprintPath, "utf8")
 
       expect(withPackageFingerprint).not.toBe(withoutPackageFingerprint)

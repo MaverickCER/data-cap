@@ -225,7 +225,13 @@ export class LinkContext {
     // The identifier branch of `resolveExpression` already charges one unit of
     // depth per hop, which is what bounds a cross-file cycle -- no extra "+1"
     // for the file boundary itself is needed here.
-    return this.resolveExpression(remoteInitializer, resolvedFile, importedParsed, depth, totalHops + 1)
+    return this.resolveExpression(
+      remoteInitializer,
+      resolvedFile,
+      importedParsed,
+      depth,
+      totalHops + 1,
+    )
   }
 
   private async resolveExpression(
