@@ -674,6 +674,15 @@
       "mutator": "BlockStatement",
       "original": "{\n    return malformedJsonFailure(packageJsonPath)\n  }",
       "replacement": "{}"
+    },
+    {
+      "id": "mutation:src/build/display-path.ts:ConditionalExpression:25dd4faef5f0",
+      "version": 1,
+      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-17 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the full trimmed suite -- a real test genuinely fails (specifically \"passes an already-relative path through unchanged, POSIX-separated, without touching root\" in test/build/display-path.test.ts), yet Stryker's own perTest coverage attribution still reports this mutant Survived, attributing coverage only to unrelated generateDataArtifacts tests instead. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
+      "file": "src/build/display-path.ts",
+      "mutator": "ConditionalExpression",
+      "original": "!path.isAbsolute(filePath)",
+      "replacement": "false"
     }
   ]
 }
