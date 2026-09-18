@@ -110,6 +110,12 @@ jobs:
           cache: npm
 
       - run: npm ci
+      # internal-package-contract's own runner deletes reports/ and coverage/
+      # after the run UNLESS they existed before it started -- pre-creating
+      # them here is what makes the mutation-report artifact upload below
+      # (and Coverage's own reports) survive past the run at all on a fresh
+      # CI checkout, which starts with neither directory present.
+      - run: mkdir -p reports coverage
       - run: npm run contract
 
       # Diagnostic aid, not part of the gate itself: `always()` so a failed
