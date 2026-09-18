@@ -111,11 +111,11 @@ export function parseArgs(argv: string[]): ParsedArgs {
     // mutating `i`'s own advancement. Hand-verified: gutting/neutralizing
     // each piece individually and running the real suite passes unchanged
     // (or, for `i`'s own advancement, throws this fast instead of hanging).
-    // Stryker disable ArithmeticOperator, ConditionalExpression, EqualityOperator, BlockStatement, StringLiteral
+    // Stryker disable ArithmeticOperator, ConditionalExpression, EqualityOperator, BlockStatement, StringLiteral, CallExpression
     if (steps > argv.length + 1) {
       throw new Error("parseArgs: argument index stopped advancing toward argv.length.")
     }
-    // Stryker restore ArithmeticOperator, ConditionalExpression, EqualityOperator, BlockStatement, StringLiteral
+    // Stryker restore ArithmeticOperator, ConditionalExpression, EqualityOperator, BlockStatement, StringLiteral, CallExpression
     // `i < argv.length` guarantees `argv[i]` is a real string; the `?? ""` only
     // exists to satisfy `noUncheckedIndexedAccess` and is never taken.
     // Stryker disable next-line StringLiteral

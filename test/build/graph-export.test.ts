@@ -77,6 +77,23 @@ describe("renderDependencyGraphDot", () => {
     )
   })
 
+  it("declares a capability referenced by two edges as exactly one node, not one per edge, when it is otherwise absent from the capabilities list", () => {
+    // `capabilities` deliberately omits this capability -- `groupEdgesByCapability`
+    // only iterates the explicit `capabilities` list, so the FIRST node-declaring
+    // loop never touches it, isolating the edge loop's own
+    // `declaredCapabilities` de-dup guard as the only thing that can prevent
+    // a duplicate node line here.
+    const model = buildDependencyModel([
+      edge({ from: "/project/consumer-a.ts" }),
+      edge({ from: "/project/consumer-b.ts" }),
+    ])
+    const dot = renderDependencyGraphDot([], model)
+    const capabilityNodeLines = dot
+      .split("\n")
+      .filter((l) => l.includes('label="userCapability"') && l.includes("shape=box"))
+    expect(capabilityNodeLines).toHaveLength(1)
+  })
+
   it("declares every capability as a node even with zero edges", () => {
     const model = buildDependencyModel([])
     expect(

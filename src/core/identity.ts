@@ -47,11 +47,11 @@ function missingComponentToken(): string {
   const token = canonicalize(undefined)
   // `canonicalize(undefined)` is `canonicalizeScalar(undefined, "undefined")` ->
   // `atom("u", "")`, never `undefined` -- this only narrows `string | undefined`.
-  // Stryker disable ConditionalExpression, BlockStatement, StringLiteral
+  // Stryker disable ConditionalExpression, BlockStatement, StringLiteral, CallExpression
   if (token === undefined) {
     throw new Error("unreachable: canonicalize(undefined) is always defined")
   }
-  // Stryker restore ConditionalExpression, BlockStatement, StringLiteral
+  // Stryker restore ConditionalExpression, BlockStatement, StringLiteral, CallExpression
   return token
 }
 

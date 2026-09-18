@@ -421,13 +421,13 @@ export function createData<TSchema extends DataSchema<FieldsShape>>(
     // above, so this can't be exercised by a normal test. Hand-verified:
     // gutting the loop body and running the real suite throws this (fast)
     // instead of hanging, confirming the backstop actually works.
-    // Stryker disable ConditionalExpression, BlockStatement, StringLiteral, LogicalOperator
+    // Stryker disable ConditionalExpression, BlockStatement, StringLiteral, LogicalOperator, CallExpression
     if (paramsMap.size > maxOperationHistory && paramsMap.size > 0) {
       throw new Error(
         "Operation history eviction loop stopped advancing toward maxOperationHistory.",
       )
     }
-    // Stryker restore ConditionalExpression, BlockStatement, StringLiteral, LogicalOperator
+    // Stryker restore ConditionalExpression, BlockStatement, StringLiteral, LogicalOperator, CallExpression
     operationsDirty = true
     notifyCapabilityListeners()
   }

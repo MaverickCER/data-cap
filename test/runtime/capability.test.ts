@@ -697,6 +697,36 @@ describe("operations snapshot", () => {
     expect(Object.keys(entries).sort()).toEqual([idKey("2"), idKey("3")].sort())
   })
 
+  it("re-fetching an existing key touches it, moving it to the most-recently-used end so a later eviction spares it", async () => {
+    const capability = createData(
+      {
+        fields: { user: { name: "" } },
+        getters: {
+          getUser: {
+            params: { id: "" },
+            execute: async (params: { id: string }) => ({ name: params.id }),
+            processor: (raw: { name: string }) => ({ user: raw }),
+            writes: { user: true },
+          },
+        },
+      },
+      { maxOperationHistory: 2 },
+    )
+
+    await capability.getUser({ id: "1" })
+    await capability.getUser({ id: "2" })
+    // Touch "1" again -- it should now be the most-recently-used entry,
+    // not the least, despite being inserted first.
+    await capability.getUser({ id: "1" })
+    await capability.getUser({ id: "3" })
+
+    const entries = capability.getSnapshot().operations["getUser"] ?? {}
+    const idKey = (id: string) => canonicalize({ id }) ?? ""
+    // "2" is now the least recently touched and is evicted; the re-touched
+    // "1" survives alongside the newly-inserted "3".
+    expect(Object.keys(entries).sort()).toEqual([idKey("1"), idKey("3")].sort())
+  })
+
   it("each operations entry records its own call's status, then settledAt + outcome", async () => {
     const gate = deferred<{ name: string }>()
     const capability = createData({
@@ -943,6 +973,61 @@ describe("warnFieldErrors (direct)", () => {
     try {
       warnFieldErrors(new Map([["a", { operator: "op", error: "plain string" }]]))
       expect(warn).toHaveBeenCalledWith("plain string")
+    } finally {
+      warn.mockRestore()
+    }
+  })
+
+  it("a mutator whose processor returns an undeclared field actually warns (integration, not just the direct unit)", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined)
+    try {
+      const capability = createData({
+        fields: { user: { email: "authoritative@example.com" } },
+        mutators: {
+          updateEmail: {
+            params: {},
+            execute: async () => ({ email: "new@example.com", smuggled: true }),
+            processor: (raw: { email: string; smuggled: boolean }) => ({
+              user: { email: raw.email },
+              smuggled: raw.smuggled,
+            }),
+            writes: { user: true },
+          },
+        },
+      })
+      await capability.updateEmail({})
+      expect(warn).toHaveBeenCalled()
+    } finally {
+      warn.mockRestore()
+    }
+  })
+
+  it("a subscription whose processor returns an undeclared field actually warns (integration, not just the direct unit)", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined)
+    try {
+      const capability = createData({
+        fields: { price: 0 },
+        subscriptions: {
+          subscribeToPrice: {
+            params: {},
+            subscribe: (
+              _params: unknown,
+              handlers: SubscriptionHandlers<{ price: number; smuggled: boolean }>,
+            ) => {
+              handlers.onEvent({ price: 42, smuggled: true })
+              return () => undefined
+            },
+            processor: (event: { price: number; smuggled: boolean }) => ({
+              price: event.price,
+              smuggled: event.smuggled,
+            }),
+            writes: { price: true },
+          },
+        },
+      })
+      const release = capability.subscribeToPrice({})
+      expect(warn).toHaveBeenCalled()
+      release()
     } finally {
       warn.mockRestore()
     }

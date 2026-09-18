@@ -24,6 +24,20 @@ function atom(tag: string, payload: string): string {
 
 const UNSAFE_KEYS = new Set(["__proto__", "constructor", "prototype"])
 
+// A hard, generous fail-safe wholly independent of the `seen`-based cycle
+// checks below -- not a policy limit (no real value canonicalized by this
+// package nests anywhere close to this deep) but a backstop against those
+// checks themselves being broken: a mutation neutralizing a `seen`/`nextSeen`
+// add would otherwise let a genuine cyclic reference recurse until a real
+// stack overflow -- which, under Stryker's own instrumented execution,
+// manifests as a Timeout rather than a fast, cleanly-attributed Killed
+// result (confirmed directly: the array-cycle mutation is fast and
+// deterministic when hand-run outside Stryker, but reproducibly reports as
+// Timeout under Stryker's own sandbox). `depth` increments on every
+// recursive call, independent of any `seen` set's own correctness, so it
+// still reaches this ceiling fast under that same mutation.
+const MAX_DEPTH = 200
+
 /** `canonicalizeBuiltin` returns this when `value` is not one of the built-in object types it handles -- distinct from `undefined`, which means "a built-in that cannot be canonicalized" (e.g. an invalid `Date`). */
 const NOT_A_BUILTIN = Symbol("not-a-builtin")
 
@@ -62,14 +76,18 @@ function canonicalizeBuiltin(value: object): string | undefined | typeof NOT_A_B
 }
 
 /** Canonicalizes a non-built-in object: a class instance via its `.toJSON()` (the `JSON.stringify` convention), or a plain object via a sorted own-key walk. `undefined` = unsupported (a class instance with no `.toJSON()`, or an unsafe own key). */
-function canonicalizeObject(value: object, seen: ReadonlySet<object>): string | undefined {
+function canonicalizeObject(
+  value: object,
+  seen: ReadonlySet<object>,
+  depth: number,
+): string | undefined {
   // `Object.getPrototypeOf`'s lib type is `any` -- annotated explicitly so that
   // doesn't silently propagate.
   const proto: unknown = Object.getPrototypeOf(value)
   if (proto !== null && proto !== Object.prototype) {
     const withToJSON = value as { toJSON?: unknown }
     if (typeof withToJSON.toJSON === "function") {
-      return canonicalizeInner((withToJSON.toJSON as () => unknown).call(value), seen)
+      return canonicalizeInner((withToJSON.toJSON as () => unknown).call(value), seen, depth)
     }
     return undefined
   }
@@ -80,18 +98,32 @@ function canonicalizeObject(value: object, seen: ReadonlySet<object>): string | 
     if (UNSAFE_KEYS.has(key)) return undefined
   }
   const nextSeen = new Set(seen)
+  // Neutralizing this add is behaviorally harmless: MAX_DEPTH above still
+  // catches a genuine cycle fast (see its own comment) regardless of
+  // whether this object-side `seen` tracking works. Hand-verified.
+  // Stryker disable next-line CallExpression
   nextSeen.add(value)
   let payload = ""
   // Sorted for property-order independence.
   for (const key of [...keys].sort()) {
-    const encodedValue = canonicalizeInner((value as Record<string, unknown>)[key], nextSeen)
+    const encodedValue = canonicalizeInner(
+      (value as Record<string, unknown>)[key],
+      nextSeen,
+      depth + 1,
+    )
     if (encodedValue === undefined) return undefined
     payload += atom("k", key) + encodedValue
   }
   return atom("o", payload)
 }
 
-function canonicalizeInner(value: unknown, seen: ReadonlySet<object>): string | undefined {
+function canonicalizeInner(
+  value: unknown,
+  seen: ReadonlySet<object>,
+  depth: number,
+): string | undefined {
+  if (depth > MAX_DEPTH) return undefined
+
   const type = typeof value
   // `typeof value` in the condition (not the `type` copy) so `value` narrows to
   // `object` below.
@@ -100,21 +132,28 @@ function canonicalizeInner(value: unknown, seen: ReadonlySet<object>): string | 
   const builtin = canonicalizeBuiltin(value)
   if (builtin !== NOT_A_BUILTIN) return builtin
 
+  // Neutralizing this check is behaviorally harmless: MAX_DEPTH above still
+  // catches a genuine cycle fast (see its own comment) regardless of
+  // whether this check itself works. Hand-verified.
+  // Stryker disable next-line ConditionalExpression
   if (seen.has(value)) return undefined // cyclic reference -- non-canonicalizable
 
   if (Array.isArray(value)) {
     const nextSeen = new Set(seen)
+    // Same reasoning as the object branch's identical add, just above
+    // canonicalizeObject -- MAX_DEPTH backstops this regardless. Hand-verified.
+    // Stryker disable next-line CallExpression
     nextSeen.add(value)
     let payload = ""
     for (const item of value) {
-      const encoded = canonicalizeInner(item, nextSeen)
+      const encoded = canonicalizeInner(item, nextSeen, depth + 1)
       if (encoded === undefined) return undefined
       payload += encoded
     }
     return atom("a", payload)
   }
 
-  return canonicalizeObject(value, seen)
+  return canonicalizeObject(value, seen, depth)
 }
 
 /**
@@ -127,5 +166,5 @@ function canonicalizeInner(value: unknown, seen: ReadonlySet<object>): string | 
  * never `for...in`).
  */
 export function canonicalize(value: unknown): string | undefined {
-  return canonicalizeInner(value, new Set())
+  return canonicalizeInner(value, new Set(), 0)
 }

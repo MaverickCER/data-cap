@@ -96,11 +96,11 @@ function isBareGlobal(
   // advancement, so this can't be exercised by a normal test. Hand-verified:
   // gutting the loop body above and running the real suite throws this
   // (fast) instead of hanging, confirming the backstop actually works.
-  // Stryker disable ConditionalExpression, BlockStatement, StringLiteral
+  // Stryker disable ConditionalExpression, BlockStatement, StringLiteral, CallExpression
   if (scope !== null) {
     throw new Error("isBareGlobal: scope chain walk stopped advancing toward the global scope.")
   }
-  // Stryker restore ConditionalExpression, BlockStatement, StringLiteral
+  // Stryker restore ConditionalExpression, BlockStatement, StringLiteral, CallExpression
   return true
 }
 
@@ -165,11 +165,11 @@ function isInsideOperationBody(node: TSESTree.Node): boolean {
   // advancement, so this can't be exercised by a normal test. Hand-verified:
   // gutting the loop body above and running the real suite throws this
   // (fast) instead of hanging, confirming the backstop actually works.
-  // Stryker disable ConditionalExpression, BlockStatement, StringLiteral
+  // Stryker disable ConditionalExpression, BlockStatement, StringLiteral, CallExpression
   if (current != null) {
     throw new Error("isInsideOperationBody: AST walk stopped advancing toward the program root.")
   }
-  // Stryker restore ConditionalExpression, BlockStatement, StringLiteral
+  // Stryker restore ConditionalExpression, BlockStatement, StringLiteral, CallExpression
   return false
 }
 

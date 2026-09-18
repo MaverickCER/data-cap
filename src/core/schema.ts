@@ -65,15 +65,19 @@ export function resolveFieldDefaults(
   // -- is behaviorally harmless now, not just slow: the MAX_FIELD_DEPTH
   // ceiling above already throws the identical error fast (well before any
   // real stack overflow) regardless of whether this check itself still
-  // works, since `path` keeps growing every recursive call either way.
-  // Hand-verified: both mutations, applied individually, pass the real
+  // works, since `path` keeps growing every recursive call either way. The
+  // same reasoning extends to `stack.add` just below: dropping it leaves
+  // `stack.has` permanently empty (equivalent to the condition itself being
+  // neutralized), which MAX_FIELD_DEPTH still catches identically fast.
+  // Hand-verified: all three mutations, applied individually, pass the real
   // suite unchanged and fast (never a hang).
-  // Stryker disable next-line ConditionalExpression, BlockStatement
+  // Stryker disable ConditionalExpression, BlockStatement, CallExpression
   if (stack.has(schemaNode)) {
     throw new InvalidFieldDefaultError(path, "cyclic field defaults are not supported")
   }
 
   stack.add(schemaNode)
+  // Stryker restore ConditionalExpression, BlockStatement, CallExpression
   try {
     if (Array.isArray(schemaNode)) {
       return schemaNode.map((item: unknown, index) =>

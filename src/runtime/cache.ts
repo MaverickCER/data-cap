@@ -105,11 +105,11 @@ export function createDataCache<TFields>(options: DataCacheOptions = {}): DataCa
       // above, so this can't be exercised by a normal test. Hand-verified:
       // gutting the loop body and running the real suite throws this
       // (fast) instead of hanging, confirming the backstop actually works.
-      // Stryker disable ConditionalExpression, BlockStatement, StringLiteral
+      // Stryker disable ConditionalExpression, BlockStatement, StringLiteral, CallExpression
       if (entries.size > maxEntries) {
         throw new Error("LRU cache: eviction loop stopped advancing toward maxEntries.")
       }
-      // Stryker restore ConditionalExpression, BlockStatement, StringLiteral
+      // Stryker restore ConditionalExpression, BlockStatement, StringLiteral, CallExpression
     },
     delete(key) {
       entries.delete(key)
