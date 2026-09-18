@@ -112,6 +112,21 @@ jobs:
       - run: npm ci
       - run: npm run contract
 
+      # Diagnostic aid, not part of the gate itself: `always()` so a failed
+      # Mutation run's exact per-mutant detail (file, mutator, location,
+      # status) is downloadable instead of only the summary count `npm run
+      # contract` prints to the log -- needed to hand-verify a CI-only
+      # "Survived" that never reproduces locally, per each mutant's own real
+      # source rather than guessing from the count alone.
+      - name: Upload mutation report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: mutation-report
+          path: reports/mutation/mutation.json
+          retention-days: 5
+          if-no-files-found: ignore
+
       # A contract run is not a pure read: Format/Lint auto-fix, and
       # SecurityDeps/SecuritySocket reconcile .repo-contract/exceptions/*.json
       # (scaffolding a blank stub for any new finding, surfacing a stale
