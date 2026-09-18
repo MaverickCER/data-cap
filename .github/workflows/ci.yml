@@ -20,11 +20,41 @@ permissions:
 # NOTE: a job for docs deployment is added once Phase 9's docs site is
 # finalized -- see specs/architecture.md.
 jobs:
+  # Dev-tooling checks (lint/format/API-report) are a property of the source
+  # repo, not the published package's own runtime behavior across Node
+  # versions -- unlike `verify` below, running them once on a single modern
+  # Node version is correct, not a coverage gap. Splitting them out here
+  # also keeps them independent of `verify`'s own Node-version floor.
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22.x
+          cache: npm
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run build
+      # The committed Markdown API report (docs/api-report/) must match a
+      # fresh `typedoc --options typedoc.markdown.json` -- a public API
+      # change can't land without the report, and the PR diff, updated too.
+      - run: npm run docs:api:report:check
+
+  # Matches package.json's own `engines.node` floor (`>=20.0.0`). Was
+  # `[18.x, 22.x, 24.x]` until the dev toolchain itself (Vitest 4.x, whose
+  # own `engines.node` is `^20.0.0 || ^22.0.0 || >=24.0.0`) stopped running
+  # on Node 18 at all -- `vitest run --coverage` can't even start there,
+  # so 18.x was never actually being verified, just failing to boot. The
+  # `engines.node` promise moved to match what's genuinely tested.
   verify:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [18.x, 22.x, 24.x]
+        node-version: [20.x, 22.x, 24.x]
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
@@ -35,18 +65,12 @@ jobs:
 
       - run: npm ci
       - run: npm run typecheck
-      - run: npm run lint
-      - run: npm run format:check
       - run: npm run build
       - run: npm run schema
       - run: npm run test:coverage
       - run: npm run size
       - run: npm run verify:no-ambient-fs
       - run: npm run verify:no-ambient-child-process
-      # The committed Markdown API report (docs/api-report/) must match a
-      # fresh `typedoc --options typedoc.markdown.json` -- a public API
-      # change can't land without the report, and the PR diff, updated too.
-      - run: npm run docs:api:report:check
 
   verify-current:
     runs-on: ubuntu-latest
@@ -71,7 +95,7 @@ jobs:
   # just declared as a devDependency. Node 24.x to match
   # internal-package-contract's own engines.node floor.
   contract:
-    needs: [verify]
+    needs: [verify, lint]
     runs-on: ubuntu-latest
     steps:
       # fetch-depth: 0 -- the Commits check reads origin/main..HEAD.
@@ -311,7 +335,7 @@ jobs:
       - run: npx vitest run test/integration/
 
   badges:
-    needs: [verify, cross-runtime]
+    needs: [verify, lint, cross-runtime]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
