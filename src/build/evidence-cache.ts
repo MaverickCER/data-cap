@@ -143,9 +143,9 @@ export async function getEvidenceModel(
     currentFingerprint = await computeSourceFingerprint({
       fs: options.fs,
       root,
-      include: options.include,
-      exclude: options.exclude,
-      packages: options.packages,
+      ...(options.include !== undefined ? { include: options.include } : {}),
+      ...(options.exclude !== undefined ? { exclude: options.exclude } : {}),
+      ...(options.packages !== undefined ? { packages: options.packages } : {}),
     })
   } catch (error) {
     return recompute(

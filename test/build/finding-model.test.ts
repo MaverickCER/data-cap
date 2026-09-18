@@ -62,6 +62,90 @@ describe("locationOf", () => {
     })
   })
 
+  it("carries a finding's position through onto the 'operation' location variant", () => {
+    const finding: ReportFinding = {
+      code: "CAPABILITY_MISSING_OWNER",
+      family: "governance",
+      severity: "warning",
+      message: "example",
+      capability: capabilityRef,
+      operation: "getUser",
+      position: { line: 7, column: 2 },
+    }
+    expect(locationOf(finding)).toEqual({
+      kind: "operation",
+      capability: capabilityRef,
+      operation: "getUser",
+      position: { line: 7, column: 2 },
+    })
+  })
+
+  it("never attaches a position key to the 'operation' location variant when the finding has none", () => {
+    const finding: ReportFinding = {
+      code: "CAPABILITY_MISSING_OWNER",
+      family: "governance",
+      severity: "warning",
+      message: "example",
+      capability: capabilityRef,
+      operation: "getUser",
+    }
+    expect("position" in locationOf(finding)).toBe(false)
+  })
+
+  it("never attaches a position key to the 'field' location variant when the finding has none", () => {
+    const finding: ReportFinding = {
+      code: "UNCONSUMED_FIELD",
+      family: "usage",
+      severity: "warning",
+      message: "unconsumed",
+      capability: capabilityRef,
+      field: ["email"],
+    }
+    expect("position" in locationOf(finding)).toBe(false)
+  })
+
+  it("never attaches a position key to the 'capability' location variant when the finding has none", () => {
+    const finding: ReportFinding = {
+      code: "CAPABILITY_MISSING_OWNER",
+      family: "governance",
+      severity: "warning",
+      message: "no owner",
+      capability: capabilityRef,
+    }
+    expect("position" in locationOf(finding)).toBe(false)
+  })
+
+  it("carries a finding's indeterminateSites through onto the 'field' location variant", () => {
+    const indeterminateSites = [{ line: 9, column: 4, file: "/project/user.ts" }]
+    const finding: ReportFinding = {
+      code: "UNCONSUMED_FIELD",
+      family: "usage",
+      severity: "warning",
+      message: "unconsumed",
+      capability: capabilityRef,
+      field: ["email"],
+      indeterminateSites,
+    }
+    expect(locationOf(finding)).toEqual({
+      kind: "field",
+      capability: capabilityRef,
+      field: ["email"],
+      indeterminateSites,
+    })
+  })
+
+  it("never attaches an indeterminateSites key to the 'field' location variant when the finding has none", () => {
+    const finding: ReportFinding = {
+      code: "UNCONSUMED_FIELD",
+      family: "usage",
+      severity: "warning",
+      message: "unconsumed",
+      capability: capabilityRef,
+      field: ["email"],
+    }
+    expect("indeterminateSites" in locationOf(finding)).toBe(false)
+  })
+
   it("returns kind 'consumer' when capability and source are set (no field)", () => {
     const finding: ReportFinding = {
       code: "UNRESOLVED_CONSUMER",

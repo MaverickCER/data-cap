@@ -54,7 +54,11 @@ function makeEdge(
   return {
     relationship,
     from: fromFile,
-    to: { capability: { file: target.file, exportName: target.exportName }, field, operation },
+    to: {
+      capability: { file: target.file, exportName: target.exportName },
+      ...(field !== undefined ? { field } : {}),
+      ...(operation !== undefined ? { operation } : {}),
+    },
     resolution,
     position,
   }

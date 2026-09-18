@@ -3,6 +3,7 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/maverickcer/data-cap/ci.yml?branch=main&label=CI)](https://github.com/maverickcer/data-cap/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/data-cap)](https://www.npmjs.com/package/data-cap)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Coverage](https://img.shields.io/endpoint?url=https://maverickcer.github.io/data-cap/coverage-badge.json)](vitest.config.ts)
 [![Bundle size](https://img.shields.io/endpoint?url=https://maverickcer.github.io/data-cap/size-badge.json)](scripts/check-size.mjs)
 [![TypeScript](https://img.shields.io/badge/TypeScript-ready-3178c6)](#quick-start)
 
@@ -101,6 +102,29 @@ const account = createData({
 Use the capability from your application without coupling its ownership to a particular transport, database, framework, or state library.
 
 For the full API and integration patterns, see the [Guide](GUIDE.md).
+
+## What declared metadata can express
+
+**Ownership and governance data isn't documentation bolted onto a capability — it's what the build-time analysis actually queries:**
+
+```ts
+documentData(
+  { fields: userFields },
+  {
+    fields: {
+      email: {
+        description: "The user's primary email address.",
+        owner: "identity-team",
+        sensitivity: "restricted",
+        purpose: "Account recovery and transactional notifications.",
+        retention: "Deleted with the account.",
+      },
+    },
+  },
+)
+```
+
+That's the same declaration the [Dependency & Ownership report](#see-it-run) above is generated from — not a separate governance system, the same `documentData` call your fields already need to correlate with the capability. The same build pass cross-references every declared field against actual reads and writes in your source, so `owner`/`sensitivity`/`retention` stay attached to what the code actually does, not a document someone forgot to update. The [Guide](GUIDE.md#documented-example) has the full field-governance vocabulary.
 
 ## Why not just use your existing data library?
 

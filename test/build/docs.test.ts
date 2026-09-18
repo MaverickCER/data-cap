@@ -965,7 +965,11 @@ describe("renderDocumentation -- full-catalog snapshot", () => {
         to: { ...base.to, capability: { ...base.to.capability, exportName: "otherCapability" } },
       },
       { ...base, to: { ...base.to, field: ["name"] } },
-      { ...base, to: { ...base.to, field: undefined } },
+      // exactOptionalPropertyTypes: `to.field` is optional-without-undefined,
+      // so omit the key rather than set it to `undefined` -- but `position`
+      // (below) is required-but-nullable (`SourcePosition | undefined`, no
+      // `?`), so `position: undefined` was always valid there.
+      { ...base, to: { capability: base.to.capability } },
       { ...base, position: undefined },
     ]
     const content = renderDocumentation(inventory([target]), ROOT, undefined, nearMisses)

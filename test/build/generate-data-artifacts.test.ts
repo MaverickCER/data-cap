@@ -1,7 +1,7 @@
 import fs from "node:fs/promises"
 import os from "node:os"
 import path from "node:path"
-import { afterEach, beforeEach, describe, expect, it } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { generateDataArtifacts } from "../../src/build/generate-data-artifacts.js"
 import { checkArtifacts } from "../../src/build/check-artifacts.js"
 import { DataProjectGenerationError } from "../../src/build/errors.js"
@@ -10,6 +10,11 @@ import { EVIDENCE_MODEL_SCHEMA_VERSION } from "../../src/build/evidence-model.js
 import type { EvidenceModel } from "../../src/build/evidence-model.js"
 import { PACKAGE_VERSION } from "../../src/build/package-version.js"
 import { nodeBuildFs } from "../support/build-filesystem.js"
+import * as generateUsageModule from "../../src/build/generate-usage.js"
+import * as generateDocumentationModule from "../../src/build/generate-documentation.js"
+import * as generateFlowModule from "../../src/build/generate-flow.js"
+import * as evidenceModelModule from "../../src/build/evidence-model.js"
+import * as evidenceFingerprintModule from "../../src/build/evidence-fingerprint.js"
 
 describe("generateDataArtifacts", () => {
   let root: string
@@ -244,6 +249,25 @@ describe("generateDataArtifacts", () => {
       expect(result.warnings.filter((w) => w.file.startsWith("(package)"))).toEqual([])
     })
 
+    it("threads an explicit --tsconfig path through to linkCapabilityFiles, not just the default auto-detected tsconfig.json", async () => {
+      await writeFile(
+        "user.ts",
+        `export const userCapability = createData({ fields: { email: "" } });`,
+      )
+      const customPath = path.join(root, "custom.tsconfig.json")
+      const result = await generateDataArtifacts({
+        fs: nodeBuildFs,
+        root,
+        tsconfig: customPath,
+      })
+      // A nonexistent *explicit* tsconfig path warns (see
+      // loadTsconfigPaths's own isExplicit distinction) -- unlike the
+      // default auto-detect, which silently no-ops when tsconfig.json
+      // simply isn't there. Getting this warning at all proves `tsconfig`
+      // was actually forwarded, not silently dropped.
+      expect(result.warnings.some((w) => w.file === "custom.tsconfig.json")).toBe(true)
+    })
+
     it("eagerly discovers and links a capability declared via an allow-listed package's dataCap.schema field", async () => {
       await writeFile("package.json", JSON.stringify({ name: "fixture-root", private: true }))
       await writeFile(
@@ -275,6 +299,27 @@ describe("generateDataArtifacts", () => {
       const content = await fs.readFile(location, "utf8")
       expect(content).toContain("pkgACapability")
     })
+  })
+
+  it("threads the usage scan's real edges into --docs's consumption column, distinguishing scanned-but-empty from never-scanned", async () => {
+    await writeFile(
+      "user.ts",
+      `export const userCapability = createData({ fields: { email: "" } });\ndocumentData({ fields: { email: "" } }, { owner: "team" });`,
+    )
+    const docs = path.join(root, "generated", "CAPABILITIES.md")
+
+    const docsOnly = await generateDataArtifacts({ fs: nodeBuildFs, root, tsconfig: false, docs })
+    expect(docsOnly.documentation?.content).toContain("(not scanned)")
+
+    const docsAndOwnership = await generateDataArtifacts({
+      fs: nodeBuildFs,
+      root,
+      tsconfig: false,
+      docs,
+      ownership: path.join(root, "generated", "OWNERSHIP.md"),
+    })
+    expect(docsAndOwnership.documentation?.content).not.toContain("(not scanned)")
+    expect(docsAndOwnership.documentation?.content).toContain("(none found)")
   })
 
   it("computes zero artifacts and zero writes when nothing is requested, but still runs static rules", async () => {
@@ -331,7 +376,7 @@ describe("generateDataArtifacts", () => {
       const snapshotAfterFirst = JSON.parse(
         await fs.readFile(path.join(root, ".data-cap-manifest-snapshot.json"), "utf8"),
       ) as { capabilities: { citationSnapshots?: Record<string, unknown> }[] }
-      expect(snapshotAfterFirst.capabilities[0]?.citationSnapshots?.email).toBeDefined()
+      expect(snapshotAfterFirst.capabilities[0]?.citationSnapshots?.["email"]).toBeDefined()
 
       // The cited file changes underneath the citation.
       await writeFile("legacy.ts", "// this file has now changed\nconst x = 2;\n")
@@ -617,6 +662,180 @@ describe("generateDataArtifacts", () => {
       await expect(fs.access(evidencePath)).rejects.toThrow()
     })
 
+    it("threads --evidence's path into the ownership report's projection note, not just the manifest", async () => {
+      await writeFile(
+        "user.ts",
+        `export const userCapability = createData({ fields: { email: "" } });`,
+      )
+      const ownership = path.join(root, "generated", "OWNERSHIP.md")
+      const evidencePath = path.join(root, "evidence.json")
+
+      const withEvidence = await generateDataArtifacts({
+        fs: nodeBuildFs,
+        root,
+        tsconfig: false,
+        ownership,
+        evidence: evidencePath,
+      })
+      expect(withEvidence.usage?.content).toContain(`This run also wrote it to`)
+      expect(withEvidence.usage?.content).toContain("evidence.json")
+
+      const withoutEvidence = await generateDataArtifacts({
+        fs: nodeBuildFs,
+        root,
+        tsconfig: false,
+        ownership,
+      })
+      expect(withoutEvidence.usage?.content).not.toContain("This run also wrote it to")
+    })
+
+    it("threads --evidence's path into the documentation catalog's projection note", async () => {
+      await writeFile(
+        "user.ts",
+        `export const userCapability = createData({ fields: { email: "" } });`,
+      )
+      const docs = path.join(root, "generated", "CAPABILITIES.md")
+      const evidencePath = path.join(root, "evidence.json")
+
+      const withEvidence = await generateDataArtifacts({
+        fs: nodeBuildFs,
+        root,
+        tsconfig: false,
+        docs,
+        evidence: evidencePath,
+      })
+      expect(withEvidence.documentation?.content).toContain("This run also wrote it to")
+      expect(withEvidence.documentation?.content).toContain("evidence.json")
+
+      const withoutEvidence = await generateDataArtifacts({
+        fs: nodeBuildFs,
+        root,
+        tsconfig: false,
+        docs,
+      })
+      expect(withoutEvidence.documentation?.content).not.toContain("This run also wrote it to")
+    })
+
+    it("threads --evidence's path into the flow report set's projection note", async () => {
+      await writeFile(
+        "user.ts",
+        `export const userCapability = createData({ fields: { email: "" } });`,
+      )
+      const flowDir = path.join(root, "generated", "flow")
+      const evidencePath = path.join(root, "evidence.json")
+
+      const withEvidence = await generateDataArtifacts({
+        fs: nodeBuildFs,
+        root,
+        tsconfig: false,
+        flow: flowDir,
+        evidence: evidencePath,
+      })
+      const overviewWith =
+        withEvidence.flow?.files.find((f) => f.path.endsWith("overview.md"))?.content ?? ""
+      expect(overviewWith).toContain("This run also wrote it to")
+      expect(overviewWith).toContain("evidence.json")
+
+      const withoutEvidence = await generateDataArtifacts({
+        fs: nodeBuildFs,
+        root,
+        tsconfig: false,
+        flow: flowDir,
+      })
+      const overviewWithout =
+        withoutEvidence.flow?.files.find((f) => f.path.endsWith("overview.md"))?.content ?? ""
+      expect(overviewWithout).not.toContain("This run also wrote it to")
+    })
+
+    it("--evidence's fingerprint sidecar reflects real --include/--exclude/--packages values, not the defaults", async () => {
+      await writeFile("only.ts", `export const a = createData({ fields: { x: "" } });`)
+      await writeFile("other.ts", `export const b = createData({ fields: { y: "" } });`)
+      const evidencePath = path.join(root, "evidence.json")
+      const fingerprintPath = `${evidencePath}.fingerprint`
+
+      await generateDataArtifacts({
+        fs: nodeBuildFs,
+        root,
+        tsconfig: false,
+        evidence: evidencePath,
+        include: ["only.ts"],
+        exclude: ["other.ts"],
+      })
+      const narrowFingerprint = await fs.readFile(fingerprintPath, "utf8")
+
+      await fs.rm(evidencePath)
+      await fs.rm(fingerprintPath)
+
+      await generateDataArtifacts({
+        fs: nodeBuildFs,
+        root,
+        tsconfig: false,
+        evidence: evidencePath,
+      })
+      const defaultFingerprint = await fs.readFile(fingerprintPath, "utf8")
+
+      expect(narrowFingerprint).not.toBe(defaultFingerprint)
+    })
+
+    it("--evidence's fingerprint sidecar reflects a real --packages allowlist, not the default empty one", async () => {
+      await writeFile("package.json", JSON.stringify({ name: "fixture-root", private: true }))
+      await writeFile(
+        "user.ts",
+        `export const userCapability = createData({ fields: { id: "" } });`,
+      )
+      await writeFile(
+        "node_modules/@fixtures/pkg-a/package.json",
+        JSON.stringify({
+          name: "@fixtures/pkg-a",
+          main: "./index.js",
+          dataCap: { schema: "./data.schema.ts" },
+        }),
+      )
+      await writeFile("node_modules/@fixtures/pkg-a/index.js", "module.exports = {};\n")
+      await writeFile(
+        "node_modules/@fixtures/pkg-a/data.schema.ts",
+        `export const pkgACapability = createData({ fields: { pkgId: "" } });`,
+      )
+      const evidencePath = path.join(root, "evidence.json")
+      const fingerprintPath = `${evidencePath}.fingerprint`
+
+      await generateDataArtifacts({
+        fs: nodeBuildFs,
+        root,
+        tsconfig: false,
+        evidence: evidencePath,
+        packages: ["@fixtures/pkg-a"],
+      })
+      const withPackageFingerprint = await fs.readFile(fingerprintPath, "utf8")
+
+      await fs.rm(evidencePath)
+      await fs.rm(fingerprintPath)
+
+      await generateDataArtifacts({
+        fs: nodeBuildFs,
+        root,
+        tsconfig: false,
+        evidence: evidencePath,
+      })
+      const withoutPackageFingerprint = await fs.readFile(fingerprintPath, "utf8")
+
+      expect(withPackageFingerprint).not.toBe(withoutPackageFingerprint)
+    })
+
+    it("result.evidence.change stays undefined when no --location ran, even alongside other options", async () => {
+      await writeFile(
+        "user.ts",
+        `export const userCapability = createData({ fields: { email: "" } });`,
+      )
+      const result = await generateDataArtifacts({
+        fs: nodeBuildFs,
+        root,
+        tsconfig: false,
+        docs: path.join(root, "d.md"),
+      })
+      expect(result.evidence.change).toBeUndefined()
+    })
+
     it("--evidence participates in --check's staleness detection like every other artifact", async () => {
       await writeFile(
         "user.ts",
@@ -649,6 +868,220 @@ describe("generateDataArtifacts", () => {
         evidence: evidencePath,
       })
       expect(dirtyCheck.stale).toContain(evidencePath)
+    })
+  })
+
+  // These mutants (a `!== undefined` guard flipped to always-`true`, or the
+  // guarded object literal emptied to `{}`) change nothing any downstream
+  // consumer can observe *when the option is actually omitted*: whether the
+  // key is spread as `{ key: undefined }` or left absent entirely, every
+  // consumer that later reads it does so through its own `!== undefined`
+  // check (or a destructuring default), so the value each one sees is
+  // identical either way -- only the immediate call argument's own key
+  // presence differs. That is only observable by inspecting the literal
+  // object handed to the very next function in the pipeline, so these tests
+  // spy on that function (letting the real implementation run underneath)
+  // and assert `Object.hasOwn` directly on the captured call argument.
+  describe("option pass-through spreads only the key when the option is actually provided", () => {
+    it("threads a caller-supplied --tsconfig into the usage scan's own options, and omits the key entirely otherwise", async () => {
+      await writeFile(
+        "user.ts",
+        `export const userCapability = createData({ fields: { email: "" } });`,
+      )
+      const spy = vi.spyOn(generateUsageModule, "generateUsage")
+      try {
+        await generateDataArtifacts({
+          fs: nodeBuildFs,
+          root,
+          tsconfig: false,
+          ownership: path.join(root, "OWNERSHIP.md"),
+        })
+        const withTsconfig = spy.mock.calls.at(-1)?.[0]
+        expect(Object.hasOwn(withTsconfig?.scan ?? {}, "tsconfig")).toBe(true)
+        expect(withTsconfig?.scan.tsconfig).toBe(false)
+
+        spy.mockClear()
+        await generateDataArtifacts({
+          fs: nodeBuildFs,
+          root,
+          ownership: path.join(root, "OWNERSHIP2.md"),
+        })
+        const withoutTsconfig = spy.mock.calls.at(-1)?.[0]
+        expect(Object.hasOwn(withoutTsconfig?.scan ?? {}, "tsconfig")).toBe(false)
+      } finally {
+        spy.mockRestore()
+      }
+    })
+
+    it("threads --evidence's path into the usage scan's own options only when provided", async () => {
+      await writeFile(
+        "user.ts",
+        `export const userCapability = createData({ fields: { email: "" } });`,
+      )
+      const spy = vi.spyOn(generateUsageModule, "generateUsage")
+      try {
+        const evidencePath = path.join(root, "evidence.json")
+        await generateDataArtifacts({
+          fs: nodeBuildFs,
+          root,
+          tsconfig: false,
+          ownership: path.join(root, "OWNERSHIP.md"),
+          evidence: evidencePath,
+        })
+        const withEvidence = spy.mock.calls.at(-1)?.[0]
+        expect(Object.hasOwn(withEvidence ?? {}, "evidencePath")).toBe(true)
+        expect(withEvidence?.evidencePath).toBe(evidencePath)
+
+        spy.mockClear()
+        await generateDataArtifacts({
+          fs: nodeBuildFs,
+          root,
+          tsconfig: false,
+          ownership: path.join(root, "OWNERSHIP2.md"),
+        })
+        const withoutEvidence = spy.mock.calls.at(-1)?.[0]
+        expect(Object.hasOwn(withoutEvidence ?? {}, "evidencePath")).toBe(false)
+      } finally {
+        spy.mockRestore()
+      }
+    })
+
+    it("threads --evidence's path into the documentation generator's own options only when provided", async () => {
+      await writeFile(
+        "user.ts",
+        `export const userCapability = createData({ fields: { email: "" } });`,
+      )
+      const spy = vi.spyOn(generateDocumentationModule, "generateDocumentation")
+      try {
+        const evidencePath = path.join(root, "evidence.json")
+        await generateDataArtifacts({
+          fs: nodeBuildFs,
+          root,
+          tsconfig: false,
+          docs: path.join(root, "CAPABILITIES.md"),
+          evidence: evidencePath,
+        })
+        const withEvidence = spy.mock.calls.at(-1)?.[0]
+        expect(Object.hasOwn(withEvidence ?? {}, "evidencePath")).toBe(true)
+        expect(withEvidence?.evidencePath).toBe(evidencePath)
+
+        spy.mockClear()
+        await generateDataArtifacts({
+          fs: nodeBuildFs,
+          root,
+          tsconfig: false,
+          docs: path.join(root, "CAPABILITIES2.md"),
+        })
+        const withoutEvidence = spy.mock.calls.at(-1)?.[0]
+        expect(Object.hasOwn(withoutEvidence ?? {}, "evidencePath")).toBe(false)
+      } finally {
+        spy.mockRestore()
+      }
+    })
+
+    it("threads --evidence's path into the flow generator's own options only when provided", async () => {
+      await writeFile(
+        "user.ts",
+        `export const userCapability = createData({ fields: { email: "" } });`,
+      )
+      const spy = vi.spyOn(generateFlowModule, "generateFlow")
+      try {
+        const evidencePath = path.join(root, "evidence.json")
+        await generateDataArtifacts({
+          fs: nodeBuildFs,
+          root,
+          tsconfig: false,
+          flow: path.join(root, "flow"),
+          evidence: evidencePath,
+        })
+        const withEvidence = spy.mock.calls.at(-1)?.[0]
+        expect(Object.hasOwn(withEvidence ?? {}, "evidencePath")).toBe(true)
+        expect(withEvidence?.evidencePath).toBe(evidencePath)
+
+        spy.mockClear()
+        await generateDataArtifacts({
+          fs: nodeBuildFs,
+          root,
+          tsconfig: false,
+          flow: path.join(root, "flow2"),
+        })
+        const withoutEvidence = spy.mock.calls.at(-1)?.[0]
+        expect(Object.hasOwn(withoutEvidence ?? {}, "evidencePath")).toBe(false)
+      } finally {
+        spy.mockRestore()
+      }
+    })
+
+    it("spreads dependency/change into buildEvidenceModel's input only when each model was actually computed", async () => {
+      await writeFile(
+        "user.ts",
+        `export const userCapability = createData({ fields: { email: "" } });`,
+      )
+      const spy = vi.spyOn(evidenceModelModule, "buildEvidenceModel")
+      try {
+        // Neither --ownership nor --location: no dependency scan, no manifest diff.
+        await generateDataArtifacts({ fs: nodeBuildFs, root, tsconfig: false })
+        const neither = spy.mock.calls.at(-1)?.[0]
+        expect(Object.hasOwn(neither ?? {}, "dependency")).toBe(false)
+        expect(Object.hasOwn(neither ?? {}, "change")).toBe(false)
+
+        spy.mockClear()
+        // Both --ownership (drives the dependency scan) and --location (drives the change model).
+        await generateDataArtifacts({
+          fs: nodeBuildFs,
+          root,
+          tsconfig: false,
+          ownership: path.join(root, "OWNERSHIP.md"),
+          location: path.join(root, "manifest.ts"),
+        })
+        const both = spy.mock.calls.at(-1)?.[0]
+        expect(Object.hasOwn(both ?? {}, "dependency")).toBe(true)
+        expect(Object.hasOwn(both ?? {}, "change")).toBe(true)
+      } finally {
+        spy.mockRestore()
+      }
+    })
+
+    it("threads include/exclude/packages into the evidence fingerprint's own recompute only when each was actually provided", async () => {
+      await writeFile(
+        "src/user.ts",
+        `export const userCapability = createData({ fields: { email: "" } });`,
+      )
+      const spy = vi.spyOn(evidenceFingerprintModule, "computeSourceFingerprint")
+      try {
+        await generateDataArtifacts({
+          fs: nodeBuildFs,
+          root,
+          tsconfig: false,
+          evidence: path.join(root, "evidence.json"),
+          include: ["src/**"],
+          exclude: ["src/skip/**"],
+          packages: [],
+        })
+        const withAll = spy.mock.calls.at(-1)?.[0]
+        expect(Object.hasOwn(withAll ?? {}, "include")).toBe(true)
+        expect(Object.hasOwn(withAll ?? {}, "exclude")).toBe(true)
+        expect(Object.hasOwn(withAll ?? {}, "packages")).toBe(true)
+        expect(withAll?.include).toEqual(["src/**"])
+        expect(withAll?.exclude).toEqual(["src/skip/**"])
+        expect(withAll?.packages).toEqual([])
+
+        spy.mockClear()
+        await fs.rm(path.join(root, "evidence.json"), { force: true })
+        await fs.rm(path.join(root, "evidence.json.fingerprint"), { force: true })
+        await generateDataArtifacts({
+          fs: nodeBuildFs,
+          root,
+          tsconfig: false,
+          evidence: path.join(root, "evidence.json"),
+        })
+        const withNone = spy.mock.calls.at(-1)?.[0]
+        expect(Object.hasOwn(withNone ?? {}, "include")).toBe(false)
+        expect(Object.hasOwn(withNone ?? {}, "exclude")).toBe(false)
+        expect(Object.hasOwn(withNone ?? {}, "packages")).toBe(false)
+      } finally {
+        spy.mockRestore()
+      }
     })
   })
 })

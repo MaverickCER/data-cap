@@ -31,10 +31,25 @@ describe("resolveFieldDefaults", () => {
 
   it("throws InvalidFieldDefaultError, with its exact message, for a cyclic reference", () => {
     const cyclic: Record<string, unknown> = {}
-    cyclic.self = cyclic
+    cyclic["self"] = cyclic
     expect(() => resolveFieldDefaults(cyclic, [], new Set())).toThrow(
       "cyclic field defaults are not supported",
     )
+  })
+
+  it("fails fast via the depth ceiling, independent of the stack.has() cycle check, once path is already deep", () => {
+    // Organically exercises MAX_FIELD_DEPTH's own fail-fast path without
+    // needing genuinely deep recursion (or a real stack overflow) to reach
+    // it -- `path` already 201-deep before the call even starts.
+    const alreadyDeepPath = Array.from({ length: 201 }, (_, i) => String(i))
+    expect(() => resolveFieldDefaults("leaf", alreadyDeepPath, new Set())).toThrow(
+      "cyclic field defaults are not supported",
+    )
+  })
+
+  it("does not trip the depth ceiling at exactly MAX_FIELD_DEPTH -- the boundary is strictly '>'", () => {
+    const exactlyAtLimit = Array.from({ length: 200 }, (_, i) => String(i))
+    expect(resolveFieldDefaults("leaf", exactlyAtLimit, new Set())).toBe("leaf")
   })
 
   it("names the offending path segment: an object key", () => {

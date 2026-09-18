@@ -141,7 +141,7 @@ describe("checkArtifacts", () => {
     const onDisk = JSON.parse(await fs.readFile(evidence, "utf8")) as {
       provenance: Record<string, unknown>
     }
-    onDisk.provenance.generatorVersion = "hand-edited-bogus-version"
+    onDisk.provenance["generatorVersion"] = "hand-edited-bogus-version"
     await fs.writeFile(evidence, JSON.stringify(onDisk, null, 2), "utf8")
 
     const { stale } = await checkArtifacts({ fs: nodeBuildFs, root, tsconfig: false, evidence })

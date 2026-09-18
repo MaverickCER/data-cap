@@ -148,3 +148,13 @@ another simulated fetch.
 See [`test/integration/README.md`](../test/integration/README.md) for the
 16 mechanism-level fixtures, and each example's own README for its full
 walkthrough.
+
+## Framework integration
+
+[**nextjs-app**](nextjs-app/) — a deliberately minimal Next.js todo app, not a fourth tier in the
+table above. Where the three tiers grow one work-management system from an individual developer's
+project to an organization's, this one proves `data-cap`'s client-side `createData()` capability
+works correctly inside a real Next.js app, wired to a real server-side user/admin authorization
+boundary — and documents two real bugs (both the same root cause: Turbopack code-splitting a module
+with module-level state into multiple independently-evaluated copies) found and fixed while
+building it. See its own README.

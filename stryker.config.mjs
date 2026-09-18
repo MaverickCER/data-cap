@@ -42,7 +42,16 @@ export default {
   jsonReporter: { fileName: "reports/mutation/mutation.json" },
   tempDirName: ".stryker-tmp",
   cleanTempDir: true,
-  concurrency: 4,
+  // 4 worker processes fully saturates a GitHub Actions runner (4 vCPUs,
+  // as of writing) with zero headroom for the orchestrator process itself
+  // or the runner's own overhead -- confirmed (via env-cap's identical
+  // config and CI symptom) as the root cause of repeated, non-reproducing-
+  // locally "N survived" CI failures on an 8-core dev machine: under that
+  // saturation, perTest's own coverage-instrumentation timing becomes
+  // unreliable enough to misattribute which tests cover which mutants.
+  // `process.env.CI` is set automatically by every common CI provider,
+  // GitHub Actions included.
+  concurrency: process.env.CI ? 2 : 4,
   timeoutMS: 20_000,
   // The initial un-mutated run re-executes the whole suite once with coverage
   // hooks; under load that one pass can exceed Stryker's 5-minute default and

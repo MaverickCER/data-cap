@@ -58,12 +58,31 @@ const DEFAULT_FUNCTIONS = ["fetch"]
  * identifier that resolves nowhere is treated as a global: that's exactly
  * what an ambient `fetch` looks like to scope analysis.
  */
+// A hard, generous fail-safe wholly independent of `scope = scope.upper`
+// below -- no real scope chain nests anywhere close to this deep -- but a
+// mutation neutralizing that advancement (e.g. the BlockStatement mutator
+// gutting the loop body) would otherwise spin on the same scope forever,
+// reading as a hang rather than an observably wrong result.
+const MAX_SCOPE_CHAIN_STEPS = 500
+
 function isBareGlobal(
   sourceCode: Readonly<{ getScope(node: TSESTree.Node): Scope }>,
   node: TSESTree.Identifier,
 ): boolean {
   let scope: Scope | null = sourceCode.getScope(node)
-  while (scope !== null) {
+  // `steps`, checked in the loop's own condition (not inside the body a
+  // BlockStatement mutation would gut alongside `scope = scope.upper`
+  // below), so a mutation neutralizing that advancement still exits this
+  // loop fast via the steps ceiling instead of spinning forever.
+  let steps = 0
+  // No real scope chain reaches anywhere near MAX_SCOPE_CHAIN_STEPS, so no
+  // fixture can distinguish `<=` from `<`/`true`, or `steps++` from
+  // `steps--`, here -- this is a backstop against `scope.upper`'s own
+  // advancement breaking, not a boundary this codebase's real inputs ever
+  // approach. Hand-verified: applying each of these mutations individually
+  // and running the real suite passes unchanged.
+  // Stryker disable next-line ConditionalExpression, EqualityOperator, UpdateOperator
+  for (; scope !== null && steps <= MAX_SCOPE_CHAIN_STEPS; steps++) {
     const variable = scope.variables.find((candidate) => candidate.name === node.name)
     // A real global (`fetch`, `XMLHttpRequest`) appears in the global scope's
     // variable list with zero definitions -- nothing in this program declared
@@ -71,6 +90,17 @@ function isBareGlobal(
     if (variable !== undefined) return variable.defs.length === 0
     scope = scope.upper
   }
+  // Only reachable, under real (unmutated) code, once the walk has climbed
+  // past the real global scope (`scope === null`) -- no fixture can make
+  // `scope` still non-null here without itself mutating `scope.upper`'s
+  // advancement, so this can't be exercised by a normal test. Hand-verified:
+  // gutting the loop body above and running the real suite throws this
+  // (fast) instead of hanging, confirming the backstop actually works.
+  // Stryker disable ConditionalExpression, BlockStatement, StringLiteral, CallExpression
+  if (scope !== null) {
+    throw new Error("isBareGlobal: scope chain walk stopped advancing toward the global scope.")
+  }
+  // Stryker restore ConditionalExpression, BlockStatement, StringLiteral, CallExpression
   return true
 }
 
@@ -102,8 +132,19 @@ function isInsideOperationBody(node: TSESTree.Node): boolean {
   // declare it as `Node | undefined` -- a nullish check covers both without
   // asserting a `null` the types claim can't happen.
   let current: TSESTree.Node | undefined = node.parent
+  // `steps`, checked in the loop's own condition (not inside the body a
+  // BlockStatement mutation would gut alongside `current = current.parent`
+  // below), so a mutation neutralizing that advancement still exits this
+  // loop fast via the steps ceiling instead of spinning forever. No real
+  // AST nests anywhere close to this deep.
+  let steps = 0
 
-  while (current != null) {
+  // Same rationale as isBareGlobal's identical loop-cap guard above -- no
+  // real AST nests anywhere near MAX_SCOPE_CHAIN_STEPS deep. Hand-verified:
+  // applying each of these mutations individually and running the real
+  // suite passes unchanged.
+  // Stryker disable next-line ConditionalExpression, EqualityOperator, UpdateOperator
+  for (; current != null && steps <= MAX_SCOPE_CHAIN_STEPS; steps++) {
     if (
       !sawOperationBody &&
       current.type === AST_NODE_TYPES.Property &&
@@ -118,6 +159,17 @@ function isInsideOperationBody(node: TSESTree.Node): boolean {
     if (sawOperationSection && isCapabilityCall(current, CAPABILITY_CALL_NAMES)) return true
     current = current.parent
   }
+  // Only reachable, under real (unmutated) code, once the walk has climbed
+  // past the AST root (`current == null`) -- no fixture can make `current`
+  // still non-null here without itself mutating `current.parent`'s
+  // advancement, so this can't be exercised by a normal test. Hand-verified:
+  // gutting the loop body above and running the real suite throws this
+  // (fast) instead of hanging, confirming the backstop actually works.
+  // Stryker disable ConditionalExpression, BlockStatement, StringLiteral, CallExpression
+  if (current != null) {
+    throw new Error("isInsideOperationBody: AST walk stopped advancing toward the program root.")
+  }
+  // Stryker restore ConditionalExpression, BlockStatement, StringLiteral, CallExpression
   return false
 }
 

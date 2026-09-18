@@ -20,8 +20,6 @@
 import ts from "typescript"
 import type {
   CapabilityDocs,
-  CapabilityFieldDocs,
-  CapabilityOperationDocs,
   DataFlowDirection,
   DataFlowEndpoint,
   DataFlowEndpointKind,
@@ -50,14 +48,55 @@ import type { SourcePosition } from "./source-position.js"
  * "any key allowed") once `CapabilityDocs` requires a concrete schema type,
  * exactly backwards from what an unconstrained AST-parsed fact needs here.
  */
-export interface LooseCapabilityDocs extends Omit<
-  CapabilityDocs<DataSchema<Record<string, unknown>>>,
-  "fields" | "getters" | "mutators" | "subscriptions"
-> {
-  readonly fields?: Readonly<Partial<Record<string, FieldDocs>>>
-  readonly getters?: Readonly<Partial<Record<string, OperationDocs>>>
-  readonly mutators?: Readonly<Partial<Record<string, OperationDocs>>>
-  readonly subscriptions?: Readonly<Partial<Record<string, OperationDocs>>>
+/**
+ * Every property here is always assigned (never conditionally omitted --
+ * see extractCapabilityDocs()/extractOperationDocsMap()/
+ * extractEvidenceFieldsMap() below), just sometimes with an `undefined`
+ * value when the AST literal didn't declare it. exactOptionalPropertyTypes
+ * distinguishes "key absent" from "key present holding undefined";
+ * widening every property to explicitly include `| undefined` (rather than
+ * routing every assignment through a conditional-spread "omit if absent"
+ * instead) matches what this type actually represents: a raw,
+ * unconstrained parse result, not a validated CapabilityDocs.
+ */
+export type Loosen<T> = { readonly [K in keyof T]?: T[K] | undefined }
+
+/**
+ * Converts a `Loosen<T>` value back into a real `T`, omitting every key
+ * whose value is `undefined` -- the exactOptionalPropertyTypes-correct way
+ * to cross the boundary from "raw parse result" (this module's own
+ * internal representation, every key always assigned) to a validated
+ * public model type (`FieldDocs`/`OperationDocs`, key absence is
+ * meaningful). Shallow only: a nested loose value inside `loose` is not
+ * itself compacted, since none of this module's `Loosen<T>` usages nest.
+ */
+export function compactLoose<T extends Record<string, unknown>>(
+  loose: Loosen<T> | undefined,
+): T | undefined {
+  if (loose === undefined) return undefined
+  const result: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(loose)) {
+    if (value !== undefined) result[key] = value
+  }
+  return result as T
+}
+
+export type LooseCapabilityDocs = Loosen<
+  Omit<
+    CapabilityDocs<DataSchema<Record<string, unknown>>>,
+    "fields" | "getters" | "mutators" | "subscriptions" | "evidence"
+  >
+> & {
+  readonly fields?: Readonly<Partial<Record<string, Loosen<FieldDocs>>>> | undefined
+  readonly getters?: Readonly<Partial<Record<string, Loosen<OperationDocs>>>> | undefined
+  readonly mutators?: Readonly<Partial<Record<string, Loosen<OperationDocs>>>> | undefined
+  readonly subscriptions?: Readonly<Partial<Record<string, Loosen<OperationDocs>>>> | undefined
+  // Loosen<> only widens top-level properties -- CapabilityDocs.evidence's
+  // own nested `fields` needs the same treatment explicitly, same reasoning
+  // as the four sibling overrides above.
+  readonly evidence?:
+    | { readonly fields?: Readonly<Record<string, Loosen<EvidenceFieldDocs>>> | undefined }
+    | undefined
 }
 
 /** A recoverable issue found while statically parsing or linking one capability file -- never fatal, always surfaced to the caller as data. */
@@ -721,8 +760,10 @@ export function readDataFlowEndpoint(
     direction,
     kind,
     name,
-    url: typeof url === "string" ? url : undefined,
-    handling: isDataFlowHandlingValue(handling) ? handling : undefined,
+    // exactOptionalPropertyTypes: omit each key rather than set it to
+    // `undefined` when the parsed source didn't declare a valid value.
+    ...(typeof url === "string" ? { url } : {}),
+    ...(isDataFlowHandlingValue(handling) ? { handling } : {}),
   }
 }
 
@@ -762,7 +803,7 @@ function extractFieldDocsMap(
   contextLabel: string,
   file: string,
   warnings: ParseWarning[],
-): CapabilityFieldDocs<Record<string, unknown>> | undefined {
+): Partial<Record<string, Loosen<FieldDocs>>> | undefined {
   return extractDocsSection(sectionNode, "field", contextLabel, file, warnings, (init, key) => {
     const fieldLabel = `${contextLabel}.fields.${key}`
     return {
@@ -796,7 +837,7 @@ function extractOperationDocsMap(
   contextLabel: string,
   file: string,
   warnings: ParseWarning[],
-): CapabilityOperationDocs<Record<string, unknown>> | undefined {
+): Partial<Record<string, Loosen<OperationDocs>>> | undefined {
   return extractDocsSection(
     sectionNode,
     sectionLabel,
@@ -861,7 +902,7 @@ function extractEvidenceFieldsMap(
   contextLabel: string,
   file: string,
   warnings: ParseWarning[],
-): Readonly<Record<string, EvidenceFieldDocs>> | undefined {
+): Readonly<Record<string, Loosen<EvidenceFieldDocs>>> | undefined {
   return extractDocsSection(
     sectionNode,
     "evidence.fields",

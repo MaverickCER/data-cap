@@ -23,4 +23,8 @@ describe("displayPath", () => {
   it("falls back to the absolute path for a root/path pair on different drives-equivalent roots", () => {
     expect(displayPath("/a", "/b/user.ts")).toBe("/b/user.ts")
   })
+
+  it("passes an already-relative path through unchanged, POSIX-separated, without touching root", () => {
+    expect(displayPath("/project", "src/user.ts")).toBe("src/user.ts")
+  })
 })

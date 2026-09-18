@@ -21,7 +21,18 @@ import path from "node:path"
  * `verify-no-ambient-fs` tarball guard exactly as `src/cli/index.ts` is.
  */
 
-const USAGE = `Usage: data-cap init
+// The next three are functions, not module-level `const` string templates,
+// deliberately: Stryker's `perTest` coverage analysis can only attribute a
+// mutant to whichever test happens to run first when the module is
+// imported for a top-level constant (it's evaluated once, at module load,
+// not during any specific test) -- confirmed directly (all three survived
+// mutation testing despite real, passing exact-match tests covering their
+// content). A function's body only runs when called, which per-test
+// coverage attributes correctly to whichever test actually calls it. Same
+// fix this codebase's own prior mutation-hardening work already applied
+// elsewhere for the identical reason.
+function usage(): string {
+  return `Usage: data-cap init
 
 Scaffolds a minimal data-cap starting point into the current directory:
 
@@ -33,8 +44,10 @@ package.json. Everything else -- generating artifacts, adding getters/
 mutators, reading the snapshot -- is printed as a next step. Run generation
 afterwards with \`node scripts/generate-data.mjs\` or
 \`npx data-cap --location <path>\`.`
+}
 
-const CAPABILITY_TEMPLATE = `// Starter data-cap capability -- expand it: add getters/mutators/subscriptions
+function capabilityTemplate(): string {
+  return `// Starter data-cap capability -- expand it: add getters/mutators/subscriptions
 // (switch to createData from "data-cap/runtime" for the
 // batteries-included operations layer), split into per-capability files, or
 // keep everything here. data-cap discovers every .ts/.tsx file by default.
@@ -67,8 +80,10 @@ documentData(schema, {
   },
 })
 `
+}
 
-const GENERATOR_TEMPLATE = `// Build-time only. Run with \`node scripts/generate-data.mjs\`, or wire it
+function generatorTemplate(): string {
+  return `// Build-time only. Run with \`node scripts/generate-data.mjs\`, or wire it
 // into a package.json script (e.g. "generate:data"). Never imported by app code.
 import { generateDataArtifacts } from "data-cap/build"
 import { nodeBuildFileSystem } from "data-cap/node"
@@ -90,6 +105,7 @@ console.log(\`Discovered \${active} active capability(ies).\`)
 if (result.manifest?.location) console.log(\`Wrote manifest: \${result.manifest.location}\`)
 if (result.documentation?.location) console.log(\`Wrote docs: \${result.documentation.location}\`)
 `
+}
 
 type WriteOutcome = "created" | "skipped"
 
@@ -120,6 +136,15 @@ function assertIsProject(cwd: string): void {
   }
   let parsed: unknown
   try {
+    // Stryker disable next-line StringLiteral: hand-verified equivalent --
+    // `readFileSync(path, "")` (the mutant) falls back to returning a
+    // `Buffer` (an empty string isn't a recognized encoding), but
+    // `JSON.parse` calls `.toString()` on any non-string input, which
+    // defaults to utf8 for a `Buffer` -- so both encodings produce an
+    // identical `JSON.parse` result for any file content this function can
+    // ever see. Confirmed directly: `JSON.parse(readFileSync(p, ""))` on a
+    // real UTF-8 JSON file parses identically to `JSON.parse(readFileSync(p,
+    // "utf8"))`.
     parsed = JSON.parse(readFileSync(packageJsonPath, "utf8"))
   } catch {
     // No binding: the SyntaxError carries only a char offset, nothing the
@@ -160,12 +185,12 @@ function planTargets(cwd: string): readonly [ScaffoldTarget, ScaffoldTarget] {
     {
       label: path.relative(cwd, capabilityPath),
       absolutePath: capabilityPath,
-      content: CAPABILITY_TEMPLATE,
+      content: capabilityTemplate(),
     },
     {
       label: path.relative(cwd, generatorPath),
       absolutePath: generatorPath,
-      content: GENERATOR_TEMPLATE,
+      content: generatorTemplate(),
     },
   ]
 }
@@ -188,7 +213,8 @@ function writeIfAbsent(filePath: string, content: string): WriteOutcome {
   }
 }
 
-function isFileExistsError(error: unknown): boolean {
+/** Exported for direct unit testing of its exact boolean logic -- the real call site (`writeIfAbsent`) is exercised too, but only for the two outcomes ("skipped" vs. rethrow), not every individual clause of this predicate. */
+export function isFileExistsError(error: unknown): boolean {
   return (
     typeof error === "object" && error !== null && (error as { code?: unknown }).code === "EEXIST"
   )
@@ -243,19 +269,28 @@ function renderReport(report: InitReport): string {
 /**
  * `data-cap init` entry. Returns the process exit code; never calls
  * `process.exit`. `rest` is argv already sliced past the `init` token.
+ * @param cwd - Where to scaffold into. Defaults to `process.cwd()` for real
+ * CLI use; a caller (a test, in practice) can pass an explicit directory
+ * instead of relying on `process.chdir()` -- which, unlike this parameter,
+ * genuinely cannot be used from a `worker_threads`-pooled test runner (Node
+ * itself throws `process.chdir() is not supported in workers`), the same
+ * capability-injection reasoning ADR 0058 already applies to filesystem
+ * access here.
  */
-export function runInitCommand(rest: readonly string[]): number {
+export function runInitCommand(rest: readonly string[], cwd: string = process.cwd()): number {
   if (rest.includes("--help") || rest.includes("-h")) {
-    process.stdout.write(`${USAGE}\n`)
+    process.stdout.write(`${usage()}\n`)
     return 0
   }
   if (rest.length > 0) {
-    process.stderr.write(`data-cap init takes no arguments (got: ${rest.join(" ")})\n\n${USAGE}\n`)
+    process.stderr.write(
+      `data-cap init takes no arguments (got: ${rest.join(" ")})\n\n${usage()}\n`,
+    )
     return 1
   }
 
   try {
-    process.stdout.write(`${renderReport(runInit(process.cwd()))}\n`)
+    process.stdout.write(`${renderReport(runInit(cwd))}\n`)
     return 0
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)

@@ -100,7 +100,26 @@ export interface LinkResult {
 
 const MAX_IDENTIFIER_CHAIN_DEPTH = 5
 
-class LinkContext {
+// A hard, generous fail-safe wholly independent of `depth`/`MAX_IDENTIFIER_CHAIN_DEPTH`
+// -- not a policy limit (a real chain never needs more than a handful of hops
+// to hit that depth cap) but a backstop against a broken depth-increment
+// itself: an ArithmeticOperator mutation flipping `depth + 1` to `depth - 1`
+// (in `resolveExpression` below) would otherwise let a genuine identifier
+// cycle recurse forever, since `depth` would never exceed the cap. Threaded
+// alongside `depth` via its own separate `+ 1` at every recursive call site,
+// so a mutation to `depth`'s own arithmetic leaves this one intact.
+const MAX_TOTAL_RESOLUTION_HOPS = 50
+
+/**
+ * @internal Exported for direct unit coverage of `resolveFieldsShape`'s
+ * `MAX_TOTAL_RESOLUTION_HOPS` fail-safe: a direct unit test can start
+ * `totalHops` already past the ceiling against a trivially "unresolvable"
+ * ref, organically exercising the fail-fast path no real (even maximally
+ * deep or cyclic) identifier chain reachable through the public
+ * `linkCapabilityFiles` entry point can ever reach -- the ordinary
+ * `depth`/`MAX_IDENTIFIER_CHAIN_DEPTH` check always resolves first.
+ */
+export class LinkContext {
   private readonly parsedByFile = new Map<string, ParseResult>()
   readonly warnings: ParseWarning[] = []
   readonly importContext: ImportResolutionContext
@@ -125,7 +144,13 @@ class LinkContext {
     file: string,
     parsed: ParseResult,
     depth: number,
+    totalHops = 0,
   ): Promise<Record<string, unknown> | undefined> {
+    if (totalHops > MAX_TOTAL_RESOLUTION_HOPS) {
+      throw new Error(
+        `resolveFieldsShape: exceeded ${String(MAX_TOTAL_RESOLUTION_HOPS)} total resolution hops without ever honoring MAX_IDENTIFIER_CHAIN_DEPTH=${String(MAX_IDENTIFIER_CHAIN_DEPTH)} -- the depth-increment itself is broken.`,
+      )
+    }
     if (ref.kind === "unresolvable") {
       this.warnings.push({ file, message: `Could not statically resolve "fields": ${ref.reason}` })
       return undefined
@@ -156,7 +181,7 @@ class LinkContext {
 
     const local = parsed.localConsts.get(ref.name)
     if (local !== undefined) {
-      return this.resolveExpression(local, file, parsed, depth)
+      return this.resolveExpression(local, file, parsed, depth, totalHops + 1)
     }
 
     const importBinding = parsed.imports.find((binding) => binding.localName === ref.name)
@@ -200,7 +225,13 @@ class LinkContext {
     // The identifier branch of `resolveExpression` already charges one unit of
     // depth per hop, which is what bounds a cross-file cycle -- no extra "+1"
     // for the file boundary itself is needed here.
-    return this.resolveExpression(remoteInitializer, resolvedFile, importedParsed, depth)
+    return this.resolveExpression(
+      remoteInitializer,
+      resolvedFile,
+      importedParsed,
+      depth,
+      totalHops + 1,
+    )
   }
 
   private async resolveExpression(
@@ -208,6 +239,7 @@ class LinkContext {
     file: string,
     parsed: ParseResult,
     depth: number,
+    totalHops: number,
   ): Promise<Record<string, unknown> | undefined> {
     const ref = schemaRefFromExpression(expression)
     if (ref === undefined) {
@@ -221,7 +253,7 @@ class LinkContext {
     // literal-kind ref ignores `depth` (it never re-enters the chain), so the
     // bump is harmless there and only matters for the identifier case, where it
     // is what bounds a cycle.
-    return this.resolveFieldsShape(ref, file, parsed, depth + 1)
+    return this.resolveFieldsShape(ref, file, parsed, depth + 1, totalHops + 1)
   }
 }
 

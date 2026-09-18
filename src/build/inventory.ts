@@ -17,15 +17,11 @@
  * of how deep within the field the actual claimed subtree goes.
  */
 
-import type {
-  CapabilityOperationDocs,
-  DataFlowEndpoint,
-  FieldDocs,
-  OperationDocs,
-} from "../core/document.js"
+import type { DataFlowEndpoint, FieldDocs, OperationDocs } from "../core/document.js"
 import { displayPath } from "./display-path.js"
 import type { DiscoveredCapability, LinkResult } from "./link.js"
-import type { LooseCapabilityDocs, ParseWarning, RawOperationPresence } from "./parse.js"
+import { compactLoose } from "./parse.js"
+import type { Loosen, LooseCapabilityDocs, ParseWarning, RawOperationPresence } from "./parse.js"
 import type { SourcePosition } from "./source-position.js"
 
 /**
@@ -187,12 +183,13 @@ function buildOperationNodes(
   writesEntries: readonly { readonly name: string; readonly writes: unknown }[] | undefined,
   presenceEntries: readonly RawOperationPresence[] | undefined,
   fieldKeys: readonly string[],
-  operationDocs: CapabilityOperationDocs<Record<string, unknown>> | undefined,
+  operationDocs: Readonly<Partial<Record<string, Loosen<OperationDocs>>>> | undefined,
 ): readonly OperationNode[] {
   const writesByName = new Map(writesEntries?.map((entry) => [entry.name, entry.writes]) ?? [])
   const presenceByName = new Map(presenceEntries?.map((entry) => [entry.name, entry]) ?? [])
   return names.map((name) => {
-    const docs = operationDocs?.[name]
+    const looseDocs = operationDocs?.[name]
+    const docs = compactLoose(looseDocs)
     const presence = presenceByName.get(name)
     return {
       kind,
@@ -232,7 +229,7 @@ function buildFieldNodes(
       .map((op) => ({ kind: op.kind, name: op.name }))
     return {
       path: [key],
-      docs: fieldDocs,
+      docs: compactLoose(fieldDocs),
       owner: resolveGovernanceValue(fieldDocs?.owner, capabilityDocs?.owner),
       sensitivity: resolveGovernanceValue(fieldDocs?.sensitivity, capabilityDocs?.sensitivity),
       purpose: resolveGovernanceValue(fieldDocs?.purpose, capabilityDocs?.purpose),

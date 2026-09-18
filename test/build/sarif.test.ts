@@ -58,6 +58,7 @@ describe("buildSarifLog", () => {
       { physicalLocation: { artifactLocation: { uri: "/project/user.ts" } } },
     ])
     expect(log.runs[0]!.results[1]!.locations).toBeUndefined()
+    expect("locations" in log.runs[0]!.results[1]!).toBe(false)
   })
 
   it("pins the SARIF schema URL and the tool driver's information URI", () => {

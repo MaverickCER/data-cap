@@ -83,7 +83,7 @@ function checkFieldSensitivity(capability: CapabilityNode, field: FieldNode): Re
   const ref = {
     capability: { file: capability.file, exportName: capability.exportName },
     field: field.path,
-    position: field.declarationPosition,
+    ...(field.declarationPosition !== undefined ? { position: field.declarationPosition } : {}),
   }
   if (!isStandardSensitivityLevel(sensitivity)) {
     findings.push({
@@ -115,6 +115,8 @@ function checkCapabilityAuditRequired(capability: CapabilityNode): ReportFinding
       severity: "warning",
       message: `"${capability.exportName}" declares auditRequired but has no documented owner to hold accountable for that audit trail.`,
       capability: { file: capability.file, exportName: capability.exportName },
+      // Unlike FieldNode.declarationPosition (optional), CapabilityNode's own
+      // is always present -- no exactOptionalPropertyTypes guard needed here.
       position: capability.declarationPosition,
     },
   ]
@@ -135,7 +137,7 @@ function checkFieldGovernance(capability: CapabilityNode, field: FieldNode): Rep
   const ref = {
     capability: { file: capability.file, exportName: capability.exportName },
     field: field.path,
-    position: field.declarationPosition,
+    ...(field.declarationPosition !== undefined ? { position: field.declarationPosition } : {}),
   }
   const ownSensitivity = ownValue(field.sensitivity)
   if (ownSensitivity !== undefined) {

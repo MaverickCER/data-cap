@@ -218,7 +218,7 @@ describe("getters", () => {
     // (successful) outcome, independent of the newer call.
     const key = canonicalize({ id: "old" })
     expect(key).toBeDefined()
-    expect(capability.getSnapshot().operations.getUser?.[key!]?.status).toBe("success")
+    expect(capability.getSnapshot().operations["getUser"]?.[key!]?.status).toBe("success")
   })
 
   describe("dedup identity: (capability instance x operation name x canonicalized params)", () => {
@@ -632,7 +632,7 @@ describe("runGetters", () => {
       string,
       OperationOutcome<unknown>
     >
-    const outcome = result.notDeclared
+    const outcome = result["notDeclared"]
 
     expect(outcome?.status).toBe("error")
     if (outcome?.status !== "error") throw new Error("expected an error outcome")
@@ -689,12 +689,42 @@ describe("operations snapshot", () => {
     await capability.getUser({ id: "2" })
     await capability.getUser({ id: "3" })
 
-    const entries = capability.getSnapshot().operations.getUser ?? {}
+    const entries = capability.getSnapshot().operations["getUser"] ?? {}
     // The oldest ("1") is evicted; the two most recently used survive.
     expect(Object.keys(entries).map((k) => canonicalize({ id: k }))).not.toBeNull()
     expect(Object.values(entries)).toHaveLength(2)
     const idKey = (id: string) => canonicalize({ id }) ?? ""
     expect(Object.keys(entries).sort()).toEqual([idKey("2"), idKey("3")].sort())
+  })
+
+  it("re-fetching an existing key touches it, moving it to the most-recently-used end so a later eviction spares it", async () => {
+    const capability = createData(
+      {
+        fields: { user: { name: "" } },
+        getters: {
+          getUser: {
+            params: { id: "" },
+            execute: async (params: { id: string }) => ({ name: params.id }),
+            processor: (raw: { name: string }) => ({ user: raw }),
+            writes: { user: true },
+          },
+        },
+      },
+      { maxOperationHistory: 2 },
+    )
+
+    await capability.getUser({ id: "1" })
+    await capability.getUser({ id: "2" })
+    // Touch "1" again -- it should now be the most-recently-used entry,
+    // not the least, despite being inserted first.
+    await capability.getUser({ id: "1" })
+    await capability.getUser({ id: "3" })
+
+    const entries = capability.getSnapshot().operations["getUser"] ?? {}
+    const idKey = (id: string) => canonicalize({ id }) ?? ""
+    // "2" is now the least recently touched and is evicted; the re-touched
+    // "1" survives alongside the newly-inserted "3".
+    expect(Object.keys(entries).sort()).toEqual([idKey("1"), idKey("3")].sort())
   })
 
   it("each operations entry records its own call's status, then settledAt + outcome", async () => {
@@ -713,12 +743,14 @@ describe("operations snapshot", () => {
     const key = canonicalize({ id: "7" }) ?? ""
 
     const call = capability.getUser({ id: "7" })
-    expect(capability.getSnapshot().operations.getUser?.[key]).toMatchObject({ status: "loading" })
-    expect(capability.getSnapshot().operations.getUser?.[key]?.startedAt).toBeTypeOf("number")
+    expect(capability.getSnapshot().operations["getUser"]?.[key]).toMatchObject({
+      status: "loading",
+    })
+    expect(capability.getSnapshot().operations["getUser"]?.[key]?.startedAt).toBeTypeOf("number")
 
     gate.resolve({ name: "Ada" })
     await call
-    const settled = capability.getSnapshot().operations.getUser?.[key]
+    const settled = capability.getSnapshot().operations["getUser"]?.[key]
     expect(settled?.status).toBe("success")
     expect(settled?.settledAt).toBeTypeOf("number")
   })
@@ -739,7 +771,7 @@ describe("operations snapshot", () => {
     })
     const key = canonicalize({ id: "9" }) ?? ""
     await expect(capability.getUser({ id: "9" })).rejects.toThrow("kaboom")
-    const entry = capability.getSnapshot().operations.getUser?.[key]
+    const entry = capability.getSnapshot().operations["getUser"]?.[key]
     expect(entry?.status).toBe("error")
     expect(entry?.error?.operator).toBe("getUser")
   })
@@ -787,9 +819,11 @@ describe("operations snapshot", () => {
     })
     const key = canonicalize({}) ?? ""
     const release = capability.watch({})
-    expect(capability.getSnapshot().operations.watch?.[key]?.subscription?.status).toBe("connected")
+    expect(capability.getSnapshot().operations["watch"]?.[key]?.subscription?.status).toBe(
+      "connected",
+    )
     release()
-    expect(capability.getSnapshot().operations.watch?.[key]?.subscription?.status).toBe(
+    expect(capability.getSnapshot().operations["watch"]?.[key]?.subscription?.status).toBe(
       "disconnected",
     )
   })
@@ -862,13 +896,13 @@ describe("describe()", () => {
     })
 
     const descriptor = capability.describe()
-    expect(descriptor.getters.getUser).toEqual({
+    expect(descriptor.getters["getUser"]).toEqual({
       kind: "getter",
       writes: { user: true },
       hasProcessor: true,
       hasOptimistic: false,
     })
-    expect(descriptor.mutators.updateEmail).toEqual({
+    expect(descriptor.mutators["updateEmail"]).toEqual({
       kind: "mutator",
       writes: { user: { email: true } },
       hasProcessor: true,
@@ -939,6 +973,61 @@ describe("warnFieldErrors (direct)", () => {
     try {
       warnFieldErrors(new Map([["a", { operator: "op", error: "plain string" }]]))
       expect(warn).toHaveBeenCalledWith("plain string")
+    } finally {
+      warn.mockRestore()
+    }
+  })
+
+  it("a mutator whose processor returns an undeclared field actually warns (integration, not just the direct unit)", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined)
+    try {
+      const capability = createData({
+        fields: { user: { email: "authoritative@example.com" } },
+        mutators: {
+          updateEmail: {
+            params: {},
+            execute: async () => ({ email: "new@example.com", smuggled: true }),
+            processor: (raw: { email: string; smuggled: boolean }) => ({
+              user: { email: raw.email },
+              smuggled: raw.smuggled,
+            }),
+            writes: { user: true },
+          },
+        },
+      })
+      await capability.updateEmail({})
+      expect(warn).toHaveBeenCalled()
+    } finally {
+      warn.mockRestore()
+    }
+  })
+
+  it("a subscription whose processor returns an undeclared field actually warns (integration, not just the direct unit)", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined)
+    try {
+      const capability = createData({
+        fields: { price: 0 },
+        subscriptions: {
+          subscribeToPrice: {
+            params: {},
+            subscribe: (
+              _params: unknown,
+              handlers: SubscriptionHandlers<{ price: number; smuggled: boolean }>,
+            ) => {
+              handlers.onEvent({ price: 42, smuggled: true })
+              return () => undefined
+            },
+            processor: (event: { price: number; smuggled: boolean }) => ({
+              price: event.price,
+              smuggled: event.smuggled,
+            }),
+            writes: { price: true },
+          },
+        },
+      })
+      const release = capability.subscribeToPrice({})
+      expect(warn).toHaveBeenCalled()
+      release()
     } finally {
       warn.mockRestore()
     }
@@ -1115,23 +1204,23 @@ describe("describe() -- exhaustive", () => {
       },
     })
     const d = capability.describe()
-    expect(d.getters.withProc).toMatchObject({
+    expect(d.getters["withProc"]).toMatchObject({
       kind: "getter",
       hasProcessor: true,
       hasOptimistic: false,
     })
-    expect(d.getters.noProc).toMatchObject({
+    expect(d.getters["noProc"]).toMatchObject({
       kind: "getter",
       hasProcessor: false,
       hasOptimistic: false,
     })
-    expect(d.mutators.optimisticMut).toMatchObject({ kind: "mutator", hasOptimistic: true })
-    expect(d.mutators.plainMut).toMatchObject({
+    expect(d.mutators["optimisticMut"]).toMatchObject({ kind: "mutator", hasOptimistic: true })
+    expect(d.mutators["plainMut"]).toMatchObject({
       kind: "mutator",
       hasProcessor: false,
       hasOptimistic: false,
     })
-    expect(d.subscriptions.sub).toMatchObject({ kind: "subscription", hasOptimistic: false })
+    expect(d.subscriptions["sub"]).toMatchObject({ kind: "subscription", hasOptimistic: false })
   })
 })
 
@@ -1153,7 +1242,7 @@ describe("non-canonicalizable params", () => {
     // A function param is not canonicalizable -> each call gets its own key.
     await capability.get({ fn: () => undefined })
     await capability.get({ fn: () => undefined })
-    const ops = capability.getSnapshot().operations.get ?? {}
+    const ops = capability.getSnapshot().operations["get"] ?? {}
     // Distinct, sequentially-numbered synthetic keys -- not one shared bucket.
     expect(Object.keys(ops)).toEqual(["~uncanonicalizable-1", "~uncanonicalizable-2"])
   })
@@ -1213,7 +1302,7 @@ describe("mutation-hardening: remaining paths", () => {
     expect(capability.getSnapshot().info.user?.status).toBe("success")
     expect(capability.getSnapshot().fields.user.name).toBe("fresh")
     const oldKey = canonicalize({ id: "old" }) ?? ""
-    expect(capability.getSnapshot().operations.getUser?.[oldKey]?.status).toBe("error")
+    expect(capability.getSnapshot().operations["getUser"]?.[oldKey]?.status).toBe("error")
   })
 
   it("a mutator whose optimistic() returns undefined opens no pending transition", async () => {
@@ -1271,11 +1360,11 @@ describe("mutation-hardening: remaining paths", () => {
     })
     const key = canonicalize(undefined) ?? ""
     await capability.ok()
-    expect(capability.getSnapshot().operations.ok?.[key]).toMatchObject({ status: "success" })
-    expect(capability.getSnapshot().operations.ok?.[key]?.settledAt).toBeTypeOf("number")
+    expect(capability.getSnapshot().operations["ok"]?.[key]).toMatchObject({ status: "success" })
+    expect(capability.getSnapshot().operations["ok"]?.[key]?.settledAt).toBeTypeOf("number")
     await capability.bad().catch(() => undefined)
-    expect(capability.getSnapshot().operations.bad?.[key]).toMatchObject({ status: "error" })
-    expect(capability.getSnapshot().operations.bad?.[key]?.settledAt).toBeTypeOf("number")
+    expect(capability.getSnapshot().operations["bad"]?.[key]).toMatchObject({ status: "error" })
+    expect(capability.getSnapshot().operations["bad"]?.[key]?.settledAt).toBeTypeOf("number")
   })
 
   it("a subscription event stamps status success + settledAt on its own operations entry", () => {
@@ -1295,8 +1384,8 @@ describe("mutation-hardening: remaining paths", () => {
     })
     const key = canonicalize({}) ?? ""
     const release = capability.watch({})
-    expect(capability.getSnapshot().operations.watch?.[key]).toMatchObject({ status: "success" })
-    expect(capability.getSnapshot().operations.watch?.[key]?.settledAt).toBeTypeOf("number")
+    expect(capability.getSnapshot().operations["watch"]?.[key]).toMatchObject({ status: "success" })
+    expect(capability.getSnapshot().operations["watch"]?.[key]?.settledAt).toBeTypeOf("number")
     release()
   })
 
@@ -1377,7 +1466,7 @@ describe("mutation-hardening: stale-settle only touches operations", () => {
     )
     await capability.g({ id: "1" })
     await capability.g({ id: "2" })
-    expect(capability.getSnapshot().operations.g ?? {}).toEqual({})
+    expect(capability.getSnapshot().operations["g"] ?? {}).toEqual({})
   })
 
   it("a nonsensical negative maxOperationHistory still terminates (retains nothing)", async () => {
@@ -1395,7 +1484,7 @@ describe("mutation-hardening: stale-settle only touches operations", () => {
       { maxOperationHistory: -1 },
     )
     await capability.g()
-    expect(capability.getSnapshot().operations.g ?? {}).toEqual({})
+    expect(capability.getSnapshot().operations["g"] ?? {}).toEqual({})
   })
 
   it("maxOperationHistory: 1 retains exactly the most recent call", async () => {
@@ -1415,7 +1504,7 @@ describe("mutation-hardening: stale-settle only touches operations", () => {
     )
     await capability.g({ id: "1" })
     await capability.g({ id: "2" })
-    const entries = capability.getSnapshot().operations.g ?? {}
+    const entries = capability.getSnapshot().operations["g"] ?? {}
     expect(Object.keys(entries)).toEqual([canonicalize({ id: "2" }) ?? ""])
   })
 })

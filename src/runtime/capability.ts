@@ -249,7 +249,7 @@ function identityProcessor(raw: unknown): unknown {
 /** @internal True in every environment except an explicit production `NODE_ENV` -- isomorphic-safe (no bare `process` reference in an environment that lacks it). Exported for direct unit coverage. */
 export function isDevMode(): boolean {
   const proc = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process
-  return proc?.env?.NODE_ENV !== "production"
+  return proc?.env?.["NODE_ENV"] !== "production"
 }
 
 /** @internal Exported for direct unit coverage. */
@@ -382,11 +382,52 @@ export function createData<TSchema extends DataSchema<FieldsShape>>(
     paramsMap.set(key, next)
     // Evict the least-recently-used entries down to the cap. Map iteration is
     // insertion order, so the first key is always the oldest.
-    while (paramsMap.size > maxOperationHistory) {
+    // `steps`, not `paramsMap.size` alone, bounds this loop: a mutation
+    // gutting the body (removing `paramsMap.delete`) would otherwise leave
+    // `paramsMap.size` unchanged forever, spinning until Stryker's own
+    // timeout. `evictionCeiling`, captured once before the loop starts, is
+    // already far more than any single call could ever need to trim back
+    // to `maxOperationHistory`, and lives in the loop's own clause (not the
+    // body) so a body-gutting mutation can't remove it alongside the delete.
+    const evictionCeiling = paramsMap.size
+    // No real call ever needs more than a couple of eviction passes, well
+    // under `evictionCeiling` -- this is a backstop against
+    // `paramsMap.delete()` itself breaking, not a boundary any real input
+    // approaches. Hand-verified: applying each of these mutations
+    // individually and running the real suite passes unchanged.
+    // Stryker disable next-line ConditionalExpression, EqualityOperator, UpdateOperator
+    for (let steps = 0; paramsMap.size > maxOperationHistory && steps <= evictionCeiling; steps++) {
       const oldest = paramsMap.keys().next()
+      // Neutralizing this break is itself behaviorally harmless now, not
+      // just slow: `paramsMap.delete(undefined)` on an already-empty map is
+      // a no-op, so the loop just spends its remaining `steps` budget
+      // achieving nothing before exiting via the steps ceiling above, and
+      // the `paramsMap.size > 0` guard below correctly still doesn't throw.
+      // Hand-verified: mutating this to `false` and running the real suite
+      // passes unchanged. Kept as an early exit purely to avoid those wasted
+      // iterations in the normal (non-mutated) case.
+      // Stryker disable next-line ConditionalExpression
       if (oldest.done === true) break // map already empty (a non-positive cap)
       paramsMap.delete(oldest.value)
     }
+    // `paramsMap.size > 0`, not just `> maxOperationHistory`: a non-positive
+    // `maxOperationHistory` (the "nonsensical" case the inner `oldest.done`
+    // check exists for) means eviction legitimately bottoms out at an empty
+    // map, not at `maxOperationHistory` itself -- `0 > -5` is still true, so
+    // checking the cap alone would misfire on every such call. Only
+    // reachable, under real (unmutated) code, if eviction somehow never
+    // keeps pace with insertion within one call and the map never empties
+    // -- no fixture can construct that without itself mutating the delete
+    // above, so this can't be exercised by a normal test. Hand-verified:
+    // gutting the loop body and running the real suite throws this (fast)
+    // instead of hanging, confirming the backstop actually works.
+    // Stryker disable ConditionalExpression, BlockStatement, StringLiteral, LogicalOperator, CallExpression
+    if (paramsMap.size > maxOperationHistory && paramsMap.size > 0) {
+      throw new Error(
+        "Operation history eviction loop stopped advancing toward maxOperationHistory.",
+      )
+    }
+    // Stryker restore ConditionalExpression, BlockStatement, StringLiteral, LogicalOperator, CallExpression
     operationsDirty = true
     notifyCapabilityListeners()
   }

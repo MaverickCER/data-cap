@@ -62,7 +62,18 @@ export async function computeSourceFingerprint(
   // Stryker disable next-line ArrayDeclaration
   const { fs, root, include = DEFAULT_INCLUDE, exclude, packages = [] } = options
 
-  const localFiles = await discoverCapabilityFiles({ fs, root, include, exclude })
+  const localFiles = await discoverCapabilityFiles({
+    fs,
+    root,
+    include,
+    // discoverCapabilityFiles itself does `options.exclude ?? []` --
+    // passing `exclude: undefined` explicitly (what always-spreading here
+    // would do) is behaviorally identical to omitting the key. Hand-verified:
+    // forcing this guard to `true` and running the real suite passes
+    // unchanged.
+    // Stryker disable next-line ConditionalExpression
+    ...(exclude !== undefined ? { exclude } : {}),
+  })
   const packageCache = new Map<string, Promise<PackageSchemaResolutionResult>>()
   const { files: packageFiles } = await resolveAllowlistedPackages(packages, root, packageCache, fs)
   const allFiles = [

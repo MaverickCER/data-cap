@@ -19,9 +19,11 @@ function toImportSpecifier(fromDir: string, targetFile: string): string {
 }
 
 function sortedActiveCapabilities(inventory: CapabilityInventory): readonly CapabilityNode[] {
+  // No `.slice()` before `.sort()`: `.filter()` already returns a fresh
+  // array every call, so sorting it in place never touches anything the
+  // caller holds a reference to.
   return inventory.capabilities
     .filter((capability) => capability.active)
-    .slice()
     .sort((a, b) => a.file.localeCompare(b.file) || a.exportName.localeCompare(b.exportName))
 }
 

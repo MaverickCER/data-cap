@@ -346,6 +346,46 @@ describe("checkOwnershipAndSensitivity -- purpose/legalBasis/auditRequired (ADR 
     })
   })
 
+  it("never attaches a position key to a field-level sensitivity finding when the field has none", () => {
+    const findings = checkOwnershipAndSensitivity(
+      inventory([
+        capability({
+          docs: { owner: "x" },
+          fields: [
+            field({
+              path: ["email"],
+              docs: { sensitivity: "confidential" },
+              sensitivity: ownField("confidential"),
+              declarationPosition: undefined,
+            }),
+          ],
+        }),
+      ]),
+    )
+    const finding = findings.find((f) => f.code === "SENSITIVE_FIELD_MISSING_PROTECTIONS")
+    expect(finding).toBeDefined()
+    expect("position" in (finding ?? {})).toBe(false)
+  })
+
+  it("never attaches a position key to a field-level governance finding when the field has none", () => {
+    const findings = checkOwnershipAndSensitivity(
+      inventory([
+        capability({
+          fields: [
+            field({
+              path: ["email"],
+              sensitivity: ownField("confidential"),
+              declarationPosition: undefined,
+            }),
+          ],
+        }),
+      ]),
+    )
+    const finding = findings.find((f) => f.code === "SENSITIVE_FIELD_MISSING_PURPOSE")
+    expect(finding).toBeDefined()
+    expect("position" in (finding ?? {})).toBe(false)
+  })
+
   it("populates position from the field's own declaration position for a field-level finding", () => {
     const findings = checkOwnershipAndSensitivity(
       inventory([

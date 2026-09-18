@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { globToRegExp } from "../../src/eslint-plugin/glob.js"
+import { buildGlobRegExpSource, globToRegExp } from "../../src/eslint-plugin/glob.js"
 
 /** Deliberately mirrors `test/eslint-plugin/glob.test.ts` -- the two `glob.ts` modules are intentionally duplicated (bundle-boundary isolation), so their tests are too. */
 describe("globToRegExp", () => {
@@ -51,5 +51,21 @@ describe("globToRegExp", () => {
     expect(globToRegExp("**/*.ts").source).toBe("^(?:.*\\/)?[^/]*\\.ts$")
     expect(globToRegExp("a**b").source).toBe("^a.*b$")
     expect(globToRegExp("?").source).toBe("^[^/]$")
+  })
+
+  it("buildGlobRegExpSource fails fast with a clear error instead of looping forever when its iteration ceiling is exhausted", () => {
+    // A ceiling of 0 against an ordinary, valid multi-character pattern --
+    // no mutation needed: the ceiling itself is the pathological input here,
+    // organically exercising the fail-fast path `globToRegExp` never
+    // reaches with its own real (generous) ceiling.
+    expect(() => buildGlobRegExpSource("abc", 0)).toThrow(
+      "exceeded 0 loop iterations without finishing a 3-character pattern",
+    )
+  })
+
+  it("buildGlobRegExpSource succeeds when the ceiling is exactly enough -- the array bound is iterationCeiling + 1, not iterationCeiling - 1", () => {
+    // "abc" needs exactly 3 iterations (each branch advances by 1). A
+    // ceiling of 2 gives an array of length 3 (2 + 1) -- exactly enough.
+    expect(buildGlobRegExpSource("abc", 2)).toBe("abc")
   })
 })

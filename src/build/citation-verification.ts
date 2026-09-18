@@ -180,7 +180,9 @@ export async function verifyDynamicAccessCitations(
           message: `Declared dynamicAccess citation "${citation}" on field "${fieldKey}" on "${capability.exportName}" no longer resolves to a real file -- the developer's own citation could not be re-confirmed this run.`,
           capability: ref,
           field: field?.path ?? [fieldKey],
-          position: field?.declarationPosition,
+          ...(field?.declarationPosition !== undefined
+            ? { position: field.declarationPosition }
+            : {}),
         })
         continue
       }
@@ -200,7 +202,9 @@ export async function verifyDynamicAccessCitations(
           message: `Declared dynamicAccess citation "${citation}" on field "${fieldKey}" on "${capability.exportName}" points to a file that has visibly changed since this citation was last confirmed -- re-verify it still describes real access at that location.`,
           capability: ref,
           field: field?.path ?? [fieldKey],
-          position: field?.declarationPosition,
+          ...(field?.declarationPosition !== undefined
+            ? { position: field.declarationPosition }
+            : {}),
         })
       }
     }

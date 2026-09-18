@@ -17,19 +17,27 @@ describe("withRetry", () => {
 
   it("uses the default capped-exponential backoff when delayMs is not provided", async () => {
     vi.useFakeTimers()
-    let calls = 0
-    const fn = vi.fn(async () => {
-      calls += 1
-      if (calls < 2) throw new Error("not yet")
-      return "ok"
-    })
-    const controller = new AbortController()
+    try {
+      let calls = 0
+      const fn = vi.fn(async () => {
+        calls += 1
+        if (calls < 2) throw new Error("not yet")
+        return "ok"
+      })
+      const controller = new AbortController()
 
-    const result = withRetry(fn, controller.signal, { maxAttempts: 1 })
-    await vi.advanceTimersByTimeAsync(1000) // default backoff for attempt 1 is 1000ms
-    await expect(result).resolves.toBe("ok")
-    expect(fn).toHaveBeenCalledTimes(2)
-    vi.useRealTimers()
+      const result = withRetry(fn, controller.signal, { maxAttempts: 1 })
+      await vi.advanceTimersByTimeAsync(1000) // default backoff for attempt 1 is 1000ms
+      await expect(result).resolves.toBe("ok")
+      expect(fn).toHaveBeenCalledTimes(2)
+    } finally {
+      // Always restored, even when an assertion above throws (e.g. under a
+      // mutation that breaks withRetry's exit condition) -- an uncaught
+      // failure here would otherwise leave fake timers active for every
+      // later test in this worker, turning an unrelated later test's real
+      // `setTimeout`-based await into a hang instead of a clean failure.
+      vi.useRealTimers()
+    }
   })
 
   it("retries up to maxAttempts, then throws the last error", async () => {
@@ -119,6 +127,21 @@ describe("withRetry", () => {
     // Exactly one attempt: the delay resolves early on abort, and the loop's
     // own abort check (inside the catch block) then throws instead of retrying.
     expect(fn).toHaveBeenCalledTimes(1)
+  })
+
+  it("fails fast with a clear error instead of looping forever when maxAttempts is not a sane finite number", async () => {
+    const fn = vi.fn(async () => {
+      throw new Error("transient")
+    })
+    const controller = new AbortController()
+
+    // `attempt > maxAttempts` can never fire when maxAttempts is Infinity --
+    // a real, if pathological, caller mistake (e.g. a mis-parsed config
+    // value) this fail-safe iteration ceiling exists to catch.
+    await expect(
+      withRetry(fn, controller.signal, { maxAttempts: Number.POSITIVE_INFINITY, delayMs: () => 0 }),
+    ).rejects.toThrow("exceeded 100 loop iterations")
+    expect(fn).toHaveBeenCalledTimes(101)
   })
 
   it("never retries a non-Error rejection either -- shouldRetry still governs, and the exact value propagates", async () => {

@@ -1,8 +1,14 @@
 {
+  // Extends internal-package-contract's org-wide strict baseline (strict,
+  // noUncheckedIndexedAccess, exactOptionalPropertyTypes, noImplicitOverride,
+  // noFallthroughCasesInSwitch, noPropertyAccessFromIndexSignature,
+  // useUnknownInCatchVariables, allowUnusedLabels/allowUnreachableCode: false
+  // -- see that package's own tsconfig.json for the full rationale). The
+  // overrides below are real, deliberate deviations already documented
+  // here, not copies of the baseline's own values -- kept as local
+  // overrides on top of extends rather than removed in this pass.
+  "extends": "internal-package-contract/tsconfig",
   "compilerOptions": {
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "isolatedModules": true,
     // "DOM" is included only for ambient standard-API types (AbortSignal/
     // AbortController) that core's operation context relies on -- Node
     // implements these natively too; this is a type-only addition and never
@@ -14,21 +20,7 @@
     "lib": ["ES2022", "DOM"],
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "noEmit": true,
-    "noImplicitReturns": true,
-    // Load-bearing for the AST-walking code in src/build/ -- `node.arguments[0]`,
-    // `entries.keys().next().value`, and similar array/index accesses are
-    // frequently genuinely absent (an empty argument list, an empty Map),
-    // and this codebase's defensive runtime checks for that must be checked
-    // by the compiler too, not just trusted.
-    "noUncheckedIndexedAccess": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "target": "ES2022",
-    "types": ["node"],
-    "verbatimModuleSyntax": true
+    "noEmit": true
   },
   "include": ["src", "test"],
   "exclude": [

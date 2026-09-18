@@ -116,11 +116,11 @@ describe("buildOpenApiSchemaArtifact", () => {
       ]),
       { title: "Test", version: "1.0.0" },
     )
-    const schema = artifact.components.schemas.userCapability!
-    expect(schema.type).toBe("object")
-    expect((schema.properties as Record<string, unknown>).email).toEqual({ type: "string" })
-    expect((schema.properties as Record<string, unknown>).age).toEqual({ type: "number" })
-    expect((schema.properties as Record<string, unknown>).tags).toEqual({
+    const schema = artifact.components.schemas["userCapability"]!
+    expect(schema["type"]).toBe("object")
+    expect((schema["properties"] as Record<string, unknown>)["email"]).toEqual({ type: "string" })
+    expect((schema["properties"] as Record<string, unknown>)["age"]).toEqual({ type: "number" })
+    expect((schema["properties"] as Record<string, unknown>)["tags"]).toEqual({
       type: "array",
       items: { type: "string" },
     })
@@ -147,7 +147,7 @@ describe("buildOpenApiSchemaArtifact", () => {
       { title: "Test", version: "1.0.0" },
     )
     expect(artifact).not.toHaveProperty("paths")
-    const schema = artifact.components.schemas.userCapability!
+    const schema = artifact.components.schemas["userCapability"]!
     expect(schema["x-data-cap-operations"]).toEqual([
       {
         name: "getUser",
@@ -165,8 +165,8 @@ describe("buildOpenApiSchemaArtifact", () => {
       inventory([capability({ fields: [field({ path: ["cache"], shape: new Map() })] })]),
       { title: "Test", version: "1.0.0" },
     )
-    const schema = artifact.components.schemas.userCapability!
-    expect((schema.properties as Record<string, unknown>).cache).toEqual({})
+    const schema = artifact.components.schemas["userCapability"]!
+    expect((schema["properties"] as Record<string, unknown>)["cache"]).toEqual({})
   })
 
   it("renders the whole components.schemas map exactly, across every inferSchema branch", () => {

@@ -513,6 +513,17 @@ section[id] {
   padding-block: var(--space-6);
 }
 
+/* `.hero`'s background is hardcoded navy regardless of theme, but
+   `.section-eyebrow` inherits the theme-variable `--color-link` -- fine
+   against a light-theme's light background, but only 3.62:1 against navy in
+   light theme (dark theme's own --color-link already resolves light enough).
+   Pinned here to the same light blue dark theme already uses, so it reads
+   correctly against this section's own always-dark background regardless of
+   site theme. */
+.hero .section-eyebrow {
+  color: #60a5fa;
+}
+
 .hero h1 {
   color: #fff;
   margin-bottom: var(--space-2);

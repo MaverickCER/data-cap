@@ -50,6 +50,7 @@ describe("scanFileForUsage -- operation calls", () => {
         position: { line: 1, column: 1 },
       },
     ])
+    expect("field" in edges[0]!.to).toBe(false)
   })
 
   it("detects a mutator call", () => {
@@ -103,6 +104,7 @@ describe("scanFileForUsage -- field reads", () => {
         position: { line: 1, column: 1 },
       },
     ])
+    expect("operation" in edges[0]!.to).toBe(false)
   })
 
   it("detects a .getSnapshot().fields.<name> read", () => {

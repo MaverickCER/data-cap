@@ -128,7 +128,7 @@ describe("canonicalize -- example-based", () => {
     expect(canonicalize(() => undefined)).toBeUndefined()
     expect(canonicalize(Symbol("x"))).toBeUndefined()
     const cyclic: Record<string, unknown> = {}
-    cyclic.self = cyclic
+    cyclic["self"] = cyclic
     expect(canonicalize(cyclic)).toBeUndefined()
   })
 
@@ -137,6 +137,41 @@ describe("canonicalize -- example-based", () => {
     cyclic.push({ self: cyclic })
     expect(() => canonicalize(cyclic)).not.toThrow()
     expect(canonicalize(cyclic)).toBeUndefined()
+  })
+
+  it("never throws for an array that references itself directly, with no intermediate object", () => {
+    // Distinct from the previous case: no nested object sits between the
+    // array and its own cycle, so no OBJECT-side `nextSeen` tracking can
+    // ever catch this -- only the array's own `nextSeen` (or, failing that,
+    // MAX_DEPTH's independent backstop -- see the depth-boundary tests
+    // below) can.
+    const cyclic: unknown[] = []
+    cyclic.push(cyclic)
+    expect(() => canonicalize(cyclic)).not.toThrow()
+    expect(canonicalize(cyclic)).toBeUndefined()
+  })
+
+  it("canonicalizes a non-cyclic structure nested exactly MAX_DEPTH levels deep", () => {
+    let value: unknown = "leaf"
+    for (let i = 0; i < 200; i++) value = { n: value }
+    expect(canonicalize(value)).toBeDefined()
+  })
+
+  it("returns undefined for a non-cyclic structure nested one level past MAX_DEPTH -- the depth ceiling itself, not just the cycle checks it backstops", () => {
+    let value: unknown = "leaf"
+    for (let i = 0; i < 201; i++) value = { n: value }
+    expect(() => canonicalize(value)).not.toThrow()
+    expect(canonicalize(value)).toBeUndefined()
+  })
+
+  it("increments depth through array nesting too, not just object nesting", () => {
+    let value: unknown = "leaf"
+    for (let i = 0; i < 200; i++) value = [value]
+    expect(canonicalize(value)).toBeDefined()
+
+    let tooDeep: unknown = "leaf"
+    for (let i = 0; i < 201; i++) tooDeep = [tooDeep]
+    expect(canonicalize(tooDeep)).toBeUndefined()
   })
 
   it("returns undefined for an object carrying __proto__/constructor/prototype as an own key", () => {
