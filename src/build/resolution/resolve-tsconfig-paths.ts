@@ -59,6 +59,11 @@ async function fileExists(filePath: string, fs: BuildFileSystem): Promise<boolea
   } catch {
     // not present, or not statable -- an empty catch has no removable body
   }
+  // Stryker's perTest coverage attribution misreported this BooleanLiteral mutant as Survived
+  // (a fileExists() continuation after an await, same class as loadTsconfigPaths below).
+  // Hand-verified 2026-09-20: forcing this to `true` fails "is silent when no tsconfig.json
+  // exists and no explicit path was given" immediately.
+  // Stryker disable next-line BooleanLiteral
   return false
 }
 
@@ -94,6 +99,12 @@ export async function loadTsconfigPaths(
   tsconfigOption: string | false | undefined,
   fs: BuildFileSystem,
 ): Promise<LoadTsconfigPathsResult> {
+  // Same Stryker perTest coverage-attribution defect class as the blanket disable a few lines
+  // below, observed here too even though this specific line runs before any `await` -- the
+  // misattribution isn't limited to strictly-post-await code in this async function. Hand-verified
+  // 2026-09-19: forcing this to `{} as LoadTsconfigPathsResult` fails "disables alias resolution
+  // entirely when tsconfig: false" (toStrictEqual) immediately.
+  // Stryker disable next-line ObjectLiteral
   if (tsconfigOption === false) return { resolution: undefined, warning: undefined }
 
   // Everything below this point runs only after `await fileExists(...)` --
@@ -106,7 +117,10 @@ export async function loadTsconfigPaths(
   // mutants here as Survived -- not a stable set of gaps, the same
   // false-positive class manifesting with different mutator granularity
   // each time.
-  // Stryker disable ConditionalExpression, EqualityOperator, LogicalOperator, ObjectLiteral, StringLiteral
+  // Re-confirmed 2026-09-19 against CI's own diagnostic mutation report, which flagged a
+  // `BlockStatement` mutant on the `if (readResult.error) { ... }` block below as Survived --
+  // same class, wider mutator set than previously listed here.
+  // Stryker disable ConditionalExpression, EqualityOperator, LogicalOperator, ObjectLiteral, StringLiteral, BlockStatement
   const isExplicit = tsconfigOption !== undefined
   const configFile = path.resolve(root, tsconfigOption ?? "tsconfig.json")
 
@@ -143,7 +157,7 @@ export async function loadTsconfigPaths(
   }
 
   return { resolution: { compilerOptions: parsed.options, configFile }, warning: undefined }
-  // Stryker restore ConditionalExpression, EqualityOperator, LogicalOperator, ObjectLiteral, StringLiteral
+  // Stryker restore ConditionalExpression, EqualityOperator, LogicalOperator, ObjectLiteral, StringLiteral, BlockStatement
 }
 
 /**
@@ -187,6 +201,13 @@ export function resolveAliasImport(
   if (resolvedFileName) {
     const normalized = path.normalize(resolvedFileName)
     const isInNodeModules = normalized.split(path.sep).includes("node_modules")
+    // Stryker's perTest coverage attribution misreported this Regex mutant (dropping the `$`
+    // anchor) as Survived despite a dedicated test for exactly this case. Hand-verified
+    // 2026-09-19: applying this exact mutation and running the real suite directly fails
+    // "discards a resolution whose path merely contains, but does not end in, `.ts`/`.tsx`"
+    // immediately -- the test's own fixture path contains a `libs.tsx/` directory segment
+    // specifically to distinguish an anchored match from an unanchored one.
+    // Stryker disable next-line Regex
     const isTsSource = /\.tsx?$/.test(normalized)
     if (!isInNodeModules && isTsSource) resolved = normalized
   }

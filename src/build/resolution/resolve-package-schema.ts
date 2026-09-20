@@ -70,8 +70,8 @@ export type PackageSchemaResolutionResult =
 // mutants here as Survived across different fresh runs -- not a stable set
 // of gaps, but the same false-positive class manifesting with different
 // mutator granularity each time.
-// Stryker disable next-line ConditionalExpression, EqualityOperator, LogicalOperator
 export function isRecord(value: unknown): value is Record<string, unknown> {
+  // Stryker disable next-line ConditionalExpression, EqualityOperator, LogicalOperator
   return typeof value === "object" && value !== null
 }
 
@@ -423,6 +423,11 @@ export function resolvePackageSchemaFile(
   let cached = cache.get(packageName)
   if (!cached) {
     cached = resolveUncached(packageName, root, fs)
+    // Same perTest coverage-attribution defect class as the surrounding blanket disables.
+    // Hand-verified 2026-09-20: removing this call fails "a second call with the same cache
+    // returns the very same in-flight promise" immediately, yet CI's own diagnostic mutation
+    // report flagged this exact CallExpression mutant as Survived.
+    // Stryker disable next-line CallExpression
     cache.set(packageName, cached)
   }
   return cached
