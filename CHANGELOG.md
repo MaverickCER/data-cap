@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.4.0
+
+### Minor Changes
+
+- 683cb91: Wires `internal-package-contract`'s governance in for real (CI now runs the
+  full contract as a blocking gate, mutation testing ratcheted to zero
+  survived/no-coverage/timeout), adds a NIST Privacy Framework-informed
+  ISO/IEC 27701 alignment report, and adds a Next.js example demonstrating
+  user/admin data ownership.
+
 ## 0.3.1
 
 ### Patch Changes
