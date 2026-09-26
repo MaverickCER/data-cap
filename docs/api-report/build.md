@@ -5836,10 +5836,6 @@ Discovers every file matching `include`/`exclude` under `root`, alphabetically s
 
 `Promise`\<`string`[]\>
 
-#### Remarks
-
-Experimental -- see VERSIONING.md.
-
 ***
 
 ### evaluateLiteral()
@@ -5859,10 +5855,6 @@ Statically evaluates one AST expression against the allow-listed literal grammar
 #### Returns
 
 [`LiteralEvalResult`](#literalevalresult)
-
-#### Remarks
-
-Experimental -- see VERSIONING.md.
 
 ***
 
@@ -6191,10 +6183,6 @@ Discovers and links every `buildData()`/`createData()`/`documentData()` call acr
 
 `Promise`\<[`LinkResult`](#linkresult)\>
 
-#### Remarks
-
-Experimental -- see VERSIONING.md.
-
 ***
 
 ### locationOf()
@@ -6239,10 +6227,6 @@ never found, never guessed at.
 #### Returns
 
 [`ParseResult`](#parseresult)
-
-#### Remarks
-
-Experimental -- see VERSIONING.md.
 
 ***
 
