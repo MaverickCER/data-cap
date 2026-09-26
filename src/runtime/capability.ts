@@ -1,5 +1,5 @@
 /**
- * The batteries-included, optional, Experimental-tier operations layer.
+ * The batteries-included, optional operations layer.
  * `createData(schema)` composes `buildData` + `createDataStore` + a
  * `Coordinator` -- nothing here is a new primitive; it's an orchestration
  * layer over the existing Stable ones. Applications that want full manual
@@ -304,10 +304,6 @@ export function mergeParams(defaultParams: unknown, partial: unknown): unknown {
  * A schema with no `getters`/`mutators`/`subscriptions` at all still works,
  * returning a fully valid capability with zero bound operation methods --
  * the direct one-call equivalent of `createDataStore(buildData({fields}))`.
- *
- * @remarks
- * Experimental (see VERSIONING.md) -- the shape of this function may still
- * change in a minor pre-1.0 release as real usage reveals a better one.
  */
 export function createData<TSchema extends DataSchema<FieldsShape>>(
   schema: TSchema,

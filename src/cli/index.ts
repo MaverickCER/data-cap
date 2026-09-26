@@ -169,8 +169,8 @@ Options:
   --location <path>          Output path for the generated manifest
   --include <glob>           Discovery glob (repeatable, default: every .ts/.tsx file)
   --exclude <glob>           Glob pattern to exclude (repeatable)
-  --package <name>           [Experimental, see VERSIONING.md] Installed package name to also discover a capability from, via its "dataCap.schema" package.json field (repeatable)
-  --tsconfig <path>          [Experimental, see VERSIONING.md] Path to a tsconfig.json (relative to root) whose "paths"/"baseUrl" resolve aliased imports encountered during static analysis (default: auto-detected "tsconfig.json" at root)
+  --package <name>           Installed package name to also discover a capability from, via its "dataCap.schema" package.json field (repeatable)
+  --tsconfig <path>          Path to a tsconfig.json (relative to root) whose "paths"/"baseUrl" resolve aliased imports encountered during static analysis (default: auto-detected "tsconfig.json" at root)
   --no-tsconfig               Disable tsconfig path-alias resolution entirely
   --docs <path>               Emit the Markdown documentation catalog (fields, getters/mutators/subscriptions, sensitivity & protections review) at this path
   --ownership <path>          Emit the Dependency & Ownership report at this path

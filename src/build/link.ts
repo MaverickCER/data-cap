@@ -443,9 +443,6 @@ export function checkDocOperationsAgainstShape(
 
 /**
  * Discovers and links every `buildData()`/`createData()`/`documentData()` call across `files`, resolving field shapes and cross-file/aliased references.
- *
- * @remarks
- * Experimental -- see VERSIONING.md.
  */
 export async function linkCapabilityFiles(
   files: readonly string[],

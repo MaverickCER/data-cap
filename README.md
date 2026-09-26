@@ -199,7 +199,7 @@ That makes data changes easier to inspect, review, and govern without relying en
 
 `data-cap` is pre-1.0.
 
-The core runtime, build tooling, CLI, ESLint integration, manifest generation, documentation generation, and ownership analysis are implemented and tested. `createData` is currently Experimental; lower-level runtime primitives are Stable.
+The core runtime, build tooling, CLI, ESLint integration, manifest generation, documentation generation, and ownership analysis are implemented, tested, and Stable -- see [`VERSIONING.md`](VERSIONING.md) for the exact surface semver covers.
 
 ## Learn more
 

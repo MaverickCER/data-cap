@@ -27,10 +27,27 @@ major version bump (once the package reaches 1.0 — see
 - **`./runtime/retry`**: `withRetry`, `isStillDefault`.
 - **`./helpers`**: the `processors`/`identity`/`canonicalize`/`shape`
   namespace shapes and every function they export.
-- **`./eslint-plugin`**: the `stable-operation-reference` rule's name and
-  its two message IDs (`inlineFunctionLiteral`/`recreatedPerCall`) —
-  removing the rule, or renaming a message ID a consumer's own
-  `eslint.config.js` might reference, is a breaking change.
+- **`./eslint-plugin`**: every rule's name and message IDs
+  (`stable-operation-reference`'s `inlineFunctionLiteral`/`recreatedPerCall`;
+  `no-fields-escape`'s message IDs) — removing a rule, or renaming a message
+  ID a consumer's own `eslint.config.js` might reference, is a breaking
+  change.
+- **`./build`** (`discoverCapabilityFiles`, `parseCapabilityFile`,
+  `linkCapabilityFiles`, `evaluateLiteral`, and everything under
+  `resolution/`, including the `--package`/`--tsconfig` CLI flags and
+  cross-package schema discovery (`packages` option)):
+  ported from `env-cap`'s equivalent surface
+  ([ADR 0032](specs/decisions/0032-tsconfig-path-alias-resolution-ported.md),
+  [ADR 0043](specs/decisions/0043-env-cap-resolver-relocated-and-duplicated.md)),
+  promoted to Stable per [ADR 0065](specs/decisions/0065-promote-build-createdata-and-cli-flags-to-stable.md)
+  after a full feedback cycle with no need to break it.
+- **`./runtime`'s `createData`** and its returned capability contract
+  (bound operation methods, `runGetters`, `getSnapshot`'s `operations`
+  namespace, `describe()`): a batteries-included operations layer composed
+  entirely from the `buildData`/`createDataStore`/`coordinator` primitives
+  above ([ADR 0048](specs/decisions/0048-builddata-createdata-split-and-optional-operations-layer.md)),
+  promoted to Stable per [ADR 0065](specs/decisions/0065-promote-build-createdata-and-cli-flags-to-stable.md)
+  after a full feedback cycle with no need to break it.
 
 ## Experimental
 
@@ -43,22 +60,9 @@ feedback is likely to reveal a better shape. Once a feature has been through
 at least one real feedback cycle without a need to break it, its ADR's Status
 moves from Proposed/Experimental to Accepted, and it becomes Stable.
 
-- **`./build`** (`discoverCapabilityFiles`, `parseCapabilityFile`,
-  `linkCapabilityFiles`, `evaluateLiteral`, and everything under
-  `resolution/`): ships Experimental from day one, matching `env-cap`'s own
-  policy for the equivalent surface it was ported from
-  ([ADR 0032](specs/decisions/0032-tsconfig-path-alias-resolution-ported.md),
-  [ADR 0043](specs/decisions/0043-env-cap-resolver-relocated-and-duplicated.md)).
-  Cross-package schema discovery (`packages` option) specifically is ported
-  from `env-cap` ADR 0014, itself Experimental there.
-- **`./runtime`'s `createData`** and its returned capability contract
-  (bound operation methods, `runGetters`, `getSnapshot`'s `operations`
-  namespace, `describe()`): ships Experimental — a batteries-included
-  operations layer composed entirely from the Stable `buildData`/
-  `createDataStore`/`coordinator` primitives, new enough that real usage
-  may still reveal a better shape for the per-operation state model or
-  method signatures
-  ([ADR 0048](specs/decisions/0048-builddata-createdata-split-and-optional-operations-layer.md)).
+Nothing currently ships Experimental — see [ADR 0065](specs/decisions/0065-promote-build-createdata-and-cli-flags-to-stable.md)
+for the most recent promotion. A future feature genuinely new enough to
+warrant it will be added here, explicitly, with its own ADR.
 
 ## Private
 

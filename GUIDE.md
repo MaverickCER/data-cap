@@ -745,8 +745,8 @@ That behavior is intentional
 
 ### "Does `data-cap` ship a built-in getter/mutator execution loop?"
 
-Optionally, yes — `createData` (`data-cap/runtime`,
-Experimental tier) owns dedup, per-operation status, optimistic mutation
+Optionally, yes — `createData` (`data-cap/runtime`) owns dedup,
+per-operation status, optimistic mutation
 lifecycle, and concurrent-getter execution, composed entirely from the
 Stable primitives (`createDataStore`, `coordinator.dedupe`/
 `acquireSubscription`). Different applications reasonably want different

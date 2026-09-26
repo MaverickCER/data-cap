@@ -4,7 +4,7 @@ import type { ParseWarning } from "../parse.js"
 import type { BuildFileSystem } from "../types.js"
 
 /**
- * TypeScript path-alias resolution (ported from env-cap ADR 0023; Experimental -- see VERSIONING.md).
+ * TypeScript path-alias resolution (ported from env-cap ADR 0023).
  *
  * Resolves a bare import specifier (`"@/lib/env.schema.js"`) against a project's own
  * `tsconfig.json` `compilerOptions.paths`/`baseUrl`, so a schema or consumer reached only
