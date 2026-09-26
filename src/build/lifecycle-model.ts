@@ -181,6 +181,12 @@ function expiringEntryFor(
   return { ...subject, expiresAt, daysRemaining }
 }
 
+/**
+ * Every capability- or field-level `expiresAt` across `inventory` that falls
+ * within `expiringWithinDays` of `now` (or is already past it), soonest
+ * (or most overdue) first. Skips any subject with no declared `expiresAt`,
+ * an unparseable one, or one still further out than the window.
+ */
 export function computeExpiringEntries(
   inventory: CapabilityInventory,
   expiringWithinDays: number,

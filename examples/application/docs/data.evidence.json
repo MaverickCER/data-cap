@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "provenance": {
-    "generatedAt": "2026-09-15T16:04:09.980Z",
+    "generatedAt": "2026-09-25T19:44:19.825Z",
     "toolVersion": "0.3.1"
   },
   "capability": {
@@ -22,10 +22,12 @@
               "description": "The current user's own task list.",
               "sensitivity": "internal",
               "protections": "Session-authenticated access only; TLS in transit.",
+              "retention": "Deleted immediately when the task is deleted, or when the account is deleted.",
               "purpose": "Displaying and managing the user's own work items."
             },
             "selectedTask": {
               "description": "One task's own full detail -- null until the first successful getTask().",
+              "owner": "security-team",
               "sensitivity": "internal",
               "protections": "Session-authenticated access only; TLS in transit.",
               "purpose": "Displaying a single task's detail view."
@@ -120,6 +122,7 @@
               "description": "The current user's own task list.",
               "sensitivity": "internal",
               "protections": "Session-authenticated access only; TLS in transit.",
+              "retention": "Deleted immediately when the task is deleted, or when the account is deleted.",
               "purpose": "Displaying and managing the user's own work items."
             },
             "owner": {
@@ -173,13 +176,14 @@
             ],
             "docs": {
               "description": "One task's own full detail -- null until the first successful getTask().",
+              "owner": "security-team",
               "sensitivity": "internal",
               "protections": "Session-authenticated access only; TLS in transit.",
               "purpose": "Displaying a single task's detail view."
             },
             "owner": {
-              "value": "productivity-team",
-              "declaredOn": "capability"
+              "value": "security-team",
+              "declaredOn": "field"
             },
             "sensitivity": {
               "value": "internal",
@@ -414,7 +418,20 @@
   },
   "lifecycle": {
     "schemaVersion": 1,
-    "capabilities": [],
+    "capabilities": [
+      {
+        "file": "src/main.ts",
+        "exportName": "taskData",
+        "fields": [
+          {
+            "path": [
+              "tasks"
+            ],
+            "retention": "Deleted immediately when the task is deleted, or when the account is deleted."
+          }
+        ]
+      }
+    ],
     "expiring": []
   },
   "computed": {
@@ -438,7 +455,7 @@
         },
         "resolution": "resolved",
         "position": {
-          "line": 327,
+          "line": 336,
           "column": 52
         }
       },
@@ -454,7 +471,7 @@
         },
         "resolution": "resolved",
         "position": {
-          "line": 327,
+          "line": 336,
           "column": 75
         }
       },
@@ -470,7 +487,7 @@
         },
         "resolution": "resolved",
         "position": {
-          "line": 334,
+          "line": 343,
           "column": 7
         }
       },
@@ -488,7 +505,7 @@
         },
         "resolution": "resolved",
         "position": {
-          "line": 339,
+          "line": 348,
           "column": 14
         }
       },
@@ -504,7 +521,7 @@
         },
         "resolution": "resolved",
         "position": {
-          "line": 340,
+          "line": 349,
           "column": 7
         }
       },
@@ -522,7 +539,7 @@
         },
         "resolution": "resolved",
         "position": {
-          "line": 341,
+          "line": 350,
           "column": 14
         }
       },
@@ -538,7 +555,7 @@
         },
         "resolution": "resolved",
         "position": {
-          "line": 347,
+          "line": 356,
           "column": 21
         }
       },
@@ -556,7 +573,7 @@
         },
         "resolution": "resolved",
         "position": {
-          "line": 351,
+          "line": 360,
           "column": 3
         }
       },
@@ -572,7 +589,7 @@
         },
         "resolution": "resolved",
         "position": {
-          "line": 360,
+          "line": 369,
           "column": 15
         }
       },
@@ -590,7 +607,7 @@
         },
         "resolution": "resolved",
         "position": {
-          "line": 365,
+          "line": 374,
           "column": 14
         }
       },
@@ -606,7 +623,7 @@
         },
         "resolution": "resolved",
         "position": {
-          "line": 369,
+          "line": 378,
           "column": 23
         }
       },
@@ -624,7 +641,7 @@
         },
         "resolution": "resolved",
         "position": {
-          "line": 371,
+          "line": 380,
           "column": 3
         }
       },
@@ -642,7 +659,7 @@
         },
         "resolution": "resolved",
         "position": {
-          "line": 376,
+          "line": 385,
           "column": 14
         }
       },
@@ -658,7 +675,7 @@
         },
         "resolution": "resolved",
         "position": {
-          "line": 379,
+          "line": 388,
           "column": 7
         }
       },
@@ -676,7 +693,7 @@
         },
         "resolution": "resolved",
         "position": {
-          "line": 380,
+          "line": 389,
           "column": 14
         }
       },
@@ -692,7 +709,7 @@
         },
         "resolution": "resolved",
         "position": {
-          "line": 383,
+          "line": 392,
           "column": 25
         }
       }
@@ -716,16 +733,22 @@
               "exportName": "taskData"
             },
             "field": [
-              "selectedTask"
+              "tasks"
             ]
-          },
+          }
+        ]
+      },
+      {
+        "owner": "security-team",
+        "capabilities": [],
+        "fields": [
           {
             "capability": {
               "file": "src/main.ts",
               "exportName": "taskData"
             },
             "field": [
-              "tasks"
+              "selectedTask"
             ]
           }
         ]

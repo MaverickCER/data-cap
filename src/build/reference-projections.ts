@@ -178,17 +178,6 @@ export const projectComplianceEvidence = defineEvidenceProjection<{
   { disclaimer, entries: complianceEntries },
 )
 
-/**
- * Data Audit Evidence / Data Assurance Report / Data Governance Report
- * (reframed): a rollup of ownership and finding counts plus provenance --
- * never a governance verdict or a risk score, only the counted facts a
- * consumer's own policy can be evaluated against.
- *
- * The clearest case for the per-field schema: `ownedCapabilities` is derived
- * from Ownership Model alone, `findingsBySeverity` from Finding Model alone,
- * and `provenance` from neither. `.project()` reports exactly that, per
- * output field.
- */
 function auditProvenance(evidence: EvidenceModel): EvidenceProvenance {
   return evidence.provenance
 }
@@ -210,6 +199,17 @@ function auditFindingsBySeverity(evidence: EvidenceModel): Record<string, number
   }, {})
 }
 
+/**
+ * Data Audit Evidence / Data Assurance Report / Data Governance Report
+ * (reframed): a rollup of ownership and finding counts plus provenance --
+ * never a governance verdict or a risk score, only the counted facts a
+ * consumer's own policy can be evaluated against.
+ *
+ * The clearest case for the per-field schema: `ownedCapabilities` is derived
+ * from Ownership Model alone, `findingsBySeverity` from Finding Model alone,
+ * and `provenance` from neither. `.project()` reports exactly that, per
+ * output field.
+ */
 export const projectAuditEvidence = defineEvidenceProjection<{
   disclaimer: string
   provenance: EvidenceProvenance

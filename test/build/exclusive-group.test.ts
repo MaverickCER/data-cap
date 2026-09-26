@@ -47,7 +47,7 @@ describe("checkExclusiveGroups", () => {
       ]),
     )
     expect(findings).toHaveLength(2)
-    expect(findings.every((f) => f.code === "EXCLUSIVE_GROUP_CONFLICT")).toBe(true)
+    expect(findings.every((f) => f.code === "EXCLUSIVE_GROUP_VIOLATION")).toBe(true)
     expect(findings.every((f) => f.severity === "error")).toBe(true)
     expect(findings.map((f) => f.capability?.exportName).sort()).toEqual(["a", "b"])
     expect(findings[0]!.message).toContain("user-backend")
@@ -66,7 +66,7 @@ describe("checkExclusiveGroups", () => {
       ]),
     )
     expect(findings.find((f) => f.capability?.exportName === "a")).toEqual({
-      code: "EXCLUSIVE_GROUP_CONFLICT",
+      code: "EXCLUSIVE_GROUP_VIOLATION",
       family: "structural",
       severity: "error",
       message:

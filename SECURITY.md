@@ -133,8 +133,28 @@ full one-time trusted-publisher setup this depends on.
 
 ## Supported versions
 
-Pre-`1.0`: security fixes target the latest published `0.x` version only.
-There is currently no separate long-term-support branch or extended
-security-support policy. See [`VERSIONING.md`](VERSIONING.md) for the
-package's general stability posture, and check back here once a `1.0`
-release establishes a longer-term backport policy.
+This project has not reached a `1.0` release.
+
+**Today, before `1.0`:** security fixes are provided on the latest published
+`0.x` version only. There is no separate long-term-support branch and no
+extended security-support policy yet — an application pinned to an older
+`0.x` release does not receive backported fixes; upgrading to the latest
+`0.x` is the only supported remediation path. See
+[`VERSIONING.md`](VERSIONING.md) for the package's general stability
+posture.
+
+**Starting at `1.0`:** once this project ships a `1.0` release, security
+fixes will be backported to the latest minor release of the previous major
+version for a minimum of six months after a new major version ships. This
+window may be extended at the maintainer's discretion — for example, to
+give large downstream consumers more migration time — but once a minimum
+end date has been stated for a given major version's backport window, it
+will never be shortened. Fixes for the current major version continue to
+target its latest published minor/patch release, exactly as fixes do today
+for `0.x`; the backport commitment only extends that same treatment one
+major version back, for a bounded time.
+
+This is a forward commitment about a future release line, not a claim that
+backporting has already been exercised — see
+[`ADOPTION.md`](ADOPTION.md#versioning-stability-and-long-term-support) for
+how to weigh that distinction today.

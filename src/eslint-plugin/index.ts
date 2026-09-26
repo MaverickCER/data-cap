@@ -1,3 +1,4 @@
+import { noFieldsEscape } from "./no-fields-escape.js"
 import { noNodeFs } from "./no-node-fs.js"
 import { noRawExternalIo } from "./no-raw-external-io.js"
 import { stableOperationReference } from "./stable-operation-reference.js"
@@ -15,6 +16,8 @@ import { stableOperationReference } from "./stable-operation-reference.js"
 const plugin = {
   /** Every rule this plugin ships, keyed by its flat-config rule name. */
   rules: {
+    /** See {@link noFieldsEscape}. */
+    "no-fields-escape": noFieldsEscape,
     /** See {@link noNodeFs}. */
     "no-node-fs": noNodeFs,
     /** See {@link noRawExternalIo}. */
@@ -24,4 +27,4 @@ const plugin = {
   },
 }
 export default plugin
-export { noNodeFs, noRawExternalIo, stableOperationReference }
+export { noFieldsEscape, noNodeFs, noRawExternalIo, stableOperationReference }

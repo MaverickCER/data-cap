@@ -11,7 +11,12 @@
 ### productivity-team
 
 Capabilities: `taskData`
-Fields: `taskData.selectedTask`, `taskData.tasks`
+Fields: `taskData.tasks`
+
+### security-team
+
+Capabilities: _none_
+Fields: `taskData.selectedTask`
 
 ## Capability-to-capability dependencies
 
@@ -25,22 +30,22 @@ _No capability statically depends on another capability._
 
 | Consumer | Relationship | Detail | Resolution |
 | --- | --- | --- | --- |
-| `src/main.ts:327:52` | calls-getter | getTasks | resolved |
-| `src/main.ts:327:75` | calls-getter | getTasks | resolved |
-| `src/main.ts:334:7` | calls-getter | getTasks | resolved |
-| `src/main.ts:339:14` | reads-field | selectedTask | resolved |
-| `src/main.ts:340:7` | calls-getter | getTask | resolved |
-| `src/main.ts:341:14` | reads-field | selectedTask | resolved |
-| `src/main.ts:347:21` | calls-getter | getTask | resolved |
-| `src/main.ts:351:3` | reads-field | selectedTask | resolved |
-| `src/main.ts:360:15` | calls-mutator | createTask | resolved |
-| `src/main.ts:365:14` | reads-field | tasks | resolved |
-| `src/main.ts:369:23` | calls-mutator | toggleTask | resolved |
-| `src/main.ts:371:3` | reads-field | tasks | resolved |
-| `src/main.ts:376:14` | reads-field | tasks | resolved |
-| `src/main.ts:379:7` | calls-mutator | deleteTask | resolved |
-| `src/main.ts:380:14` | reads-field | tasks | resolved |
-| `src/main.ts:383:25` | calls-subscription | subscribeToTask | resolved |
+| `src/main.ts:336:52` | calls-getter | getTasks | resolved |
+| `src/main.ts:336:75` | calls-getter | getTasks | resolved |
+| `src/main.ts:343:7` | calls-getter | getTasks | resolved |
+| `src/main.ts:348:14` | reads-field | selectedTask | resolved |
+| `src/main.ts:349:7` | calls-getter | getTask | resolved |
+| `src/main.ts:350:14` | reads-field | selectedTask | resolved |
+| `src/main.ts:356:21` | calls-getter | getTask | resolved |
+| `src/main.ts:360:3` | reads-field | selectedTask | resolved |
+| `src/main.ts:369:15` | calls-mutator | createTask | resolved |
+| `src/main.ts:374:14` | reads-field | tasks | resolved |
+| `src/main.ts:378:23` | calls-mutator | toggleTask | resolved |
+| `src/main.ts:380:3` | reads-field | tasks | resolved |
+| `src/main.ts:385:14` | reads-field | tasks | resolved |
+| `src/main.ts:388:7` | calls-mutator | deleteTask | resolved |
+| `src/main.ts:389:14` | reads-field | tasks | resolved |
+| `src/main.ts:392:25` | calls-subscription | subscribeToTask | resolved |
 
 ## Findings
 

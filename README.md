@@ -22,6 +22,8 @@ You keep everything you have. `data-cap` does not replace TanStack Query, Redux,
 Define a capability around the data your application owns:
 
 ```ts
+import { createData } from "data-cap/runtime"
+
 const user = createData({
   fields: {
     profile: UserProfileSchema,
@@ -29,12 +31,18 @@ const user = createData({
   },
 
   getters: {
-    load: async () => fetchUser(),
+    load: {
+      execute: (_params, signal) => fetchUser(signal),
+      processor: (profile) => ({ profile }),
+      writes: { profile: true },
+    },
   },
 
   mutators: {
-    updatePreferences: async (preferences) => {
-      await updateUserPreferences(preferences)
+    updatePreferences: {
+      execute: (preferences, signal) => updateUserPreferences(preferences, signal),
+      processor: (_result, preferences) => ({ preferences }),
+      writes: { preferences: true },
     },
   },
 })
@@ -43,17 +51,24 @@ const user = createData({
 Then inspect the application as a whole:
 
 ```text
-$ npx data-cap --root . --include "src/**"
+$ npx data-cap --root . --include "src/**" --location src/generated/data.manifest.ts --docs docs/DATA.md --ownership docs/OWNERSHIP.md --flow docs/flow --evidence docs/data.evidence.json
 
+Wrote manifest: src/generated/data.manifest.ts
 Discovered 1 active capability(ies).
 
 Manifest changes since last execution:
-
   No changes.
-
 Wrote docs: docs/DATA.md
 Wrote dependency & ownership report: docs/OWNERSHIP.md
+Wrote data flow diagram set to: docs/flow (4 file(s))
+Wrote evidence model: docs/data.evidence.json
+
+0 error(s), 2 warning(s), 0 info finding(s):
+  - [warning] [SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY] [taskData] (tasks) Field "tasks" on "taskData" is sensitivity "internal" and has a declared endpoint crossing an external-service/api/queue boundary -- verify this is intentional and adequately protected.
+  - [warning] [SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY] [taskData] (selectedTask) Field "selectedTask" on "taskData" is sensitivity "internal" and has a declared endpoint crossing an external-service/api/queue boundary -- verify this is intentional and adequately protected.
 ```
+
+This is real CLI output from [`examples/application`](examples/application), not a mockup — including the two warnings. Nobody had declared `tasks`/`selectedTask` as crossing an external boundary on purpose; the tool found it because the field's own declared `sensitivity` and its getter's own declared network endpoint disagreed, not because anyone remembered to ask.
 
 The generated artifacts make the contract visible to developers, reviewers, and automated contributors.
 
@@ -80,9 +95,22 @@ Install the package:
 npm install data-cap
 ```
 
-Define a capability around data your application owns:
+Optionally, scaffold a starter capability and generation script instead of writing them by hand:
+
+```bash
+npx data-cap init
+```
+
+This writes `src/data.ts` (a starter `buildData` + `documentData` capability) and
+`scripts/generate-data.mjs` (a ready-to-run manifest/docs generator) into the current project —
+filesystem-only, no package manager invocation, no `package.json` mutation. See `data-cap init --help`
+for what it writes and why.
+
+Or define a capability around data your application owns directly:
 
 ```ts
+import { createData } from "data-cap/runtime"
+
 const account = createData({
   fields: {
     balance: 0,
@@ -90,11 +118,18 @@ const account = createData({
   },
 
   getters: {
-    load: async () => getAccount(),
+    load: {
+      execute: (_params, signal) => getAccount(signal),
+      writes: { balance: true, status: true },
+    },
   },
 
   mutators: {
-    suspend: async () => suspendAccount(),
+    suspend: {
+      execute: (_params, signal) => suspendAccount(signal),
+      writes: { status: true },
+      processor: () => ({ status: "suspended" as const }),
+    },
   },
 })
 ```
@@ -168,7 +203,7 @@ The core runtime, build tooling, CLI, ESLint integration, manifest generation, d
 
 ## Learn more
 
-- [Guide](GUIDE.md) - Concepts, usage, and integration patterns
+- [Guide](GUIDE.md) - Concepts, usage, integration patterns, and the [ESLint plugin](GUIDE.md#eslint-plugin) that catches an inline `execute`/`processor`/`subscribe` function silently breaking the coordinator's dedup/subscription sharing
 - [Architecture](specs/architecture.md) - Runtime and build architecture
 - [Migrations](specs/migrations/) - Adoption from common data-management patterns
 - [API documentation](https://maverickcer.github.io/data-cap/api/) - Generated API reference

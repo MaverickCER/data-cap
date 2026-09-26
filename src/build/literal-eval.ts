@@ -128,7 +128,12 @@ export function evaluateMarkerCall(
   }
 }
 
-/** Statically evaluates one AST expression against the allow-listed literal grammar -- never `eval`/`import`/`require`s anything (ADR 0002). */
+/**
+ * Statically evaluates one AST expression against the allow-listed literal grammar -- never `eval`/`import`/`require`s anything (ADR 0002).
+ *
+ * @remarks
+ * Experimental -- see VERSIONING.md.
+ */
 export function evaluateLiteral(node: ts.Expression): LiteralEvalResult {
   if (ts.isStringLiteralLike(node)) return { ok: true, value: node.text }
   if (ts.isNumericLiteral(node)) return { ok: true, value: Number(node.text) }

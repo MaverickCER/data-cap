@@ -115,21 +115,36 @@ describe("scanFileForUsage -- field reads", () => {
     expect(edges[0]!.to.field).toEqual(["email"])
   })
 
-  it("does not report a bare .fields reference with no further indexing", () => {
-    const edges = scan(`const allFields = userCapability.fields;`, [
-      resolvedMatch("userCapability"),
+  it("reports a bare .fields reference with no further indexing as an indeterminate reads-field edge (ADR 0060)", () => {
+    // Previously produced zero edges at all -- `.fields` handed whole to
+    // another binding, a spread, a JSX prop, etc. is a real, provable
+    // reference this pass can't attribute to any specific field, not the
+    // absence of one (see this module's own header comment).
+    const edges = scan(`userCapability.fields;`, [resolvedMatch("userCapability")])
+    expect(edges).toEqual([
+      {
+        relationship: "reads-field",
+        from: "/project/consumer.ts",
+        to: {
+          capability: { file: "/project/user.ts", exportName: "userCapability" },
+          field: undefined,
+          operation: undefined,
+        },
+        resolution: "indeterminate",
+        position: { line: 1, column: 1 },
+      },
     ])
-    expect(edges).toEqual([])
   })
 
-  it("does not report a bare .getSnapshot() call with no further .fields access", () => {
+  it("reports a bare .getSnapshot() call with no further .fields access as an indeterminate reads-field edge (ADR 0060)", () => {
     const edges = scan(`const snapshot = userCapability.getSnapshot();`, [
       resolvedMatch("userCapability"),
     ])
-    expect(edges).toEqual([])
+    expect(edges).toHaveLength(1)
+    expect(edges[0]).toMatchObject({ relationship: "reads-field", resolution: "indeterminate" })
   })
 
-  it("does not report .getSnapshot() followed by a non-fields property", () => {
+  it("does not report .getSnapshot() followed by a non-fields property -- provably never reads .fields at all", () => {
     const edges = scan(`userCapability.getSnapshot().info;`, [resolvedMatch("userCapability")])
     expect(edges).toEqual([])
   })
@@ -200,9 +215,182 @@ describe("scanFileForUsage -- indeterminate dynamic access", () => {
   })
 })
 
+describe("scanFileForUsage -- escape sites (ADR 0060)", () => {
+  // Before ADR 0060, every one of these produced zero edges -- a capability
+  // reference that flows out of this pass's local dataflow analysis is a
+  // real, provable read this file cannot attribute to a specific field, not
+  // an absence of usage. Reported as `indeterminate`, the same as a
+  // computed/dynamic access, so `usage-report.ts`'s existing widening
+  // (`collectIndeterminateSites` -> `FIELD_ACCESS_INDETERMINATE`) covers it
+  // with no downstream changes needed.
+
+  it("escapes a bare capability reference in expression-statement position", () => {
+    const edges = scan(`userCapability;`, [resolvedMatch("userCapability")])
+    expect(edges).toEqual([
+      {
+        relationship: "imports",
+        from: "/project/consumer.ts",
+        to: {
+          capability: { file: "/project/user.ts", exportName: "userCapability" },
+          field: undefined,
+          operation: undefined,
+        },
+        resolution: "indeterminate",
+        position: { line: 1, column: 1 },
+      },
+    ])
+  })
+
+  it("escapes a bare capability reference passed as a function argument", () => {
+    const edges = scan(`initialize(userCapability);`, [resolvedMatch("userCapability")])
+    expect(edges).toHaveLength(1)
+    expect(edges[0]).toMatchObject({ relationship: "imports", resolution: "indeterminate" })
+  })
+
+  it("escapes a bare capability reference spread into an object literal", () => {
+    const edges = scan(`const props = { ...userCapability };`, [resolvedMatch("userCapability")])
+    expect(edges).toHaveLength(1)
+    expect(edges[0]).toMatchObject({ relationship: "imports", resolution: "indeterminate" })
+  })
+
+  it("escapes a bare capability reference returned from a function -- the shape a React context provider's value takes", () => {
+    const edges = scan(`function useCapability() { return userCapability; }`, [
+      resolvedMatch("userCapability"),
+    ])
+    expect(edges).toHaveLength(1)
+    expect(edges[0]).toMatchObject({ relationship: "imports", resolution: "indeterminate" })
+  })
+
+  it("escapes a bare capability reference handed to JSX as a prop", () => {
+    const edges = scan(`const el = <Child data={userCapability} />;`, [
+      resolvedMatch("userCapability"),
+    ])
+    expect(edges).toHaveLength(1)
+    expect(edges[0]).toMatchObject({ relationship: "imports", resolution: "indeterminate" })
+  })
+
+  it("escapes `.fields` spread into an object literal (whole-object prop drilling)", () => {
+    const edges = scan(`const props = { ...userCapability.fields };`, [
+      resolvedMatch("userCapability"),
+    ])
+    expect(edges).toHaveLength(1)
+    expect(edges[0]).toMatchObject({ relationship: "reads-field", resolution: "indeterminate" })
+  })
+
+  it("escapes `.fields` handed to JSX as a spread prop", () => {
+    const edges = scan(`const el = <Child {...userCapability.fields} />;`, [
+      resolvedMatch("userCapability"),
+    ])
+    expect(edges).toHaveLength(1)
+    expect(edges[0]).toMatchObject({ relationship: "reads-field", resolution: "indeterminate" })
+  })
+
+  it("does not escalate a capability reference used only as another expression's element-access key", () => {
+    // `userCapability`'s own identity is used as a lookup key here, never
+    // its data -- inert with respect to what this scan tracks.
+    const edges = scan(`const x = someArray[userCapability];`, [resolvedMatch("userCapability")])
+    expect(edges).toEqual([])
+  })
+
+  it("does not escalate `.fields` used only as another expression's element-access key", () => {
+    const edges = scan(`const k = registry[userCapability.fields];`, [
+      resolvedMatch("userCapability"),
+    ])
+    expect(edges).toEqual([])
+  })
+
+  it("does not escalate a `.getSnapshot()` result used only as another expression's element-access key", () => {
+    const edges = scan(`const k = registry[userCapability.getSnapshot()];`, [
+      resolvedMatch("userCapability"),
+    ])
+    expect(edges).toEqual([])
+  })
+
+  it("escapes a computed access on a `.getSnapshot()` result, distinct from the result being used as a key elsewhere", () => {
+    // Unlike the previous test (`registry[x.getSnapshot()]` -- the call
+    // result used AS a key, not a read at all), here the call result is the
+    // thing BEING indexed by a computed key -- a real, ambiguous access this
+    // pass can't attribute to a field.
+    const edges = scan(`userCapability.getSnapshot()[someKey];`, [resolvedMatch("userCapability")])
+    expect(edges).toHaveLength(1)
+    expect(edges[0]).toMatchObject({ relationship: "reads-field", resolution: "indeterminate" })
+  })
+
+  it("escapes a bare const-alias of the whole capability -- `const alias = x;` is a real read this pass declines to follow further", () => {
+    const edges = scan(`const alias = userCapability;`, [resolvedMatch("userCapability")])
+    expect(edges).toHaveLength(1)
+    expect(edges[0]).toMatchObject({ relationship: "imports", resolution: "indeterminate" })
+  })
+
+  it("does not escalate `.getSnapshot().fields` used only as another expression's element-access key", () => {
+    const edges = scan(`const k = registry[userCapability.getSnapshot().fields];`, [
+      resolvedMatch("userCapability"),
+    ])
+    expect(edges).toEqual([])
+  })
+})
+
+describe("scanFileForUsage -- name-position collisions (ADR 0060)", () => {
+  // This pass matches identifiers by text alone (ADR 0010): a local binding
+  // name can coincidentally recur as some OTHER declaration's own label
+  // elsewhere in the file. None of these is ever a reference to the tracked
+  // binding, escaped or otherwise -- see `isNamePosition`'s own doc comment.
+
+  it("ignores a same-named object-literal property key", () => {
+    expect(scan(`const obj = { getUser: 1 };`, [resolvedMatch("getUser")])).toEqual([])
+  })
+
+  it("escapes a tracked binding used as an object-literal property's VALUE, distinct from being its key", () => {
+    const edges = scan(`const obj = { someOtherKey: getUser };`, [resolvedMatch("getUser")])
+    expect(edges).toHaveLength(1)
+    expect(edges[0]).toMatchObject({ relationship: "imports", resolution: "indeterminate" })
+  })
+
+  it("treats a same-named shorthand object-literal property as a real escape (it IS a value reference)", () => {
+    const edges = scan(`const obj = { getUser };`, [resolvedMatch("getUser")])
+    expect(edges).toHaveLength(1)
+    expect(edges[0]).toMatchObject({ relationship: "imports", resolution: "indeterminate" })
+  })
+
+  it("ignores a same-named interface property signature", () => {
+    expect(scan(`interface Props { getUser: string }`, [resolvedMatch("getUser")])).toEqual([])
+  })
+
+  it("ignores a same-named class method declaration", () => {
+    expect(scan(`class Widget { getUser() {} }`, [resolvedMatch("getUser")])).toEqual([])
+  })
+
+  it("ignores a same-named interface method signature", () => {
+    expect(scan(`interface Api { getUser(): void }`, [resolvedMatch("getUser")])).toEqual([])
+  })
+
+  it("ignores a same-named class getter accessor", () => {
+    expect(
+      scan(`class Widget { get getUser() { return 1; } }`, [resolvedMatch("getUser")]),
+    ).toEqual([])
+  })
+
+  it("ignores a same-named class setter accessor", () => {
+    expect(scan(`class Widget { set getUser(v) {} }`, [resolvedMatch("getUser")])).toEqual([])
+  })
+})
+
 describe("scanFileForUsage -- structural edge cases", () => {
   it("never treats the import declaration's own specifier as a usage", () => {
     const edges = scan(`import { userCapability } from "./user.js";\nuserCapability.getUser();`, [
+      resolvedMatch("userCapability"),
+    ])
+    expect(edges).toHaveLength(1)
+    expect(edges[0]!.relationship).toBe("calls-getter")
+  })
+
+  it("never treats a re-export specifier as a usage", () => {
+    const edges = scan(`export { userCapability };`, [resolvedMatch("userCapability")])
+    expect(edges).toEqual([])
+  })
+
+  it("never treats a re-export specifier as a usage even alongside real usage elsewhere in the file", () => {
+    const edges = scan(`export { userCapability };\nuserCapability.getUser();`, [
       resolvedMatch("userCapability"),
     ])
     expect(edges).toHaveLength(1)
@@ -325,10 +513,12 @@ describe("scanFileForUsage -- position discrimination (the binding must be the s
     expect(scan(`register(userCapability.getUser);`, [resolvedMatch("userCapability")])).toEqual([])
   })
 
-  it("ignores a `.getSnapshot().fields` bare reference (no field access after it)", () => {
-    expect(
-      scan(`const f = userCapability.getSnapshot().fields;`, [resolvedMatch("userCapability")]),
-    ).toEqual([])
+  it("reports a `.getSnapshot().fields` bare reference (no field access after it) as indeterminate, not silently dropped (ADR 0060)", () => {
+    const edges = scan(`const f = userCapability.getSnapshot().fields;`, [
+      resolvedMatch("userCapability"),
+    ])
+    expect(edges).toHaveLength(1)
+    expect(edges[0]).toMatchObject({ relationship: "reads-field", resolution: "indeterminate" })
   })
 
   it('ignores a same-named string-literal method call (`"userCapability".getUser()`)', () => {

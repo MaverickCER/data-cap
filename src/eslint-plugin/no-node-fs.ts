@@ -64,7 +64,7 @@ export const noNodeFs = createRule<[RuleOptions], "noNodeFs">({
     ],
     messages: {
       noNodeFs:
-        "Importing '{{specifier}}' makes this a filesystem-acquiring surface. Accept a filesystem capability as an argument instead, and let an executable entry point construct the node:fs adapter (see ADR 0058 / the README's ESLint section for the allow-list escape hatch).",
+        "Importing '{{specifier}}' makes this a filesystem-acquiring surface. Accept a filesystem capability as an argument instead, and let an executable entry point construct the node:fs adapter (see ADR 0058 / GUIDE.md's ESLint plugin section for the allow-list escape hatch).",
     },
   },
   defaultOptions: [{ allow: [] }],

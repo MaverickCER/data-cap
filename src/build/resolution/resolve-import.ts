@@ -82,6 +82,8 @@ export interface ImportResolutionContext {
  * runs before package resolution because it resolves the consuming project's own local
  * source (already-trusted, no versioning boundary), the same precedence relative
  * resolution already has over package resolution.
+ *
+ * Experimental -- see VERSIONING.md.
  */
 export async function resolveImportSpecifier(
   importingFile: string,

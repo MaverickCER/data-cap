@@ -76,8 +76,8 @@ Never covered by semver, may change at any time without notice:
 
 ## Pre-1.0 status
 
-`data-cap` has not yet reached a `1.0` release, and no version has been
-published yet. Per [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)/
+`data-cap` has not yet reached a `1.0` release; published `0.x` versions are
+available on npm. Per [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)/
 semver convention, **minor versions may include breaking changes to the
 Stable tier before 1.0** — this document defines _scope_ (what would
 eventually be covered), not a promise that it is already fully locked in at

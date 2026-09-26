@@ -295,10 +295,18 @@ describe.skipIf(!runnable)("example: enterprise-platform report scripts", () => 
       }
     })
 
-    it("distinguishes unconsumed from indeterminate rather than collapsing both into 'unused'", () => {
+    it("resolves a field handed whole to a React component's props (prop-drilled, not a named .fields.<name> read) to indeterminate, never silently 'unconsumed' (ADR 0060)", () => {
+      // `projectsData.fields` is passed whole to `ProjectsPanel.tsx` as a
+      // prop (`src/components/ProjectsPanel.tsx`) -- a real, provable
+      // reference this single-file scanner can't attribute to the `projects`
+      // field by name, so it's `indeterminate`, not the false "no consumer
+      // found" `unconsumed` claim this pass made before ADR 0060.
       const projects = litigation.fields.find((f) => f.field === "projects")
-      expect(projects?.consumptionStatus).toBe("unconsumed")
-      expect(projects?.indeterminateSites).toEqual([])
+      expect(projects?.consumptionStatus).toBe("indeterminate")
+      expect(projects?.indeterminateSites.length).toBeGreaterThan(0)
+      for (const site of projects?.indeterminateSites ?? []) {
+        expect(site.file).toBe("src/components/ProjectsPanel.tsx")
+      }
     })
 
     it("reports each field's own declared-handling stages, per writing operation", () => {

@@ -4,7 +4,7 @@
 
 > This report is illustrative only. It is not legal advice and does not itself establish compliance with any law or regulation -- it demonstrates the mechanism data-cap provides for producing source-cited evidence, nothing more.
 
-Generated: 2026-09-15T16:04:17.439Z
+Generated: 2026-09-25T19:44:27.008Z
 
 Scanned: application source (src/**)
 Not scanned: all other dependencies (no --package allow-list configured for this example)
@@ -17,7 +17,7 @@ Not scanned: all other dependencies (no --package allow-list configured for this
 | Classification (sensitivity) | confidential |
 | Purpose | Billing clients and tracking payment/dispute status for financial reporting. |
 | Legal basis (declared, not a legal determination) | contract |
-| Data residency (permitted storage jurisdiction, declared) | us |
+| Data residency (permitted storage jurisdiction, declared) | us, eu |
 | Audit required | yes |
 | Protections (documented, not an adequacy claim) | Session-authenticated access only; TLS in transit; amounts encrypted at rest. |
 | Retention policy (documented) | 7 years after project closure, per financial recordkeeping policy. |
@@ -63,6 +63,7 @@ Not scanned: all other dependencies (no --package allow-list configured for this
 | getter:getCurrentUser | input | identity-api | https://api.example.com/v1/me | plaintext |
 
 **Candidate dynamic-access sites (proven to exist, but not statically attributable to this specific field):**
+- `src/routes.tsx:34:34`
 - `src/server/legacy-compliance-sync.ts:33:19`
 
 ## projectsData.projects
@@ -80,7 +81,7 @@ Not scanned: all other dependencies (no --package allow-list configured for this
 
 **Declaration site (proven):** `24:5`
 
-**Consumption status:** `unconsumed`
+**Consumption status:** `indeterminate`
 
 **Field lifecycle -- declared handling at each endpoint this field crosses (declared, never independently verified):**
 
@@ -88,4 +89,7 @@ Not scanned: all other dependencies (no --package allow-list configured for this
 | --- | --- | --- | --- | --- |
 | getter:listProjects | input | projects-api | https://api.example.com/v1/projects | plaintext |
 | mutator:createProject | output | projects-api | https://api.example.com/v1/projects | plaintext |
+
+**Candidate dynamic-access sites (proven to exist, but not statically attributable to this specific field):**
+- `src/components/ProjectsPanel.tsx:17:34`
 

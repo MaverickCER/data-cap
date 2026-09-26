@@ -7,6 +7,7 @@
 ```ts
 const default: {
   rules: {
+     no-fields-escape: RuleModuleWithName<"prop" | "argument" | "exported" | "spread", [RuleOptions], unknown, RuleListener>;
      no-node-fs: RuleModuleWithName<"noNodeFs", [RuleOptions], unknown, RuleListener>;
      no-raw-external-io: RuleModuleWithName<"noRawExternalIo", [RuleOptions], unknown, RuleListener>;
      stable-operation-reference: RuleModuleWithName<"inlineFunctionLiteral" | "recreatedPerCall", [], unknown, RuleListener>;
@@ -29,6 +30,7 @@ A 6th public entry point alongside `.`, `./runtime`, `./build`,
 
 ```ts
 rules: {
+  no-fields-escape: RuleModuleWithName<"prop" | "argument" | "exported" | "spread", [RuleOptions], unknown, RuleListener>;
   no-node-fs: RuleModuleWithName<"noNodeFs", [RuleOptions], unknown, RuleListener>;
   no-raw-external-io: RuleModuleWithName<"noRawExternalIo", [RuleOptions], unknown, RuleListener>;
   stable-operation-reference: RuleModuleWithName<"inlineFunctionLiteral" | "recreatedPerCall", [], unknown, RuleListener>;
@@ -36,6 +38,14 @@ rules: {
 ```
 
 Every rule this plugin ships, keyed by its flat-config rule name.
+
+###### rules.no-fields-escape
+
+```ts
+no-fields-escape: RuleModuleWithName<"prop" | "argument" | "exported" | "spread", [RuleOptions], unknown, RuleListener> = noFieldsEscape;
+```
+
+See [noFieldsEscape](#nofieldsescape).
 
 ###### rules.no-node-fs
 
@@ -60,6 +70,52 @@ stable-operation-reference: RuleModuleWithName<"inlineFunctionLiteral" | "recrea
 ```
 
 See [stableOperationReference](#stableoperationreference).
+
+***
+
+### noFieldsEscape
+
+```ts
+const noFieldsEscape: RuleModuleWithName<"prop" | "argument" | "exported" | "spread", [RuleOptions], unknown, RuleListener>;
+```
+
+Flags a capability's whole `.fields` (or a bare `getSnapshot()` result)
+escaping this file's local, single-`.fields.<name>`-read visibility --
+spread into JSX/an object literal, destructured with a rest element,
+passed as a bare function argument or a named JSX prop, or exported
+(directly, or returned from an exported function) -- so field-level
+data flow stays provable by data-cap's build-time scanner instead of
+silently escaping it.
+
+#### Remarks
+
+**Exact matching rule, deliberately kept purely structural.** Matched by
+property/method name alone (`.fields`, `.getSnapshot()`) -- like
+`stable-operation-reference`'s `createData`/`buildData` name matching,
+this never resolves an import or confirms the base expression is
+actually a data-cap capability, and never traces an intermediate alias
+(`const f = x.fields; const { ...rest } = f;` is one hop this rule
+declines to follow, matching [ADR 0060](_media/0060-usage-scanner-escape-sites.md)'s
+own "one level" scope for the build-time scanner it mirrors). The
+consequence is worth stating plainly: an unrelated object that merely
+happens to expose a `.fields` property or a `.getSnapshot()` method is
+indistinguishable to this rule and would be flagged the same way --
+rare in practice, but a real, documented tradeoff, not an oversight.
+
+A **plain, non-exported local alias** (`const alias = x.fields;`, never
+spread, never passed anywhere, never exported) is deliberately never
+flagged on its own -- seeing a `const` declaration alone can't tell a
+harmless local narrowing (`const f = x.fields; return f.email;`) apart
+from a real escape without dataflow tracing this rule doesn't do; see
+[ADR 0064](_media/0064-no-fields-escape-export-argument-and-prop.md)
+for why *exported* reassignment is flagged (a provable, structural,
+module-boundary fact) while plain reassignment stays out of scope (an
+unprovable one).
+
+This rule does not itself prove a leak -- it proves a *shape* the
+build-time scanner cannot see through, the same distinction
+`no-raw-external-io`'s own doc comment draws for its own structural
+check. `options.allow` exempts whole files by glob.
 
 ***
 

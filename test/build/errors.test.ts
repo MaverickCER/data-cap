@@ -5,7 +5,7 @@ import type { ReportFinding } from "../../src/build/findings.js"
 
 function finding(overrides: Partial<ReportFinding> = {}): ReportFinding {
   return {
-    code: "EXCLUSIVE_GROUP_CONFLICT",
+    code: "EXCLUSIVE_GROUP_VIOLATION",
     family: "structural",
     severity: "error",
     message: "boom",
@@ -28,12 +28,12 @@ describe("DataProjectGenerationError", () => {
 
   it("renders exactly one blocking finding, singular, in the message -- non-blocking ones excluded", () => {
     const error = new DataProjectGenerationError([
-      finding({ code: "EXCLUSIVE_GROUP_CONFLICT", message: "the sole blocker" }),
+      finding({ code: "EXCLUSIVE_GROUP_VIOLATION", message: "the sole blocker" }),
       finding({ code: "CAPABILITY_MISSING_OWNER", message: "just a warning", severity: "warning" }),
       finding({ code: "NONSTANDARD_SENSITIVITY_LEVEL", message: "info", severity: "info" }),
     ])
     expect(error.message).toBe(
-      "1 blocking finding prevented artifact generation:\n  - [EXCLUSIVE_GROUP_CONFLICT] the sole blocker",
+      "1 blocking finding prevented artifact generation:\n  - [EXCLUSIVE_GROUP_VIOLATION] the sole blocker",
     )
   })
 
@@ -41,12 +41,12 @@ describe("DataProjectGenerationError", () => {
     const error = new DataProjectGenerationError([
       finding({ code: "MANIFEST_EXPORT_NAME_COLLISION", message: "one" }),
       finding({ code: "CAPABILITY_MISSING_OWNER", message: "skipped", severity: "warning" }),
-      finding({ code: "EXCLUSIVE_GROUP_CONFLICT", message: "two" }),
+      finding({ code: "EXCLUSIVE_GROUP_VIOLATION", message: "two" }),
     ])
     expect(error.message).toBe(
       "2 blocking findings prevented artifact generation:\n" +
         "  - [MANIFEST_EXPORT_NAME_COLLISION] one\n" +
-        "  - [EXCLUSIVE_GROUP_CONFLICT] two",
+        "  - [EXCLUSIVE_GROUP_VIOLATION] two",
     )
   })
 

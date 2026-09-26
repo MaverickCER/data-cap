@@ -371,8 +371,8 @@ describe("generateDataArtifacts", () => {
         location,
         ownership,
       })
-      expect(first.findings.some((f) => f.code === "DYNAMIC_ACCESS_CITATION_STALE")).toBe(false)
-      expect(first.findings.some((f) => f.code === "DYNAMIC_ACCESS_CITATION_MISSING")).toBe(false)
+      expect(first.findings.some((f) => f.code === "STALE_DYNAMIC_ACCESS_CITATION")).toBe(false)
+      expect(first.findings.some((f) => f.code === "MISSING_DYNAMIC_ACCESS_CITATION")).toBe(false)
       const snapshotAfterFirst = JSON.parse(
         await fs.readFile(path.join(root, ".data-cap-manifest-snapshot.json"), "utf8"),
       ) as { capabilities: { citationSnapshots?: Record<string, unknown> }[] }
@@ -393,7 +393,7 @@ describe("generateDataArtifacts", () => {
       })
       expect(second.findings).toContainEqual(
         expect.objectContaining({
-          code: "DYNAMIC_ACCESS_CITATION_STALE",
+          code: "STALE_DYNAMIC_ACCESS_CITATION",
           family: "citation",
           severity: "warning",
           field: ["email"],
@@ -404,7 +404,7 @@ describe("generateDataArtifacts", () => {
       expect(second.findings.some((f) => f.code === "FIELD_DYNAMIC_ACCESS_DECLARED")).toBe(true)
     })
 
-    it("flags DYNAMIC_ACCESS_CITATION_MISSING when a previously-valid citation's file is deleted", async () => {
+    it("flags MISSING_DYNAMIC_ACCESS_CITATION when a previously-valid citation's file is deleted", async () => {
       const legacyPath = await writeFile("legacy.ts", "const x = 1;\n")
       await writeFile(
         "user.ts",
@@ -427,7 +427,7 @@ describe("generateDataArtifacts", () => {
         location,
       })
       expect(second.findings).toContainEqual(
-        expect.objectContaining({ code: "DYNAMIC_ACCESS_CITATION_MISSING", severity: "warning" }),
+        expect.objectContaining({ code: "MISSING_DYNAMIC_ACCESS_CITATION", severity: "warning" }),
       )
     })
   })

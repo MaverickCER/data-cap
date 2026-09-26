@@ -82,7 +82,12 @@ async function walk(
   }
 }
 
-/** Discovers every file matching `include`/`exclude` under `root`, alphabetically sorted, as absolute paths. */
+/**
+ * Discovers every file matching `include`/`exclude` under `root`, alphabetically sorted, as absolute paths.
+ *
+ * @remarks
+ * Experimental -- see VERSIONING.md.
+ */
 export async function discoverCapabilityFiles(options: DiscoverOptions): Promise<string[]> {
   const include = options.include ?? DEFAULT_INCLUDE
   // No test can distinguish this default from a non-empty placeholder array:

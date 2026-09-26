@@ -95,7 +95,7 @@ describe("scanDependencies", () => {
     expect(edges[0]!.relationship).toBe("reads-field")
   })
 
-  it("emits a bare 'imports' edge when the capability is imported but no recognized usage pattern is found", async () => {
+  it("reports a capability imported but only ever passed around bare (console.log(x), never a recognized access pattern) as an indeterminate edge with a real position, not a bare 'resolved' fallback (ADR 0060)", async () => {
     const capabilityFile = await writeFile(
       "user.ts",
       `export const userCapability = createData({ fields: { email: "" } });`,
@@ -121,8 +121,8 @@ describe("scanDependencies", () => {
         relationship: "imports",
         from: rel(consumerFile),
         to: { capability: { file: rel(capabilityFile), exportName: "userCapability" } },
-        resolution: "resolved",
-        position: undefined,
+        resolution: "indeterminate",
+        position: { line: 2, column: 13 },
       },
     ])
   })
@@ -142,7 +142,6 @@ describe("scanDependencies", () => {
         `import { usedCapability } from "./used.js";`,
         `import { unusedCapability } from "./unused.js";`,
         `usedCapability.getA();`,
-        `console.log(unusedCapability);`,
       ].join("\n"),
     )
     const targets: ScanTarget[] = [
@@ -184,6 +183,41 @@ describe("scanDependencies", () => {
         },
         resolution: "resolved",
         position: { line: 3, column: 1 },
+      },
+    ])
+  })
+
+  it("reports a capability handed whole to a child component's props as an indeterminate reads-field edge with a real position, never a bare synthesized 'resolved' edge with no position (ADR 0060)", async () => {
+    const capabilityFile = await writeFile(
+      "user.ts",
+      `export const userCapability = createData({ fields: { email: "" } });`,
+    )
+    const consumerFile = await writeFile(
+      "consumer.tsx",
+      [
+        `import { userCapability } from "./user.js";`,
+        `export const Widget = () => <Child data={userCapability.fields} />;`,
+      ].join("\n"),
+    )
+    const target: ScanTarget = {
+      file: capabilityFile,
+      exportName: "userCapability",
+      getterNames: [],
+      mutatorNames: [],
+      subscriptionNames: [],
+    }
+    const { edges } = await scanDependencies([capabilityFile, consumerFile], [target], {
+      fs: nodeBuildFs,
+      root,
+      tsconfig: false,
+    })
+    expect(edges).toEqual([
+      {
+        relationship: "reads-field",
+        from: rel(consumerFile),
+        to: { capability: { file: rel(capabilityFile), exportName: "userCapability" } },
+        resolution: "indeterminate",
+        position: { line: 2, column: 42 },
       },
     ])
   })

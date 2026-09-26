@@ -26,7 +26,7 @@ export function checkExclusiveGroups(inventory: CapabilityInventory): readonly R
     for (const member of members) {
       const others = members.filter((m) => m !== member).map((m) => m.exportName)
       findings.push({
-        code: "EXCLUSIVE_GROUP_CONFLICT",
+        code: "EXCLUSIVE_GROUP_VIOLATION",
         family: "structural",
         severity: "error",
         message: `"${member.exportName}" shares exclusiveGroup "${group}" with ${others.length} other active ${others.length === 1 ? "capability" : "capabilities"} (${others.join(", ")}) -- only one member of a group should be active at once.`,

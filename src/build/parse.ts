@@ -1061,6 +1061,9 @@ export function collectImportBindings(node: ts.ImportDeclaration, imports: Impor
  * exported). Nested/conditional/dynamically-constructed calls are not this
  * module's concern -- they cannot be statically discovered and are simply
  * never found, never guessed at.
+ *
+ * @remarks
+ * Experimental -- see VERSIONING.md.
  */
 export function parseCapabilityFile(filePath: string, sourceText: string): ParseResult {
   const sourceFile = ts.createSourceFile(

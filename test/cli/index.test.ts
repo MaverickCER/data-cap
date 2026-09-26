@@ -338,7 +338,7 @@ describe("writeFindings (direct)", () => {
         finding({ severity: "info", code: "UNRESOLVED_CONSUMER", message: "i", source: "x" }),
         finding({
           severity: "error",
-          code: "EXCLUSIVE_GROUP_CONFLICT",
+          code: "EXCLUSIVE_GROUP_VIOLATION",
           message: "e",
           capability: { file: "f", exportName: "capE" },
         }),
@@ -354,7 +354,7 @@ describe("writeFindings (direct)", () => {
       [
         "",
         "1 error(s), 1 warning(s), 1 info finding(s):",
-        "  - [error] [EXCLUSIVE_GROUP_CONFLICT] [capE] e",
+        "  - [error] [EXCLUSIVE_GROUP_VIOLATION] [capE] e",
         "  - [warning] [CAPABILITY_MISSING_OWNER] [capW] (user.email) w",
         "  - [info] [UNRESOLVED_CONSUMER] i",
         "",

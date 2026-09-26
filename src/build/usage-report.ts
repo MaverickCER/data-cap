@@ -53,8 +53,10 @@ export function isFieldProvenRead(
 }
 
 /**
- * @internal Every dynamic/computed access on this capability that this pass
- * genuinely cannot attribute to one specific field -- a computed access on the
+ * @internal Every access on this capability that this pass genuinely cannot
+ * attribute to one specific field -- a computed access, or a bare reference
+ * that escaped this pass's local dataflow analysis (passed elsewhere,
+ * spread, assigned, returned, handed to JSX as a prop -- ADR 0060), on the
  * capability itself (`imports` + indeterminate) or on `.fields` directly
  * (`reads-field` + indeterminate + no named field), and only where a source
  * position was captured.
@@ -97,7 +99,7 @@ export function deriveUsageFindings(
         code: "ABANDONED_CAPABILITY",
         family: "usage",
         severity: "warning",
-        message: `"${capability.exportName}" is never imported anywhere in the scanned project.`,
+        message: `"${capability.exportName}" is never imported anywhere in the scanned project -- if it's genuinely unused, remove it; if something imports it dynamically or from outside the scanned root, add a dynamicAccess citation so this scan can account for it.`,
         capability: ref,
       })
       continue
@@ -118,7 +120,7 @@ export function deriveUsageFindings(
           code: "INDETERMINATE_CONSUMER",
           family: "usage",
           severity: "info",
-          message: `"${edge.from}" accesses "${capability.exportName}" using a dynamic/computed property -- can't be statically characterized.`,
+          message: `"${edge.from}" accesses "${capability.exportName}" using a dynamic/computed property, or in a way this scanner's local dataflow analysis can't follow (passed elsewhere, assigned to a new binding, spread, returned, or handed to JSX as a prop) -- can't be statically characterized (ADR 0060).`,
           capability: ref,
           source: edge.from,
         })
@@ -128,7 +130,10 @@ export function deriveUsageFindings(
     // Every access this pass genuinely can't attribute to one specific
     // field -- a dynamic/computed access on the capability itself
     // (`x[computed]`) or on `.fields`/`.getSnapshot().fields` directly
-    // (`x.fields[computed]`). Either could, for all this pass can tell, be
+    // (`x.fields[computed]`), or a bare reference to either that escaped
+    // this pass's local dataflow analysis entirely (passed elsewhere,
+    // spread, assigned to a new binding, returned, handed to JSX as a prop
+    // -- ADR 0060). Any of these could, for all this pass can tell, be
     // targeting ANY currently-unproven field on this capability -- so an
     // otherwise-"unconsumed" field here is genuinely uncertain, not
     // genuinely unused (see the five-state model in ADR 0052).
@@ -171,7 +176,7 @@ export function deriveUsageFindings(
           code: "FIELD_ACCESS_INDETERMINATE",
           family: "usage",
           severity: "info",
-          message: `Field "${field.path.join(".")}" on "${capability.exportName}" appears unused, but there are instances of dynamic/computed access on this capability that can't be statically attributed to a specific field -- it may be one of them.`,
+          message: `Field "${field.path.join(".")}" on "${capability.exportName}" appears unused, but there are instances of dynamic/computed access, or a reference this scanner's local dataflow analysis can't follow, on this capability that can't be statically attributed to a specific field -- it may be one of them.`,
           capability: ref,
           field: field.path,
           ...(field.declarationPosition !== undefined
@@ -186,7 +191,7 @@ export function deriveUsageFindings(
         code: "UNCONSUMED_FIELD",
         family: "usage",
         severity: "warning",
-        message: `Field "${field.path.join(".")}" on "${capability.exportName}" is written but never statically read in the scanned project.`,
+        message: `Field "${field.path.join(".")}" on "${capability.exportName}" is written but never statically read in the scanned project -- if it's genuinely unused, remove it; if something reads it dynamically or from outside the scanned root, add a dynamicAccess citation so this scan can account for it.`,
         capability: ref,
         field: field.path,
         ...(field.declarationPosition !== undefined ? { position: field.declarationPosition } : {}),

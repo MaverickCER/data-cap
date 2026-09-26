@@ -13,6 +13,9 @@ export type ResolveWithinRootResult =
  * package-declared schema path both exists on disk and crosses a real trust
  * boundary). Boundary-agnostic on purpose: neither caller's notion of "root"
  * is baked in here.
+ *
+ * @remarks
+ * Experimental -- see VERSIONING.md.
  */
 export function isWithinDirectory(baseDir: string, targetPath: string): boolean {
   const relative = path.relative(baseDir, targetPath)
@@ -32,6 +35,9 @@ export function isWithinDirectory(baseDir: string, targetPath: string): boolean 
  *
  * Never throws itself -- returns a `ParseWarning`-shaped finding on escape
  * so each generator function can wrap it in its own error type.
+ *
+ * @remarks
+ * Experimental -- see VERSIONING.md.
  */
 export function resolveWithinRoot(
   root: string,

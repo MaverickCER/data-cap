@@ -48,10 +48,15 @@ Stable/Experimental/Private API classification. Before `1.0`, any minor
 release may change a Stable API; there is no LTS branch and no extended
 security-support window beyond the latest published `0.x` (see
 [`SECURITY.md`](SECURITY.md)'s "Supported versions"). This is the honest
-gap for an organization evaluating adoption at scale today: there is
-currently no forward commitment about post-`1.0` backport policy. If that
-gap is a blocker for your evaluation, wait for a `1.0` release or track
-[`specs/decisions/`](specs/decisions/) for when that commitment is made.
+gap for an organization evaluating adoption at scale today.
+
+Starting at the first `1.0` release, security fixes will be backported to
+the latest minor release of the previous major version for a minimum of six
+months after a new major version ships, per
+[ADR 0061](specs/decisions/0061-security-backport-window.md) — a forward
+commitment, not yet a proven track record. If the pre-`1.0` gap above is a
+blocker for your evaluation today, wait for a `1.0` release or track
+[`specs/decisions/`](specs/decisions/) for when it lands.
 
 ## Bundle size and performance
 
@@ -92,8 +97,9 @@ state-management tooling keeps doing what it already does underneath.
 
 ## Questions this document doesn't answer
 
-- **What does a post-`1.0` backport/LTS policy look like?** Not yet
-  decided — see "Versioning, stability, and long-term support" above.
+- **What does a post-`1.0` backport/LTS policy look like?** Decided — see
+  "Versioning, stability, and long-term support" above and
+  [ADR 0061](specs/decisions/0061-security-backport-window.md).
 - **Is there a first-party adapter for [some other library]?** No, and
   none are planned — see
   [ADR 0037](specs/decisions/0037-no-first-party-integration-packages.md).
