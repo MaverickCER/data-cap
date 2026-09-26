@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "provenance": {
-    "generatedAt": "2026-09-16T09:50:10.152Z",
+    "generatedAt": "2026-09-25T19:44:51.767Z",
     "toolVersion": "0.3.1"
   },
   "capability": {
@@ -412,7 +412,7 @@
         "code": "UNCONSUMED_FIELD",
         "family": "usage",
         "severity": "warning",
-        "message": "Field \"todos\" on \"todoData\" is written but never statically read in the scanned project.",
+        "message": "Field \"todos\" on \"todoData\" is written but never statically read in the scanned project -- if it's genuinely unused, remove it; if something reads it dynamically or from outside the scanned root, add a dynamicAccess citation so this scan can account for it.",
         "location": {
           "kind": "field",
           "capability": {

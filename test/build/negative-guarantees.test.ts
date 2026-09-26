@@ -235,10 +235,10 @@ describe('Negative guarantee 2 -- UNCONSUMED_FIELD never regresses into "probabl
     expect(findings.some((f) => f.code === "FIELD_ACCESS_INDETERMINATE")).toBe(true)
   })
 
-  it("UNCONSUMED_FIELD's message text is unchanged from before the five-state model existed", () => {
+  it("UNCONSUMED_FIELD's message text carries the five-state model's own wording, plus an explicit fix", () => {
     const findings = deriveUsageFindings(inventory([capability()]), [edge()])
     expect(findings.find((f) => f.code === "UNCONSUMED_FIELD")?.message).toBe(
-      'Field "email" on "userCapability" is written but never statically read in the scanned project.',
+      'Field "email" on "userCapability" is written but never statically read in the scanned project -- if it\'s genuinely unused, remove it; if something reads it dynamically or from outside the scanned root, add a dynamicAccess citation so this scan can account for it.',
     )
   })
 })
@@ -356,7 +356,7 @@ describe("Negative guarantee 4 -- a dynamicAccess citation existing and hash-mat
       nodeBuildFs,
     )
     expect(findings).toHaveLength(1)
-    expect(findings[0]?.code).toBe("DYNAMIC_ACCESS_CITATION_MISSING")
+    expect(findings[0]?.code).toBe("MISSING_DYNAMIC_ACCESS_CITATION")
     const forbidden = /\b(the access was never proven|access was verified|verified access)\b/i
     expect(findings[0]?.message).not.toMatch(forbidden)
   })

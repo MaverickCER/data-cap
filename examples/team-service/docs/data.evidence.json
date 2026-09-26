@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "provenance": {
-    "generatedAt": "2026-09-15T16:04:10.810Z",
+    "generatedAt": "2026-09-25T19:44:20.567Z",
     "toolVersion": "0.3.1"
   },
   "capability": {
@@ -161,8 +161,10 @@
           "fields": {
             "members": {
               "description": "The full team member directory.",
+              "owner": "identity-team",
               "sensitivity": "internal",
               "protections": "Session-authenticated access only; TLS in transit.",
+              "retention": "Removed from the directory within 30 days of the member's offboarding.",
               "purpose": "Resolving assignee names for display across every project."
             }
           },
@@ -194,13 +196,15 @@
             ],
             "docs": {
               "description": "The full team member directory.",
+              "owner": "identity-team",
               "sensitivity": "internal",
               "protections": "Session-authenticated access only; TLS in transit.",
+              "retention": "Removed from the directory within 30 days of the member's offboarding.",
               "purpose": "Resolving assignee names for display across every project."
             },
             "owner": {
-              "value": "platform-team",
-              "declaredOn": "capability"
+              "value": "identity-team",
+              "declaredOn": "field"
             },
             "sensitivity": {
               "value": "internal",
@@ -635,7 +639,20 @@
   },
   "lifecycle": {
     "schemaVersion": 1,
-    "capabilities": [],
+    "capabilities": [
+      {
+        "file": "src/capabilities/member.capability.ts",
+        "exportName": "memberData",
+        "fields": [
+          {
+            "path": [
+              "members"
+            ],
+            "retention": "Removed from the directory within 30 days of the member's offboarding."
+          }
+        ]
+      }
+    ],
     "expiring": []
   },
   "computed": {
@@ -961,6 +978,21 @@
     "schemaVersion": 2,
     "entries": [
       {
+        "owner": "identity-team",
+        "capabilities": [],
+        "fields": [
+          {
+            "capability": {
+              "file": "src/capabilities/member.capability.ts",
+              "exportName": "memberData"
+            },
+            "field": [
+              "members"
+            ]
+          }
+        ]
+      },
+      {
         "owner": "notifications-team",
         "capabilities": [
           {
@@ -988,17 +1020,7 @@
             "exportName": "memberData"
           }
         ],
-        "fields": [
-          {
-            "capability": {
-              "file": "src/capabilities/member.capability.ts",
-              "exportName": "memberData"
-            },
-            "field": [
-              "members"
-            ]
-          }
-        ]
+        "fields": []
       },
       {
         "owner": "project-team",

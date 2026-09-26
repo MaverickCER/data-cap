@@ -46,7 +46,7 @@ Owner: platform-team · Category: — · Active: yes
 
 | Field | Description | Owner | Sensitivity (declared) | Protections (documented) | Retention (documented) | Written by | Consumed at (proven) |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `members` | The full team member directory. | platform-team | internal | Session-authenticated access only; TLS in transit. | not documented | `getter:listMembers` | src/capabilities/project.capability.ts:31:19 |
+| `members` | The full team member directory. | identity-team | internal | Session-authenticated access only; TLS in transit. | Removed from the directory within 30 days of the member's offboarding. | `getter:listMembers` | src/capabilities/project.capability.ts:31:19 |
 
 #### Getters
 

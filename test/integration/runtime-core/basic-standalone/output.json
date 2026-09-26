@@ -14,5 +14,9 @@
   "frozen": {
     "snapshot": true,
     "user": true
+  },
+  "dedupeProof": {
+    "concurrentCalls": 2,
+    "realFetchUserCalls": 1
   }
 }

@@ -16,17 +16,20 @@ _None._
 
 ### Warnings
 
-- **UNCONSUMED_FIELD**: Field "projects" on "projectsData" is written but never statically read in the scanned project.
 - **SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY**: Field "invoices" on "billingData" is sensitivity "confidential" and has a declared endpoint crossing an external-service/api/queue boundary -- verify this is intentional and adequately protected.
 - **SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY**: Field "currentUser" on "identityData" is sensitivity "confidential" and has a declared endpoint crossing an external-service/api/queue boundary -- verify this is intentional and adequately protected.
 - **SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY**: Field "projects" on "projectsData" is sensitivity "internal" and has a declared endpoint crossing an external-service/api/queue boundary -- verify this is intentional and adequately protected.
 
 ### Informational
 
-- **INDETERMINATE_CONSUMER**: "src/server/legacy-compliance-sync.ts" accesses "billingData" using a dynamic/computed property -- can't be statically characterized.
+- **INDETERMINATE_CONSUMER**: "src/components/BillingPanel.tsx" accesses "billingData" using a dynamic/computed property, or in a way this scanner's local dataflow analysis can't follow (passed elsewhere, assigned to a new binding, spread, returned, or handed to JSX as a prop) -- can't be statically characterized (ADR 0060).
+- **INDETERMINATE_CONSUMER**: "src/server/legacy-compliance-sync.ts" accesses "billingData" using a dynamic/computed property, or in a way this scanner's local dataflow analysis can't follow (passed elsewhere, assigned to a new binding, spread, returned, or handed to JSX as a prop) -- can't be statically characterized (ADR 0060).
 - **FIELD_DYNAMIC_ACCESS_DECLARED**: Per developers, this data point is dynamically accessed at src/server/legacy-compliance-sync.ts:26:19.
-- **INDETERMINATE_CONSUMER**: "src/server/legacy-compliance-sync.ts" accesses "identityData" using a dynamic/computed property -- can't be statically characterized.
-- **FIELD_ACCESS_INDETERMINATE**: Field "currentUser" on "identityData" appears unused, but there are instances of dynamic/computed access on this capability that can't be statically attributed to a specific field -- it may be one of them.
+- **INDETERMINATE_CONSUMER**: "src/routes.tsx" accesses "identityData" using a dynamic/computed property, or in a way this scanner's local dataflow analysis can't follow (passed elsewhere, assigned to a new binding, spread, returned, or handed to JSX as a prop) -- can't be statically characterized (ADR 0060).
+- **INDETERMINATE_CONSUMER**: "src/server/legacy-compliance-sync.ts" accesses "identityData" using a dynamic/computed property, or in a way this scanner's local dataflow analysis can't follow (passed elsewhere, assigned to a new binding, spread, returned, or handed to JSX as a prop) -- can't be statically characterized (ADR 0060).
+- **FIELD_ACCESS_INDETERMINATE**: Field "currentUser" on "identityData" appears unused, but there are instances of dynamic/computed access, or a reference this scanner's local dataflow analysis can't follow, on this capability that can't be statically attributed to a specific field -- it may be one of them.
+- **INDETERMINATE_CONSUMER**: "src/components/ProjectsPanel.tsx" accesses "projectsData" using a dynamic/computed property, or in a way this scanner's local dataflow analysis can't follow (passed elsewhere, assigned to a new binding, spread, returned, or handed to JSX as a prop) -- can't be statically characterized (ADR 0060).
+- **FIELD_ACCESS_INDETERMINATE**: Field "projects" on "projectsData" appears unused, but there are instances of dynamic/computed access, or a reference this scanner's local dataflow analysis can't follow, on this capability that can't be statically attributed to a specific field -- it may be one of them.
 
 ## System overview diagram
 

@@ -2,7 +2,13 @@
 
 ## Status
 
-Accepted. Implemented in `src/eslint-plugin/stable-operation-reference.ts`.
+Superseded by [ADR 0063](0063-eslint-plugin-multiple-rules-and-no-fields-spread.md)'s
+"each rule independently justified against the same bar" framing — the
+plugin now ships more than one rule. The "one mistake class specific
+enough to this package's own architecture" bar this ADR originally set,
+and the reasoning below for why `stable-operation-reference` itself meets
+it, both still hold; only the "exactly one" cardinality claim is
+superseded. Implemented in `src/eslint-plugin/stable-operation-reference.ts`.
 
 ## Context
 

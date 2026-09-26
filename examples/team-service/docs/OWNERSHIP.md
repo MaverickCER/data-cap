@@ -8,6 +8,11 @@
 
 ## Ownership matrix
 
+### identity-team
+
+Capabilities: _none_
+Fields: `memberData.members`
+
 ### notifications-team
 
 Capabilities: `assignmentsData`
@@ -16,7 +21,7 @@ Fields: `assignmentsData.myTasks`
 ### platform-team
 
 Capabilities: `memberData`
-Fields: `memberData.members`
+Fields: _none_
 
 ### project-team
 

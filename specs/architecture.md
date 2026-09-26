@@ -106,7 +106,7 @@ for its own redaction at the point it logs. See [SECURITY.md](../SECURITY.md) an
 
 ## The entry points
 
-```
+```text
 src/
 ├── core/           data-cap                 (isomorphic, zero deps)
 ├── runtime/        data-cap/runtime          (optional, standalone state)
@@ -365,8 +365,9 @@ programmatic consumer imports the same adapter from `data-cap/node`.
   ([ADR 0040](decisions/0040-build-tooling-detects-correlation-mismatches.md)).
 - **`resolution/`** — `resolve-import.ts`/`resolve-tsconfig-paths.ts`/
   `resolve-package-schema.ts`/`resolve-within-root.ts`: specifier-to-file
-  resolution (relative, tsconfig-alias, cross-package), relocated from and
-  kept in sync with env-cap's own equivalent folder
+  resolution (relative, tsconfig-alias, cross-package), copied from
+  env-cap's own equivalent folder as a one-time seed; the two now evolve
+  independently
   ([ADR 0043](decisions/0043-env-cap-resolver-relocated-and-duplicated.md)).
 - **`inventory.ts`** — `buildInventory(linkResult)`: a pure function
   turning a `LinkResult` into the one authoritative `CapabilityInventory`

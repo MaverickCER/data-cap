@@ -5,12 +5,21 @@
  * Never traces variable aliasing, destructuring, or re-assignment: a
  * capability reference passed to another function, stored under a new
  * name, or destructured apart is a real usage this module cannot follow
- * without genuine scope analysis, so it contributes nothing beyond the
- * base `imports` edge -- matching AGENTS.md's "never infer from
- * insufficient evidence" invariant. Only the direct shapes real usage
- * overwhelmingly takes are recognized: `x.field(...)` calls, `x.fields.*`/
- * `x.getSnapshot().fields.*` reads, and `x[computed]` dynamic access
- * (flagged `indeterminate`, never guessed at).
+ * without genuine scope analysis. Per ADR 0060, that boundary is never
+ * silence: `x.field(...)` calls and `x.fields.*`/`x.getSnapshot().fields.*`
+ * reads are proven `reads-field`/`calls-*` edges; `x[computed]` and
+ * `x.fields[computed]` dynamic access are `indeterminate` (never guessed
+ * at); and every other bare mention of a tracked binding -- passed as an
+ * argument, spread, assigned to a new name, returned, or handed to JSX as
+ * a prop -- is an *escape*: also `indeterminate`, widening every
+ * not-otherwise-proven field on that capability (see `usage-report.ts`'s
+ * `collectIndeterminateSites`), never silently downgraded to `unconsumed`.
+ * The binding's own import/export/declaration position is the one bare
+ * mention that is never a usage at all (see `isDeclarationOrExportPosition`),
+ * and a bare mention used only as another expression's element-access
+ * *key* (`registry[x]`, `registry[x.fields]`) is inert with respect to this
+ * capability's own data and produces no edge either (see
+ * `isElementAccessIndex`).
  */
 
 import ts from "typescript"
@@ -80,16 +89,91 @@ function readFieldNameAfter(fieldsAccess: ts.PropertyAccessExpression): string |
 }
 
 /**
- * Whether `.fields` (or `.getSnapshot().fields`) is immediately followed by
- * an element access at all -- `x.fields[computed]` -- as opposed to a bare
- * reference (`x.fields` spread, passed whole, assigned). Only called after
- * `readFieldNameAfter` already returned `undefined`, so when this is `true`
- * the element access's argument specifically wasn't a string literal: a
- * real per-field access this pass can't name, not the absence of one.
+ * Whether `node` sits only as another expression's element-access *key*
+ * (`registry[x]`, `registry[x.fields]`) rather than as the value being
+ * read. The capability's own identity is used here, never its data --
+ * inert with respect to what this scan tracks, so it is neither a proven
+ * access nor an escape (ADR 0060).
  */
-function isIndexedAccess(fieldsAccess: ts.PropertyAccessExpression): boolean {
-  const next = fieldsAccess.parent
-  return ts.isElementAccessExpression(next) && next.expression === fieldsAccess
+function isElementAccessIndex(node: ts.Node): boolean {
+  const parent = node.parent
+  return ts.isElementAccessExpression(parent) && parent.argumentExpression === node
+}
+
+/**
+ * Whether `id` sits in the tracked binding's own declaration -- an
+ * `import` specifier/clause, a re-`export` specifier, or (for a capability
+ * declared and read in the same file) the `const`/`let` declaration's own
+ * name. None of these is ever a usage, proven or escaped (ADR 0060) --
+ * matching `scanFileForUsage`'s existing guarantee that an import
+ * declaration is walked but never mistaken for a usage, extended to the
+ * self-declared-capability shape `scan-dependencies.ts`'s `selfMatches`
+ * introduces.
+ */
+function isDeclarationOrExportPosition(id: ts.Identifier, parent: ts.Node): boolean {
+  if (ts.isImportSpecifier(parent) || ts.isImportClause(parent) || ts.isNamespaceImport(parent)) {
+    return true
+  }
+  if (ts.isExportSpecifier(parent)) return true
+  return ts.isVariableDeclaration(parent) && parent.name === id
+}
+
+/**
+ * Whether `id` sits in a "name" (label/key) position -- an unrelated
+ * object's member access, an object literal's own property key, a
+ * class/interface member's own name -- rather than being read as a value.
+ * A same-named local binding (`getUser`, say) coincidentally colliding with
+ * one of these labels elsewhere in the file (`other.getUser()`, `{ getUser:
+ * 1 }`) is never a reference to the tracked binding itself, escaped or
+ * otherwise (ADR 0060) -- this pass matches identifiers by text alone
+ * (ADR 0010), so it must exclude every "name," not just member access,
+ * where that text can recur without meaning the same thing.
+ *
+ * Deliberately excludes `ShorthandPropertyAssignment` (`{ getUser }`,
+ * meaning `{ getUser: getUser }`): there, the identifier genuinely IS a
+ * value reference to the outer binding, spread into the object literal --
+ * a real escape, not a label collision.
+ *
+ * `parent.name === id` is checked for `PropertyAccessExpression` (`.name`
+ * or `.expression` can each be a bare identifier: `other.getUser`) and
+ * `PropertyAssignment` (`.name` or `.initializer` can each be one: `{
+ * someKey: getUser }` is a real escape, not a label). It is NOT checked for
+ * `PropertySignature`/`MethodDeclaration`/`MethodSignature`/accessors,
+ * because those node kinds expose no OTHER direct-child identifier `id`
+ * could be: every other slot (`.type`, `.parameters`, `.body`, ...) is
+ * itself a further AST node, never a bare `Identifier` sitting directly at
+ * `id.parent`. So whenever `parent` IS one of those kinds at all, `id`
+ * being its child already proves `id` is `.name`.
+ */
+function isNamePosition(id: ts.Identifier, parent: ts.Node): boolean {
+  if (ts.isPropertyAccessExpression(parent) && parent.name === id) return true
+  if (ts.isPropertyAssignment(parent) && parent.name === id) return true
+  if (ts.isPropertySignature(parent)) return true
+  if (ts.isMethodDeclaration(parent)) return true
+  if (ts.isMethodSignature(parent)) return true
+  if (ts.isGetAccessor(parent) || ts.isSetAccessor(parent)) return true
+  return false
+}
+
+/**
+ * What a `.fields` (or `.getSnapshot().fields`) access proves, once it's
+ * confirmed to be reading FROM `fieldsAccess` rather than merely being
+ * indexed BY it elsewhere (`registry[x.fields]` -- `undefined`, not a read
+ * of `x`'s data at all). A computed `.fields[computed]` index and a bare
+ * reference (spread, passed, assigned, returned, handed to JSX as a prop,
+ * ...) both resolve to the same `"indeterminate"` outcome -- see ADR 0060 --
+ * so they are never distinguished here.
+ */
+type FieldsAccessOutcome =
+  { readonly kind: "field"; readonly field: string } | { readonly kind: "indeterminate" }
+
+function classifyFieldsAccess(
+  fieldsAccess: ts.PropertyAccessExpression,
+): FieldsAccessOutcome | undefined {
+  const fieldName = readFieldNameAfter(fieldsAccess)
+  if (fieldName !== undefined) return { kind: "field", field: fieldName }
+  if (isElementAccessIndex(fieldsAccess)) return undefined
+  return { kind: "indeterminate" }
 }
 
 function classifyUsage(
@@ -103,23 +187,37 @@ function classifyUsage(
   const { target, resolution } = match
   const position = positionOf(sourceFile, id)
 
-  if (ts.isElementAccessExpression(parent) && parent.expression === id) {
-    edges.push(makeEdge("imports", fromFile, target, "indeterminate", position))
+  if (isDeclarationOrExportPosition(id, parent)) return // the binding's own import/export/self-declaration -- never a usage
+  if (isNamePosition(id, parent)) return // e.g. `other.getUser()`, `{ getUser: 1 }` -- a same-named label, never a reference to the tracked binding
+
+  // `id` can only be a `PropertyAccessExpression`'s `.expression` or `.name`
+  // (its only two identifier-bearing slots), and `isNamePosition` above
+  // already excluded `.name` -- so whenever `parent` IS one, `id` is
+  // provably its subject, and this check alone is enough to also rule out
+  // every OTHER shape a bare mention takes (an `ElementAccessExpression`'s
+  // object or key, a `CallExpression` argument, a `JsxExpression`, a
+  // `ReturnStatement`, spread, assignment, ...).
+  if (!ts.isPropertyAccessExpression(parent)) {
+    // A bare mention: passed as an argument, spread, assigned to a new
+    // name, returned, handed to JSX as a prop, ... -- unless `id` is merely
+    // used as some OTHER expression's element-access key (`registry[x]`,
+    // never a read of `x`'s own data), this is a real, provable reference
+    // this single-file pass simply can't attribute to any specific field.
+    // Escalated to `indeterminate` (ADR 0060), never silently dropped to
+    // `unconsumed` -- the exact false claim of certainty ADR 0039 (env-cap)
+    // already fixed for the sibling package's own equivalent scanner.
+    if (!isElementAccessIndex(id)) {
+      edges.push(makeEdge("imports", fromFile, target, "indeterminate", position))
+    }
     return
   }
-
-  if (!ts.isPropertyAccessExpression(parent) || parent.expression !== id) return // bare reference (passed as an argument, assigned, spread, ...) -- not further classified
   const memberName = parent.name.text
 
   if (memberName === "fields") {
-    const fieldName = readFieldNameAfter(parent)
-    if (fieldName !== undefined) {
-      edges.push(makeEdge("reads-field", fromFile, target, resolution, position, [fieldName]))
-    } else if (isIndexedAccess(parent)) {
-      // `.fields[computed]` where `computed` isn't a string literal -- a
-      // real access this pass can't name, never silently dropped (see this
-      // module's own header comment on "never infer from insufficient
-      // evidence" -- disclosed as indeterminate, not treated as absent).
+    const outcome = classifyFieldsAccess(parent)
+    if (outcome?.kind === "field") {
+      edges.push(makeEdge("reads-field", fromFile, target, resolution, position, [outcome.field]))
+    } else if (outcome?.kind === "indeterminate") {
       edges.push(makeEdge("reads-field", fromFile, target, "indeterminate", position))
     }
     return
@@ -128,15 +226,33 @@ function classifyUsage(
   if (memberName === "getSnapshot") {
     const call = parent.parent
     if (!ts.isCallExpression(call) || call.expression !== parent) return
-    // `afterCall` is a member access whose object-expression is the call, so
-    // (like `readFieldNameAfter`) `afterCall.expression === call` is implied
-    // once `afterCall` is a `PropertyAccessExpression`.
     const afterCall = call.parent
-    if (!ts.isPropertyAccessExpression(afterCall) || afterCall.name.text !== "fields") return
-    const fieldName = readFieldNameAfter(afterCall)
-    if (fieldName !== undefined) {
-      edges.push(makeEdge("reads-field", fromFile, target, resolution, position, [fieldName]))
-    } else if (isIndexedAccess(afterCall)) {
+    // A `CallExpression` can only ever be a wrapping `PropertyAccessExpression`'s
+    // `.expression` (its object), never its `.name` (always an `Identifier`) --
+    // so `afterCall.expression === call` is implied whenever `afterCall` is a
+    // `PropertyAccessExpression` at all, exactly as `readFieldNameAfter` already
+    // relies on for `.fields` itself.
+    const narrowsToFields =
+      ts.isPropertyAccessExpression(afterCall) && afterCall.name.text === "fields"
+    if (!narrowsToFields) {
+      // Explicitly narrowed to some OTHER named property
+      // (`.getSnapshot().info`) -- provably never reads `.fields` through
+      // this access at all, so not an escape either. Anything else
+      // (assigned, returned, spread, passed as an argument/prop, or
+      // narrowed by a computed key) is ambiguous: `.fields` might still be
+      // reached through it, just not in a shape this pass can follow --
+      // indeterminate, unless the call result is merely used as another
+      // expression's element-access key.
+      const narrowsToOtherProperty = ts.isPropertyAccessExpression(afterCall)
+      if (!narrowsToOtherProperty && !isElementAccessIndex(call)) {
+        edges.push(makeEdge("reads-field", fromFile, target, "indeterminate", position))
+      }
+      return
+    }
+    const outcome = classifyFieldsAccess(afterCall)
+    if (outcome?.kind === "field") {
+      edges.push(makeEdge("reads-field", fromFile, target, resolution, position, [outcome.field]))
+    } else if (outcome?.kind === "indeterminate") {
       edges.push(makeEdge("reads-field", fromFile, target, "indeterminate", position))
     }
     return

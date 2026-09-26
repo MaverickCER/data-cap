@@ -34,4 +34,4 @@ _No capability statically depends on another capability._
 
 | Severity | Code | Capability | Message |
 | --- | --- | --- | --- |
-| warning | UNCONSUMED_FIELD | `todoData` | Field "todos" on "todoData" is written but never statically read in the scanned project. |
+| warning | UNCONSUMED_FIELD | `todoData` | Field "todos" on "todoData" is written but never statically read in the scanned project -- if it's genuinely unused, remove it; if something reads it dynamically or from outside the scanned root, add a dynamicAccess citation so this scan can account for it. |

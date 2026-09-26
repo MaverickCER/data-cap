@@ -228,9 +228,18 @@ documentData(taskSchema, {
       sensitivity: "internal",
       protections: "Session-authenticated access only; TLS in transit.",
       purpose: "Displaying and managing the user's own work items.",
+      retention: "Deleted immediately when the task is deleted, or when the account is deleted.",
     },
+    // A field's own `owner` overrides the capability's ("productivity-team",
+    // above) for that field specifically (see `src/core/document.ts`'s
+    // `FieldDocs.owner`) -- this is that override, demonstrated for real:
+    // `selectedTask` is the single-record detail view (plus its live
+    // subscription), a strictly larger exposure surface than the list, so
+    // its own field-level access review is owned by security-team, distinct
+    // from productivity-team's ownership of the capability as a whole.
     selectedTask: {
       description: "One task's own full detail -- null until the first successful getTask().",
+      owner: "security-team",
       sensitivity: "internal",
       protections: "Session-authenticated access only; TLS in transit.",
       purpose: "Displaying a single task's detail view.",

@@ -55,11 +55,19 @@ documentData(memberSchema, {
   legalBasis: "contract",
   dataResidency: "us",
   fields: {
+    // A field's own `owner` overrides the capability's ("platform-team",
+    // above) for that field specifically (see `src/core/document.ts`'s
+    // `FieldDocs.owner`) -- demonstrated for real here: platform-team owns
+    // the directory *capability* (making "who's on the team" resolvable
+    // cross-project), but each `Member` record carries `email`, so
+    // identity-team owns this specific field's own governance.
     members: {
       description: "The full team member directory.",
+      owner: "identity-team",
       sensitivity: "internal",
       protections: "Session-authenticated access only; TLS in transit.",
       purpose: "Resolving assignee names for display across every project.",
+      retention: "Removed from the directory within 30 days of the member's offboarding.",
     },
   },
   getters: {

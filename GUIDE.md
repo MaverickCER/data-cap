@@ -4,15 +4,14 @@ The reference manual: the documented example, fields & info, optimistic mutation
 
 For the pitch, quick start, and adoption reasoning, see [README.md](README.md). For why the package is built the way it is, see [specs/architecture.md](specs/architecture.md) and the [ADRs](specs/decisions/).
 
-- [Runtime support matrix](#runtime-support-matrix)
-- [AI-Assisted Integration](#ai-assisted-integration)
-- [The low-level path: full manual control](#the-low-level-path-full-manual-control)
 - [Documented example](#documented-example)
 - [Fields and info](#fields-and-info)
 - [Optimistic mutations](#optimistic-mutations)
 - [Array identity](#array-identity)
 - [Subscriptions](#subscriptions)
 - [Coordinator: dedup and isolation](#coordinator-dedup-and-isolation)
+- [Runtime support matrix](#runtime-support-matrix)
+- [The low-level path: full manual control](#the-low-level-path-full-manual-control)
 - [Cache and retry](#cache-and-retry)
 - [Helpers](#helpers)
 - [TanStack Query and Socket.IO](#tanstack-query-and-socketio)
@@ -24,95 +23,7 @@ For the pitch, quick start, and adoption reasoning, see [README.md](README.md). 
 - [Security model](#security-model)
 - [Troubleshooting](#troubleshooting)
 - [Performance characteristics](#performance-characteristics)
-
-## Runtime support matrix
-
-| Entry point                                       | Node                                                                                                                                                | Browser | Bun                                      | Deno | Edge/serverless |
-| ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | ---------------------------------------- | ---- | --------------- |
-| `.` (core)                                        | ✅                                                                                                                                                  | ✅      | ✅                                       | ✅   | ✅              |
-| `./runtime`, `./runtime/cache`, `./runtime/retry` | ✅                                                                                                                                                  | ✅      | ✅                                       | ✅   | ✅              |
-| `./helpers`                                       | ✅                                                                                                                                                  | ✅      | ✅                                       | ✅   | ✅              |
-| `./build`                                         | ✅ (Node-only — uses the TypeScript Compiler API; never `node:fs`, see [ADR 0058](specs/decisions/0058-library-surfaces-do-not-acquire-node-fs.md)) | ❌      | ✅                                       | ✅   | ❌              |
-| `./evidence`                                      | ✅                                                                                                                                                  | ✅      | ✅                                       | ✅   | ✅              |
-| `./eslint-plugin`                                 | ✅ (Node-only — runs inside ESLint)                                                                                                                 | ❌      | ❌ (ESLint itself doesn't run under Bun) | ❌   | ❌              |
-
-Bun/Deno rows for `core`/`runtime`/`helpers` are verified directly against real Bun and Deno engines in CI (`test/cross-runtime/`), not just claimed by analogy to Node. See the further reading below for the full architectural model, and [the docs site's comparison and FAQ sections](https://maverickcer.github.io/data-cap/#comparison) for more on how this compares to conventional fetch-and-`useState`/global-store patterns.
-
-## AI-Assisted Integration
-
-`data-cap` is designed to provide a clear architectural boundary that can also be understood and analyzed by AI coding assistants.
-
-When integrating `data-cap` into an existing repository, the repository's existing architecture, persistence model, transport layer, and ownership boundaries should be analyzed before introducing contracts.
-
-For AI-agent-specific guidance, see:
-
-- [`AGENTS.md`](AGENTS.md)
-- [`skills/data-cap/SKILL.md`](skills/data-cap/SKILL.md)
-
-The canonical architectural specification remains [`specs/architecture.md`](specs/architecture.md); Architecture Decision Records remain authoritative for decisions that have been explicitly recorded in [`specs/decisions/`](specs/decisions/).
-
-## The low-level path: full manual control
-
-For applications that want to own execution, retry, and caching policy
-themselves instead of the batteries-included default, `buildData` +
-`createDataStore` + `coordinator` are the same Stable primitives
-`createData` is built from, usable directly:
-
-```ts
-import { buildData, fields } from "data-cap"
-import { createDataStore, defaultCoordinator } from "data-cap/runtime"
-
-const capability = buildData({
-  fields: {
-    user: { name: "", email: "" },
-    nickname: fields.optional(""),
-  },
-})
-const store = createDataStore(capability)
-
-async function fetchUser(signal: AbortSignal) {
-  return fetch("/api/user", { signal }).then((r) => r.json())
-}
-
-async function loadUser(): Promise<void> {
-  const controller = new AbortController()
-  store.commitAuthoritative(undefined, { user: { status: "loading" } })
-  try {
-    const raw = await defaultCoordinator.dedupe(
-      (_params, signal) => fetchUser(signal),
-      undefined,
-      controller.signal,
-    )
-    store.commitAuthoritative({ user: raw }, { user: { status: "success", source: "loadUser" } })
-  } catch (error) {
-    store.commitAuthoritative(undefined, {
-      user: { status: "error", error: { operator: "loadUser", error } },
-    })
-  }
-}
-```
-
-This is the exact pattern `test/integration/runtime-core/basic-standalone/` demonstrates end to
-end, with real assertions — most other examples in `examples/` build on
-this same shape. Both paths compose the same underlying primitives; neither
-is "the" way — pick per capability based on how much control you need over
-that specific operation's execution.
-
-Fields are synchronously readable immediately — unlike `env-cap`,
-`data-cap` does not use a throw-until-ready gate for ordinary field access.
-`data.info` is always present too (never optional), just structurally
-sparse until something has actually executed; `getSnapshot().operations`
-additionally tracks each getter/mutator/subscription call by its own
-canonicalized params, so two differently-parameterized concurrent calls to
-the same operation stay independently observable. `getUser`/`updateUser`
-methods reject on failure like ordinary Promises (fire-and-forget is `void
-userData.getUser(...)`, not a different Promise contract); `runGetters`
-runs several getters concurrently and never rejects itself, returning a
-structured per-operation outcome instead. `getSnapshot()`/`subscribe()` are
-directly `useSyncExternalStore`-compatible, no data-cap-specific hook
-required. See `examples/application/` for this worked fully, and
-[ADR 0048](specs/decisions/0048-builddata-createdata-split-and-optional-operations-layer.md)
-for the complete behavioral contract.
+- [AI-Assisted Integration](#ai-assisted-integration)
 
 ## Documented example
 
@@ -130,13 +41,31 @@ export const userCapability = buildData({ fields: userFields })
 documentData(
   { fields: userFields },
   {
+    owner: "identity-team",
+    purpose: "Core account identity used across the product.",
     fields: {
       name: { description: "The user's display name." },
-      email: { description: "The user's primary email address." },
+      email: {
+        description: "The user's primary email address.",
+        // A field's own `owner`/`sensitivity`/`purpose`/`retention` override
+        // the capability-level value of the same name for that field only --
+        // see `FieldDocs` in specs/architecture.md.
+        owner: "identity-team",
+        sensitivity: "restricted",
+        purpose: "Account recovery and transactional notifications.",
+        retention: "Deleted with the account.",
+      },
     },
   },
 )
 ```
+
+The full field-governance vocabulary (`description`/`owner`/`sensitivity`/`protections`/
+`retention`/`purpose`/`legalBasis`/`dataResidency`/`auditRequired`/`expiresAt`/`deprecated`/
+`metadata`) is documented on `FieldDocs` in the generated [API reference](https://maverickcer.github.io/data-cap/api/);
+the same names, minus per-field overrides, exist at the capability level on `CapabilityDocs`
+(`owner`, `purpose`, `legalBasis`, `dataResidency`, ... — see `examples/team-service/src/capabilities/member.capability.ts`
+for a capability-level `owner`/`purpose` declaration with a field-level `owner` override).
 
 `documentData` is inert at runtime (`void config; void docs`) — its only
 consumer is `data-cap/build`'s static analysis, which
@@ -300,6 +229,92 @@ coordinator: tenantACoordinator })`) — it defaults to `defaultCoordinator`
 otherwise. See `test/integration/coordinator/coordinator-dedup/` and
 `test/integration/coordinator/coordinator-isolation/`, and
 [ADR 0027](specs/decisions/0027-default-coordinator-singleton-plus-factory.md)–[ADR 0028](specs/decisions/0028-coordinator-dedup-key-identity-plus-params.md).
+
+## Runtime support matrix
+
+| Entry point                                       | Node                                                                                                                                                | Browser | Bun                                      | Deno | Edge/serverless |
+| ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | ---------------------------------------- | ---- | --------------- |
+| `.` (core)                                        | ✅                                                                                                                                                  | ✅      | ✅                                       | ✅   | ✅              |
+| `./runtime`, `./runtime/cache`, `./runtime/retry` | ✅                                                                                                                                                  | ✅      | ✅                                       | ✅   | ✅              |
+| `./helpers`                                       | ✅                                                                                                                                                  | ✅      | ✅                                       | ✅   | ✅              |
+| `./build`                                         | ✅ (Node-only — uses the TypeScript Compiler API; never `node:fs`, see [ADR 0058](specs/decisions/0058-library-surfaces-do-not-acquire-node-fs.md)) | ❌      | ✅                                       | ✅   | ❌              |
+| `./evidence`                                      | ✅                                                                                                                                                  | ✅      | ✅                                       | ✅   | ✅              |
+| `./eslint-plugin`                                 | ✅ (Node-only — runs inside ESLint)                                                                                                                 | ❌      | ❌ (ESLint itself doesn't run under Bun) | ❌   | ❌              |
+
+Bun/Deno rows for `core`/`runtime`/`helpers` are verified directly against real Bun and Deno engines in CI (`test/cross-runtime/`), not just claimed by analogy to Node. See the further reading below for the full architectural model, and [the docs site's comparison and FAQ sections](https://maverickcer.github.io/data-cap/#comparison) for more on how this compares to conventional fetch-and-`useState`/global-store patterns.
+
+## The low-level path: full manual control
+
+For applications that want to own execution, retry, and caching policy
+themselves instead of the batteries-included default, `buildData` +
+`createDataStore` + `coordinator` are the same Stable primitives
+`createData` is built from, usable directly:
+
+```ts
+import { buildData, fields } from "data-cap"
+import { createDataStore, defaultCoordinator } from "data-cap/runtime"
+
+const capability = buildData({
+  fields: {
+    user: { name: "", email: "" },
+    nickname: fields.optional(""),
+  },
+})
+const store = createDataStore(capability)
+
+async function fetchUser(signal: AbortSignal) {
+  return fetch("/api/user", { signal }).then((r) => r.json())
+}
+
+// A stable, MODULE-LEVEL reference -- not an inline arrow written directly
+// inside `dedupe(...)` below. `coordinator.dedupe` shares work by the
+// IDENTITY of the function passed to it, never by structural/behavioral
+// equality; a fresh closure created on every `loadUser()` call has a fresh
+// identity every time, so two "concurrent" `loadUser()` calls would never
+// actually share one in-flight `fetchUser()` despite looking deduped at a
+// glance. Same discipline `data-cap/eslint-plugin`'s
+// `stable-operation-reference` rule enforces for `createData()`'s own
+// execute/processor/subscribe/optimistic keys — applied here by hand.
+function executeFetchUser(_params: undefined, signal: AbortSignal) {
+  return fetchUser(signal)
+}
+
+async function loadUser(): Promise<void> {
+  const controller = new AbortController()
+  store.commitAuthoritative(undefined, { user: { status: "loading" } })
+  try {
+    const raw = await defaultCoordinator.dedupe(executeFetchUser, undefined, controller.signal)
+    store.commitAuthoritative({ user: raw }, { user: { status: "success", source: "loadUser" } })
+  } catch (error) {
+    store.commitAuthoritative(undefined, {
+      user: { status: "error", error: { operator: "loadUser", error } },
+    })
+  }
+}
+```
+
+This is the exact pattern `test/integration/runtime-core/basic-standalone/` demonstrates end to
+end, with real assertions (including a concurrent-call test proving the dedup actually happens,
+not just a single-call smoke test) — most other examples in `examples/` build on
+this same shape. Both paths compose the same underlying primitives; neither
+is "the" way — pick per capability based on how much control you need over
+that specific operation's execution.
+
+Fields are synchronously readable immediately — unlike `env-cap`,
+`data-cap` does not use a throw-until-ready gate for ordinary field access.
+`data.info` is always present too (never optional), just structurally
+sparse until something has actually executed; `getSnapshot().operations`
+additionally tracks each getter/mutator/subscription call by its own
+canonicalized params, so two differently-parameterized concurrent calls to
+the same operation stay independently observable. `getUser`/`updateUser`
+methods reject on failure like ordinary Promises (fire-and-forget is `void
+userData.getUser(...)`, not a different Promise contract); `runGetters`
+runs several getters concurrently and never rejects itself, returning a
+structured per-operation outcome instead. `getSnapshot()`/`subscribe()` are
+directly `useSyncExternalStore`-compatible, no data-cap-specific hook
+required. See `examples/application/` for this worked fully, and
+[ADR 0048](specs/decisions/0048-builddata-createdata-split-and-optional-operations-layer.md)
+for the complete behavioral contract.
 
 ## Cache and retry
 
@@ -500,6 +515,40 @@ await generateDataArtifacts({
 
 A non-Node consumer supplies its own `BuildFileSystem` (`data-cap/build` exports the type) instead of importing `./node`.
 
+### Reusable packages
+
+A capability's own `documentData()` declaration can ship as part of an
+installable package instead of living only inside the consuming
+application's source tree — the same model
+[`@maverickcer/env-cap`'s "Reusable packages"](https://github.com/MaverickCER/env-cap/blob/main/GUIDE.md#reusable-packages)
+section describes for env vars, applied to data-ownership capabilities.
+
+This works for both a centralized application schema and a capability-owned
+contract shipped by an internal SDK package. Making a package-shipped
+capability discoverable is opt-in — pass `packages` (`--package` on the
+CLI) with an explicit allowlist, never an implicit scan:
+
+```ts
+// consuming app's build script
+await generateDataArtifacts({
+  fs: nodeBuildFileSystem,
+  root: ".",
+  location: "src/generated/data.manifest.ts",
+  packages: ["@acme/payments-sdk"], // explicit allowlist -- never implicit
+})
+```
+
+The publishing package declares `"dataCap": { "schema": "./src/payments.capability.ts" }`
+in its own `package.json`, pointing at its real, uncompiled `.ts` source
+(ship that file via `"files": ["dist", "src/payments.capability.ts"]`
+alongside the compiled `dist/` used at runtime). Resolution reads exactly
+one `package.json` per allow-listed package to find the declared field,
+then exactly one declared file — never an implicit `readdir` walk of
+`node_modules` beyond that (`src/build/resolution/resolve-package-schema.ts`).
+Once allow-listed, the package's own directory is also walked as potential
+_consumer_ source, so a capability the SDK itself consumes internally is
+proven, not just the schema declaration.
+
 ## ESLint plugin
 
 `stable-operation-reference` flags an `execute`/`processor`/`subscribe`/
@@ -516,15 +565,63 @@ import dataCapPlugin from "data-cap/eslint-plugin"
 export default [
   {
     plugins: { "data-cap": dataCapPlugin },
-    rules: { "data-cap/stable-operation-reference": "warn" },
+    rules: {
+      "data-cap/stable-operation-reference": "warn",
+      "data-cap/no-fields-escape": "warn",
+      "data-cap/no-raw-external-io": "warn",
+    },
   },
 ]
 ```
 
 See `test/integration/build-tooling/eslint-plugin-usage/` and
-[ADR 0038](specs/decisions/0038-eslint-plugin-single-rule.md).
+[ADR 0038](specs/decisions/0038-eslint-plugin-single-rule.md) (superseded
+by [ADR 0063](specs/decisions/0063-eslint-plugin-multiple-rules-and-no-fields-spread.md),
+which covers the plugin's current multi-rule shape).
 
-The plugin also ships `no-node-fs`, the filesystem analogue of `env-cap`'s rule of the same name: it flags any `import`, `require`, or dynamic `import()` of `node:fs` so a module accepts a filesystem capability from its caller instead of acquiring one implicitly — the discipline `data-cap`'s own `./build` surface follows. See [ADR 0058](specs/decisions/0058-library-surfaces-do-not-acquire-node-fs.md).
+The plugin ships three more rules, each independently justified against
+the same "a mistake class specific enough to this package's own
+architecture that a general-purpose rule doesn't already catch" bar:
+
+- **`no-node-fs`** — the filesystem analogue of `env-cap`'s rule of the
+  same name: flags any `import`, `require`, or dynamic `import()` of
+  `node:fs` so a module accepts a filesystem capability from its caller
+  instead of acquiring one implicitly, the discipline `data-cap`'s own
+  `./build` surface follows. See
+  [ADR 0058](specs/decisions/0058-library-surfaces-do-not-acquire-node-fs.md).
+- **`no-raw-external-io`** — flags a direct call to a global I/O function
+  (`fetch` by default; extend `options.functions` for `XMLHttpRequest`,
+  `WebSocket`, etc.) written anywhere other than inside a capability's own
+  `execute`/`subscribe`, so external data access always goes through a
+  declared, analyzable operation instead of being scattered through
+  application code where it has no owner, no sensitivity, and no declared
+  endpoint. `options.allow` (a glob array) exempts a project's own
+  transport layer or test harness.
+- **`no-fields-escape`** — flags a capability's whole `.fields` (or a bare
+  `getSnapshot()` result) escaping this file's provable, per-field
+  visibility, via any of four shapes, each its own message id:
+  - spread into JSX (`<Child {...userData.fields} />`) or an object
+    literal, or destructured with a rest element (`const { ...rest } =
+userData.fields`) — the exact escape
+    [ADR 0060](specs/decisions/0060-usage-scanner-escape-sites.md) documents
+    the build-time scanner widening to `indeterminate` rather than proven
+    safe;
+  - passed as a bare function-call argument (`doSomething(userData.fields)`);
+  - passed as a single, named JSX prop (`<Child data={userData.fields} />`);
+  - exported — directly (`export const leaked = userData.fields;`), later
+    by name (`export { leaked };`), or returned from a function that is
+    itself exported.
+
+  Each is catchable here before merge instead of discovered only by reading
+  a generated report. A plain, non-exported local alias (`const alias =
+userData.fields;`) stays out of scope on purpose — this rule follows a
+  value past its immediate expression only when `export` makes doing so
+  provable, not as general reassignment tracing. `options.allow` (a glob
+  array) exempts a project's own trusted internal plumbing. See
+  [ADR 0063](specs/decisions/0063-eslint-plugin-multiple-rules-and-no-fields-spread.md)
+  (the rule's original spread/rest-only shape, then named `no-fields-spread`)
+  and [ADR 0064](specs/decisions/0064-no-fields-escape-export-argument-and-prop.md)
+  (the rename and the three added escape kinds).
 
 ## GitHub Action
 
@@ -628,13 +725,14 @@ Every thrown error extends `DataCapError` (`data-cap`) and
 carries a stable, non-`instanceof`-dependent `code` — safe to switch on
 across bundling/module-federation boundaries where `instanceof` can fail.
 
-| Error                                                         | Thrown by                        | Common cause                                                           | Fix                                                                   |
-| ------------------------------------------------------------- | -------------------------------- | ---------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| `InvalidFieldDefaultError` (`DATA_CAP_INVALID_FIELD_DEFAULT`) | `buildData()` / `documentData()` | A declared field default is a function, or contains a cyclic reference | Declare a plain, non-function, non-cyclic default value for the field |
+| Error                                                               | Thrown by                                     | Common cause                                                                                                      | Fix                                                                                            |
+| ------------------------------------------------------------------- | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `InvalidFieldDefaultError` (`DATA_CAP_INVALID_FIELD_DEFAULT`)       | `buildData()` / `documentData()`              | A declared field default is a function, or contains a cyclic reference                                            | Declare a plain, non-function, non-cyclic default value for the field                          |
+| `UnknownGetterError` (`DATA_CAP_UNKNOWN_GETTER`)                    | `runGetters()` (`createData()`'s coordinator) | Requested a getter name that isn't declared on the capability — usually a typo, or the getter was renamed/removed | Check the getter name against the capability's own `getters` declaration and fix the call site |
+| `DataProjectGenerationError` (`DATA_CAP_PROJECT_GENERATION_FAILED`) | `data-cap/build`'s report/manifest generators | The static-analysis run found at least one blocking (`severity: "error"`) finding                                 | Read the listed findings (each names its own fix) and resolve them, then run again             |
 
-This table grows as more of the build tooling (report generators, CLI) lands
-— see [`specs/decisions/`](specs/decisions/) for the ADR behind each error
-class as it's added.
+See [`specs/decisions/`](specs/decisions/) for the ADR behind each error
+class.
 
 ### "Why doesn't reading a field throw until data is ready?"
 
@@ -647,8 +745,8 @@ That behavior is intentional
 
 ### "Does `data-cap` ship a built-in getter/mutator execution loop?"
 
-Optionally, yes — `createData` (`data-cap/runtime`,
-Experimental tier) owns dedup, per-operation status, optimistic mutation
+Optionally, yes — `createData` (`data-cap/runtime`) owns dedup,
+per-operation status, optimistic mutation
 lifecycle, and concurrent-getter execution, composed entirely from the
 Stable primitives (`createDataStore`, `coordinator.dedupe`/
 `acquireSubscription`). Different applications reasonably want different
@@ -710,6 +808,19 @@ See [ADR 0044](specs/decisions/0044-snapshots-deep-frozen-amortized.md) for
 the structural-sharing mechanism these figures describe, and
 [`PERFORMANCE.md`](PERFORMANCE.md) for measured wall-clock numbers (these
 are asymptotic complexity, not benchmark results).
+
+## AI-Assisted Integration
+
+`data-cap` is designed to provide a clear architectural boundary that can also be understood and analyzed by AI coding assistants.
+
+When integrating `data-cap` into an existing repository, the repository's existing architecture, persistence model, transport layer, and ownership boundaries should be analyzed before introducing contracts.
+
+For AI-agent-specific guidance, see:
+
+- [`AGENTS.md`](AGENTS.md)
+- [`skills/data-cap/SKILL.md`](skills/data-cap/SKILL.md)
+
+The canonical architectural specification remains [`specs/architecture.md`](specs/architecture.md); Architecture Decision Records remain authoritative for decisions that have been explicitly recorded in [`specs/decisions/`](specs/decisions/).
 
 ## Documentation index
 

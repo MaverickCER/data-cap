@@ -1,6 +1,6 @@
 {
   "disclaimer": "Machine-generated engineering artifact assembled from statically-provable code facts and author-declared documentation. It can support a security, privacy, or compliance review. It does not itself establish compliance with any standard.",
-  "generatedAt": "2026-09-15T16:04:17.439Z",
+  "generatedAt": "2026-09-25T19:44:27.008Z",
   "scanSurface": {
     "scanned": [
       "application source (src/**)"
@@ -16,7 +16,10 @@
         "sensitivity": "confidential",
         "purpose": "Billing clients and tracking payment/dispute status for financial reporting.",
         "legalBasis": "contract",
-        "dataResidency": "us",
+        "dataResidency": [
+          "us",
+          "eu"
+        ],
         "auditRequired": true,
         "protections": "Session-authenticated access only; TLS in transit; amounts encrypted at rest.",
         "retention": "7 years after project closure, per financial recordkeeping policy."
@@ -90,6 +93,11 @@
       "provenAccessSites": [],
       "indeterminateSites": [
         {
+          "file": "src/routes.tsx",
+          "line": 34,
+          "column": 34
+        },
+        {
           "file": "src/server/legacy-compliance-sync.ts",
           "line": 33,
           "column": 19
@@ -122,9 +130,15 @@
         "line": 24,
         "column": 5
       },
-      "consumptionStatus": "unconsumed",
+      "consumptionStatus": "indeterminate",
       "provenAccessSites": [],
-      "indeterminateSites": [],
+      "indeterminateSites": [
+        {
+          "file": "src/components/ProjectsPanel.tsx",
+          "line": 17,
+          "column": 34
+        }
+      ],
       "dynamicAccessCitations": [],
       "citationIntegrityFindings": [],
       "handlingByOperation": [

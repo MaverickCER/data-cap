@@ -13,13 +13,13 @@ describe("classifyFindings", () => {
     const findings = classifyFindings({
       findings: [
         { code: "CAPABILITY_MISSING_OWNER", severity: "warning", message: "no owner" },
-        { code: "EXCLUSIVE_GROUP_CONFLICT", severity: "error", message: "conflict" },
+        { code: "EXCLUSIVE_GROUP_VIOLATION", severity: "error", message: "conflict" },
         { code: "UNRESOLVED_CONSUMER", severity: "info", message: "maybe" },
       ],
     } as unknown as ReportResult)
     expect(findings).toEqual([
       { level: "warning", file: undefined, message: "no owner", code: "CAPABILITY_MISSING_OWNER" },
-      { level: "error", file: undefined, message: "conflict", code: "EXCLUSIVE_GROUP_CONFLICT" },
+      { level: "error", file: undefined, message: "conflict", code: "EXCLUSIVE_GROUP_VIOLATION" },
       { level: "notice", file: undefined, message: "maybe", code: "UNRESOLVED_CONSUMER" },
     ])
   })
@@ -64,11 +64,11 @@ describe("classifyFindings", () => {
       ok: false,
       error: {
         name: "DataProjectGenerationError",
-        findings: [{ code: "EXCLUSIVE_GROUP_CONFLICT", severity: "error", message: "conflict" }],
+        findings: [{ code: "EXCLUSIVE_GROUP_VIOLATION", severity: "error", message: "conflict" }],
       },
     } as unknown as ReportResult)
     expect(findings).toHaveLength(1)
-    expect(findings[0]?.code).toBe("EXCLUSIVE_GROUP_CONFLICT")
+    expect(findings[0]?.code).toBe("EXCLUSIVE_GROUP_VIOLATION")
   })
 
   it("returns an empty array for a usage error with no findings at all (e.g. no target flags given)", () => {
@@ -89,7 +89,7 @@ describe("renderMarkdownSummary", () => {
   it("renders the error/warning/notice counts and a blocking-findings table", () => {
     const summary = renderMarkdownSummary({
       findings: [
-        { code: "EXCLUSIVE_GROUP_CONFLICT", severity: "error", message: "conflict" },
+        { code: "EXCLUSIVE_GROUP_VIOLATION", severity: "error", message: "conflict" },
         { code: "CAPABILITY_MISSING_OWNER", severity: "warning", message: "no owner" },
       ],
     } as unknown as ReportResult)
@@ -98,7 +98,7 @@ describe("renderMarkdownSummary", () => {
     expect(summary).toContain("- Warnings: 1")
     expect(summary).toContain("- Notices: 0")
     expect(summary).toContain("## Blocking findings")
-    expect(summary).toContain("EXCLUSIVE_GROUP_CONFLICT")
+    expect(summary).toContain("EXCLUSIVE_GROUP_VIOLATION")
   })
 
   it("omits the blocking-findings table when nothing is at error severity", () => {
@@ -205,10 +205,10 @@ describe("renderAnnotations", () => {
 
   it("omits the file= segment for a finding with no associated file", () => {
     const lines = renderAnnotations(
-      [{ level: "error", file: undefined, message: "boom", code: "EXCLUSIVE_GROUP_CONFLICT" }],
+      [{ level: "error", file: undefined, message: "boom", code: "EXCLUSIVE_GROUP_VIOLATION" }],
       "/workspace",
       "/workspace",
     )
-    expect(lines).toEqual(["::error::[EXCLUSIVE_GROUP_CONFLICT] boom"])
+    expect(lines).toEqual(["::error::[EXCLUSIVE_GROUP_VIOLATION] boom"])
   })
 })

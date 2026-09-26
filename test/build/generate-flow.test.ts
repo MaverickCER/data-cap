@@ -284,7 +284,7 @@ describe("generateFlow", () => {
         edges: [],
         additionalFindings: [
           {
-            code: "EXCLUSIVE_GROUP_CONFLICT",
+            code: "EXCLUSIVE_GROUP_VIOLATION",
             family: "structural",
             severity: "error",
             message: "boom",
@@ -340,7 +340,7 @@ describe("generateFlow", () => {
 
         ### Critical (error)
 
-        - **EXCLUSIVE_GROUP_CONFLICT**: boom
+        - **EXCLUSIVE_GROUP_VIOLATION**: boom
 
         ### Warnings
 

@@ -214,6 +214,13 @@ documentData(billingSchema, {
       retention: "7 years after project closure, per financial recordkeeping policy.",
       purpose: "Billing clients and tracking payment/dispute status for financial reporting.",
       auditRequired: true,
+      // Overrides the capability's own single-region `dataResidency: "us"`
+      // (above) for this field specifically (see `src/core/document.ts`'s
+      // `FieldDocs.dataResidency`, which accepts `string | readonly
+      // string[]`) -- clients billed on `invoices` aren't all US-based, and
+      // some jurisdictions' recordkeeping rules require an invoice to also
+      // be retrievable from within the client's own region.
+      dataResidency: ["us", "eu"],
     },
   },
   getters: {

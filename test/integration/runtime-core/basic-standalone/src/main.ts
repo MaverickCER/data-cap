@@ -38,14 +38,30 @@ const capability = buildData({
 
 const store = createDataStore(capability)
 
+let fetchUserCallCount = 0
+
 async function fetchUser(signal: AbortSignal): Promise<User> {
   // Stands in for `await fetch("/api/user").then(r => r.json())` -- a real
   // getter's `execute` does exactly this, against a real endpoint. The
   // response shape here (a plain JSON object) is deliberately the only kind
   // of value any example in this directory ever produces or consumes.
+  fetchUserCallCount += 1
   await new Promise((resolve) => setTimeout(resolve, 5))
   if (signal.aborted) throw new Error("aborted")
   return { name: "Ada Lovelace", email: "ada@example.com" }
+}
+
+// A stable, MODULE-LEVEL reference -- not an inline arrow recreated inside
+// `runGetUser()` below. `coordinator.dedupe` shares work by the identity of
+// the function passed to it (coordinator.ts's own module doc comment); a
+// fresh closure created on every call has a fresh identity every time, so
+// two "concurrent" calls would never actually share one in-flight
+// `fetchUser()` despite looking deduped at a glance. This is the exact
+// mistake class `data-cap/eslint-plugin`'s `stable-operation-reference`
+// rule flags for `createData()`'s own execute/processor/subscribe/
+// optimistic keys -- the same discipline applies here, by hand.
+function executeFetchUser(_params: undefined, signal: AbortSignal): Promise<User> {
+  return fetchUser(signal)
 }
 
 async function runGetUser(): Promise<void> {
@@ -55,13 +71,10 @@ async function runGetUser(): Promise<void> {
   store.commitAuthoritative(undefined, { user: { status: "loading" } })
   try {
     // `defaultCoordinator.dedupe` is optional plumbing: concurrent calls to
-    // THIS SAME `fetchUser` reference with canonically-equal params (here,
-    // none) share one in-flight promise instead of firing the request twice.
-    const raw = await defaultCoordinator.dedupe(
-      (_params: undefined, signal) => fetchUser(signal),
-      undefined,
-      controller.signal,
-    )
+    // THIS SAME `executeFetchUser` reference with canonically-equal params
+    // (here, none) share one in-flight promise instead of firing the
+    // request twice -- proven for real below, not just claimed in a comment.
+    const raw = await defaultCoordinator.dedupe(executeFetchUser, undefined, controller.signal)
     store.commitAuthoritative({ user: raw }, { user: { status: "success", source: "getUser" } })
   } catch (error) {
     store.commitAuthoritative(undefined, {
@@ -105,6 +118,23 @@ assert.equal(Object.isFrozen(snapshot.fields.user), true)
 store.commitAuthoritative({ user: snapshot.fields.user }, undefined)
 assert.equal(notifications, 2, "a true no-op commit must never trigger a subscriber notification")
 
+// -- Prove the dedup claim for real, not just in a comment --
+// Two concurrent calls through the SAME stable `executeFetchUser` reference
+// with canonically-equal params (`undefined`, `undefined`) must share one
+// real in-flight `fetchUser()` call, never fire it twice.
+const callCountBeforeDedupeProof = fetchUserCallCount
+const dedupeProofController = new AbortController()
+await Promise.all([
+  defaultCoordinator.dedupe(executeFetchUser, undefined, dedupeProofController.signal),
+  defaultCoordinator.dedupe(executeFetchUser, undefined, dedupeProofController.signal),
+])
+const dedupedFetchCallCount = fetchUserCallCount - callCountBeforeDedupeProof
+assert.equal(
+  dedupedFetchCallCount,
+  1,
+  "two concurrent dedupe() calls sharing the same stable function reference and canonically-equal params must share one real fetchUser() call, not two",
+)
+
 const summary = {
   fields: store.getSnapshot().fields,
   info: {
@@ -115,6 +145,10 @@ const summary = {
   frozen: {
     snapshot: Object.isFrozen(store.getSnapshot()),
     user: Object.isFrozen(store.getSnapshot().fields.user),
+  },
+  dedupeProof: {
+    concurrentCalls: 2,
+    realFetchUserCalls: dedupedFetchCallCount,
   },
 }
 

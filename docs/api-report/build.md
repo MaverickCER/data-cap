@@ -4828,7 +4828,7 @@ type ReportFindingCode =
   | "SENSITIVE_FIELD_MISSING_LEGAL_BASIS"
   | "AUDIT_REQUIRED_WITHOUT_OWNER"
   | "NONSTANDARD_SENSITIVITY_LEVEL"
-  | "EXCLUSIVE_GROUP_CONFLICT"
+  | "EXCLUSIVE_GROUP_VIOLATION"
   | "MANIFEST_EXPORT_NAME_COLLISION"
   | "DUPLICATE_FIELD_SHAPE_ACROSS_CAPABILITIES"
   | "DUPLICATE_ENDPOINT_ACROSS_CAPABILITIES"
@@ -4836,8 +4836,8 @@ type ReportFindingCode =
   | "UNCONSUMED_FIELD"
   | "FIELD_ACCESS_INDETERMINATE"
   | "FIELD_DYNAMIC_ACCESS_DECLARED"
-  | "DYNAMIC_ACCESS_CITATION_MISSING"
-  | "DYNAMIC_ACCESS_CITATION_STALE"
+  | "MISSING_DYNAMIC_ACCESS_CITATION"
+  | "STALE_DYNAMIC_ACCESS_CITATION"
   | "UNRESOLVED_CONSUMER"
   | "INDETERMINATE_CONSUMER"
   | "SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY"
@@ -5122,6 +5122,16 @@ const projectAuditEvidence: EvidenceProjection<{
   unownedCapabilities: number | undefined;
 }>;
 ```
+
+Data Audit Evidence / Data Assurance Report / Data Governance Report
+(reframed): a rollup of ownership and finding counts plus provenance --
+never a governance verdict or a risk score, only the counted facts a
+consumer's own policy can be evaluated against.
+
+The clearest case for the per-field schema: `ownedCapabilities` is derived
+from Ownership Model alone, `findingsBySeverity` from Finding Model alone,
+and `provenance` from neither. `.project()` reports exactly that, per
+output field.
 
 ***
 
@@ -5662,6 +5672,11 @@ function computeExpiringEntries(
    now
 ): readonly ExpiringEntry[];
 ```
+
+Every capability- or field-level `expiresAt` across `inventory` that falls
+within `expiringWithinDays` of `now` (or is already past it), soonest
+(or most overdue) first. Skips any subject with no declared `expiresAt`,
+an unparseable one, or one still further out than the window.
 
 #### Parameters
 
@@ -6657,9 +6672,9 @@ function verifyDynamicAccessCitations(
 Re-checks every currently-declared citation against `previousSnapshot`.
 Two independent failure modes, both real findings, never silently
 folded into one: a citation whose file no longer resolves at all
-(`DYNAMIC_ACCESS_CITATION_MISSING`), and one that resolves but whose
+(`MISSING_DYNAMIC_ACCESS_CITATION`), and one that resolves but whose
 content hash no longer matches what was recorded last run
-(`DYNAMIC_ACCESS_CITATION_STALE`). A citation with no prior recorded
+(`STALE_DYNAMIC_ACCESS_CITATION`). A citation with no prior recorded
 hash (first time seen, or `previousSnapshot` is `undefined` -- a first
 run) is never flagged either way -- there is nothing to have gone stale
 relative to yet, and "missing" only means the file doesn't currently

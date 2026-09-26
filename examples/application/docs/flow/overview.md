@@ -48,15 +48,15 @@ flowchart TB
   n5 -.->|"declared: tasks (plaintext)"| n2
   n1 -.->|"declared"| n6
   n6 -.->|"declared: tasks (plaintext)"| n2
-  n1 -->|"proven: src/main.ts:365:14"| n7
-  n1 -->|"proven: src/main.ts:371:3"| n7
-  n1 -->|"proven: src/main.ts:376:14"| n7
-  n1 -->|"proven: src/main.ts:380:14"| n7
+  n1 -->|"proven: src/main.ts:374:14"| n7
+  n1 -->|"proven: src/main.ts:380:3"| n7
+  n1 -->|"proven: src/main.ts:385:14"| n7
+  n1 -->|"proven: src/main.ts:389:14"| n7
   n2 -.->|"declared: selectedTask (plaintext)"| n9
   n9 -.->|"writes"| n8
-  n8 -->|"proven: src/main.ts:339:14"| n7
-  n8 -->|"proven: src/main.ts:341:14"| n7
-  n8 -->|"proven: src/main.ts:351:3"| n7
+  n8 -->|"proven: src/main.ts:348:14"| n7
+  n8 -->|"proven: src/main.ts:350:14"| n7
+  n8 -->|"proven: src/main.ts:360:3"| n7
   linkStyle 0 stroke:#e63946,stroke-width:3px
   linkStyle 3 stroke:#e63946,stroke-width:3px
   linkStyle 5 stroke:#e63946,stroke-width:3px

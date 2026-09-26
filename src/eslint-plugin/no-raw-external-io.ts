@@ -226,7 +226,7 @@ export const noRawExternalIo = createRule<[RuleOptions], "noRawExternalIo">({
     ],
     messages: {
       noRawExternalIo:
-        "\"{{name}}\" is called outside any capability's execute/subscribe, so this data access is invisible to data-cap's analysis -- no owner, no sensitivity, no declared endpoint, and nothing for the generated reports to describe. Move it into a getter/mutator/subscription's own execute/subscribe (see README's ESLint plugin section for the allow-list escape hatch for a project's own transport layer).",
+        "\"{{name}}\" is called outside any capability's execute/subscribe, so this data access is invisible to data-cap's analysis -- no owner, no sensitivity, no declared endpoint, and nothing for the generated reports to describe. Move it into a getter/mutator/subscription's own execute/subscribe (see GUIDE.md's ESLint plugin section for the allow-list escape hatch for a project's own transport layer).",
     },
   },
   defaultOptions: [{ allow: [], functions: DEFAULT_FUNCTIONS }],

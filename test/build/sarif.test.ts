@@ -21,7 +21,7 @@ describe("buildSarifLog", () => {
         message: "a",
       },
       { code: "CAPABILITY_MISSING_OWNER", family: "governance", severity: "warning", message: "b" },
-      { code: "EXCLUSIVE_GROUP_CONFLICT", family: "structural", severity: "error", message: "c" },
+      { code: "EXCLUSIVE_GROUP_VIOLATION", family: "structural", severity: "error", message: "c" },
     ]
     const log = buildSarifLog(buildFindingModel(findings))
     expect(log.runs[0]!.results.map((r) => r.level)).toEqual(["note", "warning", "error"])
@@ -73,7 +73,7 @@ describe("buildSarifLog", () => {
 
   it("sorts rule ids, regardless of the order findings first mention each code", () => {
     const findings: ReportFinding[] = [
-      { code: "EXCLUSIVE_GROUP_CONFLICT", family: "structural", severity: "error", message: "a" },
+      { code: "EXCLUSIVE_GROUP_VIOLATION", family: "structural", severity: "error", message: "a" },
       { code: "CAPABILITY_MISSING_OWNER", family: "governance", severity: "warning", message: "b" },
       {
         code: "MANIFEST_EXPORT_NAME_COLLISION",
@@ -85,7 +85,7 @@ describe("buildSarifLog", () => {
     const log = buildSarifLog(buildFindingModel(findings))
     expect(log.runs[0]!.tool.driver.rules).toEqual([
       { id: "CAPABILITY_MISSING_OWNER" },
-      { id: "EXCLUSIVE_GROUP_CONFLICT" },
+      { id: "EXCLUSIVE_GROUP_VIOLATION" },
       { id: "MANIFEST_EXPORT_NAME_COLLISION" },
     ])
   })

@@ -152,8 +152,8 @@ function handlingStagesFor(capability: CapabilityNode, field: CapabilityNode["fi
 }
 
 const CITATION_INTEGRITY_CODES: ReadonlySet<string> = new Set([
-  "DYNAMIC_ACCESS_CITATION_MISSING",
-  "DYNAMIC_ACCESS_CITATION_STALE",
+  "MISSING_DYNAMIC_ACCESS_CITATION",
+  "STALE_DYNAMIC_ACCESS_CITATION",
 ])
 
 /**

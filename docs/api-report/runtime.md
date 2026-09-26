@@ -899,11 +899,6 @@ the direct one-call equivalent of `createDataStore(buildData({fields}))`.
 
 [`DataCapability`](#datacapability)\<`TSchema`\>
 
-#### Remarks
-
-Experimental (see VERSIONING.md) -- the shape of this function may still
-change in a minor pre-1.0 release as real usage reveals a better one.
-
 ***
 
 ### createDataStore()

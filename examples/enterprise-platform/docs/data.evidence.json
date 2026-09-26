@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "provenance": {
-    "generatedAt": "2026-09-15T16:04:17.439Z",
+    "generatedAt": "2026-09-25T19:44:27.008Z",
     "toolVersion": "0.3.1"
   },
   "capability": {
@@ -34,6 +34,10 @@
               "protections": "Session-authenticated access only; TLS in transit; amounts encrypted at rest.",
               "retention": "7 years after project closure, per financial recordkeeping policy.",
               "purpose": "Billing clients and tracking payment/dispute status for financial reporting.",
+              "dataResidency": [
+                "us",
+                "eu"
+              ],
               "auditRequired": true
             }
           },
@@ -124,6 +128,10 @@
               "protections": "Session-authenticated access only; TLS in transit; amounts encrypted at rest.",
               "retention": "7 years after project closure, per financial recordkeeping policy.",
               "purpose": "Billing clients and tracking payment/dispute status for financial reporting.",
+              "dataResidency": [
+                "us",
+                "eu"
+              ],
               "auditRequired": true
             },
             "owner": {
@@ -143,8 +151,11 @@
               "declaredOn": "capability"
             },
             "dataResidency": {
-              "value": "us",
-              "declaredOn": "capability"
+              "value": [
+                "us",
+                "eu"
+              ],
+              "declaredOn": "field"
             },
             "auditRequired": {
               "value": true,
@@ -690,6 +701,21 @@
     "schemaVersion": 3,
     "edges": [
       {
+        "relationship": "imports",
+        "from": "src/components/BillingPanel.tsx",
+        "to": {
+          "capability": {
+            "file": "src/capabilities/billing.capability.ts",
+            "exportName": "billingData"
+          }
+        },
+        "resolution": "indeterminate",
+        "position": {
+          "line": 21,
+          "column": 34
+        }
+      },
+      {
         "relationship": "calls-getter",
         "from": "src/components/BillingPanel.tsx",
         "to": {
@@ -786,6 +812,21 @@
         }
       },
       {
+        "relationship": "imports",
+        "from": "src/components/ProjectsPanel.tsx",
+        "to": {
+          "capability": {
+            "file": "src/capabilities/projects.capability.ts",
+            "exportName": "projectsData"
+          }
+        },
+        "resolution": "indeterminate",
+        "position": {
+          "line": 17,
+          "column": 34
+        }
+      },
+      {
         "relationship": "calls-getter",
         "from": "src/components/ProjectsPanel.tsx",
         "to": {
@@ -826,7 +867,11 @@
             "exportName": "identityData"
           }
         },
-        "resolution": "resolved"
+        "resolution": "indeterminate",
+        "position": {
+          "line": 34,
+          "column": 34
+        }
       },
       {
         "relationship": "reads-field",
@@ -932,7 +977,21 @@
         "code": "INDETERMINATE_CONSUMER",
         "family": "usage",
         "severity": "info",
-        "message": "\"src/server/legacy-compliance-sync.ts\" accesses \"billingData\" using a dynamic/computed property -- can't be statically characterized.",
+        "message": "\"src/components/BillingPanel.tsx\" accesses \"billingData\" using a dynamic/computed property, or in a way this scanner's local dataflow analysis can't follow (passed elsewhere, assigned to a new binding, spread, returned, or handed to JSX as a prop) -- can't be statically characterized (ADR 0060).",
+        "location": {
+          "kind": "consumer",
+          "capability": {
+            "file": "src/capabilities/billing.capability.ts",
+            "exportName": "billingData"
+          },
+          "source": "src/components/BillingPanel.tsx"
+        }
+      },
+      {
+        "code": "INDETERMINATE_CONSUMER",
+        "family": "usage",
+        "severity": "info",
+        "message": "\"src/server/legacy-compliance-sync.ts\" accesses \"billingData\" using a dynamic/computed property, or in a way this scanner's local dataflow analysis can't follow (passed elsewhere, assigned to a new binding, spread, returned, or handed to JSX as a prop) -- can't be statically characterized (ADR 0060).",
         "location": {
           "kind": "consumer",
           "capability": {
@@ -966,7 +1025,21 @@
         "code": "INDETERMINATE_CONSUMER",
         "family": "usage",
         "severity": "info",
-        "message": "\"src/server/legacy-compliance-sync.ts\" accesses \"identityData\" using a dynamic/computed property -- can't be statically characterized.",
+        "message": "\"src/routes.tsx\" accesses \"identityData\" using a dynamic/computed property, or in a way this scanner's local dataflow analysis can't follow (passed elsewhere, assigned to a new binding, spread, returned, or handed to JSX as a prop) -- can't be statically characterized (ADR 0060).",
+        "location": {
+          "kind": "consumer",
+          "capability": {
+            "file": "src/capabilities/identity.capability.ts",
+            "exportName": "identityData"
+          },
+          "source": "src/routes.tsx"
+        }
+      },
+      {
+        "code": "INDETERMINATE_CONSUMER",
+        "family": "usage",
+        "severity": "info",
+        "message": "\"src/server/legacy-compliance-sync.ts\" accesses \"identityData\" using a dynamic/computed property, or in a way this scanner's local dataflow analysis can't follow (passed elsewhere, assigned to a new binding, spread, returned, or handed to JSX as a prop) -- can't be statically characterized (ADR 0060).",
         "location": {
           "kind": "consumer",
           "capability": {
@@ -980,7 +1053,7 @@
         "code": "FIELD_ACCESS_INDETERMINATE",
         "family": "usage",
         "severity": "info",
-        "message": "Field \"currentUser\" on \"identityData\" appears unused, but there are instances of dynamic/computed access on this capability that can't be statically attributed to a specific field -- it may be one of them.",
+        "message": "Field \"currentUser\" on \"identityData\" appears unused, but there are instances of dynamic/computed access, or a reference this scanner's local dataflow analysis can't follow, on this capability that can't be statically attributed to a specific field -- it may be one of them.",
         "location": {
           "kind": "field",
           "capability": {
@@ -996,6 +1069,11 @@
           },
           "indeterminateSites": [
             {
+              "file": "src/routes.tsx",
+              "line": 34,
+              "column": 34
+            },
+            {
               "file": "src/server/legacy-compliance-sync.ts",
               "line": 33,
               "column": 19
@@ -1004,10 +1082,24 @@
         }
       },
       {
-        "code": "UNCONSUMED_FIELD",
+        "code": "INDETERMINATE_CONSUMER",
         "family": "usage",
-        "severity": "warning",
-        "message": "Field \"projects\" on \"projectsData\" is written but never statically read in the scanned project.",
+        "severity": "info",
+        "message": "\"src/components/ProjectsPanel.tsx\" accesses \"projectsData\" using a dynamic/computed property, or in a way this scanner's local dataflow analysis can't follow (passed elsewhere, assigned to a new binding, spread, returned, or handed to JSX as a prop) -- can't be statically characterized (ADR 0060).",
+        "location": {
+          "kind": "consumer",
+          "capability": {
+            "file": "src/capabilities/projects.capability.ts",
+            "exportName": "projectsData"
+          },
+          "source": "src/components/ProjectsPanel.tsx"
+        }
+      },
+      {
+        "code": "FIELD_ACCESS_INDETERMINATE",
+        "family": "usage",
+        "severity": "info",
+        "message": "Field \"projects\" on \"projectsData\" appears unused, but there are instances of dynamic/computed access, or a reference this scanner's local dataflow analysis can't follow, on this capability that can't be statically attributed to a specific field -- it may be one of them.",
         "location": {
           "kind": "field",
           "capability": {
@@ -1020,7 +1112,14 @@
           "position": {
             "line": 24,
             "column": 5
-          }
+          },
+          "indeterminateSites": [
+            {
+              "file": "src/components/ProjectsPanel.tsx",
+              "line": 17,
+              "column": 34
+            }
+          ]
         }
       },
       {

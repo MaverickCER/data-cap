@@ -102,15 +102,21 @@ async function fetchUser(signal: AbortSignal) {
   return response.json()
 }
 
+// A stable, MODULE-LEVEL reference -- not an inline arrow written directly
+// inside `dedupe(...)` below. `coordinator.dedupe` shares work by the
+// IDENTITY of the function passed to it; a fresh closure created on every
+// `loadUser()` call has a fresh identity every time, so two components both
+// calling `loadUser()` around the same time would never actually share one
+// in-flight `fetchUser()` request despite looking deduped at a glance.
+function executeFetchUser(_params: undefined, signal: AbortSignal) {
+  return fetchUser(signal)
+}
+
 export async function loadUser(): Promise<void> {
   const controller = new AbortController()
   userStore.commitAuthoritative(undefined, { user: { status: "loading" } })
   try {
-    const raw = await defaultCoordinator.dedupe(
-      (_params, signal) => fetchUser(signal),
-      undefined,
-      controller.signal,
-    )
+    const raw = await defaultCoordinator.dedupe(executeFetchUser, undefined, controller.signal)
     userStore.commitAuthoritative(
       { user: raw },
       { user: { status: "success", source: "loadUser" } },

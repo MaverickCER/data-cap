@@ -26,8 +26,8 @@ Owner: productivity-team · Category: — · Active: yes
 
 | Field | Description | Owner | Sensitivity (declared) | Protections (documented) | Retention (documented) | Written by | Consumed at (proven) |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `tasks` | The current user's own task list. | productivity-team | internal | Session-authenticated access only; TLS in transit. | not documented | `getter:getTasks`, `mutator:createTask`, `mutator:toggleTask`, `mutator:deleteTask` | src/main.ts (4 sites) |
-| `selectedTask` | One task's own full detail -- null until the first successful getTask(). | productivity-team | internal | Session-authenticated access only; TLS in transit. | not documented | `getter:getTask`, `subscription:subscribeToTask` | src/main.ts (3 sites) |
+| `tasks` | The current user's own task list. | productivity-team | internal | Session-authenticated access only; TLS in transit. | Deleted immediately when the task is deleted, or when the account is deleted. | `getter:getTasks`, `mutator:createTask`, `mutator:toggleTask`, `mutator:deleteTask` | src/main.ts (4 sites) |
+| `selectedTask` | One task's own full detail -- null until the first successful getTask(). | security-team | internal | Session-authenticated access only; TLS in transit. | not documented | `getter:getTask`, `subscription:subscribeToTask` | src/main.ts (3 sites) |
 
 #### Getters
 

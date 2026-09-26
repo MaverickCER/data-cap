@@ -35,6 +35,7 @@ _No capability statically depends on another capability._
 
 | Consumer | Relationship | Detail | Resolution |
 | --- | --- | --- | --- |
+| `src/components/BillingPanel.tsx:21:34` | imports | — | indeterminate |
 | `src/components/BillingPanel.tsx:26:10` | calls-getter | listInvoices | resolved |
 | `src/components/BillingPanel.tsx:27:21` | calls-subscription | subscribeToInvoices | resolved |
 | `src/components/BillingPanel.tsx:41:37` | calls-mutator | markInvoicePaid | resolved |
@@ -47,13 +48,14 @@ _No capability statically depends on another capability._
 | Consumer | Relationship | Detail | Resolution |
 | --- | --- | --- | --- |
 | `src/components/Login.tsx:32:13` | calls-getter | getCurrentUser | resolved |
-| `src/routes.tsx` | imports | — | resolved |
+| `src/routes.tsx:34:34` | imports | — | indeterminate |
 | `src/server/legacy-compliance-sync.ts:33:19` | reads-field | — | indeterminate |
 
 ### `projectsData`
 
 | Consumer | Relationship | Detail | Resolution |
 | --- | --- | --- | --- |
+| `src/components/ProjectsPanel.tsx:17:34` | imports | — | indeterminate |
 | `src/components/ProjectsPanel.tsx:23:10` | calls-getter | listProjects | resolved |
 | `src/components/ProjectsPanel.tsx:42:16` | calls-mutator | createProject | resolved |
 
@@ -61,8 +63,11 @@ _No capability statically depends on another capability._
 
 | Severity | Code | Capability | Message |
 | --- | --- | --- | --- |
-| info | INDETERMINATE_CONSUMER | `billingData` | "src/server/legacy-compliance-sync.ts" accesses "billingData" using a dynamic/computed property -- can't be statically characterized. |
+| info | INDETERMINATE_CONSUMER | `billingData` | "src/components/BillingPanel.tsx" accesses "billingData" using a dynamic/computed property, or in a way this scanner's local dataflow analysis can't follow (passed elsewhere, assigned to a new binding, spread, returned, or handed to JSX as a prop) -- can't be statically characterized (ADR 0060). |
+| info | INDETERMINATE_CONSUMER | `billingData` | "src/server/legacy-compliance-sync.ts" accesses "billingData" using a dynamic/computed property, or in a way this scanner's local dataflow analysis can't follow (passed elsewhere, assigned to a new binding, spread, returned, or handed to JSX as a prop) -- can't be statically characterized (ADR 0060). |
 | info | FIELD_DYNAMIC_ACCESS_DECLARED | `billingData` | Per developers, this data point is dynamically accessed at src/server/legacy-compliance-sync.ts:26:19. |
-| info | INDETERMINATE_CONSUMER | `identityData` | "src/server/legacy-compliance-sync.ts" accesses "identityData" using a dynamic/computed property -- can't be statically characterized. |
-| info | FIELD_ACCESS_INDETERMINATE | `identityData` | Field "currentUser" on "identityData" appears unused, but there are instances of dynamic/computed access on this capability that can't be statically attributed to a specific field -- it may be one of them. |
-| warning | UNCONSUMED_FIELD | `projectsData` | Field "projects" on "projectsData" is written but never statically read in the scanned project. |
+| info | INDETERMINATE_CONSUMER | `identityData` | "src/routes.tsx" accesses "identityData" using a dynamic/computed property, or in a way this scanner's local dataflow analysis can't follow (passed elsewhere, assigned to a new binding, spread, returned, or handed to JSX as a prop) -- can't be statically characterized (ADR 0060). |
+| info | INDETERMINATE_CONSUMER | `identityData` | "src/server/legacy-compliance-sync.ts" accesses "identityData" using a dynamic/computed property, or in a way this scanner's local dataflow analysis can't follow (passed elsewhere, assigned to a new binding, spread, returned, or handed to JSX as a prop) -- can't be statically characterized (ADR 0060). |
+| info | FIELD_ACCESS_INDETERMINATE | `identityData` | Field "currentUser" on "identityData" appears unused, but there are instances of dynamic/computed access, or a reference this scanner's local dataflow analysis can't follow, on this capability that can't be statically attributed to a specific field -- it may be one of them. |
+| info | INDETERMINATE_CONSUMER | `projectsData` | "src/components/ProjectsPanel.tsx" accesses "projectsData" using a dynamic/computed property, or in a way this scanner's local dataflow analysis can't follow (passed elsewhere, assigned to a new binding, spread, returned, or handed to JSX as a prop) -- can't be statically characterized (ADR 0060). |
+| info | FIELD_ACCESS_INDETERMINATE | `projectsData` | Field "projects" on "projectsData" appears unused, but there are instances of dynamic/computed access, or a reference this scanner's local dataflow analysis can't follow, on this capability that can't be statically attributed to a specific field -- it may be one of them. |

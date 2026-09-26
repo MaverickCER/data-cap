@@ -160,7 +160,7 @@ describe("citation-verification", () => {
       expect(findings).toEqual([])
     })
 
-    it("flags DYNAMIC_ACCESS_CITATION_MISSING when the cited file no longer resolves", async () => {
+    it("flags MISSING_DYNAMIC_ACCESS_CITATION when the cited file no longer resolves", async () => {
       const cap = capability({
         docs: {
           evidence: { fields: { email: { dynamicAccess: ["src/does-not-exist.ts:1:1"] } } },
@@ -174,7 +174,7 @@ describe("citation-verification", () => {
       )
       expect(findings).toContainEqual(
         expect.objectContaining({
-          code: "DYNAMIC_ACCESS_CITATION_MISSING",
+          code: "MISSING_DYNAMIC_ACCESS_CITATION",
           family: "citation",
           severity: "warning",
           field: ["email"],
@@ -182,7 +182,7 @@ describe("citation-verification", () => {
       )
     })
 
-    it("never flags DYNAMIC_ACCESS_CITATION_STALE when the current hash matches the previous snapshot's recorded hash", async () => {
+    it("never flags STALE_DYNAMIC_ACCESS_CITATION when the current hash matches the previous snapshot's recorded hash", async () => {
       const filePath = await writeFile("src/legacy.ts", "stable content\n")
       const cap = capability({
         docs: { evidence: { fields: { email: { dynamicAccess: ["src/legacy.ts:1:1"] } } } },
@@ -205,7 +205,7 @@ describe("citation-verification", () => {
       expect(findings).toEqual([])
     })
 
-    it("flags DYNAMIC_ACCESS_CITATION_STALE when the cited file's content changed since the previous snapshot", async () => {
+    it("flags STALE_DYNAMIC_ACCESS_CITATION when the cited file's content changed since the previous snapshot", async () => {
       const filePath = await writeFile("src/legacy.ts", "original content\n")
       const cap = capability({
         docs: { evidence: { fields: { email: { dynamicAccess: ["src/legacy.ts:1:1"] } } } },
@@ -229,7 +229,7 @@ describe("citation-verification", () => {
       )
       expect(findings).toContainEqual(
         expect.objectContaining({
-          code: "DYNAMIC_ACCESS_CITATION_STALE",
+          code: "STALE_DYNAMIC_ACCESS_CITATION",
           family: "citation",
           severity: "warning",
           field: ["email"],
@@ -247,7 +247,7 @@ describe("citation-verification", () => {
       expect(findings).toEqual([])
     })
 
-    it("emits DYNAMIC_ACCESS_CITATION_MISSING verbatim, with the field's own path and position", async () => {
+    it("emits MISSING_DYNAMIC_ACCESS_CITATION verbatim, with the field's own path and position", async () => {
       const cap = capability({
         fields: [
           {
@@ -276,11 +276,11 @@ describe("citation-verification", () => {
       )
       expect(findings).toEqual([
         {
-          code: "DYNAMIC_ACCESS_CITATION_MISSING",
+          code: "MISSING_DYNAMIC_ACCESS_CITATION",
           family: "citation",
           severity: "warning",
           message:
-            'Declared dynamicAccess citation "src/missing.ts:12:34" on field "contact" on "userCapability" no longer resolves to a real file -- the developer\'s own citation could not be re-confirmed this run.',
+            'Declared dynamicAccess citation "src/missing.ts:12:34" on field "contact" on "userCapability" no longer resolves to a real file -- the developer\'s own citation could not be re-confirmed this run. Update the citation to point at the file that now performs this access, or remove it if the access no longer exists.',
           capability: { file: "/project/user.ts", exportName: "userCapability" },
           field: ["contact", "email"],
           position: { line: 7, column: 4 },
@@ -305,7 +305,7 @@ describe("citation-verification", () => {
       expect(findings[0]).not.toHaveProperty("position")
     })
 
-    it("emits DYNAMIC_ACCESS_CITATION_STALE verbatim", async () => {
+    it("emits STALE_DYNAMIC_ACCESS_CITATION verbatim", async () => {
       const filePath = await writeFile("src/legacy.ts", "v1\n")
       const cap = capability({
         docs: { evidence: { fields: { email: { dynamicAccess: ["src/legacy.ts:1:1"] } } } },
@@ -330,7 +330,7 @@ describe("citation-verification", () => {
       )
       expect(findings).toEqual([
         {
-          code: "DYNAMIC_ACCESS_CITATION_STALE",
+          code: "STALE_DYNAMIC_ACCESS_CITATION",
           family: "citation",
           severity: "warning",
           message:
@@ -431,7 +431,7 @@ describe("citation-verification", () => {
         root,
         nodeBuildFs,
       )
-      expect(findings).toMatchObject([{ code: "DYNAMIC_ACCESS_CITATION_STALE", field: ["email"] }])
+      expect(findings).toMatchObject([{ code: "STALE_DYNAMIC_ACCESS_CITATION", field: ["email"] }])
     })
 
     it("uses the matched field's own path and position on a STALE finding, and falls back to [fieldKey] when no field matches", async () => {

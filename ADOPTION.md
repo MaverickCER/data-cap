@@ -48,10 +48,15 @@ Stable/Experimental/Private API classification. Before `1.0`, any minor
 release may change a Stable API; there is no LTS branch and no extended
 security-support window beyond the latest published `0.x` (see
 [`SECURITY.md`](SECURITY.md)'s "Supported versions"). This is the honest
-gap for an organization evaluating adoption at scale today: there is
-currently no forward commitment about post-`1.0` backport policy. If that
-gap is a blocker for your evaluation, wait for a `1.0` release or track
-[`specs/decisions/`](specs/decisions/) for when that commitment is made.
+gap for an organization evaluating adoption at scale today.
+
+Starting at the first `1.0` release, security fixes will be backported to
+the latest minor release of the previous major version for a minimum of six
+months after a new major version ships, per
+[ADR 0061](specs/decisions/0061-security-backport-window.md) — a forward
+commitment, not yet a proven track record. If the pre-`1.0` gap above is a
+blocker for your evaluation today, wait for a `1.0` release or track
+[`specs/decisions/`](specs/decisions/) for when it lands.
 
 ## Bundle size and performance
 
@@ -65,13 +70,13 @@ carry no budget (they never ship to a browser bundle).
 
 ## Architectural guarantees worth knowing before you adopt
 
-| Guarantee                                                                                                                                                                                                                                                                                                                             | Why it matters                                                                                               | ADR                                                                                          |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------- |
-| `fields` are always synchronously readable — no throw-until-ready gate. Every declared field has a real default from the moment `buildData()`/`createData()` returns.                                                                                                                                                                 | No initialization-race UI code (`if (!data) return null` guards, suspense boundaries just to read a default) | [ADR 0004](specs/decisions/0004-fields-always-synchronously-readable.md)                     |
-| `info` is mandatory, never optional — every `DataState` has the same shape, always, with no branching on whether metadata exists.                                                                                                                                                                                                     | Consumers never special-case "metadata hasn't been allocated yet"                                            | [ADR 0007](specs/decisions/0007-datainfo-mandatory-not-optional.md)                          |
-| A built-in getter/mutator/subscription execution loop is available, but optional. `createData(schema)` (Experimental tier) owns dedup, per-operation status, optimistic mutation lifecycle, and `runGetters` concurrency; `buildData` + `createDataStore` gives full manual control instead — both compose the exact same primitives. | Pick the level of control per capability, not per app                                                        | [ADR 0048](specs/decisions/0048-builddata-createdata-split-and-optional-operations-layer.md) |
-| No first-party TanStack Query/Socket.IO adapter ships — full, tested reference patterns live in `examples/` instead.                                                                                                                                                                                                                  | No adapter package to track for breakage against upstream releases                                           | [ADR 0037](specs/decisions/0037-no-first-party-integration-packages.md)                      |
-| No automatic rollback or conflict resolution for optimistic mutations or concurrent same-field writes — the framework never guesses at a domain-specific policy; you implement one in your own processor if you need one.                                                                                                             | No surprise "magic" merge/rollback behavior to reverse-engineer when it doesn't match your domain's needs    | [ADR 0023](specs/decisions/0023-no-automatic-rollback-or-conflict-resolution.md)             |
+| Guarantee                                                                                                                                                                                                                                                                                                         | Why it matters                                                                                               | ADR                                                                                          |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------- |
+| `fields` are always synchronously readable — no throw-until-ready gate. Every declared field has a real default from the moment `buildData()`/`createData()` returns.                                                                                                                                             | No initialization-race UI code (`if (!data) return null` guards, suspense boundaries just to read a default) | [ADR 0004](specs/decisions/0004-fields-always-synchronously-readable.md)                     |
+| `info` is mandatory, never optional — every `DataState` has the same shape, always, with no branching on whether metadata exists.                                                                                                                                                                                 | Consumers never special-case "metadata hasn't been allocated yet"                                            | [ADR 0007](specs/decisions/0007-datainfo-mandatory-not-optional.md)                          |
+| A built-in getter/mutator/subscription execution loop is available, but optional. `createData(schema)` owns dedup, per-operation status, optimistic mutation lifecycle, and `runGetters` concurrency; `buildData` + `createDataStore` gives full manual control instead — both compose the exact same primitives. | Pick the level of control per capability, not per app                                                        | [ADR 0048](specs/decisions/0048-builddata-createdata-split-and-optional-operations-layer.md) |
+| No first-party TanStack Query/Socket.IO adapter ships — full, tested reference patterns live in `examples/` instead.                                                                                                                                                                                              | No adapter package to track for breakage against upstream releases                                           | [ADR 0037](specs/decisions/0037-no-first-party-integration-packages.md)                      |
+| No automatic rollback or conflict resolution for optimistic mutations or concurrent same-field writes — the framework never guesses at a domain-specific policy; you implement one in your own processor if you need one.                                                                                         | No surprise "magic" merge/rollback behavior to reverse-engineer when it doesn't match your domain's needs    | [ADR 0023](specs/decisions/0023-no-automatic-rollback-or-conflict-resolution.md)             |
 
 ## Migration cost from what you likely have today
 
@@ -92,8 +97,9 @@ state-management tooling keeps doing what it already does underneath.
 
 ## Questions this document doesn't answer
 
-- **What does a post-`1.0` backport/LTS policy look like?** Not yet
-  decided — see "Versioning, stability, and long-term support" above.
+- **What does a post-`1.0` backport/LTS policy look like?** Decided — see
+  "Versioning, stability, and long-term support" above and
+  [ADR 0061](specs/decisions/0061-security-backport-window.md).
 - **Is there a first-party adapter for [some other library]?** No, and
   none are planned — see
   [ADR 0037](specs/decisions/0037-no-first-party-integration-packages.md).
