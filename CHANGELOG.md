@@ -1,5 +1,55 @@
 # Changelog
 
+## 0.4.0
+
+### Minor Changes
+
+- 683cb91: Wires `internal-package-contract`'s governance in for real (CI now runs the
+  full contract as a blocking gate, mutation testing ratcheted to zero
+  survived/no-coverage/timeout), adds a NIST Privacy Framework-informed
+  ISO/IEC 27701 alignment report, and adds a Next.js example demonstrating
+  user/admin data ownership.
+- d0af46e: Adds a new ESLint rule, `data-cap/no-fields-escape` (ADR 0063/0064): the
+  lint-time mirror of the usage-scanner widening in this same release (ADR
+  0060). Flags a capability's `.fields`/`getSnapshot()` escaping whole via a
+  spread/rest, a bare function-call argument, a named JSX prop, or an export
+  -- the same shapes the scanner now reports as `indeterminate` instead of a
+  false `UNCONSUMED_FIELD`, caught earlier at lint time instead of at report
+  time. Ships with an `allow` glob option for legitimate whole-object
+  forwarding (e.g. an internal debug panel), matching `no-raw-external-io`'s
+  existing escape hatch.
+- d0af46e: Promotes every remaining Experimental-tier surface to Stable (ADR 0065):
+  `./build`'s `discoverCapabilityFiles`/`parseCapabilityFile`/
+  `linkCapabilityFiles`/`evaluateLiteral`/`resolution/*` (including the
+  `--package`/`--tsconfig` CLI flags and cross-package schema discovery), and
+  `./runtime`'s `createData`. No behavior change -- this is a compatibility
+  commitment change only. The Experimental tier remains defined in
+  `VERSIONING.md` for future genuinely-new surfaces; nothing currently ships
+  under it.
+- d0af46e: Fixes a real false-negative in the usage scanner (ADR 0060): a capability's
+  `.fields` object (or the capability itself) handed whole to a function
+  argument, a spread, a `return`, or a React component's props — a JSX-prop-
+  drilled or context-provided value, not a direct `x.fields.<name>` read — now
+  correctly widens every not-otherwise-proven field on that capability to
+  `indeterminate`, with a real cited source position, instead of silently
+  reporting `UNCONSUMED_FIELD` ("no consumer found") when a real, unattributable
+  consumer was sitting right there. Mirrors a fix `@maverickcer/env-cap` already
+  shipped for its own equivalent scanner (its ADR 0039).
+
+  **Breaking, pre-1.0 (any Stable API may change in a minor per VERSIONING.md):**
+  three finding codes are renamed for parity with env-cap's equivalent codes
+  (ADR 0062) — `DYNAMIC_ACCESS_CITATION_MISSING` → `MISSING_DYNAMIC_ACCESS_CITATION`,
+  `DYNAMIC_ACCESS_CITATION_STALE` → `STALE_DYNAMIC_ACCESS_CITATION`,
+  `EXCLUSIVE_GROUP_CONFLICT` → `EXCLUSIVE_GROUP_VIOLATION`. Anything matching
+  on the old exact strings (a `--json`/SARIF consumer, a stored evidence
+  snapshot) needs updating.
+
+### Patch Changes
+
+- d0af46e: Documents a post-1.0 security backport policy in `SECURITY.md`/`ADOPTION.md`
+  (ADR 0061), mirroring `@maverickcer/env-cap`'s equivalent policy (its ADR
+  0015). No code or behavior change.
+
 ## 0.3.1
 
 ### Patch Changes
