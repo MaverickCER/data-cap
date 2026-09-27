@@ -1,15 +1,15 @@
 {
   "metadata": {
     "environment": {
-      "cpuModel": "Intel(R) Xeon(R) 6973P-C",
+      "cpuModel": "AMD EPYC 7763 64-Core Processor",
       "cpuArchitecture": "x64",
       "processArch": "x64",
       "logicalCores": 4,
       "physicalCores": 2,
-      "cpuFrequencyMHz": 3598,
+      "cpuFrequencyMHz": 0,
       "platform": "linux",
       "osRelease": "6.17.0-1022-azure",
-      "totalMemoryMb": 15989,
+      "totalMemoryMb": 15990,
       "nodeVersion": "v22.23.2",
       "timezoneOffsetMinutes": 0,
       "isCI": true,
@@ -31,9 +31,9 @@
       "gcEnabled": true
     },
     "timing": {
-      "startedAtUtc": "2026-09-27T19:27:20.665Z",
-      "finishedAtUtc": "2026-09-27T19:27:32.350Z",
-      "totalSuiteDurationMs": 11685
+      "startedAtUtc": "2026-09-27T20:04:55.450Z",
+      "finishedAtUtc": "2026-09-27T20:05:07.545Z",
+      "totalSuiteDurationMs": 12095
     },
     "generation": {
       "fixtureSeed": "deterministic-index-v1",
@@ -46,7 +46,7 @@
       "dataCapVersion": "0.4.0"
     },
     "git": {
-      "gitCommit": "923cfac092d226f4f4284c99d174758a2bd889e2",
+      "gitCommit": "13822492935e202fec9bc66b235dc521108c1074",
       "gitBranch": "fix/bot-pr-ci-and-benchmark-in-pr",
       "gitDirty": true
     },
@@ -112,13 +112,13 @@
             "capabilities": 10
           },
           "fixtureHash": "sha256:e1ffb08a9e126996b40867fd352c88caa1641f646aa5a0bb3f2f18f9c77ea485",
-          "fixtureGenerationMs": 4,
+          "fixtureGenerationMs": 6,
           "durationMs": {
-            "minMs": 0.9879849999999806,
-            "medianMs": 1.3909869999999955,
-            "p95Ms": 1.992561999999964,
-            "maxMs": 1.992561999999964,
-            "stdDevMs": 0.2319638115972579,
+            "minMs": 1.4227690000000166,
+            "medianMs": 1.8457870000000298,
+            "p95Ms": 2.276642000000038,
+            "maxMs": 2.276642000000038,
+            "stdDevMs": 0.2270654519145259,
             "iterations": 20,
             "warmupIterations": 2
           }
@@ -130,13 +130,13 @@
             "capabilities": 100
           },
           "fixtureHash": "sha256:03fd1d65b3f08faf095a8cd5a04074c91f44acf22e282d67e09558624e1ed6e3",
-          "fixtureGenerationMs": 14,
+          "fixtureGenerationMs": 30,
           "durationMs": {
-            "minMs": 5.012980999999968,
-            "medianMs": 5.448540999999977,
-            "p95Ms": 6.4827699999999595,
-            "maxMs": 6.4827699999999595,
-            "stdDevMs": 0.3896054117565619,
+            "minMs": 8.556182999999919,
+            "medianMs": 10.15946699999995,
+            "p95Ms": 11.581669999999917,
+            "maxMs": 11.581669999999917,
+            "stdDevMs": 1.1326440911575042,
             "iterations": 10,
             "warmupIterations": 1
           }
@@ -148,13 +148,13 @@
             "capabilities": 400
           },
           "fixtureHash": "sha256:165601cc439bb70f0550105a6dd4f07ea898fc5e899423b5ce63e6665e585833",
-          "fixtureGenerationMs": 55,
+          "fixtureGenerationMs": 114,
           "durationMs": {
-            "minMs": 16.29888100000005,
-            "medianMs": 17.3442510000001,
-            "p95Ms": 19.56335999999999,
-            "maxMs": 19.56335999999999,
-            "stdDevMs": 1.1621514739945373,
+            "minMs": 29.138701999999967,
+            "medianMs": 36.012294999999995,
+            "p95Ms": 38.00555499999996,
+            "maxMs": 38.00555499999996,
+            "stdDevMs": 3.175199253640761,
             "iterations": 6,
             "warmupIterations": 1
           }
@@ -170,13 +170,13 @@
             "capabilities": 10
           },
           "fixtureHash": "sha256:e1ffb08a9e126996b40867fd352c88caa1641f646aa5a0bb3f2f18f9c77ea485",
-          "fixtureGenerationMs": 4,
+          "fixtureGenerationMs": 5,
           "durationMs": {
-            "minMs": 35.14509300000009,
-            "medianMs": 49.27133200000026,
-            "p95Ms": 87.54084899999998,
-            "maxMs": 87.54084899999998,
-            "stdDevMs": 16.001063786134452,
+            "minMs": 50.90970299999981,
+            "medianMs": 54.91274800000019,
+            "p95Ms": 61.496818000000076,
+            "maxMs": 61.496818000000076,
+            "stdDevMs": 2.659707317719223,
             "iterations": 20,
             "warmupIterations": 2
           }
@@ -188,14 +188,14 @@
             "capabilities": 100
           },
           "fixtureHash": "sha256:03fd1d65b3f08faf095a8cd5a04074c91f44acf22e282d67e09558624e1ed6e3",
-          "fixtureGenerationMs": 23,
+          "fixtureGenerationMs": 39,
           "durationMs": {
-            "minMs": 232.6629839999996,
-            "medianMs": 274.28786200000013,
-            "p95Ms": 281.42194100000006,
-            "maxMs": 281.42194100000006,
-            "stdDevMs": 15.739066872221256,
-            "iterations": 8,
+            "minMs": 338.69151299999976,
+            "medianMs": 345.7854910000001,
+            "p95Ms": 362.7842869999995,
+            "maxMs": 362.7842869999995,
+            "stdDevMs": 7.852289506405679,
+            "iterations": 6,
             "warmupIterations": 1
           }
         },
@@ -206,13 +206,13 @@
             "capabilities": 400
           },
           "fixtureHash": "sha256:165601cc439bb70f0550105a6dd4f07ea898fc5e899423b5ce63e6665e585833",
-          "fixtureGenerationMs": 84,
+          "fixtureGenerationMs": 143,
           "durationMs": {
-            "minMs": 1899.6910340000004,
-            "medianMs": 1930.9953430000005,
-            "p95Ms": 1989.6453679999995,
-            "maxMs": 1989.6453679999995,
-            "stdDevMs": 37.28503929914844,
+            "minMs": 1667.8353260000004,
+            "medianMs": 1672.6474980000003,
+            "p95Ms": 1739.2174970000005,
+            "maxMs": 1739.2174970000005,
+            "stdDevMs": 32.574932596316195,
             "iterations": 3,
             "warmupIterations": 1
           }
