@@ -5,6 +5,13 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  # Lets a bot-authored branch (the Changesets release PR, a benchmark-results
+  # commit) get real CI without a human push -- GitHub never fires `push`/
+  # `pull_request` for a branch whose only commits were made with the default
+  # `GITHUB_TOKEN` (an anti-recursion guard), but a `gh workflow run` dispatch
+  # call from that same automation IS allowed to start a run, and its jobs'
+  # check results still attach to that branch's head SHA normally.
+  workflow_dispatch:
 
 # Explicit least-privilege default so every job's GITHUB_TOKEN scope is a
 # property of this file, not an assumption about the repo/org's ambient

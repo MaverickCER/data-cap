@@ -203,8 +203,9 @@ Four independent version numbers, each answering a different question:
 `benchmarks/history/runtime.json` and `.../buildtime.json` are append-only arrays of compact entries
 (`medianMs` per completed named-benchmark×tier, plus commit/version/timestamp/runner metadata) -- not the
 full per-run detail already in each commit's own `results.json` (min/max/p95/stdDev/memory/inputs). Written
-to by CI only (`benchmark-main`'s job, on every push to `main`), in the same bot PR that refreshes
-`results.json`/`RESULTS.md` -- never by a local `npm run benchmark`.
+to by CI only (`benchmark-pr`'s job, on a PR whose own diff touches benchmarked code), in the same
+commit that refreshes `results.json`/`RESULTS.md` directly onto that PR's branch -- never by a local
+`npm run benchmark`.
 
 ## Reproduction
 
