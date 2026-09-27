@@ -31,9 +31,9 @@
       "gcEnabled": true
     },
     "timing": {
-      "startedAtUtc": "2026-09-27T16:24:54.040Z",
-      "finishedAtUtc": "2026-09-27T16:25:03.723Z",
-      "totalSuiteDurationMs": 9683
+      "startedAtUtc": "2026-09-27T18:32:40.598Z",
+      "finishedAtUtc": "2026-09-27T18:32:50.591Z",
+      "totalSuiteDurationMs": 9993
     },
     "generation": {
       "fixtureSeed": "deterministic-index-v1",
@@ -46,7 +46,7 @@
       "dataCapVersion": "0.4.0"
     },
     "git": {
-      "gitCommit": "d524a392b97fc4faaf432508e6d9f29e44f8f4e2",
+      "gitCommit": "e6f25e49d56054c27d7e5a47a2abcf55b61fcaf9",
       "gitBranch": "fix/bot-pr-ci-and-benchmark-in-pr",
       "gitDirty": true
     },
@@ -114,11 +114,11 @@
           "fixtureHash": "sha256:e1ffb08a9e126996b40867fd352c88caa1641f646aa5a0bb3f2f18f9c77ea485",
           "fixtureGenerationMs": 3,
           "durationMs": {
-            "minMs": 0.7843039999999633,
-            "medianMs": 0.930533999999966,
-            "p95Ms": 1.0262969999999996,
-            "maxMs": 1.0262969999999996,
-            "stdDevMs": 0.0552331227808843,
+            "minMs": 0.8278950000000123,
+            "medianMs": 1.0238999999999692,
+            "p95Ms": 1.4485990000000015,
+            "maxMs": 1.4485990000000015,
+            "stdDevMs": 0.133436310041122,
             "iterations": 20,
             "warmupIterations": 2
           }
@@ -132,11 +132,11 @@
           "fixtureHash": "sha256:03fd1d65b3f08faf095a8cd5a04074c91f44acf22e282d67e09558624e1ed6e3",
           "fixtureGenerationMs": 14,
           "durationMs": {
-            "minMs": 3.9064920000000143,
-            "medianMs": 4.242846000000043,
-            "p95Ms": 4.504376999999977,
-            "maxMs": 4.504376999999977,
-            "stdDevMs": 0.19490268721053872,
+            "minMs": 4.230293000000017,
+            "medianMs": 4.525425999999982,
+            "p95Ms": 4.977236000000005,
+            "maxMs": 4.977236000000005,
+            "stdDevMs": 0.20963561060239966,
             "iterations": 10,
             "warmupIterations": 1
           }
@@ -148,13 +148,13 @@
             "capabilities": 400
           },
           "fixtureHash": "sha256:165601cc439bb70f0550105a6dd4f07ea898fc5e899423b5ce63e6665e585833",
-          "fixtureGenerationMs": 47,
+          "fixtureGenerationMs": 57,
           "durationMs": {
-            "minMs": 13.973119999999994,
-            "medianMs": 14.848982999999976,
-            "p95Ms": 14.882077000000095,
-            "maxMs": 14.882077000000095,
-            "stdDevMs": 0.32062929211578567,
+            "minMs": 14.567901000000006,
+            "medianMs": 15.91889500000002,
+            "p95Ms": 16.962226999999984,
+            "maxMs": 16.962226999999984,
+            "stdDevMs": 0.9527379147909175,
             "iterations": 6,
             "warmupIterations": 1
           }
@@ -172,11 +172,11 @@
           "fixtureHash": "sha256:e1ffb08a9e126996b40867fd352c88caa1641f646aa5a0bb3f2f18f9c77ea485",
           "fixtureGenerationMs": 3,
           "durationMs": {
-            "minMs": 29.42515900000012,
-            "medianMs": 33.18419300000005,
-            "p95Ms": 42.063293000000044,
-            "maxMs": 42.063293000000044,
-            "stdDevMs": 3.33018450409048,
+            "minMs": 33.63911599999983,
+            "medianMs": 35.40849099999991,
+            "p95Ms": 41.14576499999998,
+            "maxMs": 41.14576499999998,
+            "stdDevMs": 2.3462880041169503,
             "iterations": 20,
             "warmupIterations": 2
           }
@@ -188,14 +188,14 @@
             "capabilities": 100
           },
           "fixtureHash": "sha256:03fd1d65b3f08faf095a8cd5a04074c91f44acf22e282d67e09558624e1ed6e3",
-          "fixtureGenerationMs": 16,
+          "fixtureGenerationMs": 17,
           "durationMs": {
-            "minMs": 183.90168399999993,
-            "medianMs": 203.23647300000016,
-            "p95Ms": 378.9845519999999,
-            "maxMs": 378.9845519999999,
-            "stdDevMs": 68.91109023931034,
-            "iterations": 9,
+            "minMs": 201.82534299999998,
+            "medianMs": 211.07557599999973,
+            "p95Ms": 237.76141900000016,
+            "maxMs": 237.76141900000016,
+            "stdDevMs": 9.394097978345936,
+            "iterations": 10,
             "warmupIterations": 1
           }
         },
@@ -206,13 +206,13 @@
             "capabilities": 400
           },
           "fixtureHash": "sha256:165601cc439bb70f0550105a6dd4f07ea898fc5e899423b5ce63e6665e585833",
-          "fixtureGenerationMs": 72,
+          "fixtureGenerationMs": 87,
           "durationMs": {
-            "minMs": 1601.7241350000004,
-            "medianMs": 1656.8364659999988,
-            "p95Ms": 1657.116967,
-            "maxMs": 1657.116967,
-            "stdDevMs": 26.046568436903257,
+            "minMs": 1644.2816899999998,
+            "medianMs": 1678.6393160000007,
+            "p95Ms": 1681.205593999999,
+            "maxMs": 1681.205593999999,
+            "stdDevMs": 16.833851258469174,
             "iterations": 3,
             "warmupIterations": 1
           }
