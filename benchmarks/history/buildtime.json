@@ -186,6 +186,37 @@
           }
         }
       }
+    },
+    {
+      "timestamp": "2026-09-27T15:38:29.335Z",
+      "gitCommit": "fbf980bde45507b20ce38f38614db8bcadbce79a",
+      "dataCapVersion": "0.4.0",
+      "benchmarkSuiteVersion": 1,
+      "runner": "GitHub Actions",
+      "measurements": {
+        "discovery": {
+          "baseline": {
+            "medianMs": 1.8119500000000244
+          },
+          "stress": {
+            "medianMs": 9.810689000000025
+          },
+          "extreme": {
+            "medianMs": 33.28067699999997
+          }
+        },
+        "artifacts": {
+          "baseline": {
+            "medianMs": 50.31808000000001
+          },
+          "stress": {
+            "medianMs": 331.4758139999999
+          },
+          "extreme": {
+            "medianMs": 1641.3622759999998
+          }
+        }
+      }
     }
   ]
 }
