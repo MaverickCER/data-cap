@@ -16,13 +16,14 @@
   ],
   "project": ["src/**/*.{ts,tsx}!"],
   "ignore": ["**/*.d.ts", "dist/**", "coverage/**", "reports/**", "examples/**", "benchmarks/**"],
-  "ignoreDependencies": ["data-cap"],
-  // Knip's built-in typedoc plugin only reads the standard `typedoc.{js,cjs,mjs,json,jsonc}`
-  // config names by default, so it never sees `typedoc.markdown.json` (our
-  // `docs:api:report` config, which extends typedoc.json and adds
-  // `"plugin": ["typedoc-plugin-markdown"]`) and flags that devDependency as
-  // unused. It is genuinely used, just declared in the extra config file --
-  // point the plugin at both files instead of exempting the dependency.
+  // typedoc-plugin-markdown: genuinely used, but its "plugin" declaration now lives in
+  // internal-package-contract's shared config/typedoc-markdown.json (this repo's own
+  // typedoc.markdown.json only `extends` it -- see that file) -- knip's typedoc plugin
+  // resolves the config files listed below but doesn't follow an `extends` chain into
+  // another npm package, so it can no longer see the reference. Exempted here instead
+  // of pointing "typedoc.config" at a node_modules path, which would be fragile across
+  // package managers' differing node_modules layouts.
+  "ignoreDependencies": ["data-cap", "typedoc-plugin-markdown"],
   "typedoc": {
     "config": ["typedoc.json", "typedoc.markdown.json"]
   }
