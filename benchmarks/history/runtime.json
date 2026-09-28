@@ -178,6 +178,1074 @@
           }
         }
       }
+    },
+    {
+      "timestamp": "2026-09-27T15:18:11.071Z",
+      "gitCommit": "fa5d65a1828d88553807f4fb403f836a2e73adf5",
+      "dataCapVersion": "0.4.0",
+      "benchmarkSuiteVersion": 1,
+      "runner": "GitHub Actions",
+      "measurements": {
+        "cold-start": {
+          "baseline": {
+            "medianMs": 52.622817999999995
+          },
+          "stress": {
+            "medianMs": 86.78717600000004
+          },
+          "extreme": {
+            "medianMs": 239.24828899999966
+          }
+        },
+        "buildData": {
+          "fixed": {
+            "medianMs": 0.07463900000038848
+          }
+        },
+        "commitAuthoritative-array-replace": {
+          "baseline": {
+            "medianMs": 0.2731600000006438
+          },
+          "stress": {
+            "medianMs": 2.6367550000004485
+          },
+          "extreme": {
+            "medianMs": 22.04201599999942
+          }
+        },
+        "commitAuthoritative-leaf": {
+          "baseline": {
+            "medianMs": 0.017021999999997206
+          },
+          "stress": {
+            "medianMs": 0.01664100000016333
+          },
+          "extreme": {
+            "medianMs": 0.024284999999508727
+          }
+        },
+        "reconcileArrayInfo": {
+          "baseline": {
+            "medianMs": 0.2528329999995549
+          },
+          "stress": {
+            "medianMs": 1.418669000000591
+          },
+          "extreme": {
+            "medianMs": 14.816977000000406
+          }
+        },
+        "getterDispatch-cold": {
+          "baseline": {
+            "medianMs": 0.4469440000002578
+          },
+          "stress": {
+            "medianMs": 2.842598999999609
+          },
+          "extreme": {
+            "medianMs": 22.46859499999846
+          }
+        },
+        "canonicalize": {
+          "fixed": {
+            "medianMs": 0.02126999999927648
+          }
+        },
+        "dedupeFanIn": {
+          "fixed": {
+            "medianMs": 0.8563990000002377
+          }
+        },
+        "dedupeFanIn-independent": {
+          "fixed": {
+            "medianMs": 1.0621439999995346
+          }
+        },
+        "runGettersFanOut": {
+          "fixed": {
+            "medianMs": 2.026654999999664
+          }
+        }
+      }
+    },
+    {
+      "timestamp": "2026-09-27T15:20:19.289Z",
+      "gitCommit": "c05b79a85b267c8ea5c68c7328a10c6fc53c5ba1",
+      "dataCapVersion": "0.4.0",
+      "benchmarkSuiteVersion": 1,
+      "runner": "GitHub Actions",
+      "measurements": {
+        "cold-start": {
+          "baseline": {
+            "medianMs": 56.002977999999985
+          },
+          "stress": {
+            "medianMs": 86.77141800000004
+          },
+          "extreme": {
+            "medianMs": 221.45978300000024
+          }
+        },
+        "buildData": {
+          "fixed": {
+            "medianMs": 0.07710500000030152
+          }
+        },
+        "commitAuthoritative-array-replace": {
+          "baseline": {
+            "medianMs": 0.28093100000023696
+          },
+          "stress": {
+            "medianMs": 2.667845999999372
+          },
+          "extreme": {
+            "medianMs": 23.112396000000444
+          }
+        },
+        "commitAuthoritative-leaf": {
+          "baseline": {
+            "medianMs": 0.018377999999756867
+          },
+          "stress": {
+            "medianMs": 0.017977000000428234
+          },
+          "extreme": {
+            "medianMs": 0.03241799999887007
+          }
+        },
+        "reconcileArrayInfo": {
+          "baseline": {
+            "medianMs": 0.23825700000088545
+          },
+          "stress": {
+            "medianMs": 1.3704629999992903
+          },
+          "extreme": {
+            "medianMs": 16.831765999999334
+          }
+        },
+        "getterDispatch-cold": {
+          "baseline": {
+            "medianMs": 0.49679399999968155
+          },
+          "stress": {
+            "medianMs": 2.8974609999995664
+          },
+          "extreme": {
+            "medianMs": 23.169040000000678
+          }
+        },
+        "canonicalize": {
+          "fixed": {
+            "medianMs": 0.024286000001666253
+          }
+        },
+        "dedupeFanIn": {
+          "fixed": {
+            "medianMs": 0.9036740000010468
+          }
+        },
+        "dedupeFanIn-independent": {
+          "fixed": {
+            "medianMs": 1.1112450000000536
+          }
+        },
+        "runGettersFanOut": {
+          "fixed": {
+            "medianMs": 2.1931669999994483
+          }
+        }
+      }
+    },
+    {
+      "timestamp": "2026-09-27T15:22:13.520Z",
+      "gitCommit": "f7af59cf627425a9cdca81f5babd32ec434a3bf0",
+      "dataCapVersion": "0.4.0",
+      "benchmarkSuiteVersion": 1,
+      "runner": "GitHub Actions",
+      "measurements": {
+        "cold-start": {
+          "baseline": {
+            "medianMs": 52.733566999999994
+          },
+          "stress": {
+            "medianMs": 87.34672299999988
+          },
+          "extreme": {
+            "medianMs": 239.5667410000001
+          }
+        },
+        "buildData": {
+          "fixed": {
+            "medianMs": 0.07440800000040326
+          }
+        },
+        "commitAuthoritative-array-replace": {
+          "baseline": {
+            "medianMs": 0.2638700000006793
+          },
+          "stress": {
+            "medianMs": 2.6260840000004464
+          },
+          "extreme": {
+            "medianMs": 22.059486999998626
+          }
+        },
+        "commitAuthoritative-leaf": {
+          "baseline": {
+            "medianMs": 0.01662099999975908
+          },
+          "stress": {
+            "medianMs": 0.016781000000264612
+          },
+          "extreme": {
+            "medianMs": 0.02139999999963038
+          }
+        },
+        "reconcileArrayInfo": {
+          "baseline": {
+            "medianMs": 0.2723470000000816
+          },
+          "stress": {
+            "medianMs": 1.4193889999996827
+          },
+          "extreme": {
+            "medianMs": 14.741335999999137
+          }
+        },
+        "getterDispatch-cold": {
+          "baseline": {
+            "medianMs": 0.4382150000001275
+          },
+          "stress": {
+            "medianMs": 2.7847189999993134
+          },
+          "extreme": {
+            "medianMs": 21.94836000000032
+          }
+        },
+        "canonicalize": {
+          "fixed": {
+            "medianMs": 0.020948999999745865
+          }
+        },
+        "dedupeFanIn": {
+          "fixed": {
+            "medianMs": 0.8273389999994833
+          }
+        },
+        "dedupeFanIn-independent": {
+          "fixed": {
+            "medianMs": 1.029926000001069
+          }
+        },
+        "runGettersFanOut": {
+          "fixed": {
+            "medianMs": 2.012603000001036
+          }
+        }
+      }
+    },
+    {
+      "timestamp": "2026-09-27T15:36:45.519Z",
+      "gitCommit": "cd0c6b685091693dd3e3218416ff67825d5639d3",
+      "dataCapVersion": "0.4.0",
+      "benchmarkSuiteVersion": 1,
+      "runner": "GitHub Actions",
+      "measurements": {
+        "cold-start": {
+          "baseline": {
+            "medianMs": 53.663179000000014
+          },
+          "stress": {
+            "medianMs": 89.53973399999995
+          },
+          "extreme": {
+            "medianMs": 238.39237000000003
+          }
+        },
+        "buildData": {
+          "fixed": {
+            "medianMs": 0.07614199999989069
+          }
+        },
+        "commitAuthoritative-array-replace": {
+          "baseline": {
+            "medianMs": 0.27505399999972724
+          },
+          "stress": {
+            "medianMs": 2.7761719999998604
+          },
+          "extreme": {
+            "medianMs": 22.43455499999982
+          }
+        },
+        "commitAuthoritative-leaf": {
+          "baseline": {
+            "medianMs": 0.020156999999926484
+          },
+          "stress": {
+            "medianMs": 0.016802000000097905
+          },
+          "extreme": {
+            "medianMs": 0.02247199999874283
+          }
+        },
+        "reconcileArrayInfo": {
+          "baseline": {
+            "medianMs": 0.2509090000003198
+          },
+          "stress": {
+            "medianMs": 1.3841629999997167
+          },
+          "extreme": {
+            "medianMs": 14.706379999999626
+          }
+        },
+        "getterDispatch-cold": {
+          "baseline": {
+            "medianMs": 0.45333599999958096
+          },
+          "stress": {
+            "medianMs": 2.8834219999998822
+          },
+          "extreme": {
+            "medianMs": 22.287650000000212
+          }
+        },
+        "canonicalize": {
+          "fixed": {
+            "medianMs": 0.022070999999414198
+          }
+        },
+        "dedupeFanIn": {
+          "fixed": {
+            "medianMs": 0.8805040000006557
+          }
+        },
+        "dedupeFanIn-independent": {
+          "fixed": {
+            "medianMs": 1.0504299999993236
+          }
+        },
+        "runGettersFanOut": {
+          "fixed": {
+            "medianMs": 2.0770250000005035
+          }
+        }
+      }
+    },
+    {
+      "timestamp": "2026-09-27T15:38:17.328Z",
+      "gitCommit": "fbf980bde45507b20ce38f38614db8bcadbce79a",
+      "dataCapVersion": "0.4.0",
+      "benchmarkSuiteVersion": 1,
+      "runner": "GitHub Actions",
+      "measurements": {
+        "cold-start": {
+          "baseline": {
+            "medianMs": 52.61990500000002
+          },
+          "stress": {
+            "medianMs": 87.87842899999987
+          },
+          "extreme": {
+            "medianMs": 236.3471959999997
+          }
+        },
+        "buildData": {
+          "fixed": {
+            "medianMs": 0.07411800000045332
+          }
+        },
+        "commitAuthoritative-array-replace": {
+          "baseline": {
+            "medianMs": 0.26756899999963935
+          },
+          "stress": {
+            "medianMs": 2.567678999999771
+          },
+          "extreme": {
+            "medianMs": 21.987993000000642
+          }
+        },
+        "commitAuthoritative-leaf": {
+          "baseline": {
+            "medianMs": 0.01679100000001199
+          },
+          "stress": {
+            "medianMs": 0.017242000000806
+          },
+          "extreme": {
+            "medianMs": 0.025959000000511878
+          }
+        },
+        "reconcileArrayInfo": {
+          "baseline": {
+            "medianMs": 0.25332299999990937
+          },
+          "stress": {
+            "medianMs": 1.6309600000004139
+          },
+          "extreme": {
+            "medianMs": 14.768541999999798
+          }
+        },
+        "getterDispatch-cold": {
+          "baseline": {
+            "medianMs": 0.4348330000002534
+          },
+          "stress": {
+            "medianMs": 2.8426459999991494
+          },
+          "extreme": {
+            "medianMs": 22.708356999999523
+          }
+        },
+        "canonicalize": {
+          "fixed": {
+            "medianMs": 0.021118999999089283
+          }
+        },
+        "dedupeFanIn": {
+          "fixed": {
+            "medianMs": 0.8454299999993964
+          }
+        },
+        "dedupeFanIn-independent": {
+          "fixed": {
+            "medianMs": 1.0538799999994808
+          }
+        },
+        "runGettersFanOut": {
+          "fixed": {
+            "medianMs": 2.076933000000281
+          }
+        }
+      }
+    },
+    {
+      "timestamp": "2026-09-27T16:24:53.639Z",
+      "gitCommit": "d524a392b97fc4faaf432508e6d9f29e44f8f4e2",
+      "dataCapVersion": "0.4.0",
+      "benchmarkSuiteVersion": 1,
+      "runner": "GitHub Actions",
+      "measurements": {
+        "cold-start": {
+          "baseline": {
+            "medianMs": 36.259108
+          },
+          "stress": {
+            "medianMs": 50.76613499999996
+          },
+          "extreme": {
+            "medianMs": 120.06909500000006
+          }
+        },
+        "buildData": {
+          "fixed": {
+            "medianMs": 0.03938900000002832
+          }
+        },
+        "commitAuthoritative-array-replace": {
+          "baseline": {
+            "medianMs": 0.13720599999987826
+          },
+          "stress": {
+            "medianMs": 1.3873180000000502
+          },
+          "extreme": {
+            "medianMs": 12.521787000000586
+          }
+        },
+        "commitAuthoritative-leaf": {
+          "baseline": {
+            "medianMs": 0.00822199999993245
+          },
+          "stress": {
+            "medianMs": 0.009484999999585852
+          },
+          "extreme": {
+            "medianMs": 0.02131199999985256
+          }
+        },
+        "reconcileArrayInfo": {
+          "baseline": {
+            "medianMs": 0.13255900000012844
+          },
+          "stress": {
+            "medianMs": 0.8184959999998682
+          },
+          "extreme": {
+            "medianMs": 9.397968000000219
+          }
+        },
+        "getterDispatch-cold": {
+          "baseline": {
+            "medianMs": 0.2505650000002788
+          },
+          "stress": {
+            "medianMs": 1.5192950000000565
+          },
+          "extreme": {
+            "medianMs": 12.757440000000315
+          }
+        },
+        "canonicalize": {
+          "fixed": {
+            "medianMs": 0.0097250000007989
+          }
+        },
+        "dedupeFanIn": {
+          "fixed": {
+            "medianMs": 0.4737589999986085
+          }
+        },
+        "dedupeFanIn-independent": {
+          "fixed": {
+            "medianMs": 0.6932479999995849
+          }
+        },
+        "runGettersFanOut": {
+          "fixed": {
+            "medianMs": 1.2314040000001114
+          }
+        }
+      }
+    },
+    {
+      "timestamp": "2026-09-27T18:32:40.157Z",
+      "gitCommit": "e6f25e49d56054c27d7e5a47a2abcf55b61fcaf9",
+      "dataCapVersion": "0.4.0",
+      "benchmarkSuiteVersion": 1,
+      "runner": "GitHub Actions",
+      "measurements": {
+        "cold-start": {
+          "baseline": {
+            "medianMs": 36.18446499999999
+          },
+          "stress": {
+            "medianMs": 50.91927899999996
+          },
+          "extreme": {
+            "medianMs": 124.65871800000014
+          }
+        },
+        "buildData": {
+          "fixed": {
+            "medianMs": 0.03960999999981141
+          }
+        },
+        "commitAuthoritative-array-replace": {
+          "baseline": {
+            "medianMs": 0.14312599999993836
+          },
+          "stress": {
+            "medianMs": 1.4151729999994132
+          },
+          "extreme": {
+            "medianMs": 13.684782999999697
+          }
+        },
+        "commitAuthoritative-leaf": {
+          "baseline": {
+            "medianMs": 0.008031999999730033
+          },
+          "stress": {
+            "medianMs": 0.010685999999623164
+          },
+          "extreme": {
+            "medianMs": 0.028162999999949534
+          }
+        },
+        "reconcileArrayInfo": {
+          "baseline": {
+            "medianMs": 0.12996599999951286
+          },
+          "stress": {
+            "medianMs": 0.8629310000005717
+          },
+          "extreme": {
+            "medianMs": 9.704265000000305
+          }
+        },
+        "getterDispatch-cold": {
+          "baseline": {
+            "medianMs": 0.2604219999993802
+          },
+          "stress": {
+            "medianMs": 1.5698749999992287
+          },
+          "extreme": {
+            "medianMs": 13.280933999999434
+          }
+        },
+        "canonicalize": {
+          "fixed": {
+            "medianMs": 0.012810000000172295
+          }
+        },
+        "dedupeFanIn": {
+          "fixed": {
+            "medianMs": 0.5875359999990906
+          }
+        },
+        "dedupeFanIn-independent": {
+          "fixed": {
+            "medianMs": 0.7366799999999785
+          }
+        },
+        "runGettersFanOut": {
+          "fixed": {
+            "medianMs": 1.2261940000007598
+          }
+        }
+      }
+    },
+    {
+      "timestamp": "2026-09-27T18:39:40.927Z",
+      "gitCommit": "a8f627397cafdf3754b606bd8e4bc942deb9cd3e",
+      "dataCapVersion": "0.4.0",
+      "benchmarkSuiteVersion": 1,
+      "runner": "GitHub Actions",
+      "measurements": {
+        "cold-start": {
+          "baseline": {
+            "medianMs": 52.98259999999999
+          },
+          "stress": {
+            "medianMs": 86.6800790000002
+          },
+          "extreme": {
+            "medianMs": 233.89232600000014
+          }
+        },
+        "buildData": {
+          "fixed": {
+            "medianMs": 0.07357799999954295
+          }
+        },
+        "commitAuthoritative-array-replace": {
+          "baseline": {
+            "medianMs": 0.26361499999984517
+          },
+          "stress": {
+            "medianMs": 2.7232999999996537
+          },
+          "extreme": {
+            "medianMs": 22.57528099999945
+          }
+        },
+        "commitAuthoritative-leaf": {
+          "baseline": {
+            "medianMs": 0.01669099999980972
+          },
+          "stress": {
+            "medianMs": 0.016830999999911
+          },
+          "extreme": {
+            "medianMs": 0.02054899999893678
+          }
+        },
+        "reconcileArrayInfo": {
+          "baseline": {
+            "medianMs": 0.25009899999986374
+          },
+          "stress": {
+            "medianMs": 1.3992450000005192
+          },
+          "extreme": {
+            "medianMs": 14.319530000000668
+          }
+        },
+        "getterDispatch-cold": {
+          "baseline": {
+            "medianMs": 0.4449949999998353
+          },
+          "stress": {
+            "medianMs": 2.846059999999852
+          },
+          "extreme": {
+            "medianMs": 22.344912000000477
+          }
+        },
+        "canonicalize": {
+          "fixed": {
+            "medianMs": 0.020958999999493244
+          }
+        },
+        "dedupeFanIn": {
+          "fixed": {
+            "medianMs": 0.8373420000007172
+          }
+        },
+        "dedupeFanIn-independent": {
+          "fixed": {
+            "medianMs": 1.0802369999983057
+          }
+        },
+        "runGettersFanOut": {
+          "fixed": {
+            "medianMs": 2.0967249999994237
+          }
+        }
+      }
+    },
+    {
+      "timestamp": "2026-09-27T19:03:26.777Z",
+      "gitCommit": "f09339c632a7ab1e793826c2f92d52a8b15adeb5",
+      "dataCapVersion": "0.4.0",
+      "benchmarkSuiteVersion": 1,
+      "runner": "GitHub Actions",
+      "measurements": {
+        "cold-start": {
+          "baseline": {
+            "medianMs": 38.29950000000002
+          },
+          "stress": {
+            "medianMs": 54.20251300000007
+          },
+          "extreme": {
+            "medianMs": 129.18837499999972
+          }
+        },
+        "buildData": {
+          "fixed": {
+            "medianMs": 0.04305500000009488
+          }
+        },
+        "commitAuthoritative-array-replace": {
+          "baseline": {
+            "medianMs": 0.1470019999997021
+          },
+          "stress": {
+            "medianMs": 1.5992779999996856
+          },
+          "extreme": {
+            "medianMs": 14.330049000000145
+          }
+        },
+        "commitAuthoritative-leaf": {
+          "baseline": {
+            "medianMs": 0.009104000000661472
+          },
+          "stress": {
+            "medianMs": 0.016295000000354776
+          },
+          "extreme": {
+            "medianMs": 0.03130700000019715
+          }
+        },
+        "reconcileArrayInfo": {
+          "baseline": {
+            "medianMs": 0.1352229999993142
+          },
+          "stress": {
+            "medianMs": 0.8441510000002381
+          },
+          "extreme": {
+            "medianMs": 11.015150000000176
+          }
+        },
+        "getterDispatch-cold": {
+          "baseline": {
+            "medianMs": 0.3151049999996758
+          },
+          "stress": {
+            "medianMs": 1.7964339999998629
+          },
+          "extreme": {
+            "medianMs": 14.088276000000405
+          }
+        },
+        "canonicalize": {
+          "fixed": {
+            "medianMs": 0.011157000000821427
+          }
+        },
+        "dedupeFanIn": {
+          "fixed": {
+            "medianMs": 0.5912299999999959
+          }
+        },
+        "dedupeFanIn-independent": {
+          "fixed": {
+            "medianMs": 0.7715309999985038
+          }
+        },
+        "runGettersFanOut": {
+          "fixed": {
+            "medianMs": 1.48942199999874
+          }
+        }
+      }
+    },
+    {
+      "timestamp": "2026-09-27T19:25:58.934Z",
+      "gitCommit": "04e7c96662cacdb18c05a55dc2090e3dc2060825",
+      "dataCapVersion": "0.4.0",
+      "benchmarkSuiteVersion": 1,
+      "runner": "GitHub Actions",
+      "measurements": {
+        "cold-start": {
+          "baseline": {
+            "medianMs": 54.04489600000002
+          },
+          "stress": {
+            "medianMs": 89.43996400000015
+          },
+          "extreme": {
+            "medianMs": 244.30052399999977
+          }
+        },
+        "buildData": {
+          "fixed": {
+            "medianMs": 0.07997999999952299
+          }
+        },
+        "commitAuthoritative-array-replace": {
+          "baseline": {
+            "medianMs": 0.29857799999990675
+          },
+          "stress": {
+            "medianMs": 2.7792460000000574
+          },
+          "extreme": {
+            "medianMs": 23.180908000000272
+          }
+        },
+        "commitAuthoritative-leaf": {
+          "baseline": {
+            "medianMs": 0.017542999999932363
+          },
+          "stress": {
+            "medianMs": 0.020529000000351516
+          },
+          "extreme": {
+            "medianMs": 0.029925999999250052
+          }
+        },
+        "reconcileArrayInfo": {
+          "baseline": {
+            "medianMs": 0.26113900000018475
+          },
+          "stress": {
+            "medianMs": 1.429232000000411
+          },
+          "extreme": {
+            "medianMs": 14.921167000000423
+          }
+        },
+        "getterDispatch-cold": {
+          "baseline": {
+            "medianMs": 0.5058060000001205
+          },
+          "stress": {
+            "medianMs": 3.1030009999994945
+          },
+          "extreme": {
+            "medianMs": 23.054267999999865
+          }
+        },
+        "canonicalize": {
+          "fixed": {
+            "medianMs": 0.022441999999500695
+          }
+        },
+        "dedupeFanIn": {
+          "fixed": {
+            "medianMs": 0.9328139999997802
+          }
+        },
+        "dedupeFanIn-independent": {
+          "fixed": {
+            "medianMs": 1.1152959999999439
+          }
+        },
+        "runGettersFanOut": {
+          "fixed": {
+            "medianMs": 2.234589000001506
+          }
+        }
+      }
+    },
+    {
+      "timestamp": "2026-09-27T19:27:20.225Z",
+      "gitCommit": "923cfac092d226f4f4284c99d174758a2bd889e2",
+      "dataCapVersion": "0.4.0",
+      "benchmarkSuiteVersion": 1,
+      "runner": "GitHub Actions",
+      "measurements": {
+        "cold-start": {
+          "baseline": {
+            "medianMs": 36.289055000000005
+          },
+          "stress": {
+            "medianMs": 54.208888
+          },
+          "extreme": {
+            "medianMs": 119.04913999999962
+          }
+        },
+        "buildData": {
+          "fixed": {
+            "medianMs": 0.057273999999779335
+          }
+        },
+        "commitAuthoritative-array-replace": {
+          "baseline": {
+            "medianMs": 0.16820600000028207
+          },
+          "stress": {
+            "medianMs": 1.4556739999998172
+          },
+          "extreme": {
+            "medianMs": 14.552002000000357
+          }
+        },
+        "commitAuthoritative-leaf": {
+          "baseline": {
+            "medianMs": 0.017093000000386382
+          },
+          "stress": {
+            "medianMs": 0.016577000000324915
+          },
+          "extreme": {
+            "medianMs": 0.01785900000049878
+          }
+        },
+        "reconcileArrayInfo": {
+          "baseline": {
+            "medianMs": 0.1437610000002678
+          },
+          "stress": {
+            "medianMs": 0.9136200000002646
+          },
+          "extreme": {
+            "medianMs": 10.20362699999987
+          }
+        },
+        "getterDispatch-cold": {
+          "baseline": {
+            "medianMs": 0.3095030000004044
+          },
+          "stress": {
+            "medianMs": 1.5914080000002286
+          },
+          "extreme": {
+            "medianMs": 15.563543999998728
+          }
+        },
+        "canonicalize": {
+          "fixed": {
+            "medianMs": 0.019635000000562286
+          }
+        },
+        "dedupeFanIn": {
+          "fixed": {
+            "medianMs": 0.47990500000014435
+          }
+        },
+        "dedupeFanIn-independent": {
+          "fixed": {
+            "medianMs": 0.7592770000010205
+          }
+        },
+        "runGettersFanOut": {
+          "fixed": {
+            "medianMs": 1.2228609999983746
+          }
+        }
+      }
+    },
+    {
+      "timestamp": "2026-09-27T20:04:54.799Z",
+      "gitCommit": "13822492935e202fec9bc66b235dc521108c1074",
+      "dataCapVersion": "0.4.0",
+      "benchmarkSuiteVersion": 1,
+      "runner": "GitHub Actions",
+      "measurements": {
+        "cold-start": {
+          "baseline": {
+            "medianMs": 55.616832999999986
+          },
+          "stress": {
+            "medianMs": 92.476314
+          },
+          "extreme": {
+            "medianMs": 247.03655499999968
+          }
+        },
+        "buildData": {
+          "fixed": {
+            "medianMs": 0.07791500000075757
+          }
+        },
+        "commitAuthoritative-array-replace": {
+          "baseline": {
+            "medianMs": 0.29481099999975413
+          },
+          "stress": {
+            "medianMs": 2.8414380000003803
+          },
+          "extreme": {
+            "medianMs": 22.93811099999948
+          }
+        },
+        "commitAuthoritative-leaf": {
+          "baseline": {
+            "medianMs": 0.01787400000011985
+          },
+          "stress": {
+            "medianMs": 0.01874500000030821
+          },
+          "extreme": {
+            "medianMs": 0.03777099999933853
+          }
+        },
+        "reconcileArrayInfo": {
+          "baseline": {
+            "medianMs": 0.25687999999991007
+          },
+          "stress": {
+            "medianMs": 1.442815999999766
+          },
+          "extreme": {
+            "medianMs": 15.257343000001129
+          }
+        },
+        "getterDispatch-cold": {
+          "baseline": {
+            "medianMs": 0.509871999999632
+          },
+          "stress": {
+            "medianMs": 3.0590149999998175
+          },
+          "extreme": {
+            "medianMs": 22.434951000001092
+          }
+        },
+        "canonicalize": {
+          "fixed": {
+            "medianMs": 0.022492000000056578
+          }
+        },
+        "dedupeFanIn": {
+          "fixed": {
+            "medianMs": 0.947850999998991
+          }
+        },
+        "dedupeFanIn-independent": {
+          "fixed": {
+            "medianMs": 1.1256630000007135
+          }
+        },
+        "runGettersFanOut": {
+          "fixed": {
+            "medianMs": 2.1855319999995118
+          }
+        }
+      }
     }
   ]
 }

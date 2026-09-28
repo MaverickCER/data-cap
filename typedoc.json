@@ -1,5 +1,6 @@
 {
   "$schema": "https://typedoc.org/schema.json",
+  "extends": ["internal-package-contract/config/typedoc"],
   "entryPoints": [
     "src/core/index.ts",
     "src/runtime/index.ts",
@@ -9,12 +10,6 @@
   ],
   "out": "docs/api",
   "readme": "none",
-  "plugin": ["./scripts/typedoc-a11y-search-label.mjs"],
-  "validation": {
-    "notExported": true,
-    "notDocumented": true,
-    "invalidLink": true
-  },
   "intentionallyNotExported": [
     "DeepPartial",
     "CapabilityBase",

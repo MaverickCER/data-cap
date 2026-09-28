@@ -3,28 +3,40 @@ name: Benchmarks
 on:
   pull_request:
     branches: [main]
-  push:
-    branches: [main]
-  schedule:
-    - cron: "0 6 * * 0" # weekly stale-benchmark-branch cleanup
 
-# Separate workflow from ci.yml's verify matrix. Only a main push ever
-# produces a committed artifact -- PRs never get a commit pushed to them,
-# and main itself is only ever updated through a review PR. No step here
-# ever fails the job because of a performance number -- see
-# benchmarks/README.md's "How regressions are surfaced".
+# Committing refreshed results onto the PR branch below is a real write to
+# that PR's own history -- serialize per-PR so two overlapping runs (a fast
+# second push right behind the first) never race that push, and cancel a
+# stale one outright once a newer commit supersedes it.
+concurrency:
+  group: benchmarks-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
 jobs:
+  # Runs on every PR: measures against a fresh checkout and always posts/
+  # updates a comparison comment against main's committed baseline. When the
+  # PR's own diff touches benchmarked code (src/ or the benchmarks/ harness
+  # itself, not just the results/history files these runs already produce),
+  # it goes further and commits the refreshed results.json/RESULTS.md/history
+  # straight onto the PR's own branch -- so by the time the PR merges, main
+  # already carries fresh numbers computed against its own code, and there is
+  # nothing left for a separate post-merge PR to do. A PR that doesn't touch
+  # benchmarked code (docs, CI config, ...) still gets the informational
+  # comment, just without committing perf-irrelevant re-measurement noise
+  # into its diff.
   benchmark-pr:
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
+      contents: write
       pull-requests: write
+      statuses: write
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
+          ref: ${{ github.event.pull_request.head.ref }}
           fetch-depth: 0
 
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -70,71 +82,67 @@ jobs:
             gh api "repos/${{ github.repository }}/issues/${PR}/comments" -X POST -f body=@/tmp/summary.md
           fi
 
-  benchmark-main:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: 22.x
-          cache: npm
-
-      - run: npm ci
-      - run: npm run build
-
-      - working-directory: benchmarks/performance-runtime
-        run: npm install
-      - working-directory: benchmarks/performance-buildtime
-        run: npm install
-
-      - name: Snapshot the currently-committed results as "previous"
-        run: |
-          cp benchmarks/performance-runtime/results.json /tmp/previous-runtime.json
-          cp benchmarks/performance-buildtime/results.json /tmp/previous-buildtime.json
-
-      - run: npm run benchmark
-
-      - name: Open a benchmark-results PR (globally-unique branch -- no races)
+      - name: Commit refreshed results into this PR, only when it touches benchmarked code
+        id: commit
         env:
           GH_TOKEN: ${{ github.token }}
+          # Passed through the environment rather than interpolated straight into
+          # `run` -- a branch ref is attacker-influenced input and must never be
+          # spliced into the shell command text.
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
-          if git diff --quiet -- benchmarks/performance-runtime/results.json benchmarks/performance-buildtime/results.json; then
-            echo "No change in results.json -- nothing to open a PR for."
+          CHANGED=$(git diff --name-only origin/main...HEAD)
+          RELEVANT=$(echo "$CHANGED" | grep -E '^(src/|benchmarks/)' | grep -vE '^benchmarks/(performance-[^/]+/(results\.json|RESULTS\.md)$|history/)' || true)
+          if [ -z "$RELEVANT" ]; then
+            echo "This PR doesn't touch benchmarked code paths -- comment posted above, nothing to commit."
             exit 0
           fi
 
-          node benchmarks/render-benchmark-summary.mjs /tmp/previous-runtime.json benchmarks/performance-runtime/results.json /tmp/previous-buildtime.json benchmarks/performance-buildtime/results.json > /tmp/summary.md
           node benchmarks/append-benchmark-history.mjs benchmarks/performance-runtime/results.json benchmarks/history/runtime.json
           node benchmarks/append-benchmark-history.mjs benchmarks/performance-buildtime/results.json benchmarks/history/buildtime.json
 
-          SHORT_SHA=$(git rev-parse --short HEAD)
-          BRANCH="ci/benchmark-results/${{ github.run_id }}-${SHORT_SHA}"
           git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout -B "$BRANCH"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add benchmarks/performance-runtime/results.json benchmarks/performance-runtime/RESULTS.md benchmarks/performance-buildtime/results.json benchmarks/performance-buildtime/RESULTS.md benchmarks/history/runtime.json benchmarks/history/buildtime.json
-          git commit -m "chore(benchmarks): refresh results.json from main@${SHORT_SHA} [skip ci]"
-          git push origin "$BRANCH"
-          gh pr create --base main --head "$BRANCH" --title "chore(benchmarks): refresh results.json (${SHORT_SHA})" --body-file /tmp/summary.md
+          if git diff --cached --quiet; then
+            echo "Freshly measured results match what's already committed -- nothing to push."
+            exit 0
+          fi
+          git commit -m "chore(benchmarks): refresh results.json"
+          git push origin HEAD:"$HEAD_REF"
+          echo "pushed=true" >> "$GITHUB_OUTPUT"
 
-  cleanup-stale-benchmark-branches:
-    if: github.event_name == 'schedule'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - env:
+      # This commit was pushed with the default GITHUB_TOKEN, which GitHub
+      # never lets trigger `pull_request: synchronize` (an anti-recursion
+      # guard) -- deliberately so here too, since re-triggering this same job
+      # against its own commit would risk a benchmark-noise loop. But that
+      # means the PR's required contract/lint checks, run by ci.yml as a
+      # separate parallel workflow against the SHA this job started from,
+      # never automatically extend to the new commit either. Wait for that
+      # original SHA's own contract/lint to finish, then carry their result
+      # forward -- see carry-forward-required-checks.sh's own comment for why
+      # that's the right call (this commit only changes measured numbers, not
+      # source), not a full second contract/lint run.
+      - name: Carry this PR's already-passing checks forward onto the new commit
+        if: steps.commit.outputs.pushed == 'true'
+        env:
           GH_TOKEN: ${{ github.token }}
+          # Same reasoning as the previous step's HEAD_REF -- never splice
+          # attacker-influenced ref/SHA values straight into `run` text.
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          ORIGINAL_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          for branch in $(git ls-remote --heads origin 'ci/benchmark-results/*' | sed 's#.*refs/heads/##'); do
-            state=$(gh pr list --head "$branch" --state all --json state --jq '.[0].state // "NONE"')
-            if [ "$state" = "MERGED" ] || [ "$state" = "CLOSED" ]; then
-              git push origin --delete "$branch"
+          READY=false
+          for _ in $(seq 1 120); do
+            STATUSES=$(gh api "repos/${{ github.repository }}/commits/$ORIGINAL_SHA/check-runs" --jq '[.check_runs[] | select(.name=="contract" or .name=="lint") | .status] | unique')
+            if [ "$STATUSES" = '["completed"]' ]; then
+              READY=true
+              break
             fi
+            sleep 15
           done
+          if [ "$READY" != "true" ]; then
+            echo "::warning::contract/lint hadn't finished on $ORIGINAL_SHA after 30 minutes -- not carrying forward. This PR's required checks may need a manual re-run against the benchmark commit."
+            exit 0
+          fi
+          scripts/carry-forward-required-checks.sh "${{ github.repository }}" "$HEAD_REF" "$ORIGINAL_SHA" contract lint

@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 // Extracts a compact entry from a fresh results.json and appends it to
-// benchmarks/history/<name>.json. Called only by the benchmark-main CI job
-// (.github/workflows/benchmarks.yml), in the same step that stages
-// results.json/RESULTS.md for the bot PR -- never by a local `npm run
-// benchmark`, never by the PR job. See benchmarks/README.md.
+// benchmarks/history/<name>.json. Called only by the benchmark-pr CI job
+// (.github/workflows/benchmarks.yml), in the same step that commits
+// results.json/RESULTS.md onto a PR whose diff touches benchmarked code --
+// never by a local `npm run benchmark`, never for a PR that doesn't. See
+// benchmarks/README.md.
 //
 // Usage: node benchmarks/append-benchmark-history.mjs <results.json> <history.json>
 

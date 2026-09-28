@@ -1,0 +1,27 @@
+# Listens for internal-package-contract's own release (part F of the "Standardize npm
+# release + GitHub Pages deploy" plan) and keeps this repo's internal-package-contract
+# devDependency pin in sync automatically. Deliberately does NOT add a changeset --
+# unlike repo-contract's own repo-contract -> internal-package-contract coupling
+# (part E), a devDependency/tooling version bump here doesn't by itself mean this
+# package's own published behavior changed. See dependency-pin-sync.yml (hosted in
+# internal-package-contract) for the actual bump/PR/merge mechanics this calls into --
+# merges automatically only if the resulting PR's own CI comes back green; otherwise
+# it's left open for a human, since a real dependency bump (unlike a purely-generated
+# version bump) can genuinely surface a failure worth looking at.
+name: Sync internal-package-contract version
+
+on:
+  repository_dispatch:
+    types: [internal-package-contract-released]
+
+jobs:
+  sync:
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: write
+    uses: MaverickCER/internal-package-contract/.github/workflows/dependency-pin-sync.yml@7e3908f9595c3cf3f4b7e31c371f1daff49d46b2 # main, parts B/C/D/E/F/G/I
+    with:
+      dependency-name: internal-package-contract
+      new-version: ${{ github.event.client_payload.version }}
+      add-changeset: false

@@ -21,4 +21,4 @@ jobs:
       # permissions at the intersection of what this caller grants and what it
       # itself declares.
       id-token: write
-    uses: MaverickCER/internal-package-contract/.github/workflows/release-npm-changesets.yml@main
+    uses: MaverickCER/internal-package-contract/.github/workflows/release-npm-changesets.yml@7e3908f9595c3cf3f4b7e31c371f1daff49d46b2 # main, parts B/C/E

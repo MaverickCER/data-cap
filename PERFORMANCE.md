@@ -96,9 +96,12 @@ benchmark's own threshold in [`benchmarks/benchmark-fixtures/budgets.mjs`](bench
 (15% for most; wider for the near-zero-cost `commitAuthoritative-leaf` check) is flagged with a ⚠️ in the
 rendered table, but no step in that workflow ever fails the job because of a performance number.
 
-On every push to `main`, the same workflow's `benchmark-main` job re-runs both examples and, if either
-`results.json` changed, opens a PR refreshing both `results.json`/`RESULTS.md` and appending one entry to
-each of `benchmarks/history/runtime.json` and `benchmarks/history/buildtime.json` — see
+When a PR's own diff touches benchmarked code (`src/` or the `benchmarks/` harness itself, not just the
+results/history files these runs produce), the same job goes further and commits the refreshed
+`results.json`/`RESULTS.md` straight onto the PR's own branch, appending one entry to each of
+`benchmarks/history/runtime.json` and `benchmarks/history/buildtime.json` — so main already carries fresh
+numbers the moment the PR merges, with no separate follow-up PR. A PR that doesn't touch benchmarked code
+still gets the comparison comment above, just without that commit. See
 [`benchmarks/append-benchmark-history.mjs`](benchmarks/append-benchmark-history.mjs) and
 [`benchmarks/render-benchmark-summary.mjs`](benchmarks/render-benchmark-summary.mjs). Each history entry is
 intentionally compact (median per benchmark×tier, plus commit/version/runner metadata) — the full per-run
