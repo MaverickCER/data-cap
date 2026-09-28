@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { generateManifest } from "../../src/build/generate-manifest.js"
-import { buildManifestSnapshot } from "../../src/build/manifest-snapshot.js"
+import { buildManifestSnapshot, diffManifestSnapshots } from "../../src/build/manifest-snapshot.js"
 import type { CapabilityInventory, CapabilityNode } from "../../src/build/inventory.js"
 import { CAPABILITY_MODEL_SCHEMA_VERSION } from "../../src/build/inventory.js"
 
@@ -27,11 +27,14 @@ function inventory(capabilities: readonly CapabilityNode[]): CapabilityInventory
 
 describe("generateManifest", () => {
   it("renders content, a snapshot, and an added-capability change report on a first run", () => {
+    const inv = inventory([capability()])
+    const snapshot = buildManifestSnapshot(inv)
     const result = generateManifest({
       root: "/project",
-      inventory: inventory([capability()]),
+      inventory: inv,
       location: "/project/generated/manifest.ts",
-      previousSnapshot: undefined,
+      snapshot,
+      changes: diffManifestSnapshots(undefined, snapshot),
     })
     expect(result.location).toBe("/project/generated/manifest.ts")
     expect(result.content).toContain("userCapability")
@@ -42,11 +45,13 @@ describe("generateManifest", () => {
   it("computes an empty change report when the previous snapshot matches", () => {
     const inv = inventory([capability()])
     const previousSnapshot = buildManifestSnapshot(inv)
+    const snapshot = buildManifestSnapshot(inv)
     const result = generateManifest({
       root: "/project",
       inventory: inv,
       location: "/project/generated/manifest.ts",
-      previousSnapshot,
+      snapshot,
+      changes: diffManifestSnapshots(previousSnapshot, snapshot),
     })
     expect(result.changes).toEqual({
       addedCapabilities: [],
@@ -56,14 +61,17 @@ describe("generateManifest", () => {
   })
 
   it("produces an error finding when two active capabilities collide on export name", () => {
+    const inv = inventory([
+      capability({ exportName: "userCapability", file: "/project/a.ts" }),
+      capability({ exportName: "userCapability", file: "/project/b.ts" }),
+    ])
+    const snapshot = buildManifestSnapshot(inv)
     const result = generateManifest({
       root: "/project",
-      inventory: inventory([
-        capability({ exportName: "userCapability", file: "/project/a.ts" }),
-        capability({ exportName: "userCapability", file: "/project/b.ts" }),
-      ]),
+      inventory: inv,
       location: "/project/generated/manifest.ts",
-      previousSnapshot: undefined,
+      snapshot,
+      changes: diffManifestSnapshots(undefined, snapshot),
     })
     expect(result.findings).toEqual([
       {

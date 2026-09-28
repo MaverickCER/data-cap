@@ -45,6 +45,18 @@ async function readOnDisk(fs: BuildFileSystem, filePath: string): Promise<string
  * timestamp is ever masked. Safe to run over every artifact: for anything but
  * the Evidence Model it is a no-op, which is why the caller does not special-
  * case the `--evidence` path.
+ *
+ * `change` (F2: now populated whenever `--evidence` is requested, not only
+ * alongside `--location`) gets the identical treatment, for the identical
+ * reason: it describes "what's different from whatever manifest snapshot
+ * was on disk the moment THIS run computed it" -- inherently not
+ * reproducible by a second computation, since by the time this comparison
+ * re-derives it, the snapshot sidecar the first run already wrote *is* the
+ * new baseline, so the diff naturally comes back empty against itself. This
+ * isn't drift; it's `change`'s own definition -- the same masking env-cap's
+ * `evidence-snapshot.ts` already established for its own equivalent field
+ * (`normalizeEvidenceSnapshotForComparison`). A real change anywhere else in
+ * the model (including `capability` itself) is still caught.
  */
 function normalizeForComparison(content: string): string {
   let parsed: unknown
@@ -72,6 +84,22 @@ function normalizeForComparison(content: string): string {
   // of this guard's clauses and running the real suite passes unchanged.
   // Stryker disable next-line ConditionalExpression, LogicalOperator
   if (typeof provenance !== "object" || provenance === null) return content
+  const change: unknown = model["change"]
+  // Same defensive shape as the provenance guard directly above, and for the
+  // same reason: masking `change` unconditionally (regardless of its actual
+  // presence/shape on disk) would let a missing or reshaped `change` field
+  // hide behind the mask whenever every OTHER field happened to already
+  // match -- an omitted or malformed on-disk `change` must stay
+  // distinguishable from a genuine generation's, not silently normalized
+  // away. `write.content` (this function's other argument at every real
+  // call site) always has a well-formed `change` object once `provenance`
+  // does (F2: change-detection now runs whenever `--evidence` does, the
+  // same run that stamps `provenance`), so bypassing this guard is only
+  // ever reachable for a malformed `onDisk` -- which then correctly compares
+  // unequal via the whole raw document, the same tradeoff the provenance
+  // guard above already accepts.
+  // Stryker disable next-line ConditionalExpression, LogicalOperator
+  if (typeof change !== "object" || change === null) return content
   return JSON.stringify(
     {
       ...model,
@@ -82,6 +110,8 @@ function normalizeForComparison(content: string): string {
       // comparison never depends on which specific string is chosen.
       // Stryker disable next-line StringLiteral
       provenance: { ...(provenance as Record<string, unknown>), generatedAt: "" },
+      // Stryker disable next-line StringLiteral
+      change: null,
     },
     null,
     2,

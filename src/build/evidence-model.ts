@@ -9,8 +9,8 @@
  * this is first-of-its-kind design work, not a port. `capability` is the
  * only required input; every other project-varying model is independently
  * optional, mirroring `ReportResult`'s own established convention
- * (`manifest?`/`documentation?`/`usage?`/`flow?`) of "a caller passes
- * whatever it actually has." `runtimeContract` is the one exception --
+ * (`manifest?`/`documentation?`/`flow?`) of "a caller passes whatever it
+ * actually has." `runtimeContract` is the one exception --
  * always populated automatically, since `buildRuntimeContractModel()`
  * takes no argument and is identical for every caller on the same
  * `data-cap` version; there is no scenario where a caller "doesn't have"

@@ -273,12 +273,11 @@ export function writeGenerationSummary(
     process.stdout.write(`Wrote docs: ${result.documentation.location}\n`)
   }
 
-  // result.usage is populated whenever --ownership OR --flow is requested
-  // (the flow report needs the usage scan's edges for its boundary-crossing
-  // findings) -- but generateDataArtifacts only ever writes usage.location to
-  // disk when --ownership was itself requested. Gating on options.ownership
-  // (not result.usage) keeps this line truthful when only --flow was passed.
-  if (options.ownership !== undefined && result.usage) {
+  // result.usage is always populated now (F1: the usage scan runs on every
+  // call) -- but generateDataArtifacts only ever writes usage.location to
+  // disk when --ownership was itself requested, so this line still gates on
+  // options.ownership to stay truthful.
+  if (options.ownership !== undefined) {
     process.stdout.write(`Wrote dependency & ownership report: ${result.usage.location}\n`)
   }
 

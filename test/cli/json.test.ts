@@ -14,7 +14,9 @@ const emptyInventory = {
 const emptyResult: ReportResult = {
   manifest: undefined,
   documentation: undefined,
-  usage: undefined,
+  // F1: `usage` is always populated in a real `ReportResult` now -- an empty
+  // scan result (no location requested, nothing found), not an absent one.
+  usage: { location: undefined, content: "", edges: [], findings: [], warnings: [] },
   flow: undefined,
   evidence: buildEvidenceModel(
     {
