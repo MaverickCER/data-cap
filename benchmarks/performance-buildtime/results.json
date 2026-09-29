@@ -1,7 +1,7 @@
 {
   "metadata": {
     "environment": {
-      "cpuModel": "AMD EPYC 7763 64-Core Processor",
+      "cpuModel": "AMD EPYC 9V74 80-Core Processor",
       "cpuArchitecture": "x64",
       "processArch": "x64",
       "logicalCores": 4,
@@ -31,9 +31,9 @@
       "gcEnabled": true
     },
     "timing": {
-      "startedAtUtc": "2026-09-27T20:04:55.450Z",
-      "finishedAtUtc": "2026-09-27T20:05:07.545Z",
-      "totalSuiteDurationMs": 12095
+      "startedAtUtc": "2026-09-29T15:20:08.586Z",
+      "finishedAtUtc": "2026-09-29T15:20:19.609Z",
+      "totalSuiteDurationMs": 11023
     },
     "generation": {
       "fixtureSeed": "deterministic-index-v1",
@@ -46,8 +46,8 @@
       "dataCapVersion": "0.4.0"
     },
     "git": {
-      "gitCommit": "13822492935e202fec9bc66b235dc521108c1074",
-      "gitBranch": "fix/bot-pr-ci-and-benchmark-in-pr",
+      "gitCommit": "a0dfb0150a1b80f51584580c043fed45ce50221b",
+      "gitBranch": "ci/run-benchmarks-before-contract-to-avoid-reapproval-loop",
       "gitDirty": true
     },
     "generatedBy": "ci"
@@ -112,13 +112,13 @@
             "capabilities": 10
           },
           "fixtureHash": "sha256:e1ffb08a9e126996b40867fd352c88caa1641f646aa5a0bb3f2f18f9c77ea485",
-          "fixtureGenerationMs": 6,
+          "fixtureGenerationMs": 4,
           "durationMs": {
-            "minMs": 1.4227690000000166,
-            "medianMs": 1.8457870000000298,
-            "p95Ms": 2.276642000000038,
-            "maxMs": 2.276642000000038,
-            "stdDevMs": 0.2270654519145259,
+            "minMs": 1.2487570000000119,
+            "medianMs": 1.6087790000000268,
+            "p95Ms": 2.380029000000036,
+            "maxMs": 2.380029000000036,
+            "stdDevMs": 0.2273289509650387,
             "iterations": 20,
             "warmupIterations": 2
           }
@@ -130,13 +130,13 @@
             "capabilities": 100
           },
           "fixtureHash": "sha256:03fd1d65b3f08faf095a8cd5a04074c91f44acf22e282d67e09558624e1ed6e3",
-          "fixtureGenerationMs": 30,
+          "fixtureGenerationMs": 23,
           "durationMs": {
-            "minMs": 8.556182999999919,
-            "medianMs": 10.15946699999995,
-            "p95Ms": 11.581669999999917,
-            "maxMs": 11.581669999999917,
-            "stdDevMs": 1.1326440911575042,
+            "minMs": 6.707377999999949,
+            "medianMs": 6.933242000000064,
+            "p95Ms": 7.44030100000009,
+            "maxMs": 7.44030100000009,
+            "stdDevMs": 0.2134180765665634,
             "iterations": 10,
             "warmupIterations": 1
           }
@@ -148,13 +148,13 @@
             "capabilities": 400
           },
           "fixtureHash": "sha256:165601cc439bb70f0550105a6dd4f07ea898fc5e899423b5ce63e6665e585833",
-          "fixtureGenerationMs": 114,
+          "fixtureGenerationMs": 80,
           "durationMs": {
-            "minMs": 29.138701999999967,
-            "medianMs": 36.012294999999995,
-            "p95Ms": 38.00555499999996,
-            "maxMs": 38.00555499999996,
-            "stdDevMs": 3.175199253640761,
+            "minMs": 21.841454999999996,
+            "medianMs": 25.438902999999982,
+            "p95Ms": 26.167170000000056,
+            "maxMs": 26.167170000000056,
+            "stdDevMs": 1.7687320282403316,
             "iterations": 6,
             "warmupIterations": 1
           }
@@ -170,13 +170,13 @@
             "capabilities": 10
           },
           "fixtureHash": "sha256:e1ffb08a9e126996b40867fd352c88caa1641f646aa5a0bb3f2f18f9c77ea485",
-          "fixtureGenerationMs": 5,
+          "fixtureGenerationMs": 4,
           "durationMs": {
-            "minMs": 50.90970299999981,
-            "medianMs": 54.91274800000019,
-            "p95Ms": 61.496818000000076,
-            "maxMs": 61.496818000000076,
-            "stdDevMs": 2.659707317719223,
+            "minMs": 45.28508200000033,
+            "medianMs": 49.790167999999994,
+            "p95Ms": 55.867951000000176,
+            "maxMs": 55.867951000000176,
+            "stdDevMs": 2.8889667790193623,
             "iterations": 20,
             "warmupIterations": 2
           }
@@ -188,14 +188,14 @@
             "capabilities": 100
           },
           "fixtureHash": "sha256:03fd1d65b3f08faf095a8cd5a04074c91f44acf22e282d67e09558624e1ed6e3",
-          "fixtureGenerationMs": 39,
+          "fixtureGenerationMs": 31,
           "durationMs": {
-            "minMs": 338.69151299999976,
-            "medianMs": 345.7854910000001,
-            "p95Ms": 362.7842869999995,
-            "maxMs": 362.7842869999995,
-            "stdDevMs": 7.852289506405679,
-            "iterations": 6,
+            "minMs": 283.3737199999996,
+            "medianMs": 297.1621070000001,
+            "p95Ms": 325.5932619999994,
+            "maxMs": 325.5932619999994,
+            "stdDevMs": 15.60220553379145,
+            "iterations": 7,
             "warmupIterations": 1
           }
         },
@@ -206,13 +206,13 @@
             "capabilities": 400
           },
           "fixtureHash": "sha256:165601cc439bb70f0550105a6dd4f07ea898fc5e899423b5ce63e6665e585833",
-          "fixtureGenerationMs": 143,
+          "fixtureGenerationMs": 118,
           "durationMs": {
-            "minMs": 1667.8353260000004,
-            "medianMs": 1672.6474980000003,
-            "p95Ms": 1739.2174970000005,
-            "maxMs": 1739.2174970000005,
-            "stdDevMs": 32.574932596316195,
+            "minMs": 1533.4957900000009,
+            "medianMs": 1539.935759,
+            "p95Ms": 1545.1343529999995,
+            "maxMs": 1545.1343529999995,
+            "stdDevMs": 4.760423989085158,
             "iterations": 3,
             "warmupIterations": 1
           }
