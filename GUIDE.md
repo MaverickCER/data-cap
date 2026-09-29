@@ -793,7 +793,7 @@ Every consumer-facing entry point carries a hard gzip budget, enforced in
 CI (`scripts/check-size.mjs`) — see [`PERFORMANCE.md`](PERFORMANCE.md) for
 current numbers and methodology. `benchmarks/performance-runtime` and
 `benchmarks/performance-buildtime` (run via `npm run benchmark`, and on
-every PR via `.github/workflows/benchmarks.yml`) produce highlighting-only
+every PR via `.github/workflows/ci.yml (benchmark-pr job)`) produce highlighting-only
 micro-benchmark numbers — never a merge gate.
 
 | Operation                                     | Cost                                                       | Contrast with a naive full-state-replace pattern                                                                                                                     |

@@ -58,7 +58,7 @@ function renderExample(label, previous, current) {
 
   // `previous` is `{}` (truthy, but no real metadata), never `null`, on a
   // first-ever run -- CI's `git show ... || echo '{}'` fallback (see
-  // .github/workflows/benchmarks.yml). Guarded on `previous.metadata` being
+  // .github/workflows/ci.yml (benchmark-pr job)). Guarded on `previous.metadata` being
   // present, not just `previous` being truthy, so a first run reports
   // "no prior data" (via the empty previousByKey map below) instead of a
   // confusing "previous run used sundefined" mismatch warning.
