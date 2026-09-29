@@ -174,6 +174,38 @@ describe("checkArtifacts", () => {
     expect(stale).toEqual([evidence])
   })
 
+  it("reports stale, never silently matches, when the on-disk artifact's change field is missing (a well-formed provenance doesn't mask its absence)", async () => {
+    await writeFile(
+      "user.ts",
+      `export const userCapability = createData({ fields: { email: "" } });`,
+    )
+    const evidence = path.join(root, "docs", "data.evidence.json")
+    await generateDataArtifacts({ fs: nodeBuildFs, root, tsconfig: false, evidence })
+
+    const onDisk = JSON.parse(await fs.readFile(evidence, "utf8")) as Record<string, unknown>
+    delete onDisk["change"]
+    await fs.writeFile(evidence, JSON.stringify(onDisk, null, 2), "utf8")
+
+    const { stale } = await checkArtifacts({ fs: nodeBuildFs, root, tsconfig: false, evidence })
+    expect(stale).toEqual([evidence])
+  })
+
+  it("reports stale, never silently matches, when the on-disk artifact's change field is a non-object primitive", async () => {
+    await writeFile(
+      "user.ts",
+      `export const userCapability = createData({ fields: { email: "" } });`,
+    )
+    const evidence = path.join(root, "docs", "data.evidence.json")
+    await generateDataArtifacts({ fs: nodeBuildFs, root, tsconfig: false, evidence })
+
+    const onDisk = JSON.parse(await fs.readFile(evidence, "utf8")) as Record<string, unknown>
+    onDisk["change"] = "not an object"
+    await fs.writeFile(evidence, JSON.stringify(onDisk, null, 2), "utf8")
+
+    const { stale } = await checkArtifacts({ fs: nodeBuildFs, root, tsconfig: false, evidence })
+    expect(stale).toEqual([evidence])
+  })
+
   it("still detects a real content change in the --evidence artifact (only the timestamp is masked)", async () => {
     await writeFile(
       "user.ts",
@@ -201,7 +233,10 @@ describe("checkArtifacts", () => {
     const evidence = path.join(root, "docs", "data.evidence.json")
     await writeFile("docs/data.evidence.json", "not json at all")
     const { stale } = await checkArtifacts({ fs: nodeBuildFs, root, tsconfig: false, evidence })
-    expect(stale).toEqual([evidence])
+    // `--evidence` alone now also drives the manifest snapshot sidecar's own
+    // read/write (F2) -- never written on disk here, so it reports stale
+    // too, alongside the hand-written evidence file itself.
+    expect(stale).toEqual([path.join(root, ".data-cap-manifest-snapshot.json"), evidence])
   })
 
   it("reports the JSON literal `null` at the --evidence path as stale, never crashes", async () => {
@@ -212,7 +247,7 @@ describe("checkArtifacts", () => {
     const evidence = path.join(root, "docs", "data.evidence.json")
     await writeFile("docs/data.evidence.json", "null")
     const { stale } = await checkArtifacts({ fs: nodeBuildFs, root, tsconfig: false, evidence })
-    expect(stale).toEqual([evidence])
+    expect(stale).toEqual([path.join(root, ".data-cap-manifest-snapshot.json"), evidence])
   })
 
   it("returns the underlying ReportResult unchanged", async () => {

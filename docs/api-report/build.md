@@ -2287,6 +2287,14 @@ Options for `generateManifest`.
 
 #### Properties
 
+##### changes
+
+```ts
+readonly changes: ManifestChangeReport;
+```
+
+`snapshot` diffed against whatever snapshot preceded it -- see `diffManifestSnapshots`. Also computed by the caller; an all-added report on a first run.
+
 ##### inventory
 
 ```ts
@@ -2303,14 +2311,6 @@ readonly location: string;
 
 Where the manifest `.ts` file will be written -- used to compute relative import specifiers, not written to here.
 
-##### previousSnapshot
-
-```ts
-readonly previousSnapshot: ManifestSnapshot | undefined;
-```
-
-The previously-persisted snapshot, or `undefined` on a first run.
-
 ##### root
 
 ```ts
@@ -2318,6 +2318,14 @@ readonly root: string;
 ```
 
 Discovery root every `CapabilityNode.file` is relative to (OUT-01) -- needed to lift each capability back to a real absolute path before computing its import specifier from `location`'s own directory.
+
+##### snapshot
+
+```ts
+readonly snapshot: ManifestSnapshot;
+```
+
+This run's own snapshot of `inventory` -- see `buildManifestSnapshot`. Computed by the caller, once, shared with whatever else in the same run needs it (e.g. citation-verification's own baseline).
 
 ***
 
@@ -4073,10 +4081,16 @@ Present only when `--location` was requested.
 ##### usage
 
 ```ts
-readonly usage: GenerateUsageResult | undefined;
+readonly usage: GenerateUsageResult;
 ```
 
-Present when `--ownership` or `--flow` was requested (the flow report needs the usage scan too).
+Always present (F1): the usage scan (proven consumption positions,
+dependency edges, ownership/abandonment findings) runs on every call
+regardless of which flags were passed -- it's foundational evidence the
+Dependency Model needs, not something only `--ownership`/`--flow`
+consumers should get. `--ownership` only controls whether the rendered
+report additionally gets *written to disk* (`usage.location`) --
+`usage` itself, and its `edges`/`findings`, are always real.
 
 ##### warningCount
 
@@ -6005,7 +6019,7 @@ Builds the flow graph and renders the full Data Flow Diagram + Security Data-Flo
 function generateManifest(options): GenerateManifestResult;
 ```
 
-Renders the deterministic manifest `.ts` file and diffs it against `previousSnapshot` -- pure, no filesystem access.
+Renders the deterministic manifest `.ts` file -- pure, no filesystem access, no diffing (see this module's own doc comment).
 
 #### Parameters
 

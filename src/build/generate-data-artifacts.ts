@@ -24,7 +24,8 @@ import { checkDuplicateEndpoints, checkStructuralDuplication } from "./structura
 import { checkOwnershipAndSensitivity } from "./static-rules.js"
 import { generateManifest } from "./generate-manifest.js"
 import type { GenerateManifestResult } from "./generate-manifest.js"
-import type { ManifestSnapshot } from "./manifest-snapshot.js"
+import { buildManifestSnapshot, diffManifestSnapshots } from "./manifest-snapshot.js"
+import type { ManifestChangeReport, ManifestSnapshot } from "./manifest-snapshot.js"
 import { buildCitationSnapshots, verifyDynamicAccessCitations } from "./citation-verification.js"
 import { generateDocumentation } from "./generate-documentation.js"
 import type { GenerateDocumentationResult } from "./generate-documentation.js"
@@ -92,8 +93,16 @@ export interface ReportResult {
   readonly manifest: GenerateManifestResult | undefined
   /** Present only when `--docs` was requested. */
   readonly documentation: GenerateDocumentationResult | undefined
-  /** Present when `--ownership` or `--flow` was requested (the flow report needs the usage scan too). */
-  readonly usage: GenerateUsageResult | undefined
+  /**
+   * Always present (F1): the usage scan (proven consumption positions,
+   * dependency edges, ownership/abandonment findings) runs on every call
+   * regardless of which flags were passed -- it's foundational evidence the
+   * Dependency Model needs, not something only `--ownership`/`--flow`
+   * consumers should get. `--ownership` only controls whether the rendered
+   * report additionally gets *written to disk* (`usage.location`) --
+   * `usage` itself, and its `edges`/`findings`, are always real.
+   */
+  readonly usage: GenerateUsageResult
   /** Present only when `--flow` was requested. */
   readonly flow: GenerateFlowResult | undefined
   /**
@@ -260,23 +269,30 @@ export async function computeDataArtifacts(
 
   const writes: { path: string; content: string }[] = []
 
+  // Change-detection ("has this capability's shape changed since the last
+  // run?") and citation freshness-verification are independently valuable
+  // Evidence Model facts -- unrelated to whether the runtime-consumed
+  // `manifest.ts` file itself gets (re)written. Both now run whenever
+  // `--location` OR `--evidence` is requested (ADR 0053), mirroring
+  // env-cap's `evidence-snapshot.ts`: the manifest snapshot sidecar's own
+  // read/write lifecycle is independent of `--location`'s own output path
+  // (see `snapshotPathFor`'s own doc comment), and now independent of
+  // whether `--location` was requested at all, too. Only `manifest.ts`'s
+  // own rendered *content* (via `generateManifest`) stays exclusively gated
+  // on `--location` -- that's the one output nobody but a `--location`
+  // caller has any use for.
+  const wantsChangeDetection = options.location !== undefined || options.evidence !== undefined
+
   let manifest: GenerateManifestResult | undefined
-  // Citation re-verification piggybacks on the manifest snapshot's own
-  // persistence cycle -- it needs exactly the same previous-run/this-run
-  // pair the manifest diff already reads/writes, so it only runs when
-  // `--location` does (ADR 0053). `--ownership`/`--flow` alone, with no
-  // `--location`, gets `FIELD_DYNAMIC_ACCESS_DECLARED` from `usage-report.ts`
-  // (presence-only, no filesystem needed) but not staleness re-verification.
+  let manifestChanges: ManifestChangeReport | undefined
   let citationFindings: readonly ReportFinding[] = []
-  if (options.location !== undefined) {
+  if (wantsChangeDetection) {
     const manifestSnapshotPath = snapshotPathFor(options.root)
     const previousSnapshot = await readManifestSnapshot(options.fs, manifestSnapshotPath)
-    manifest = generateManifest({
-      inventory,
-      location: options.location,
-      root: options.root,
-      previousSnapshot,
-    })
+
+    const snapshot = buildManifestSnapshot(inventory)
+    const changes = diffManifestSnapshots(previousSnapshot, snapshot)
+    manifestChanges = changes
 
     const citationSnapshotsByCapability = await buildCitationSnapshots(
       inventory,
@@ -284,15 +300,14 @@ export async function computeDataArtifacts(
       options.fs,
     )
     const snapshotWithCitations: ManifestSnapshot = {
-      ...manifest.snapshot,
-      capabilities: manifest.snapshot.capabilities.map((capability) => {
+      ...snapshot,
+      capabilities: snapshot.capabilities.map((capability) => {
         const citationSnapshots = citationSnapshotsByCapability.get(
           `${capability.file}#${capability.exportName}`,
         )
         return citationSnapshots !== undefined ? { ...capability, citationSnapshots } : capability
       }),
     }
-    manifest = { ...manifest, snapshot: snapshotWithCitations }
     citationFindings = await verifyDynamicAccessCitations(
       inventory,
       previousSnapshot,
@@ -300,38 +315,55 @@ export async function computeDataArtifacts(
       options.fs,
     )
 
-    writes.push({ path: manifest.location, content: manifest.content })
+    // Pushed in this order (manifest.ts before its own sidecar) so a
+    // `--location` run's own `writes` ordering -- and therefore `--check`'s
+    // stale-path reporting -- stays exactly what it was before this run
+    // also started tracking the sidecar for `--evidence`-only callers.
+    if (options.location !== undefined) {
+      manifest = {
+        ...generateManifest({
+          inventory,
+          location: options.location,
+          root: options.root,
+          snapshot,
+          changes,
+        }),
+        snapshot: snapshotWithCitations,
+      }
+      writes.push({ path: manifest.location, content: manifest.content })
+    }
     writes.push({
       path: manifestSnapshotPath,
-      content: `${JSON.stringify(manifest.snapshot, null, 2)}\n`,
+      content: `${JSON.stringify(snapshotWithCitations, null, 2)}\n`,
     })
   }
 
-  // Computed BEFORE `documentation` (even though `--docs` is the earlier
-  // CLI flag) specifically so `generateDocumentation` can render real
-  // proven consumption positions when a usage scan already ran -- the scan
-  // itself stays opt-in (only when `--ownership`/`--flow` is also
-  // requested), so `--docs` alone is exactly as cheap as before.
-  let usage: GenerateUsageResult | undefined
-  if (options.ownership !== undefined || options.flow !== undefined) {
-    usage = await generateUsage({
-      inventory,
-      location: options.ownership,
-      files,
-      scan: {
-        fs: options.fs,
-        root: options.root,
-        ...(options.tsconfig !== undefined ? { tsconfig: options.tsconfig } : {}),
-        packages,
-      },
-      ...(options.evidence !== undefined ? { evidencePath: options.evidence } : {}),
-    })
-    if (options.ownership !== undefined) {
-      writes.push({ path: options.ownership, content: usage.content })
-    }
+  // Always runs (F1): the usage scan (proven consumption positions,
+  // dependency edges, ownership/abandonment findings) is foundational
+  // evidence on every call, not something only `--ownership`/`--flow`
+  // consumers should get -- a caller that only ever passes `--evidence`
+  // deserves the same populated Dependency Model an `--ownership`/`--flow`
+  // run gets. Computed BEFORE `documentation` (even though `--docs` is the
+  // earlier CLI flag) so `generateDocumentation` can render real proven
+  // consumption positions. Only the *ownership-report file write* stays
+  // opt-in, gated on `--ownership` itself.
+  const usage: GenerateUsageResult = await generateUsage({
+    inventory,
+    location: options.ownership,
+    files,
+    scan: {
+      fs: options.fs,
+      root: options.root,
+      ...(options.tsconfig !== undefined ? { tsconfig: options.tsconfig } : {}),
+      packages,
+    },
+    ...(options.evidence !== undefined ? { evidencePath: options.evidence } : {}),
+  })
+  if (options.ownership !== undefined) {
+    writes.push({ path: options.ownership, content: usage.content })
   }
   const usageFindings = escalateGroup(
-    usage?.findings,
+    usage.findings,
     groupEscalates(options, options.strictOwnership),
   )
 
@@ -341,8 +373,21 @@ export async function computeDataArtifacts(
       inventory,
       root: options.root,
       location: options.docs,
-      ...(manifest?.changes !== undefined ? { changes: manifest.changes } : {}),
-      ...(usage?.edges !== undefined ? { edges: usage.edges } : {}),
+      // `manifestChanges` (not `manifest?.changes`) -- F2 decoupled
+      // change-detection from `--location`, so `--docs`+`--evidence` (no
+      // `--location`) already has a real diff to render too, the same way
+      // `edges` below is no longer gated on a scan that only used to run
+      // for `--ownership`/`--flow`. "spread only when defined" vs "always
+      // spread" is unobservable here, the same established class as
+      // `include`/`exclude`/`tsconfig`/`packages` elsewhere in this file:
+      // `generateDocumentation` reads `options.changes` via plain property
+      // access (`docs.ts`'s `renderChangesSinceLastReport` only ever checks
+      // `changes === undefined`), so `{ changes: undefined }` and omitting
+      // the key entirely read back identically. Hand-verified: forcing this
+      // guard to `true` and running the real suite passes unchanged.
+      // Stryker disable next-line ConditionalExpression
+      ...(manifestChanges !== undefined ? { changes: manifestChanges } : {}),
+      edges: usage.edges,
       ...(options.evidence !== undefined ? { evidencePath: options.evidence } : {}),
       expiringWithinDays,
       generatedAt,
@@ -356,12 +401,7 @@ export async function computeDataArtifacts(
       inventory,
       root: options.root,
       location: options.flow,
-      // `usage` is necessarily the scan result here -- the scan runs for
-      // `--ownership` OR `--flow`, and this branch is `--flow` -- so `?.` and
-      // the `[]` fallback are both unreachable. The `??`->`&&` mutant stays
-      // live: it is killed by a `--flow` run whose scan finds a real edge.
-      // Stryker disable next-line OptionalChaining, ArrayDeclaration
-      edges: usage?.edges ?? [],
+      edges: usage.edges,
       additionalFindings: [...staticFindings, ...usageFindings],
       ...(options.evidence !== undefined ? { evidencePath: options.evidence } : {}),
     })
@@ -393,13 +433,16 @@ export async function computeDataArtifacts(
   // Evidence models come from. Every one of these is a pure projection
   // over data already computed above (never a second scan/parse), so
   // building them costs nothing beyond object construction, unlike the
-  // manifest/docs/ownership/flow generators themselves.
-  const dependencyModel = usage !== undefined ? buildDependencyModel(usage.edges) : undefined
+  // manifest/docs/ownership/flow generators themselves. `dependencyModel`
+  // is always real now (F1: `usage` always ran) -- unlike `changeModel`,
+  // which still depends on whether change-detection ran this run at all
+  // (`--location` or `--evidence`, F2).
+  const dependencyModel = buildDependencyModel(usage.edges)
   const ownershipModel = buildOwnershipModel(inventory)
   const findingModel = buildFindingModel(allFindings)
   const changeModel =
-    manifest !== undefined
-      ? buildChangeModel(manifest.changes, inventory.capabilities, dependencyModel)
+    manifestChanges !== undefined
+      ? buildChangeModel(manifestChanges, inventory.capabilities, dependencyModel)
       : undefined
   // `generatedAt`/`toolVersion` are always stamped (OUT-06): a provenance
   // block a consumer can't rely on being present is worth less than no
@@ -415,7 +458,7 @@ export async function computeDataArtifacts(
     {
       capability: inventory,
       lifecycle: lifecycleModel,
-      ...(dependencyModel !== undefined ? { dependency: dependencyModel } : {}),
+      dependency: dependencyModel,
       ownership: ownershipModel,
       finding: findingModel,
       ...(changeModel !== undefined ? { change: changeModel } : {}),

@@ -1,20 +1,20 @@
 /**
- * Combines `manifest.ts`'s rendering and `manifest-snapshot.ts`'s diffing
- * into the one result `generate-data-artifacts.ts` (the orchestrator, C8)
- * needs to decide whether/what to write. Pure -- takes an already-built
- * `CapabilityInventory` and an already-read previous snapshot (if any) as
- * input; performs no discovery, linking, or filesystem access itself, so
- * the orchestrator's one-discover-pass/atomic-write guarantee holds
- * regardless of how many artifacts are requested in the same run.
+ * Renders `manifest.ts`'s deterministic file content -- C8's `--location`
+ * output. This run's `ManifestSnapshot` and its diff against whatever
+ * snapshot preceded it (`ManifestChangeReport`) are no longer computed here:
+ * `generate-data-artifacts.ts` (the orchestrator) computes both once,
+ * itself, via `buildManifestSnapshot`/`diffManifestSnapshots` directly --
+ * independent of whether a `manifest.ts` file is even being generated at
+ * all (F2) -- and threads the results straight through as plain inputs.
+ * Pure -- takes an already-built `CapabilityInventory` plus already-computed
+ * `snapshot`/`changes` as input; performs no discovery, linking, diffing, or
+ * filesystem access itself, so the orchestrator's one-discover-pass/atomic-
+ * write guarantee holds regardless of how many artifacts are requested in
+ * the same run.
  */
 
 import { findManifestExportCollisions, renderManifest } from "./manifest.js"
-import {
-  buildManifestSnapshot,
-  diffManifestSnapshots,
-  type ManifestChangeReport,
-  type ManifestSnapshot,
-} from "./manifest-snapshot.js"
+import type { ManifestChangeReport, ManifestSnapshot } from "./manifest-snapshot.js"
 import type { CapabilityInventory } from "./inventory.js"
 import type { ReportFinding } from "./findings.js"
 
@@ -26,8 +26,10 @@ export interface GenerateManifestOptions {
   readonly location: string
   /** Discovery root every `CapabilityNode.file` is relative to (OUT-01) -- needed to lift each capability back to a real absolute path before computing its import specifier from `location`'s own directory. */
   readonly root: string
-  /** The previously-persisted snapshot, or `undefined` on a first run. */
-  readonly previousSnapshot: ManifestSnapshot | undefined
+  /** This run's own snapshot of `inventory` -- see `buildManifestSnapshot`. Computed by the caller, once, shared with whatever else in the same run needs it (e.g. citation-verification's own baseline). */
+  readonly snapshot: ManifestSnapshot
+  /** `snapshot` diffed against whatever snapshot preceded it -- see `diffManifestSnapshots`. Also computed by the caller; an all-added report on a first run. */
+  readonly changes: ManifestChangeReport
 }
 
 /** The rendered manifest plus everything needed to persist and diff it against a future run. */
@@ -44,9 +46,9 @@ export interface GenerateManifestResult {
   readonly findings: readonly ReportFinding[]
 }
 
-/** Renders the deterministic manifest `.ts` file and diffs it against `previousSnapshot` -- pure, no filesystem access. */
+/** Renders the deterministic manifest `.ts` file -- pure, no filesystem access, no diffing (see this module's own doc comment). */
 export function generateManifest(options: GenerateManifestOptions): GenerateManifestResult {
-  const { inventory, location, root, previousSnapshot } = options
+  const { inventory, location, root, snapshot, changes } = options
 
   const collisions = findManifestExportCollisions(inventory)
   const findings: ReportFinding[] = []
@@ -58,9 +60,6 @@ export function generateManifest(options: GenerateManifestOptions): GenerateMani
       message: `Manifest export name "${exportName}" is claimed by ${files.length} different active capability files (${files.join(", ")}) -- the generated manifest cannot re-export both under the same identifier. Rename one, or mark one inactive.`,
     })
   }
-
-  const snapshot = buildManifestSnapshot(inventory)
-  const changes = diffManifestSnapshots(previousSnapshot, snapshot)
 
   return {
     location,

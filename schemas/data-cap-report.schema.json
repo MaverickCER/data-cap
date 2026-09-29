@@ -29,7 +29,7 @@
         },
         "usage": {
           "$ref": "#/definitions/GenerateUsageResult",
-          "description": "Present when `--ownership` or `--flow` was requested (the flow report needs the usage scan too)."
+          "description": "Always present (F1): the usage scan (proven consumption positions, dependency edges, ownership/abandonment findings) runs on every call regardless of which flags were passed -- it's foundational evidence the Dependency Model needs, not something only `--ownership`/`--flow` consumers should get. `--ownership` only controls whether the rendered report additionally gets *written to disk* (`usage.location`) -- `usage` itself, and its `edges`/`findings`, are always real."
         },
         "flow": {
           "$ref": "#/definitions/GenerateFlowResult",
@@ -115,6 +115,7 @@
         "ok",
         "schemaVersion",
         "toolVersion",
+        "usage",
         "warningCount",
         "warnings"
       ],
