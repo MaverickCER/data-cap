@@ -5,7 +5,6 @@ import {
   checkArtifacts,
   generateDataArtifacts,
   type CheckArtifactsResult,
-  type ManifestChangeReport,
   type ReportResult,
 } from "../build/index.js"
 import { nodeBuildFileSystem } from "./filesystem.js"
@@ -23,14 +22,10 @@ import { serializeFailure, serializeSuccess, writeJson } from "./json.js"
 /** Parsed CLI flags -- see `helpText()` below for what each one means. */
 export interface ParsedArgs {
   root?: string
-  location?: string
   include: string[]
   exclude: string[]
   packages: string[]
   tsconfig?: string | false
-  docs?: string
-  ownership?: string
-  flow?: string
   evidence?: string
   expiringWithinDays?: number
   strict: boolean
@@ -66,14 +61,10 @@ export function parseArgs(argv: string[]): ParsedArgs {
   // load-time constant. One branch per *kind* of flag, not one per flag.
   const valueFlags: Readonly<Record<string, (args: ParsedArgs, value: string) => void>> = {
     "--root": (a, v) => (a.root = v),
-    "--location": (a, v) => (a.location = v),
     "--include": (a, v) => a.include.push(v),
     "--exclude": (a, v) => a.exclude.push(v),
     "--package": (a, v) => a.packages.push(v),
     "--tsconfig": (a, v) => (a.tsconfig = v),
-    "--docs": (a, v) => (a.docs = v),
-    "--ownership": (a, v) => (a.ownership = v),
-    "--flow": (a, v) => (a.flow = v),
     "--evidence": (a, v) => (a.evidence = v),
     "--expiring-within-days": (a, v) =>
       (a.expiringWithinDays = positiveInteger(v, "--expiring-within-days")),
@@ -154,36 +145,43 @@ function positiveInteger(value: string, flag: string): number {
 /** @internal The `--help` / usage-error text. A function (not a module-level
  *  `const`) so its wording is a normal, test-attributable value. */
 export function helpText(): string {
-  return `data-cap - generate a manifest, docs, dependency & ownership report, a data flow diagram, and/or an Evidence Model from discovered capabilities
+  return `data-cap - generate a persisted Evidence Model from discovered capabilities
 
 Usage:
   data-cap init
-  data-cap [--location <path>] [--docs <path>] [--ownership <path>] [--flow <path>] [--evidence <path>] [options]
+  data-cap --evidence <path> [options]
 
   init                      Scaffold a minimal starting point (one data.ts + a generate script); run \`data-cap init --help\` for details
 
-At least one of --location, --docs, --ownership, --flow, or --evidence is required (for a non-init invocation).
+--evidence is required (for a non-init invocation).
 
 Options:
   --root <path>              Directory to resolve globs from (default: cwd)
-  --location <path>          Output path for the generated manifest
   --include <glob>           Discovery glob (repeatable, default: every .ts/.tsx file)
   --exclude <glob>           Glob pattern to exclude (repeatable)
   --package <name>           Installed package name to also discover a capability from, via its "dataCap.schema" package.json field (repeatable)
   --tsconfig <path>          Path to a tsconfig.json (relative to root) whose "paths"/"baseUrl" resolve aliased imports encountered during static analysis (default: auto-detected "tsconfig.json" at root)
   --no-tsconfig               Disable tsconfig path-alias resolution entirely
-  --docs <path>               Emit the Markdown documentation catalog (fields, getters/mutators/subscriptions, sensitivity & protections review) at this path
-  --ownership <path>          Emit the Dependency & Ownership report at this path
-  --flow <directory>          Emit the Data Flow Diagram + Security Data-Flow Review set to this directory
-  --evidence <path>           Emit the composed Evidence Model (ADR 0050) as JSON at this path -- the same canonical, versioned model every other artifact above is a projection of
-  --expiring-within-days <n>  How many days out counts as "expiring soon" in the Lifecycle Model and the docs catalog's Lifecycle section (default: 30)
+  --evidence <path>           Emit the composed Evidence Model (ADR 0050) as JSON at this path -- the canonical, versioned model every other generated artifact is a projection of
+  --expiring-within-days <n>  How many days out counts as "expiring soon" in the Evidence Model's Lifecycle Model (default: 30)
   --strict                    Escalate every pass's warning findings to hard errors (never escalates info)
   --strict-docs                Escalate static (ownership/sensitivity/duplication) findings to hard errors
   --strict-ownership           Escalate proven usage findings (abandoned capabilities, unconsumed owned fields) to hard errors (never escalates unresolved-consumer or indeterminate findings)
-  --strict-flow                 Escalate sensitive-data-crosses-external-boundary/missing-handling findings to hard errors
+  --strict-flow                 Escalate sensitive-data-crosses-external-boundary/missing-handling findings to hard errors -- only meaningful for a caller that also builds a Data Flow Diagram directly (see below); a no-op for this CLI on its own
   --json                       Emit a machine-readable JSON report instead of formatted text
-  --check                      Verify generated artifacts are up to date without writing anything; exits 1 if any is stale or missing
+  --check                      Verify the evidence artifact is up to date without writing anything; exits 1 if it is stale or missing
   --help                       Show this message
+
+The generated manifest, Markdown documentation catalog, Dependency & Ownership
+report, and Data Flow Diagram are no longer generated by this CLI -- none has
+a runtime consumer (ADR 0066), so generating them is application-level code
+now, not a CLI concern. Call \`generateManifest\`/\`generateDocumentation\`/
+\`generateUsage\`/\`generateFlow\` (or the higher-level \`generateDataArtifacts\`/
+\`checkArtifacts\` orchestrators, which still accept \`location\`/\`docs\`/
+\`ownership\`/\`flow\` options) directly from \`data-cap/build\` in your own build
+script -- see \`examples/nextjs-app/scripts/generate-docs\` for a worked
+example, and specs/decisions/0066-cli-restricted-to-runtime-and-evidence-output.md
+for why.
 `
 }
 
@@ -210,80 +208,30 @@ export function writeFindings(findings: ReportResult["findings"]): void {
   }
 }
 
-/** @internal Exported for direct unit coverage. */
-export function formatFieldChanges(
-  changes: ManifestChangeReport["updatedCapabilities"][number],
-): string {
-  return changes.changes.join(", ")
-}
-
-/**
- * Mirrors `docs.ts`'s "Changes since last report" section: a fixed
- * Added/Updated/Removed order, each printed only when non-empty, "No
- * changes." when all three are empty -- printed unconditionally whenever a
- * manifest was generated, not only when something actually changed.
- */
-/** @internal Exported for direct unit coverage. */
-export function writeManifestChanges(changes: ManifestChangeReport): void {
-  const hasAdded = changes.addedCapabilities.length > 0
-  const hasUpdated = changes.updatedCapabilities.length > 0
-  const hasRemoved = changes.removedCapabilities.length > 0
-
-  process.stdout.write("\nManifest changes since last execution:\n")
-  if (!hasAdded && !hasUpdated && !hasRemoved) {
-    process.stdout.write("  No changes.\n")
-    return
-  }
-
-  if (hasAdded) {
-    process.stdout.write("  Added:\n")
-    for (const c of changes.addedCapabilities) process.stdout.write(`    - ${c}\n`)
-  }
-  if (hasUpdated) {
-    process.stdout.write("  Updated:\n")
-    for (const c of changes.updatedCapabilities)
-      process.stdout.write(`    - ${c.capability}: ${formatFieldChanges(c)}\n`)
-  }
-  if (hasRemoved) {
-    process.stdout.write("  Removed:\n")
-    for (const c of changes.removedCapabilities) process.stdout.write(`    - ${c}\n`)
-  }
-}
+// `writeManifestChanges()`/`formatFieldChanges()` (the manifest "changes
+// since last execution" section) and the manifest/docs/ownership/flow
+// branches of the generation/check summaries below were removed along with
+// `--location`/`--docs`/`--ownership`/`--flow` themselves: `resolveOptions()`
+// no longer ever produces a `location`/`docs`/`ownership`/`flow` value, so
+// `result.manifest`/`result.documentation`/`result.flow` are now
+// unconditionally `undefined` on every real CLI run, and `--ownership`'s own
+// dependency & ownership report is never written to disk by this CLI either
+// -- keeping any of that dead code (or its now-permanently-false `if`
+// branches) would be code no CLI-level test could ever legitimately cover.
+// See specs/decisions/0066-cli-restricted-to-runtime-and-evidence-output.md.
+// `generateManifest`/`generateDocumentation`/`generateUsage`/`generateFlow`
+// themselves are unaffected -- see `examples/nextjs-app/scripts/generate-docs`
+// for the same rendering, now invoked directly as application code instead
+// of through this CLI.
 
 /** @internal Exported for direct unit coverage. */
 export function writeGenerationSummary(
-  options: { readonly ownership?: string; readonly evidence?: string },
+  options: { readonly evidence?: string },
   result: ReportResult,
 ): void {
   if (result.warnings.length > 0) {
     process.stdout.write(
       `⚠ ${result.warnings.length} unresolved/dropped-capability warning(s) found -- details below. Re-run with --json for a machine-readable report.\n\n`,
-    )
-  }
-
-  if (result.manifest) {
-    process.stdout.write(`Wrote manifest: ${result.manifest.location}\n`)
-    process.stdout.write(
-      `Discovered ${result.manifest.snapshot.capabilities.length} active capability(ies).\n`,
-    )
-    writeManifestChanges(result.manifest.changes)
-  }
-
-  if (result.documentation) {
-    process.stdout.write(`Wrote docs: ${result.documentation.location}\n`)
-  }
-
-  // result.usage is always populated now (F1: the usage scan runs on every
-  // call) -- but generateDataArtifacts only ever writes usage.location to
-  // disk when --ownership was itself requested, so this line still gates on
-  // options.ownership to stay truthful.
-  if (options.ownership !== undefined) {
-    process.stdout.write(`Wrote dependency & ownership report: ${result.usage.location}\n`)
-  }
-
-  if (result.flow) {
-    process.stdout.write(
-      `Wrote data flow diagram set to: ${result.flow.location} (${result.flow.files.length} file(s))\n`,
     )
   }
 
@@ -304,10 +252,6 @@ export function writeGenerationSummary(
 /** @internal Exported for direct unit coverage. */
 export function writeCheckSummary(
   options: {
-    readonly location?: string
-    readonly docs?: string
-    readonly ownership?: string
-    readonly flow?: string
     readonly evidence?: string
   },
   checkResult: CheckArtifactsResult,
@@ -316,29 +260,6 @@ export function writeCheckSummary(
 
   const staleSet = new Set(checkResult.stale)
   const rows: { label: string; path: string; ok: boolean }[] = []
-  if (options.location !== undefined)
-    rows.push({
-      label: "manifest",
-      path: options.location,
-      ok: !staleSet.has(options.location),
-    })
-  if (options.docs !== undefined)
-    rows.push({ label: "docs", path: options.docs, ok: !staleSet.has(options.docs) })
-  if (options.ownership !== undefined)
-    rows.push({
-      label: "ownership",
-      path: options.ownership,
-      ok: !staleSet.has(options.ownership),
-    })
-  if (options.flow !== undefined) {
-    const flowFiles = checkResult.result.flow?.files ?? []
-    const staleFlowFiles = flowFiles.filter((file) => staleSet.has(file.path))
-    rows.push({
-      label: "flow",
-      path: `${options.flow} (${flowFiles.length} file(s))`,
-      ok: staleFlowFiles.length === 0,
-    })
-  }
   if (options.evidence !== undefined)
     rows.push({
       label: "evidence",
@@ -404,10 +325,11 @@ export function resolveOptions(args: ParsedArgs) {
     // helper's own return type is `string | undefined` regardless of its
     // argument (it's shared with call sites that do want that), which would
     // widen these conditionally-spread values right back to `| undefined`.
-    ...(args.location !== undefined ? { location: path.resolve(root, args.location) } : {}),
-    ...(args.docs !== undefined ? { docs: path.resolve(root, args.docs) } : {}),
-    ...(args.ownership !== undefined ? { ownership: path.resolve(root, args.ownership) } : {}),
-    ...(args.flow !== undefined ? { flow: path.resolve(root, args.flow) } : {}),
+    // `location`/`docs`/`ownership`/`flow` are no longer parsed from argv at
+    // all (see ADR 0066) -- `GenerateDataArtifactsOptions` still declares
+    // them, for a direct library caller (e.g. `examples/*/scripts/
+    // generate-docs/run.ts`), but this CLI itself can never produce a value
+    // for any of them.
     ...(args.evidence !== undefined ? { evidence: path.resolve(root, args.evidence) } : {}),
     // generateDataArtifacts itself does `options.expiringWithinDays ??
     // DEFAULT_EXPIRING_WITHIN_DAYS` -- passing `expiringWithinDays: undefined`
@@ -492,15 +414,9 @@ export async function main(): Promise<void> {
     return
   }
 
-  if (!args.location && !args.docs && !args.ownership && !args.flow && !args.evidence) {
+  if (!args.evidence) {
     if (args.json) {
-      writeJson(
-        serializeFailure(
-          new Error(
-            "At least one of --location, --docs, --ownership, --flow, or --evidence is required.",
-          ),
-        ),
-      )
+      writeJson(serializeFailure(new Error("--evidence is required.")))
     } else {
       process.stdout.write(helpText())
     }

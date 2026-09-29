@@ -42,8 +42,7 @@ Scaffolds a minimal data-cap starting point into the current directory:
 Never overwrites an existing file, never runs anything, never edits
 package.json. Everything else -- generating artifacts, adding getters/
 mutators, reading the snapshot -- is printed as a next step. Run generation
-afterwards with \`node scripts/generate-data.mjs\` or
-\`npx data-cap --location <path>\`.`
+afterwards with \`node scripts/generate-data.mjs\`.`
 }
 
 function capabilityTemplate(): string {

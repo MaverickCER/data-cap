@@ -2,7 +2,7 @@ name: "data-cap report"
 description: "Runs data-cap and turns the result into PR annotations and a summary comment."
 inputs:
   args:
-    description: "Arguments passed to `data-cap --json`, e.g. '--docs docs/DATA.md --ownership docs/OWNERSHIP.md --flow docs/flow --strict-flow'"
+    description: "Arguments passed to `data-cap --json`, e.g. '--evidence docs/data.evidence.json --strict-docs --strict-ownership' -- --location/--docs/--ownership/--flow are no longer CLI flags (ADR 0066); report.mjs's manifest/flow-diagram sections are silently empty until it's migrated to read result.evidence instead"
     required: true
   working-directory:
     description: "Directory to run data-cap from."

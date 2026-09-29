@@ -40,18 +40,18 @@ describe.skipIf(distMissing)("CLI bin execution (requires `npm run build`)", () 
   it("prints help and exits 0 when invoked through a bin-style symlink", () => {
     const result = spawnSync(process.execPath, [binPath, "--help"], { encoding: "utf8" })
     expect(result.status).toBe(0)
-    expect(result.stdout).toContain("data-cap - generate a manifest")
+    expect(result.stdout).toContain("data-cap - generate a persisted Evidence Model")
     expect(result.stdout).toContain("Usage:")
   })
 
-  it("exits non-zero with no --location/--docs/--ownership/--flow and no --help, through the same symlink", () => {
+  it("exits non-zero with no --evidence and no --help, through the same symlink", () => {
     const result = spawnSync(process.execPath, [binPath], { encoding: "utf8" })
     expect(result.status).toBe(1)
     expect(result.stdout).toContain("Usage:")
   })
 
   it("exits non-zero for an unknown flag, through the same symlink", () => {
-    const result = spawnSync(process.execPath, [binPath, "--location", "out.ts", "--bogus"], {
+    const result = spawnSync(process.execPath, [binPath, "--evidence", "out.json", "--bogus"], {
       encoding: "utf8",
     })
     expect(result.status).toBe(1)
@@ -65,11 +65,10 @@ describe.skipIf(distMissing)("CLI bin execution (requires `npm run build`)", () 
   })
 
   it("emits stdout that round-trips through JSON.parse() when run with --json and no target flags", () => {
-    // No --location/--docs/--ownership/--flow -- exercises the JSON-aware
-    // usage-error path (src/cli/index.ts's "at least one of ... is
-    // required" branch), not a real generation run, but proves the built
-    // binary's --json output is well-formed JSON end-to-end through the
-    // real symlinked entry point.
+    // No --evidence -- exercises the JSON-aware usage-error path
+    // (src/cli/index.ts's "--evidence is required" branch), not a real
+    // generation run, but proves the built binary's --json output is
+    // well-formed JSON end-to-end through the real symlinked entry point.
     const result = spawnSync(process.execPath, [binPath, "--json"], { encoding: "utf8" })
     expect(result.status).toBe(1)
     const payload = JSON.parse(result.stdout) as { ok: boolean; kind: string }

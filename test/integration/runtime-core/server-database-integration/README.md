@@ -32,11 +32,14 @@ npm start
 
 ## Generated reports (`docs/`)
 
-`docs/DATA.md` is not hand-written -- it's the real output of running the
-`data-cap` CLI against `src/main.ts`:
+`docs/DATA.md` is not hand-written -- it's the real output of
+[`generateDataArtifacts()`](scripts/generate-docs.ts), called directly from
+`data-cap/build` against `src/main.ts` (`--docs` is no longer a CLI flag --
+see
+[ADR 0066](../../../../specs/decisions/0066-cli-restricted-to-runtime-and-evidence-output.md)):
 
 ```sh
-npx data-cap --root . --include "src/**" --docs docs/DATA.md
+npm run docs
 ```
 
 Unlike [`examples/application/`](../../../../examples/application/) (a `createData` capability with a

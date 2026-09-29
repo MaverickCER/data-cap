@@ -5,7 +5,8 @@
   "description": "The same createData + createDataStore wiring as basic-standalone, backed by a simulated database query/update instead of a network fetch -- a Node backend service keeping DB-backed state.",
   "scripts": {
     "start": "tsx src/main.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "docs": "tsx scripts/generate-docs.ts"
   },
   "dependencies": {
     "data-cap": "file:../../../.."

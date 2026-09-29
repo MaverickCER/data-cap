@@ -8,10 +8,10 @@
     "build": "vite build",
     "start": "tsx main-headless.ts",
     "typecheck": "tsc --noEmit",
-    "docs": "data-cap --root . --include \"src/**\" --location src/generated/data.manifest.ts --docs docs/DATA.md --ownership docs/OWNERSHIP.md --flow docs/flow --evidence docs/data.evidence.json",
+    "docs": "data-cap --root . --include \"src/**\" --evidence docs/data.evidence.json && tsx scripts/generate-docs/run.ts",
     "reports": "tsx reports/litigation-evidence.ts && tsx reports/audit-prep.ts",
-    "check": "data-cap --root . --include \"src/**\" --location src/generated/data.manifest.ts --docs docs/DATA.md --ownership docs/OWNERSHIP.md --flow docs/flow --evidence docs/data.evidence.json --check && tsx reports/litigation-evidence.ts --check && tsx reports/audit-prep.ts --check",
-    "guard": "data-cap --root . --include \"src/**\" --docs .guard-check/DATA.md --strict-docs"
+    "check": "tsx scripts/generate-docs/check.ts && tsx reports/litigation-evidence.ts --check && tsx reports/audit-prep.ts --check",
+    "guard": "data-cap --root . --include \"src/**\" --evidence .guard-check/data.evidence.json --strict-docs"
   },
   "dependencies": {
     "data-cap": "file:../..",

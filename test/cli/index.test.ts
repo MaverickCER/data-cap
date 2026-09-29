@@ -5,14 +5,12 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 import {
   helpText,
   directRunUrl,
-  formatFieldChanges,
   formatFieldPath,
   parseArgs,
   resolveOptions,
   writeCheckSummary,
   writeFindings,
   writeGenerationSummary,
-  writeManifestChanges,
 } from "../../src/cli/index.js"
 import type { ParsedArgs } from "../../src/cli/index.js"
 import type { CheckArtifactsResult, ReportResult } from "../../src/build/index.js"
@@ -50,9 +48,9 @@ function baseArgs(overrides: Partial<ParsedArgs> = {}): ParsedArgs {
 }
 
 describe("parseArgs", () => {
-  it("parses --location with no other flags", () => {
-    const args = parseArgs(["--location", "src/generated/data.manifest.ts"])
-    expect(args.location).toBe("src/generated/data.manifest.ts")
+  it("parses --evidence with no other flags", () => {
+    const args = parseArgs(["--evidence", "docs/data.evidence.json"])
+    expect(args.evidence).toBe("docs/data.evidence.json")
     expect(args.help).toBe(false)
     expect(args.strict).toBe(false)
     expect(args.strictDocs).toBe(false)
@@ -62,36 +60,16 @@ describe("parseArgs", () => {
     expect(args.exclude).toEqual([])
   })
 
-  it("parses --root, --docs, and --ownership", () => {
-    const args = parseArgs([
-      "--root",
-      "/repo",
-      "--location",
-      "out.ts",
-      "--docs",
-      "docs/DATA.md",
-      "--ownership",
-      "docs/OWNERSHIP.md",
-    ])
+  it("parses --root alongside --evidence", () => {
+    const args = parseArgs(["--root", "/repo", "--evidence", "docs/data.evidence.json"])
     expect(args.root).toBe("/repo")
-    expect(args.docs).toBe("docs/DATA.md")
-    expect(args.ownership).toBe("docs/OWNERSHIP.md")
-  })
-
-  it("parses --flow", () => {
-    const args = parseArgs(["--flow", "docs/flow"])
-    expect(args.flow).toBe("docs/flow")
-  })
-
-  it("parses --evidence", () => {
-    const args = parseArgs(["--evidence", "docs/data.evidence.json"])
     expect(args.evidence).toBe("docs/data.evidence.json")
   })
 
   it("collects repeatable --include and --exclude flags", () => {
     const args = parseArgs([
-      "--location",
-      "out.ts",
+      "--evidence",
+      "e.json",
       "--include",
       "features/**/*.ts",
       "--include",
@@ -105,8 +83,8 @@ describe("parseArgs", () => {
 
   it("collects repeatable --package flags", () => {
     const args = parseArgs([
-      "--location",
-      "out.ts",
+      "--evidence",
+      "e.json",
       "--package",
       "@acme/pkg-a",
       "--package",
@@ -116,24 +94,24 @@ describe("parseArgs", () => {
   })
 
   it("parses --tsconfig <path>", () => {
-    const args = parseArgs(["--location", "out.ts", "--tsconfig", "tsconfig.build.json"])
+    const args = parseArgs(["--evidence", "e.json", "--tsconfig", "tsconfig.build.json"])
     expect(args.tsconfig).toBe("tsconfig.build.json")
   })
 
   it("parses --no-tsconfig as false, and leaves tsconfig undefined when neither flag is given", () => {
-    expect(parseArgs(["--location", "out.ts", "--no-tsconfig"]).tsconfig).toBe(false)
-    expect(parseArgs(["--location", "out.ts"]).tsconfig).toBeUndefined()
+    expect(parseArgs(["--evidence", "e.json", "--no-tsconfig"]).tsconfig).toBe(false)
+    expect(parseArgs(["--evidence", "e.json"]).tsconfig).toBeUndefined()
   })
 
   it("sets strict, strict-docs, strict-ownership, strict-flow, json, check, and help flags", () => {
-    expect(parseArgs(["--location", "out.ts", "--strict"]).strict).toBe(true)
-    expect(parseArgs(["--location", "out.ts", "--strict-docs"]).strictDocs).toBe(true)
-    expect(parseArgs(["--ownership", "out.md", "--strict-ownership"]).strictOwnership).toBe(true)
-    expect(parseArgs(["--flow", "out", "--strict-flow"]).strictFlow).toBe(true)
-    expect(parseArgs(["--location", "out.ts", "--json"]).json).toBe(true)
-    expect(parseArgs(["--location", "out.ts"]).json).toBe(false)
-    expect(parseArgs(["--location", "out.ts", "--check"]).check).toBe(true)
-    expect(parseArgs(["--location", "out.ts"]).check).toBe(false)
+    expect(parseArgs(["--evidence", "e.json", "--strict"]).strict).toBe(true)
+    expect(parseArgs(["--evidence", "e.json", "--strict-docs"]).strictDocs).toBe(true)
+    expect(parseArgs(["--evidence", "e.json", "--strict-ownership"]).strictOwnership).toBe(true)
+    expect(parseArgs(["--evidence", "e.json", "--strict-flow"]).strictFlow).toBe(true)
+    expect(parseArgs(["--evidence", "e.json", "--json"]).json).toBe(true)
+    expect(parseArgs(["--evidence", "e.json"]).json).toBe(false)
+    expect(parseArgs(["--evidence", "e.json", "--check"]).check).toBe(true)
+    expect(parseArgs(["--evidence", "e.json"]).check).toBe(false)
     expect(parseArgs(["--help"]).help).toBe(true)
     expect(parseArgs(["-h"]).help).toBe(true)
   })
@@ -142,20 +120,21 @@ describe("parseArgs", () => {
     expect(() => parseArgs(["--bogus"])).toThrow(/Unknown argument/)
   })
 
-  it("throws when a value-taking flag is missing its value", () => {
-    expect(() => parseArgs(["--location"])).toThrow(/requires a value/)
-    expect(() => parseArgs(["--include"])).toThrow(/requires a value/)
-    expect(() => parseArgs(["--ownership"])).toThrow(/requires a value/)
-    expect(() => parseArgs(["--flow"])).toThrow(/requires a value/)
-    expect(() => parseArgs(["--evidence"])).toThrow(/requires a value/)
+  it("throws for each of the removed flags -- --location/--docs/--ownership/--flow are no longer recognized (ADR 0066)", () => {
+    expect(() => parseArgs(["--location", "out.ts"])).toThrow(/Unknown argument: --location/)
+    expect(() => parseArgs(["--docs", "D.md"])).toThrow(/Unknown argument: --docs/)
+    expect(() => parseArgs(["--ownership", "O.md"])).toThrow(/Unknown argument: --ownership/)
+    expect(() => parseArgs(["--flow", "flow/"])).toThrow(/Unknown argument: --flow/)
   })
 
-  it("parses with none of --location/--docs/--ownership/--flow/--evidence given -- parseArgs itself never enforces requiredness, main() does", () => {
+  it("throws when a value-taking flag is missing its value", () => {
+    expect(() => parseArgs(["--evidence"])).toThrow(/requires a value/)
+    expect(() => parseArgs(["--include"])).toThrow(/requires a value/)
+    expect(() => parseArgs(["--root"])).toThrow(/requires a value/)
+  })
+
+  it("parses with --evidence absent -- parseArgs itself never enforces requiredness, main() does", () => {
     const args = parseArgs(["--strict"])
-    expect(args.location).toBeUndefined()
-    expect(args.docs).toBeUndefined()
-    expect(args.ownership).toBeUndefined()
-    expect(args.flow).toBeUndefined()
     expect(args.evidence).toBeUndefined()
   })
 })
@@ -218,11 +197,7 @@ describe("parseArgs -- --expiring-within-days", () => {
 describe("parseArgs -- every flag sets exactly its own field", () => {
   it("each value flag records its value", () => {
     expect(parseArgs(["--root", "/r"]).root).toBe("/r")
-    expect(parseArgs(["--location", "m.ts"]).location).toBe("m.ts")
     expect(parseArgs(["--tsconfig", "tsc.json"]).tsconfig).toBe("tsc.json")
-    expect(parseArgs(["--docs", "D.md"]).docs).toBe("D.md")
-    expect(parseArgs(["--ownership", "O.md"]).ownership).toBe("O.md")
-    expect(parseArgs(["--flow", "flow/"]).flow).toBe("flow/")
     expect(parseArgs(["--evidence", "e.json"]).evidence).toBe("e.json")
   })
 
@@ -258,18 +233,14 @@ describe("parseArgs -- every flag sets exactly its own field", () => {
 })
 
 describe("helpText", () => {
-  it("names every flag and the requiredness rule", () => {
+  it("names every surviving flag and the requiredness rule", () => {
     for (const flag of [
       "--root",
-      "--location",
       "--include",
       "--exclude",
       "--package",
       "--tsconfig",
       "--no-tsconfig",
-      "--docs",
-      "--ownership",
-      "--flow",
       "--evidence",
       "--expiring-within-days",
       "--strict",
@@ -282,10 +253,17 @@ describe("helpText", () => {
     ]) {
       expect(helpText()).toContain(flag)
     }
-    expect(helpText()).toContain(
-      "At least one of --location, --docs, --ownership, --flow, or --evidence is required",
-    )
-    expect(helpText().startsWith("data-cap - generate a manifest")).toBe(true)
+    expect(helpText()).toContain("--evidence is required")
+    expect(helpText().startsWith("data-cap - generate a persisted Evidence Model")).toBe(true)
+  })
+
+  it("no longer names the removed flags as CLI options", () => {
+    // Each appears only in the trailing paragraph explaining they moved to
+    // direct library calls (as an option name / prose, never as `--flag`).
+    expect(helpText()).not.toContain("--location")
+    expect(helpText()).not.toContain("--docs ")
+    expect(helpText()).not.toContain("--ownership ")
+    expect(helpText()).not.toContain("--flow ")
   })
 
   it("lists the init subcommand", () => {
@@ -300,18 +278,6 @@ describe("formatFieldPath (direct)", () => {
     expect(formatFieldPath(["email"])).toBe(" (email)")
     expect(formatFieldPath([])).toBe("")
     expect(formatFieldPath(undefined)).toBe("")
-  })
-})
-
-describe("formatFieldChanges (direct)", () => {
-  it("comma-joins the changes list", () => {
-    expect(
-      formatFieldChanges({
-        capability: "c",
-        changes: ["added a", "removed b"],
-        fields: { added: [], removed: [] },
-      }),
-    ).toBe("added a, removed b")
   })
 })
 
@@ -363,91 +329,27 @@ describe("writeFindings (direct)", () => {
   })
 })
 
-describe("writeManifestChanges (direct)", () => {
-  it("prints 'No changes.' when all three buckets are empty", () => {
-    const out = captureStdout(() => {
-      writeManifestChanges({
-        addedCapabilities: [],
-        removedCapabilities: [],
-        updatedCapabilities: [],
-      })
-    })
-    expect(out).toBe("\nManifest changes since last execution:\n  No changes.\n")
-  })
-
-  it("prints Added, Updated, then Removed sections, each only when non-empty", () => {
-    const out = captureStdout(() => {
-      writeManifestChanges({
-        addedCapabilities: ["a1", "a2"],
-        updatedCapabilities: [
-          { capability: "u1", changes: ["owner: x -> y"], fields: { added: [], removed: [] } },
-        ],
-        removedCapabilities: ["r1"],
-      })
-    })
-    expect(out).toBe(
-      [
-        "",
-        "Manifest changes since last execution:",
-        "  Added:",
-        "    - a1",
-        "    - a2",
-        "  Updated:",
-        "    - u1: owner: x -> y",
-        "  Removed:",
-        "    - r1",
-        "",
-      ].join("\n"),
-    )
-  })
-
-  it("prints only the non-empty section (Added alone, no spurious Updated/Removed headers)", () => {
-    const out = captureStdout(() => {
-      writeManifestChanges({
-        addedCapabilities: ["a1"],
-        updatedCapabilities: [],
-        removedCapabilities: [],
-      })
-    })
-    expect(out).toBe("\nManifest changes since last execution:\n  Added:\n    - a1\n")
-    expect(out).not.toContain("Updated:")
-    expect(out).not.toContain("Removed:")
-  })
-
-  it("prints only Updated when that is the sole non-empty bucket", () => {
-    const out = captureStdout(() => {
-      writeManifestChanges({
-        addedCapabilities: [],
-        updatedCapabilities: [
-          { capability: "u1", changes: ["c"], fields: { added: [], removed: [] } },
-        ],
-        removedCapabilities: [],
-      })
-    })
-    expect(out).not.toContain("Added:")
-    expect(out).not.toContain("Removed:")
-    expect(out).toContain("  Updated:\n    - u1: c\n")
-  })
-})
-
 describe("resolveOptions (direct)", () => {
-  it("resolves every output path against --root and turns empty repeatable lists into undefined", () => {
+  it("resolves the evidence path against --root and turns empty repeatable lists into undefined", () => {
     const opts = resolveOptions(
       baseArgs({
         root: "/proj",
-        location: "out/m.ts",
-        docs: "out/D.md",
-        ownership: "out/O.md",
-        flow: "out/flow",
         evidence: "out/e.json",
       }),
     )
     expect(opts.root).toBe(path.resolve("/proj"))
-    expect(opts.location).toBe(path.resolve("/proj", "out/m.ts"))
     expect(opts.evidence).toBe(path.resolve("/proj", "out/e.json"))
     expect(opts.include).toBeUndefined()
     expect(opts.exclude).toBeUndefined()
     expect(opts.packages).toBeUndefined()
+  })
+
+  it("never produces a location/docs/ownership/flow key -- those flags no longer exist on ParsedArgs", () => {
+    const opts = resolveOptions(baseArgs({ evidence: "out/e.json" }))
+    expect(opts).not.toHaveProperty("location")
+    expect(opts).not.toHaveProperty("docs")
+    expect(opts).not.toHaveProperty("ownership")
+    expect(opts).not.toHaveProperty("flow")
   })
 
   it("keeps non-empty repeatable lists verbatim and passes strict flags + tsconfig through", () => {
@@ -470,7 +372,7 @@ describe("resolveOptions (direct)", () => {
     expect(opts.strictFlow).toBe(true)
     expect(opts.expiringWithinDays).toBe(12)
     // paths left undefined when the flag was absent
-    expect(opts.location).toBeUndefined()
+    expect(opts.evidence).toBeUndefined()
   })
 
   it("defaults root to process.cwd() when --root is absent", () => {
@@ -479,18 +381,12 @@ describe("resolveOptions (direct)", () => {
 })
 
 describe("writeGenerationSummary (direct)", () => {
-  const emptyChanges = { addedCapabilities: [], removedCapabilities: [], updatedCapabilities: [] }
-
-  it("prints each requested artifact's line, the warning banner, the findings, and the parse-warning list", () => {
+  it("prints the evidence line, the warning banner, the findings, and the parse-warning list", () => {
     const result = {
-      manifest: {
-        location: "/p/m.ts",
-        snapshot: { capabilities: [{}, {}, {}] },
-        changes: emptyChanges,
-      },
-      documentation: { location: "/p/D.md" },
-      usage: { location: "/p/O.md" },
-      flow: { location: "/p/flow", files: ["a", "b"] },
+      manifest: undefined,
+      documentation: undefined,
+      usage: { location: undefined },
+      flow: undefined,
       findings: [
         {
           code: "CAPABILITY_MISSING_OWNER",
@@ -504,34 +400,19 @@ describe("writeGenerationSummary (direct)", () => {
     } as unknown as ReportResult
 
     const out = captureStdout(() => {
-      writeGenerationSummary({ ownership: "/p/O.md", evidence: "/p/e.json" }, result)
+      writeGenerationSummary({ evidence: "/p/e.json" }, result)
     })
     expect(out).toContain("⚠ 1 unresolved/dropped-capability warning(s) found")
-    expect(out).toContain("Wrote manifest: /p/m.ts")
-    expect(out).toContain("Discovered 3 active capability(ies).")
-    expect(out).toContain("Wrote docs: /p/D.md")
-    expect(out).toContain("Wrote dependency & ownership report: /p/O.md")
-    expect(out).toContain("Wrote data flow diagram set to: /p/flow (2 file(s))")
     expect(out).toContain("Wrote evidence model: /p/e.json")
     expect(out).toContain("[warning] [CAPABILITY_MISSING_OWNER] [capW] no owner")
     expect(out).toContain("1 parse warning(s):")
     expect(out).toContain("  - x.ts: could not resolve")
-  })
-
-  it("omits the ownership line when only --flow (not --ownership) was requested", () => {
-    const result = {
-      manifest: undefined,
-      documentation: undefined,
-      usage: { location: "/p/O.md" }, // populated for --flow, but must NOT be printed
-      flow: { location: "/p/flow", files: [] },
-      findings: [],
-      warnings: [],
-    } as unknown as ReportResult
-    const out = captureStdout(() => {
-      writeGenerationSummary({}, result)
-    })
+    // The CLI can no longer request manifest/docs/ownership/flow -- their
+    // summary lines are gone entirely, not merely empty.
+    expect(out).not.toContain("Wrote manifest")
+    expect(out).not.toContain("Wrote docs")
     expect(out).not.toContain("dependency & ownership report")
-    expect(out).toContain("Wrote data flow diagram set to: /p/flow (0 file(s))")
+    expect(out).not.toContain("Wrote data flow diagram")
   })
 
   it("emits no warning banner, no parse-warning list, and no evidence line when none apply", () => {
@@ -554,84 +435,48 @@ describe("writeGenerationSummary (direct)", () => {
 })
 
 describe("writeCheckSummary (direct)", () => {
-  it("prints an OK/STALE row per requested artifact and the all-up-to-date footer", () => {
+  it("prints an OK row for evidence and the all-up-to-date footer", () => {
     const checkResult = {
       stale: [],
-      result: { flow: { files: [] }, findings: [] },
+      result: { flow: undefined, findings: [] },
     } as unknown as CheckArtifactsResult
     const out = captureStdout(() => {
-      writeCheckSummary(
-        { location: "/p/m.ts", docs: "/p/D.md", ownership: "/p/O.md", evidence: "/p/e.json" },
-        checkResult,
-      )
+      writeCheckSummary({ evidence: "/p/e.json" }, checkResult)
     })
     expect(out).toContain("Checking for drift")
-    expect(out).toContain("manifest")
     expect(out).toContain("evidence")
     expect(out).toContain("OK")
     expect(out).toContain("All generated artifacts are up to date.")
     expect(out).not.toContain("STALE")
   })
 
-  it("marks exactly the stale paths STALE and prints the stale-count footer", () => {
+  it("marks the evidence path STALE and prints the stale-count footer", () => {
     const checkResult = {
-      stale: ["/p/D.md"],
-      result: { flow: { files: [] }, findings: [] },
+      stale: ["/p/e.json"],
+      result: { flow: undefined, findings: [] },
     } as unknown as CheckArtifactsResult
     const out = captureStdout(() => {
-      writeCheckSummary({ location: "/p/m.ts", docs: "/p/D.md" }, checkResult)
+      writeCheckSummary({ evidence: "/p/e.json" }, checkResult)
     })
-    expect(out).toMatch(/manifest\s+\S+\s+OK/)
-    expect(out).toMatch(/docs\s+\S+\s+STALE/)
+    expect(out).toMatch(/evidence\s+\S+\s+STALE/)
     expect(out).toContain("1 artifact(s) are stale or missing")
   })
 
-  it("reports a flow directory stale when any of its files is stale", () => {
-    const checkResult = {
-      stale: ["/p/flow/a.mmd"],
-      result: {
-        flow: { files: [{ path: "/p/flow/a.mmd" }, { path: "/p/flow/b.md" }] },
-        findings: [],
-      },
-    } as unknown as CheckArtifactsResult
-    const out = captureStdout(() => {
-      writeCheckSummary({ flow: "/p/flow" }, checkResult)
-    })
-    expect(out).toMatch(/flow\s+.*2 file\(s\).*STALE/)
-  })
-
-  it("reports a flow directory OK (0 file(s)) when the check produced no flow result at all", () => {
+  it("emits no rows at all when no --evidence was requested", () => {
     const checkResult = {
       stale: [],
       result: { flow: undefined, findings: [] },
     } as unknown as CheckArtifactsResult
     const out = captureStdout(() => {
-      writeCheckSummary({ flow: "/p/flow" }, checkResult)
+      writeCheckSummary({}, checkResult)
     })
-    expect(out).toMatch(/flow\s+.*\(0 file\(s\)\)\s+OK/)
-    // The row's own label column reads "flow" (not blank).
-    expect(out).toMatch(/^ {2}flow {2,}\S/m)
+    expect(out).not.toContain("evidence")
     expect(out).toContain("All generated artifacts are up to date.")
-  })
-
-  it("marks a flow directory OK when its files are all clean", () => {
-    const checkResult = {
-      stale: [],
-      result: {
-        flow: { files: [{ path: "/p/flow/a.mmd" }, { path: "/p/flow/b.md" }] },
-        findings: [],
-      },
-    } as unknown as CheckArtifactsResult
-    const out = captureStdout(() => {
-      writeCheckSummary({ flow: "/p/flow" }, checkResult)
-    })
-    expect(out).toMatch(/flow\s+.*2 file\(s\).*OK/)
-    expect(out).not.toContain("STALE")
   })
 })
 
 describe("runCheck / runGenerate error handling", () => {
-  const opts = () => resolveOptions(baseArgs({ location: "out.ts" }))
+  const opts = () => resolveOptions(baseArgs({ evidence: "out.json" }))
 
   afterEach(() => {
     vi.restoreAllMocks()
@@ -642,7 +487,7 @@ describe("runCheck / runGenerate error handling", () => {
     const { runCheck } = await import("../../src/cli/index.js")
     const build = await import("../../src/build/index.js")
     vi.spyOn(build, "checkArtifacts").mockRejectedValueOnce(new Error("disk exploded"))
-    await expect(runCheck(baseArgs({ location: "out.ts" }), opts())).rejects.toThrow(
+    await expect(runCheck(baseArgs({ evidence: "out.json" }), opts())).rejects.toThrow(
       "disk exploded",
     )
   })
@@ -656,7 +501,7 @@ describe("runCheck / runGenerate error handling", () => {
       chunks.push(String(c))
       return true
     })
-    await runCheck(baseArgs({ location: "out.ts", json: true }), opts())
+    await runCheck(baseArgs({ evidence: "out.json", json: true }), opts())
     spy.mockRestore()
     const parsed = JSON.parse(chunks.join("")) as { ok: boolean; error?: { message: string } }
     expect(parsed.ok).toBe(false)
@@ -673,7 +518,7 @@ describe("runCheck / runGenerate error handling", () => {
       chunks.push(String(c))
       return true
     })
-    await runGenerate(baseArgs({ location: "out.ts", json: true }), opts())
+    await runGenerate(baseArgs({ evidence: "out.json", json: true }), opts())
     spy.mockRestore()
     const parsed = JSON.parse(chunks.join("")) as { ok: boolean }
     expect(parsed.ok).toBe(false)
@@ -684,26 +529,12 @@ describe("runCheck / runGenerate error handling", () => {
     const { runGenerate } = await import("../../src/cli/index.js")
     const build = await import("../../src/build/index.js")
     vi.spyOn(build, "generateDataArtifacts").mockRejectedValueOnce(new Error("boom"))
-    await expect(runGenerate(baseArgs({ location: "out.ts" }), opts())).rejects.toThrow("boom")
-  })
-})
-
-describe("writeCheckSummary -- no flow requested", () => {
-  it("emits no flow row when --flow was not passed", () => {
-    const checkResult = {
-      stale: [],
-      result: { flow: undefined, findings: [] },
-    } as unknown as CheckArtifactsResult
-    const out = captureStdout(() => {
-      writeCheckSummary({ location: "/p/m.ts" }, checkResult)
-    })
-    expect(out).not.toMatch(/\bflow\b/)
-    expect(out).toContain("manifest")
+    await expect(runGenerate(baseArgs({ evidence: "out.json" }), opts())).rejects.toThrow("boom")
   })
 })
 
 describe("runCheck / runGenerate -- success paths", () => {
-  const opts = () => resolveOptions(baseArgs({ location: "out.ts" }))
+  const opts = () => resolveOptions(baseArgs({ evidence: "out.json" }))
   afterEach(() => {
     vi.restoreAllMocks()
     process.exitCode = undefined
@@ -721,7 +552,7 @@ describe("runCheck / runGenerate -- success paths", () => {
       chunks.push(String(c))
       return true
     })
-    await runCheck(baseArgs({ location: "out.ts" }), opts())
+    await runCheck(baseArgs({ evidence: "out.json" }), opts())
     spy.mockRestore()
     const out = chunks.join("")
     expect(out).toContain("Checking for drift")
@@ -734,11 +565,11 @@ describe("runCheck / runGenerate -- success paths", () => {
     const { runCheck } = await import("../../src/cli/index.js")
     const build = await import("../../src/build/index.js")
     vi.spyOn(build, "checkArtifacts").mockResolvedValueOnce({
-      stale: ["out.ts"],
+      stale: ["out.json"],
       result: { flow: undefined, findings: [] },
     } as unknown as CheckArtifactsResult)
     const spy = vi.spyOn(process.stdout, "write").mockImplementation(() => true)
-    await runCheck(baseArgs({ location: "out.ts" }), opts())
+    await runCheck(baseArgs({ evidence: "out.json" }), opts())
     spy.mockRestore()
     expect(process.exitCode).toBe(1)
   })
@@ -760,14 +591,14 @@ describe("runCheck / runGenerate -- success paths", () => {
         chunks.push(String(c))
         return true
       })
-      await runCheck(baseArgs({ location: "out.ts", json: true }), opts())
+      await runCheck(baseArgs({ evidence: "out.json", json: true }), opts())
       return JSON.parse(chunks.join("")) as { checkResult: { ok: boolean; stale: string[] } }
     }
     const clean = await run([])
     expect(clean.checkResult.ok).toBe(true)
     expect(clean.checkResult.stale).toEqual([])
-    const stale = await run(["out.ts"])
+    const stale = await run(["out.json"])
     expect(stale.checkResult.ok).toBe(false)
-    expect(stale.checkResult.stale).toEqual(["out.ts"])
+    expect(stale.checkResult.stale).toEqual(["out.json"])
   })
 })

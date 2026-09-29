@@ -55,32 +55,23 @@ const FIXTURES = [
   "build-tooling/eslint-plugin-usage",
 ]
 
-// data-cap CLI args (relative to the project's own directory) for each
-// project whose `docs/` subdirectory is a committed, real-generator-output
-// behavioral spec -- see specs/generated-artifacts.md and each project's
-// own README "Generated reports" section for what these actually
-// demonstrate. A project not listed here has no committed `docs/` output.
-const DEFAULT_FLAGSHIP_REPORT_ARGS = [
-  "--include",
-  "src/**",
-  "--location",
-  "src/generated/data.manifest.ts",
-  "--docs",
-  "docs/DATA.md",
-  "--ownership",
-  "docs/OWNERSHIP.md",
-  "--flow",
-  "docs/flow",
-  "--evidence",
-  "docs/data.evidence.json",
-]
-
-const REPORT_CONFIGS = {
-  application: DEFAULT_FLAGSHIP_REPORT_ARGS,
-  "team-service": DEFAULT_FLAGSHIP_REPORT_ARGS,
-  "enterprise-platform": DEFAULT_FLAGSHIP_REPORT_ARGS,
-  "runtime-core/server-database-integration": ["--include", "src/**", "--docs", "docs/DATA.md"],
-}
+// Projects whose `docs/` subdirectory is a committed, real-generator-output
+// behavioral spec -- see specs/generated-artifacts.md and each project's own
+// README "Generated reports" section for what these actually demonstrate. A
+// project not listed here has no committed `docs/` output. Regenerated via
+// each project's own `npm run docs` script -- `data-cap --location`/`--docs`/
+// `--ownership`/`--flow` are no longer CLI flags this script can pass
+// directly (see specs/decisions/0066-cli-restricted-to-runtime-and-evidence-output.md);
+// each listed project's own `docs` script now composes a real
+// `data-cap --evidence` CLI step with a `scripts/generate-docs/run.ts` (or,
+// for the fixture below, a plain `.mjs`) that calls the still-exported
+// `generateDataArtifacts()` directly.
+const DOCS_PROJECTS = new Set([
+  "application",
+  "team-service",
+  "enterprise-platform",
+  "runtime-core/server-database-integration",
+])
 
 // `enterprise-platform` also has two hand-written report generators
 // (`reports/litigation-evidence.ts`/`audit-prep.ts`) outside the CLI's own
@@ -109,8 +100,7 @@ function updateGolden(name, projectDir, { writesOutputJson }) {
   }
   console.log(`[golden] ${name}: done.`)
 
-  const reportArgs = REPORT_CONFIGS[name]
-  if (!reportArgs) return
+  if (!DOCS_PROJECTS.has(name)) return
   if (!existsSync(cliDist)) {
     console.log(
       `[skip] ${name}: docs/ (dist/cli/index.js not built -- run \`npm run build\` first)`,
@@ -119,7 +109,7 @@ function updateGolden(name, projectDir, { writesOutputJson }) {
   }
 
   console.log(`[golden] ${name}: regenerating docs/...`)
-  execFileSync("node", [cliDist, "--root", ".", ...reportArgs], {
+  execFileSync("npm", ["run", "--silent", "docs"], {
     cwd: projectDir,
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],

@@ -7,9 +7,13 @@ import { EVIDENCE_MODEL_SCHEMA_VERSION } from "../../src/build/evidence-model.js
 import { main } from "../../src/cli/index.js"
 
 // Real, end-to-end exercise of main()'s stdout-formatting path -- test/cli/index.test.ts
-// only covers parseArgs(), and test/cli/bin.test.ts only spawns the built CLI for
-// --help/error/exit-code cases, so the manifest/docs/ownership/flow summary
-// formatting below was never actually exercised by any other test.
+// only covers parseArgs()/the individual write*Summary() helpers, and
+// test/cli/bin.test.ts only spawns the built CLI for --help/error/exit-code
+// cases, so main()'s real generate/check wiring below was never actually
+// exercised by any other test. `--evidence` is the only flag this CLI still
+// accepts (ADR 0066) -- manifest/docs/ownership/flow generation (and their
+// own summary formatting) moved to direct `data-cap/build` calls, covered by
+// test/build/generate-data-artifacts.test.ts instead.
 
 const here = path.dirname(fileURLToPath(import.meta.url))
 const fixtureRoot = path.resolve(here, "fixtures-main")
@@ -28,7 +32,7 @@ beforeEach(async () => {
   await fs.rm(fixtureRoot, { recursive: true, force: true })
 
   // One owned capability (userCapability) and one unowned one (orphanCapability),
-  // so both the manifest pass and the "missing owner" finding have something real.
+  // so both the usage scan and the "missing owner" finding have something real.
   await write(
     "features/identity/user.ts",
     `import { createData, documentData } from "data-cap";
@@ -66,201 +70,6 @@ afterEach(async () => {
   await fs.rm(fixtureRoot, { recursive: true, force: true })
 })
 
-describe("main() -- real --location/--docs run", () => {
-  it("prints the manifest-written summary and the missing-owner finding, in the CLI's actual format", async () => {
-    process.argv = [
-      "node",
-      "data-cap",
-      "--root",
-      fixtureRoot,
-      "--location",
-      "src/generated/data.manifest.ts",
-      "--docs",
-      "docs/DATA.md",
-    ]
-
-    await main()
-
-    const output = writes.join("")
-
-    expect(output).toContain("Wrote manifest: ")
-    expect(output).toContain(path.join(fixtureRoot, "src/generated/data.manifest.ts"))
-    expect(output).toContain("Discovered 2 active capability(ies).")
-    expect(output).toContain("Wrote docs: ")
-    expect(output).toContain(path.join(fixtureRoot, "docs/DATA.md"))
-
-    expect(output).toContain("warning(s)")
-    expect(output).toContain("[CAPABILITY_MISSING_OWNER]")
-    expect(output).toContain("[orphanCapability]")
-
-    await expect(
-      fs.access(path.join(fixtureRoot, "src/generated/data.manifest.ts")),
-    ).resolves.toBeUndefined()
-    await expect(fs.access(path.join(fixtureRoot, "docs/DATA.md"))).resolves.toBeUndefined()
-  })
-})
-
-describe("main() -- --check", () => {
-  it("exits 0 and reports everything up to date against a clean, already-generated fixture", async () => {
-    process.argv = [
-      "node",
-      "data-cap",
-      "--root",
-      fixtureRoot,
-      "--location",
-      "src/generated/data.manifest.ts",
-    ]
-    await main()
-    writes = []
-
-    process.argv = [
-      "node",
-      "data-cap",
-      "--root",
-      fixtureRoot,
-      "--location",
-      "src/generated/data.manifest.ts",
-      "--check",
-    ]
-    const manifestPath = path.join(fixtureRoot, "src/generated/data.manifest.ts")
-    const before = await fs.readFile(manifestPath, "utf8")
-
-    await main()
-
-    const output = writes.join("")
-    expect(output).toContain("manifest")
-    expect(output).toContain("OK")
-    expect(output).toContain("All generated artifacts are up to date.")
-    expect(process.exitCode).toBe(0)
-    expect(await fs.readFile(manifestPath, "utf8")).toBe(before)
-  })
-
-  it("exits 1 and lists stale artifacts, without touching fixture files, once a capability is added after generation", async () => {
-    process.argv = [
-      "node",
-      "data-cap",
-      "--root",
-      fixtureRoot,
-      "--location",
-      "src/generated/data.manifest.ts",
-    ]
-    await main()
-
-    const manifestPath = path.join(fixtureRoot, "src/generated/data.manifest.ts")
-    const before = await fs.readFile(manifestPath, "utf8")
-
-    await write(
-      "features/billing/billing.ts",
-      `import { createData, documentData } from "data-cap";
-const fields = { plan: "" };
-export const billingCapability = createData({ fields: fields });
-documentData({ fields: fields }, { owner: "billing-team" });
-`,
-    )
-
-    writes = []
-    process.argv = [
-      "node",
-      "data-cap",
-      "--root",
-      fixtureRoot,
-      "--location",
-      "src/generated/data.manifest.ts",
-      "--check",
-    ]
-    await main()
-
-    const output = writes.join("")
-    expect(output).toContain("STALE")
-    expect(output).toContain("artifact(s) are stale or missing")
-    expect(process.exitCode).toBe(1)
-    expect(await fs.readFile(manifestPath, "utf8")).toBe(before)
-  })
-
-  it("reports ownership and flow rows too, when both are requested alongside --location", async () => {
-    const flags = [
-      "node",
-      "data-cap",
-      "--root",
-      fixtureRoot,
-      "--location",
-      "src/generated/all.manifest.ts",
-      "--ownership",
-      "docs/all.OWNERSHIP.md",
-      "--flow",
-      "docs/all-flow",
-    ]
-    process.argv = [...flags]
-    await main()
-
-    writes = []
-    process.argv = [...flags, "--check"]
-    await main()
-
-    const output = writes.join("")
-    expect(output).toContain("manifest")
-    expect(output).toContain("ownership")
-    expect(output).toContain("flow")
-    expect(output).toContain("All generated artifacts are up to date.")
-    expect(process.exitCode).toBe(0)
-  })
-
-  it("reports the Removed: section once a previously-generated capability's file is deleted", async () => {
-    const location = "src/generated/removed.manifest.ts"
-    process.argv = ["node", "data-cap", "--root", fixtureRoot, "--location", location]
-    await main()
-
-    await fs.rm(path.join(fixtureRoot, "features/orphan/orphan.ts"))
-
-    writes = []
-    process.argv = ["node", "data-cap", "--root", fixtureRoot, "--location", location]
-    await main()
-
-    const output = writes.join("")
-    expect(output).toContain("Removed:")
-    expect(output).toContain("orphanCapability")
-  })
-})
-
-describe("main() -- --json wiring", () => {
-  it("emits a parseable ok:true JSON report on success", async () => {
-    process.argv = ["node", "data-cap", "--root", fixtureRoot, "--docs", "docs/DATA.md", "--json"]
-
-    await main()
-
-    const output = writes.join("")
-    const payload = JSON.parse(output) as {
-      ok: boolean
-      documentation?: { location?: string }
-      findings?: unknown[]
-    }
-    expect(payload.ok).toBe(true)
-    expect(payload.documentation?.location).toBeDefined()
-    expect(payload.findings).toBeDefined()
-  })
-
-  it("emits a parseable ok:false JSON report when --strict-docs turns a missing owner into a hard failure", async () => {
-    process.argv = [
-      "node",
-      "data-cap",
-      "--root",
-      fixtureRoot,
-      "--docs",
-      "docs/DATA.md",
-      "--strict-docs",
-      "--json",
-    ]
-
-    await main()
-
-    const output = writes.join("")
-    const payload = JSON.parse(output) as { ok: boolean; error?: { name: string } }
-    expect(payload.ok).toBe(false)
-    expect(payload.error?.name).toBe("DataProjectGenerationError")
-    expect(process.exitCode).toBe(1)
-  })
-})
-
 describe("main() -- --help", () => {
   it("prints HELP_TEXT and exits 0, without touching any generation path", async () => {
     process.argv = ["node", "data-cap", "--help"]
@@ -268,13 +77,13 @@ describe("main() -- --help", () => {
     await main()
 
     const output = writes.join("")
-    expect(output).toContain("data-cap - generate a manifest")
+    expect(output).toContain("data-cap - generate a persisted Evidence Model")
     expect(output).toContain("Usage:")
     expect(process.exitCode).toBe(0)
   })
 })
 
-describe("main() -- none of --location/--docs/--ownership/--flow given", () => {
+describe("main() -- no --evidence given", () => {
   it("prints HELP_TEXT and exits 1 without --json", async () => {
     process.argv = ["node", "data-cap", "--root", fixtureRoot]
 
@@ -293,39 +102,19 @@ describe("main() -- none of --location/--docs/--ownership/--flow given", () => {
     const output = writes.join("")
     const payload = JSON.parse(output) as { ok: boolean; error?: { message: string } }
     expect(payload.ok).toBe(false)
-    expect(payload.error?.message).toContain(
-      "At least one of --location, --docs, --ownership, --flow, or --evidence is required.",
-    )
+    expect(payload.error?.message).toBe("--evidence is required.")
     expect(process.exitCode).toBe(1)
   })
-})
 
-describe("main() -- --ownership output block", () => {
-  it("lists an abandoned capability and never claims a write happened when only --flow (not --ownership) is requested", async () => {
-    process.argv = ["node", "data-cap", "--root", fixtureRoot, "--flow", "docs/flow"]
+  it("rejects each removed flag as unknown, through main()'s own parseArgs() call", async () => {
+    process.argv = ["node", "data-cap", "--root", fixtureRoot, "--location", "out.ts"]
 
-    await main()
-
-    const output = writes.join("")
-    expect(output).toContain("Wrote data flow diagram set to: ")
-    expect(output).not.toContain("Wrote dependency & ownership report")
-    expect(output).toContain("[ABANDONED_CAPABILITY]")
-  })
-
-  it("prints the ownership report path only when --ownership is actually requested", async () => {
-    process.argv = ["node", "data-cap", "--root", fixtureRoot, "--ownership", "docs/OWNERSHIP.md"]
-
-    await main()
-
-    const output = writes.join("")
-    expect(output).toContain("Wrote dependency & ownership report: ")
-    expect(output).toContain(path.join(fixtureRoot, "docs/OWNERSHIP.md"))
-    await expect(fs.access(path.join(fixtureRoot, "docs/OWNERSHIP.md"))).resolves.toBeUndefined()
+    await expect(main()).rejects.toThrow(/Unknown argument: --location/)
   })
 })
 
-describe("main() -- --evidence output block", () => {
-  it("writes the composed Evidence Model as JSON and prints its path", async () => {
+describe("main() -- real --evidence run", () => {
+  it("writes the composed Evidence Model as JSON, prints its path, and surfaces the missing-owner finding", async () => {
     process.argv = [
       "node",
       "data-cap",
@@ -340,6 +129,10 @@ describe("main() -- --evidence output block", () => {
     const output = writes.join("")
     expect(output).toContain("Wrote evidence model: ")
     expect(output).toContain(path.join(fixtureRoot, "docs/data.evidence.json"))
+    expect(output).toContain("warning(s)")
+    expect(output).toContain("[CAPABILITY_MISSING_OWNER]")
+    expect(output).toContain("[orphanCapability]")
+
     const written = JSON.parse(
       await fs.readFile(path.join(fixtureRoot, "docs/data.evidence.json"), "utf8"),
     ) as { schemaVersion: number; capability: { capabilities: readonly unknown[] } }
@@ -347,7 +140,11 @@ describe("main() -- --evidence output block", () => {
     expect(written.capability.capabilities).toHaveLength(2)
   })
 
-  it("--evidence alone satisfies the 'at least one target' requirement, with no --location/--docs/--ownership/--flow", async () => {
+  // The CLI can no longer request a manifest/docs/ownership report/flow set
+  // (ADR 0066) -- `result.manifest`/`result.documentation`/`result.flow` are
+  // always undefined from a real CLI run, so their own summary lines (and
+  // the "changes since last execution" section) never print.
+  it("never prints manifest/docs/ownership/flow lines, since the CLI can no longer request any of them", async () => {
     process.argv = [
       "node",
       "data-cap",
@@ -359,13 +156,17 @@ describe("main() -- --evidence output block", () => {
 
     await main()
 
-    expect(process.exitCode).not.toBe(1)
-    await expect(
-      fs.access(path.join(fixtureRoot, "docs/data.evidence.json")),
-    ).resolves.toBeUndefined()
+    const output = writes.join("")
+    expect(output).not.toContain("Wrote manifest")
+    expect(output).not.toContain("Wrote docs")
+    expect(output).not.toContain("dependency & ownership report")
+    expect(output).not.toContain("Wrote data flow diagram")
+    expect(output).not.toContain("Manifest changes since last execution")
   })
+})
 
-  it("--check reports the evidence artifact as its own row, OK when fresh", async () => {
+describe("main() -- --json wiring", () => {
+  it("emits a parseable ok:true JSON report on success, with the full evidence model populated", async () => {
     process.argv = [
       "node",
       "data-cap",
@@ -373,67 +174,177 @@ describe("main() -- --evidence output block", () => {
       fixtureRoot,
       "--evidence",
       "docs/data.evidence.json",
+      "--json",
     ]
+
+    await main()
+
+    const output = writes.join("")
+    const payload = JSON.parse(output) as {
+      ok: boolean
+      evidence?: { schemaVersion: number }
+      findings?: unknown[]
+    }
+    expect(payload.ok).toBe(true)
+    expect(payload.evidence?.schemaVersion).toBe(EVIDENCE_MODEL_SCHEMA_VERSION)
+    expect(payload.findings).toBeDefined()
+  })
+
+  it("emits a parseable ok:false JSON report when --strict-docs turns a missing owner into a hard failure", async () => {
+    process.argv = [
+      "node",
+      "data-cap",
+      "--root",
+      fixtureRoot,
+      "--evidence",
+      "docs/data.evidence.json",
+      "--strict-docs",
+      "--json",
+    ]
+
+    await main()
+
+    const output = writes.join("")
+    const payload = JSON.parse(output) as { ok: boolean; error?: { name: string } }
+    expect(payload.ok).toBe(false)
+    expect(payload.error?.name).toBe("DataProjectGenerationError")
+    expect(process.exitCode).toBe(1)
+  })
+})
+
+describe("main() -- --check", () => {
+  it("exits 0 and reports the evidence artifact up to date against a clean, already-generated fixture", async () => {
+    const flags = [
+      "node",
+      "data-cap",
+      "--root",
+      fixtureRoot,
+      "--evidence",
+      "docs/data.evidence.json",
+    ]
+    process.argv = [...flags]
     await main()
     writes = []
 
-    process.argv = [
-      "node",
-      "data-cap",
-      "--root",
-      fixtureRoot,
-      "--evidence",
-      "docs/data.evidence.json",
-      "--check",
-    ]
+    process.argv = [...flags, "--check"]
+    const evidencePath = path.join(fixtureRoot, "docs/data.evidence.json")
+    const before = await fs.readFile(evidencePath, "utf8")
+
     await main()
 
     const output = writes.join("")
     expect(output).toContain("evidence")
     expect(output).toContain("OK")
+    expect(output).toContain("All generated artifacts are up to date.")
     expect(process.exitCode).toBe(0)
+    expect(await fs.readFile(evidencePath, "utf8")).toBe(before)
   })
-})
 
-describe("main() -- --flow output with a sensitive boundary crossing", () => {
-  it("emits SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY for a restricted field with a declared external endpoint", async () => {
-    await write(
-      "features/payments/payments.ts",
-      `import { createData, documentData } from "data-cap";
-const fields = { cardNumber: "" };
-export const paymentsCapability = createData({
-  fields: fields,
-  getters: { getCard: { writes: { cardNumber: true } } },
-});
-documentData({ fields: fields }, {
-  owner: "payments-team",
-  fields: { cardNumber: { sensitivity: "restricted", protections: "encrypted at rest" } },
-  getters: {
-    getCard: { endpoints: [{ direction: "input", kind: "external-service", name: "stripe-api" }] },
-  },
-});
-`,
-    )
-
-    process.argv = [
+  it("exits 1 and lists the stale evidence artifact, without touching fixture files, once a capability is added after generation", async () => {
+    const flags = [
       "node",
       "data-cap",
       "--root",
       fixtureRoot,
-      "--include",
-      "features/payments/**",
-      "--flow",
-      "docs/flow",
+      "--evidence",
+      "docs/data.evidence.json",
     ]
+    process.argv = [...flags]
+    await main()
 
+    const evidencePath = path.join(fixtureRoot, "docs/data.evidence.json")
+    const before = await fs.readFile(evidencePath, "utf8")
+
+    await write(
+      "features/billing/billing.ts",
+      `import { createData, documentData } from "data-cap";
+const fields = { plan: "" };
+export const billingCapability = createData({ fields: fields });
+documentData({ fields: fields }, { owner: "billing-team" });
+`,
+    )
+
+    writes = []
+    process.argv = [...flags, "--check"]
     await main()
 
     const output = writes.join("")
-    expect(output).toContain("[SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY]")
-    expect(output).toContain("Wrote data flow diagram set to: ")
-    await expect(
-      fs.access(path.join(fixtureRoot, "docs/flow/overview.md")),
-    ).resolves.toBeUndefined()
+    expect(output).toContain("STALE")
+    expect(output).toContain("artifact(s) are stale or missing")
+    expect(process.exitCode).toBe(1)
+    expect(await fs.readFile(evidencePath, "utf8")).toBe(before)
+  })
+
+  it("--check surfaces findings for visibility, escalated -- and, unlike --docs's DATA.md, --evidence's persisted JSON embeds the finding model itself, so a --strict-docs check against a non-strict generation genuinely IS stale, not just noisier", async () => {
+    // checkArtifacts() never throws (see check-artifacts.ts) -- it diffs
+    // computed content against disk and never itself blocks on a blocking
+    // (error-severity) finding, unlike a real (--check-less) run, which
+    // throws DataProjectGenerationError before writing anything. But
+    // "content" for --evidence is the full persisted EvidenceModel, and
+    // that model embeds `finding.findings` -- severities included -- so
+    // adding --strict-docs on the check side alone (without regenerating)
+    // changes the bytes `checkArtifacts` recomputes, and the artifact
+    // correctly reads as stale. (--docs's DATA.md has no such coupling:
+    // `generateDocumentation()`'s `findings` are a value returned
+    // alongside `.content`, never rendered into it, which is why the
+    // pre-ADR-0066 version of this test -- run against --docs -- could
+    // stay "up to date" under the same kind of flag mismatch.)
+    const flags = [
+      "node",
+      "data-cap",
+      "--root",
+      fixtureRoot,
+      "--evidence",
+      "docs/data.evidence.json",
+    ]
+    process.argv = [...flags]
+    await main()
+
+    writes = []
+    process.argv = [...flags, "--check", "--strict-docs"]
+    await main()
+
+    const output = writes.join("")
+    expect(output).toContain("STALE")
+    expect(output).toContain("[error] [CAPABILITY_MISSING_OWNER]") // surfaced for visibility, escalated
+    // --check's own exit code still reflects staleness, not the escalated
+    // severity directly -- it's just that here the two happen to coincide,
+    // since the escalation is precisely what makes the recomputed content
+    // differ from what's on disk.
+    expect(process.exitCode).toBe(1)
+  })
+
+  it("--json: ok:true (the call itself succeeded) even though checkResult.ok is false and the findings array carries the escalated finding", async () => {
+    const flags = [
+      "node",
+      "data-cap",
+      "--root",
+      fixtureRoot,
+      "--evidence",
+      "docs/data.evidence.json",
+    ]
+    process.argv = [...flags]
+    await main()
+
+    writes = []
+    process.argv = [...flags, "--check", "--strict-docs", "--json"]
+    await main()
+
+    const output = writes.join("")
+    const payload = JSON.parse(output) as {
+      ok: boolean
+      checkResult?: { ok: boolean; stale: string[] }
+      findings?: { code: string; severity: string }[]
+    }
+    expect(payload.ok).toBe(true)
+    expect(payload.checkResult?.ok).toBe(false)
+    expect(payload.checkResult?.stale).toEqual([path.join(fixtureRoot, "docs/data.evidence.json")])
+    expect(
+      payload.findings?.some(
+        (f) => f.code === "CAPABILITY_MISSING_OWNER" && f.severity === "error",
+      ),
+    ).toBe(true)
+    expect(process.exitCode).toBe(1)
   })
 })
 
@@ -448,14 +359,17 @@ describe("main() -- --exclude and --package flow through to generateDataArtifact
       "**/orphan/**",
       "--package",
       "@fixtures/does-not-exist",
-      "--location",
-      "src/generated/exclude-package.manifest.ts",
+      "--evidence",
+      "docs/data.evidence.json",
     ]
 
     await main()
 
     const output = writes.join("")
-    expect(output).toContain("Discovered 1 active capability(ies).") // orphan is filtered out by --exclude
+    const written = JSON.parse(
+      await fs.readFile(path.join(fixtureRoot, "docs/data.evidence.json"), "utf8"),
+    ) as { capability: { capabilities: readonly unknown[] } }
+    expect(written.capability.capabilities).toHaveLength(1) // orphan is filtered out by --exclude
     expect(output).toContain("parse warning(s):")
     expect(output).toContain("@fixtures/does-not-exist")
   })
@@ -487,8 +401,8 @@ describe("main() -- --tsconfig/--no-tsconfig flow through to generateDataArtifac
       "features/alias/**",
       "--include",
       "src/alias-consumer.ts",
-      "--ownership",
-      "docs/alias.OWNERSHIP.md",
+      "--evidence",
+      "docs/alias.evidence.json",
     ]
 
     await main()
@@ -507,8 +421,8 @@ describe("main() -- --tsconfig/--no-tsconfig flow through to generateDataArtifac
       "features/alias/**",
       "--include",
       "src/alias-consumer.ts",
-      "--ownership",
-      "docs/alias-disabled.OWNERSHIP.md",
+      "--evidence",
+      "docs/alias-disabled.evidence.json",
       "--no-tsconfig",
     ]
 
@@ -520,110 +434,15 @@ describe("main() -- --tsconfig/--no-tsconfig flow through to generateDataArtifac
   })
 })
 
-describe("main() -- manifest changes since last execution", () => {
-  it("reports everything as added on the first run, and 'No changes.' on an immediate rerun against the same source", async () => {
-    const location = "src/generated/changes.manifest.ts"
-    process.argv = ["node", "data-cap", "--root", fixtureRoot, "--location", location]
-
-    await main()
-    const firstOutput = writes.join("")
-    expect(firstOutput).toContain("Manifest changes since last execution:")
-    expect(firstOutput).toContain("Added:")
-    expect(firstOutput).toContain("userCapability")
-
-    writes.length = 0
-    await main()
-    const secondOutput = writes.join("")
-    expect(secondOutput).toContain("Manifest changes since last execution:")
-    expect(secondOutput).toContain("No changes.")
-    expect(secondOutput).not.toContain("Added:")
-  })
-
-  it("reports an Updated: section after a field is added to an existing capability", async () => {
-    const location = "src/generated/changes-updated.manifest.ts"
-    process.argv = ["node", "data-cap", "--root", fixtureRoot, "--location", location]
-    await main()
-    writes.length = 0
-
-    await write(
-      "features/identity/user.ts",
-      `import { createData, documentData } from "data-cap";
-
-const fields = { email: "", displayName: "" };
-
-export const userCapability = createData({ fields: fields });
-
-documentData({ fields: fields }, {
-  owner: "identity-team",
-  fields: { email: { description: "The user's email address." } },
-});
-`,
-    )
-
-    await main()
-    const output = writes.join("")
-    expect(output).toContain("Updated:")
-    expect(output).toContain("userCapability:")
-    expect(output).not.toContain("Added:")
-  })
-})
-
-describe("main() -- --check surfaces findings for visibility without changing its stale-only exit code", () => {
-  // checkArtifacts() never throws (see check-artifacts.ts) -- --check's own
-  // exit code reflects staleness only, per HELP_TEXT ("exits 1 if any is
-  // stale or missing"), even with --strict-docs escalating a finding to
-  // error severity. This is a deliberate scope boundary from the approved
-  // plan, not an oversight: --check answers "did someone forget to
-  // regenerate," a different question from "does the content pass strict
-  // review" (which the real, --check-less run's DataProjectGenerationError
-  // throw already answers).
-  it("still reports up to date and exits 0 even with --strict-docs, once the docs artifact is actually current", async () => {
-    const flags = ["node", "data-cap", "--root", fixtureRoot, "--docs", "docs/DATA.md"]
-    process.argv = [...flags]
-    await main()
-
-    writes = []
-    process.argv = [...flags, "--check", "--strict-docs"]
-    await main()
-
-    const output = writes.join("")
-    expect(output).toContain("All generated artifacts are up to date.")
-    expect(output).toContain("[CAPABILITY_MISSING_OWNER]") // surfaced for visibility
-    expect(process.exitCode).toBe(0)
-  })
-
-  it("--json: ok:true with a checkResult.ok:true and the findings array populated, even with --strict-docs", async () => {
-    const flags = ["node", "data-cap", "--root", fixtureRoot, "--docs", "docs/DATA.md"]
-    process.argv = [...flags]
-    await main()
-
-    writes = []
-    process.argv = [...flags, "--check", "--strict-docs", "--json"]
-    await main()
-
-    const output = writes.join("")
-    const payload = JSON.parse(output) as {
-      ok: boolean
-      checkResult?: { ok: boolean; stale: string[] }
-      findings?: { code: string }[]
-    }
-    expect(payload.ok).toBe(true)
-    expect(payload.checkResult?.ok).toBe(true)
-    expect(payload.checkResult?.stale).toEqual([])
-    expect(payload.findings?.some((f) => f.code === "CAPABILITY_MISSING_OWNER")).toBe(true)
-    expect(process.exitCode).toBe(0)
-  })
-})
-
-describe("main() -- normal-flow non---json error propagation", () => {
+describe("main() -- normal-flow non-json error propagation", () => {
   it("propagates the raw error via a bare throw when --json was not passed", async () => {
     process.argv = [
       "node",
       "data-cap",
       "--root",
       fixtureRoot,
-      "--docs",
-      "docs/DATA.md",
+      "--evidence",
+      "docs/data.evidence.json",
       "--strict-docs",
     ]
 
@@ -668,7 +487,7 @@ describe("main() -- init subcommand dispatch", () => {
     process.argv = ["node", "data-cap", "--help"]
     await main()
     const output = writes.join("")
-    expect(output).toContain("data-cap - generate a manifest")
+    expect(output).toContain("data-cap - generate a persisted Evidence Model")
     expect(output).not.toContain("Usage: data-cap init\n\nScaffolds")
   })
 })

@@ -59,8 +59,8 @@ documentData({ fields: fields }, { owner: "payments-team", fields: { cardToken: 
       const payload = runCli([
         "--root",
         fixtureRoot,
-        "--location",
-        "src/generated/data.manifest.ts",
+        "--evidence",
+        "docs/data.evidence.json",
         "--json",
       ])
       expect(validate(payload)).toBe(true)
@@ -69,7 +69,7 @@ documentData({ fields: fields }, { owner: "payments-team", fields: { cardToken: 
       await fs.rm(fixtureRoot, { recursive: true, force: true })
     })
 
-    it("a real failure payload (no target flags) validates against the schema", () => {
+    it("a real failure payload (no --evidence) validates against the schema", () => {
       const payload = runCli(["--json"])
       expect(validate(payload)).toBe(true)
       if (!validate(payload)) console.error(validate.errors)
@@ -90,8 +90,8 @@ documentData({ fields: fields }, { owner: "payments-team", fields: { cardToken: 
       const payload = runCli([
         "--root",
         fixtureRoot,
-        "--location",
-        "src/generated/data.manifest.ts",
+        "--evidence",
+        "docs/data.evidence.json",
         "--check",
         "--json",
       ])
@@ -102,7 +102,14 @@ documentData({ fields: fields }, { owner: "payments-team", fields: { cardToken: 
       await fs.rm(fixtureRoot, { recursive: true, force: true })
     })
 
-    it("a real --flow payload (Data Flow Diagram + Security Data-Flow Review) validates against the schema", async () => {
+    it("a real payload with a sensitive-boundary finding (via directly-called generateFlow -- no longer a CLI flag, ADR 0066) validates against the schema", async () => {
+      // --flow is no longer a CLI flag -- `result.flow` is always undefined
+      // from a real CLI run now, so this exercises the schema's tolerance
+      // for that shape (still declared, per the library-level
+      // GenerateDataArtifactsOptions/ReportResult, just unreachable through
+      // this CLI) via a real --evidence run whose Evidence Model still
+      // carries a SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY-equivalent
+      // ownership/sensitivity finding from the always-on static rules pass.
       await fs.rm(fixtureRoot, { recursive: true, force: true })
       await write(
         "features/payments/payments.ts",
@@ -122,9 +129,16 @@ documentData({ fields: fields }, {
 `,
       )
 
-      const payload = runCli(["--root", fixtureRoot, "--flow", "docs/flow", "--json"])
+      const payload = runCli([
+        "--root",
+        fixtureRoot,
+        "--evidence",
+        "docs/data.evidence.json",
+        "--json",
+      ])
       expect(validate(payload)).toBe(true)
       if (!validate(payload)) console.error(validate.errors)
+      expect((payload as { flow?: unknown }).flow).toBeUndefined()
 
       await fs.rm(fixtureRoot, { recursive: true, force: true })
     })
