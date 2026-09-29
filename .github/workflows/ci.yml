@@ -5,12 +5,14 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-  # Lets a bot-authored branch (the Changesets release PR, a benchmark-results
-  # commit) get real CI without a human push -- GitHub never fires `push`/
-  # `pull_request` for a branch whose only commits were made with the default
-  # `GITHUB_TOKEN` (an anti-recursion guard), but a `gh workflow run` dispatch
-  # call from that same automation IS allowed to start a run, and its jobs'
-  # check results still attach to that branch's head SHA normally.
+  # Lets a bot-authored branch with no human push get real CI on demand --
+  # internal-package-contract's dependency-pin-sync.yml (called from this
+  # repo's own sync-internal-package-contract.yml) dispatches this explicitly
+  # after opening its pin-bump PR. (This is NOT needed for the benchmark-pr
+  # job's own commit below -- that one genuinely fires its own `pull_request:
+  # synchronize` event, contrary to what an earlier version of this comment
+  # assumed; see benchmark-pr's own placement/ordering for how that's
+  # actually handled now.)
   workflow_dispatch:
 
 # Explicit least-privilege default so every job's GITHUB_TOKEN scope is a
@@ -27,15 +29,152 @@ permissions:
 # NOTE: a job for docs deployment is added once Phase 9's docs site is
 # finalized -- see specs/architecture.md.
 jobs:
+  # Runs first, on every PR, and -- when the PR's own diff touches benchmarked
+  # code -- commits refreshed results straight onto the PR branch (see its own
+  # steps below for why). Every other job in this workflow now `needs` this
+  # one and checks out the PR branch's own live head rather than the
+  # originally-triggered SHA, so whatever this job just committed is exactly
+  # what `lint`/`contract`/etc. actually validate -- one real commit, one
+  # real CI pass, not two. This used to be a separate `benchmarks.yml`
+  # workflow running in parallel with this one, with a `carry-forward-
+  # required-checks.sh` step trying to copy this workflow's own results onto
+  # the benchmark commit after the fact -- that design assumed a
+  # `GITHUB_TOKEN`-authored push never fires its own `pull_request:
+  # synchronize` (an anti-recursion guard GitHub documents), but in practice
+  # it does, which meant every benchmark commit re-triggered a brand-new,
+  # separately-gated CI run on top of the carry-forward attempt -- a loop
+  # that could re-trigger indefinitely on real benchmark-timing noise between
+  # runs. Sequencing it first here, in the same workflow, removes the race
+  # (and the carry-forward script) entirely: there's only ever one workflow
+  # run per real push, and it validates the state that actually gets merged.
+  benchmark-pr:
+    # Same-repo PRs only -- a fork PR's GITHUB_TOKEN is read-only here, so the
+    # comment/commit/push steps below would just fail loudly; `lint`/`verify`
+    # below already treat this job being skipped as a pass (see their own
+    # `if:`), so a fork PR still gets full CI, just without the benchmark
+    # refresh/comment. `github.actor != 'github-actions[bot]'` is the other
+    # half of breaking the loop this job's own module comment describes: once
+    # this job's own commit becomes the HEAD that re-triggers this workflow,
+    # this run's own benchmark-pr sees itself as the actor and skips
+    # remeasuring entirely, so there is nothing left to recommit and no
+    # further re-trigger -- bounding a real push to at most one extra
+    # re-trigger, never an unbounded chain.
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    # Committing refreshed results onto the PR branch below is a real write
+    # to that PR's own history -- serialize per-PR so two overlapping runs (a
+    # fast second push right behind the first) never race that push, and
+    # cancel a stale one outright once a newer commit supersedes it.
+    concurrency:
+      group: benchmarks-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
+    permissions:
+      contents: write
+      pull-requests: write
+      statuses: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22.x
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+
+      - working-directory: benchmarks/performance-runtime
+        run: npm install
+      - working-directory: benchmarks/performance-buildtime
+        run: npm install
+
+      - name: Snapshot main's committed results as "previous"
+        run: |
+          git show origin/main:benchmarks/performance-runtime/results.json > /tmp/previous-runtime.json || echo '{}' > /tmp/previous-runtime.json
+          git show origin/main:benchmarks/performance-buildtime/results.json > /tmp/previous-buildtime.json || echo '{}' > /tmp/previous-buildtime.json
+
+      - run: npm run benchmark
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: benchmark-results
+          path: |
+            benchmarks/performance-runtime/results.json
+            benchmarks/performance-runtime/RESULTS.md
+            benchmarks/performance-buildtime/results.json
+            benchmarks/performance-buildtime/RESULTS.md
+          retention-days: 14
+
+      - name: Post or update the marker-tagged summary comment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node benchmarks/render-benchmark-summary.mjs /tmp/previous-runtime.json benchmarks/performance-runtime/results.json /tmp/previous-buildtime.json benchmarks/performance-buildtime/results.json > /tmp/summary.md
+          PR="${{ github.event.pull_request.number }}"
+          EXISTING=$(gh api "repos/${{ github.repository }}/issues/${PR}/comments" --jq '.[] | select(.body | startswith("<!-- data-cap-benchmark-summary -->")) | .id' | head -n1)
+          if [ -n "$EXISTING" ]; then
+            gh api "repos/${{ github.repository }}/issues/comments/${EXISTING}" -X PATCH -f body=@/tmp/summary.md
+          else
+            gh api "repos/${{ github.repository }}/issues/${PR}/comments" -X POST -f body=@/tmp/summary.md
+          fi
+
+      - name: Commit refreshed results into this PR, only when it touches benchmarked code
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # Passed through the environment rather than interpolated straight into
+          # `run` -- a branch ref is attacker-influenced input and must never be
+          # spliced into the shell command text.
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          CHANGED=$(git diff --name-only origin/main...HEAD)
+          RELEVANT=$(echo "$CHANGED" | grep -E '^(src/|benchmarks/)' | grep -vE '^benchmarks/(performance-[^/]+/(results\.json|RESULTS\.md)$|history/)' || true)
+          if [ -z "$RELEVANT" ]; then
+            echo "This PR doesn't touch benchmarked code paths -- comment posted above, nothing to commit."
+            exit 0
+          fi
+
+          node benchmarks/append-benchmark-history.mjs benchmarks/performance-runtime/results.json benchmarks/history/runtime.json
+          node benchmarks/append-benchmark-history.mjs benchmarks/performance-buildtime/results.json benchmarks/history/buildtime.json
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add benchmarks/performance-runtime/results.json benchmarks/performance-runtime/RESULTS.md benchmarks/performance-buildtime/results.json benchmarks/performance-buildtime/RESULTS.md benchmarks/history/runtime.json benchmarks/history/buildtime.json
+          if git diff --cached --quiet; then
+            echo "Freshly measured results match what's already committed -- nothing to push."
+            exit 0
+          fi
+          git commit -m "chore(benchmarks): refresh results.json"
+          git push origin HEAD:"$HEAD_REF"
+
   # Dev-tooling checks (lint/format/API-report) are a property of the source
   # repo, not the published package's own runtime behavior across Node
   # versions -- unlike `verify` below, running them once on a single modern
   # Node version is correct, not a coverage gap. Splitting them out here
   # also keeps them independent of `verify`'s own Node-version floor.
   lint:
+    needs: [benchmark-pr]
+    # A skipped dependency isn't a passing one by GitHub's own default job
+    # condition -- without this, `lint` (and `verify` below) would themselves
+    # always skip whenever benchmark-pr does (every push-to-main run, every
+    # fork PR), taking every job that needs them, including `contract`, down
+    # with them. `always()` opts back into running on a skip; the explicit
+    # result check still blocks on a genuine benchmark-pr failure.
+    if: always() && (needs.benchmark-pr.result == 'success' || needs.benchmark-pr.result == 'skipped')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          # refs/pull/<N>/head, not the branch name -- resolves for a fork
+          # PR too (whose branch lives in the fork, not this repo), and is
+          # the PR's real head commit rather than a speculative merge with
+          # main. Falls back to the pushed ref outside pull_request events.
+          ref: ${{ github.event_name == 'pull_request' && format('refs/pull/{0}/head', github.event.pull_request.number) || github.ref }}
 
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
@@ -58,12 +197,17 @@ jobs:
   # so 18.x was never actually being verified, just failing to boot. The
   # `engines.node` promise moved to match what's genuinely tested.
   verify:
+    needs: [benchmark-pr]
+    # Same reasoning as `lint`'s own identical condition above.
+    if: always() && (needs.benchmark-pr.result == 'success' || needs.benchmark-pr.result == 'skipped')
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: [20.x, 22.x, 24.x]
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && format('refs/pull/{0}/head', github.event.pull_request.number) || github.ref }}
 
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
@@ -108,6 +252,7 @@ jobs:
       # fetch-depth: 0 -- the Commits check reads origin/main..HEAD.
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
+          ref: ${{ github.event_name == 'pull_request' && format('refs/pull/{0}/head', github.event.pull_request.number) || github.ref }}
           fetch-depth: 0
           persist-credentials: false
 

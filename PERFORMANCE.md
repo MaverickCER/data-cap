@@ -89,7 +89,7 @@ npm run build
 npm run benchmark
 ```
 
-`.github/workflows/benchmarks.yml` runs this on every pull request and posts the results as a PR comment
+`.github/workflows/ci.yml (benchmark-pr job)` runs this on every pull request and posts the results as a PR comment
 (marker-tagged, updated in place rather than duplicated on each push), diffed against the currently-committed
 `results.json` for each example — **highlighting-only, never a merge gate**. A run that regresses past its
 benchmark's own threshold in [`benchmarks/benchmark-fixtures/budgets.mjs`](benchmarks/benchmark-fixtures/budgets.mjs)
