@@ -1,7 +1,7 @@
 {
   "metadata": {
     "environment": {
-      "cpuModel": "AMD EPYC 9V45 96-Core Processor",
+      "cpuModel": "AMD EPYC 7763 64-Core Processor",
       "cpuArchitecture": "x64",
       "processArch": "x64",
       "logicalCores": 4,
@@ -9,7 +9,7 @@
       "cpuFrequencyMHz": 0,
       "platform": "linux",
       "osRelease": "6.17.0-1022-azure",
-      "totalMemoryMb": 15990,
+      "totalMemoryMb": 15994,
       "nodeVersion": "v22.23.2",
       "timezoneOffsetMinutes": 0,
       "isCI": true,
@@ -31,9 +31,9 @@
       "gcEnabled": true
     },
     "timing": {
-      "startedAtUtc": "2026-09-29T14:29:57.727Z",
-      "finishedAtUtc": "2026-09-29T14:30:09.162Z",
-      "totalSuiteDurationMs": 11435
+      "startedAtUtc": "2026-09-29T14:36:01.815Z",
+      "finishedAtUtc": "2026-09-29T14:36:17.990Z",
+      "totalSuiteDurationMs": 16175
     },
     "generation": {
       "fixtureSeed": "deterministic-index-v1",
@@ -46,7 +46,7 @@
       "dataCapVersion": "0.4.0"
     },
     "git": {
-      "gitCommit": "eb74baadfda925fbe71f8df04822f3684f9554be",
+      "gitCommit": "920e4698b91051983ec5f6485502ce5b7cb8432c",
       "gitBranch": "fix/usage-scan-and-change-detection-unconditional",
       "gitDirty": true
     },
@@ -224,35 +224,35 @@
             "capabilities": 10
           },
           "fixtureHash": "sha256:082a6c7fd6859fd03473d77122b602d9d32ca64b09b1692e71e13e7744252a14",
-          "fixtureGenerationMs": 2,
+          "fixtureGenerationMs": 4,
           "totalMs": {
-            "minMs": 31.64286900000002,
-            "medianMs": 34.40861000000001,
-            "p95Ms": 39.500422000000015,
-            "maxMs": 39.500422000000015,
-            "stdDevMs": 1.8781999294868703,
+            "minMs": 50.46240899999998,
+            "medianMs": 53.02579700000001,
+            "p95Ms": 60.48396500000001,
+            "maxMs": 60.48396500000001,
+            "stdDevMs": 2.4861099825866533,
             "iterations": 15,
             "warmupIterations": 0
           },
           "moduleEvalMs": {
-            "minMs": 5.874243,
-            "medianMs": 6.594932999999999,
-            "p95Ms": 8.944980000000001,
-            "maxMs": 8.944980000000001,
-            "stdDevMs": 0.7228585746404524,
+            "minMs": 10.396013,
+            "medianMs": 11.598476000000002,
+            "p95Ms": 12.250848000000001,
+            "maxMs": 12.250848000000001,
+            "stdDevMs": 0.609743462033608,
             "iterations": 15,
             "warmupIterations": 0
           },
           "memoryBeforeBytes": {
-            "rssBytes": 45023232,
+            "rssBytes": 45199360,
             "heapUsedBytes": 3944992,
             "heapTotalBytes": 5349376,
             "externalBytes": 1386641,
             "arrayBuffersBytes": 10511
           },
           "memoryAfterBytes": {
-            "rssBytes": 55144448,
-            "heapUsedBytes": 4488464,
+            "rssBytes": 55320576,
+            "heapUsedBytes": 4492352,
             "heapTotalBytes": 6660096,
             "externalBytes": 1477914,
             "arrayBuffersBytes": 18703
@@ -265,22 +265,22 @@
             "capabilities": 100
           },
           "fixtureHash": "sha256:bff8b482a500db54828719a567652e954c7d7300859514f220a754bb27deea1b",
-          "fixtureGenerationMs": 8,
+          "fixtureGenerationMs": 18,
           "totalMs": {
-            "minMs": 45.79040599999985,
-            "medianMs": 49.02767800000004,
-            "p95Ms": 78.12527399999999,
-            "maxMs": 78.12527399999999,
-            "stdDevMs": 10.353496354038404,
+            "minMs": 84.49465899999996,
+            "medianMs": 86.34229600000026,
+            "p95Ms": 90.04642799999965,
+            "maxMs": 90.04642799999965,
+            "stdDevMs": 1.2533176542508797,
             "iterations": 15,
             "warmupIterations": 0
           },
           "moduleEvalMs": {
-            "minMs": 19.571095,
-            "medianMs": 20.259423999999996,
-            "p95Ms": 38.268277,
-            "maxMs": 38.268277,
-            "stdDevMs": 4.980595445250343,
+            "minMs": 43.149953999999994,
+            "medianMs": 44.266335999999995,
+            "p95Ms": 45.72538899999999,
+            "maxMs": 45.72538899999999,
+            "stdDevMs": 0.753222798467109,
             "iterations": 15,
             "warmupIterations": 0
           },
@@ -292,9 +292,9 @@
             "arrayBuffersBytes": 10511
           },
           "memoryAfterBytes": {
-            "rssBytes": 59084800,
-            "heapUsedBytes": 7367360,
-            "heapTotalBytes": 10067968,
+            "rssBytes": 59121664,
+            "heapUsedBytes": 7352688,
+            "heapTotalBytes": 10330112,
             "externalBytes": 1477914,
             "arrayBuffersBytes": 41471
           }
@@ -306,35 +306,35 @@
             "capabilities": 500
           },
           "fixtureHash": "sha256:5a2f7136a3f1c039d57faba165efeef18f2b50fd2ef73523daeaec7516f33407",
-          "fixtureGenerationMs": 46,
+          "fixtureGenerationMs": 106,
           "totalMs": {
-            "minMs": 110.5626100000004,
-            "medianMs": 117.2426059999998,
-            "p95Ms": 153.64592200000016,
-            "maxMs": 153.64592200000016,
-            "stdDevMs": 9.554747239334322,
-            "iterations": 15,
+            "minMs": 229.3999530000001,
+            "medianMs": 235.88426400000026,
+            "p95Ms": 240.9580460000002,
+            "maxMs": 240.9580460000002,
+            "stdDevMs": 3.8149954351690827,
+            "iterations": 9,
             "warmupIterations": 0
           },
           "moduleEvalMs": {
-            "minMs": 75.87369000000001,
-            "medianMs": 80.645849,
-            "p95Ms": 114.39355999999998,
-            "maxMs": 114.39355999999998,
-            "stdDevMs": 8.727925333878964,
-            "iterations": 15,
+            "minMs": 178.866127,
+            "medianMs": 183.253813,
+            "p95Ms": 186.98195700000002,
+            "maxMs": 186.98195700000002,
+            "stdDevMs": 2.5435516334168775,
+            "iterations": 9,
             "warmupIterations": 0
           },
           "memoryBeforeBytes": {
-            "rssBytes": 45199360,
+            "rssBytes": 45191168,
             "heapUsedBytes": 3944992,
             "heapTotalBytes": 5349376,
             "externalBytes": 1386641,
             "arrayBuffersBytes": 10511
           },
           "memoryAfterBytes": {
-            "rssBytes": 75235328,
-            "heapUsedBytes": 19738840,
+            "rssBytes": 75436032,
+            "heapUsedBytes": 19750264,
             "heapTotalBytes": 29990912,
             "externalBytes": 1477914,
             "arrayBuffersBytes": 41471
@@ -348,11 +348,11 @@
           "id": "runtime-buildData-fixed-s1-v1",
           "status": "completed",
           "durationMs": {
-            "minMs": 0.036195000000134314,
-            "medianMs": 0.03825700000015786,
-            "p95Ms": 0.05686500000001615,
-            "maxMs": 0.07978899999989153,
-            "stdDevMs": 0.007966042822372753,
+            "minMs": 0.06839799999943352,
+            "medianMs": 0.07407899999998335,
+            "p95Ms": 0.10988600000018778,
+            "maxMs": 0.13560400000005757,
+            "stdDevMs": 0.013339270475119487,
             "iterations": 100,
             "warmupIterations": 3
           }
@@ -368,11 +368,11 @@
             "itemCount": 200
           },
           "durationMs": {
-            "minMs": 0.07987999999977546,
-            "medianMs": 0.13656500000024607,
-            "p95Ms": 0.33811599999989994,
-            "maxMs": 0.3427440000000388,
-            "stdDevMs": 0.045340877933719013,
+            "minMs": 0.1493799999998373,
+            "medianMs": 0.2689840000002732,
+            "p95Ms": 0.7099799999996321,
+            "maxMs": 0.7220319999996718,
+            "stdDevMs": 0.10303731692803948,
             "iterations": 60,
             "warmupIterations": 3
           }
@@ -384,11 +384,11 @@
             "itemCount": 2000
           },
           "durationMs": {
-            "minMs": 1.2197970000006535,
-            "medianMs": 1.2963720000007015,
-            "p95Ms": 1.893966999999975,
-            "maxMs": 1.993865999999798,
-            "stdDevMs": 0.18236761605944513,
+            "minMs": 2.44524999999976,
+            "medianMs": 2.671132999999827,
+            "p95Ms": 2.8062449999997625,
+            "maxMs": 2.8135700000002544,
+            "stdDevMs": 0.0833748013214011,
             "iterations": 25,
             "warmupIterations": 2
           }
@@ -400,11 +400,11 @@
             "itemCount": 20000
           },
           "durationMs": {
-            "minMs": 11.218123999999989,
-            "medianMs": 12.581906999999774,
-            "p95Ms": 13.468474000000242,
-            "maxMs": 13.468474000000242,
-            "stdDevMs": 0.5308372678010127,
+            "minMs": 21.25266499999998,
+            "medianMs": 22.435660999999527,
+            "p95Ms": 24.77008299999943,
+            "maxMs": 24.77008299999943,
+            "stdDevMs": 0.7956680012693023,
             "iterations": 12,
             "warmupIterations": 1
           }
@@ -420,11 +420,11 @@
             "itemCount": 200
           },
           "durationMs": {
-            "minMs": 0.007672000000184198,
-            "medianMs": 0.008171999999831314,
-            "p95Ms": 0.019117999999707536,
-            "maxMs": 0.08509700000013254,
-            "stdDevMs": 0.010297136691353315,
+            "minMs": 0.01574999999957072,
+            "medianMs": 0.016319999999723223,
+            "p95Ms": 0.03413300000011077,
+            "maxMs": 0.12185800000042946,
+            "stdDevMs": 0.014343949990050646,
             "iterations": 60,
             "warmupIterations": 3
           }
@@ -436,11 +436,11 @@
             "itemCount": 2000
           },
           "durationMs": {
-            "minMs": 0.007561000000350759,
-            "medianMs": 0.008112000000437547,
-            "p95Ms": 0.015433000000484753,
-            "maxMs": 0.01880799999980809,
-            "stdDevMs": 0.002551919011265829,
+            "minMs": 0.013985999999931664,
+            "medianMs": 0.0165210000004663,
+            "p95Ms": 0.017683000000033644,
+            "maxMs": 0.3911130000005869,
+            "stdDevMs": 0.07343786196065136,
             "iterations": 25,
             "warmupIterations": 2
           }
@@ -452,11 +452,11 @@
             "itemCount": 20000
           },
           "durationMs": {
-            "minMs": 0.011918000000150641,
-            "medianMs": 0.014542000000801636,
-            "p95Ms": 0.02793199999996432,
-            "maxMs": 0.02793199999996432,
-            "stdDevMs": 0.004449071834314887,
+            "minMs": 0.018495000000257278,
+            "medianMs": 0.025888999998642248,
+            "p95Ms": 0.03072700000120676,
+            "maxMs": 0.03072700000120676,
+            "stdDevMs": 0.003633091898649536,
             "iterations": 12,
             "warmupIterations": 1
           }
@@ -472,11 +472,11 @@
             "itemCount": 200
           },
           "durationMs": {
-            "minMs": 0.11675500000001193,
-            "medianMs": 0.12300499999992098,
-            "p95Ms": 0.24712100000033388,
-            "maxMs": 0.2687430000000859,
-            "stdDevMs": 0.0537281094285946,
+            "minMs": 0.15368800000032934,
+            "medianMs": 0.24866600000041217,
+            "p95Ms": 0.448870999999599,
+            "maxMs": 0.5294710000007399,
+            "stdDevMs": 0.09194078875076915,
             "iterations": 60,
             "warmupIterations": 3
           }
@@ -488,11 +488,11 @@
             "itemCount": 2000
           },
           "durationMs": {
-            "minMs": 0.7984759999999369,
-            "medianMs": 0.8227420000002894,
-            "p95Ms": 0.8615209999998115,
-            "maxMs": 0.8750810000001366,
-            "stdDevMs": 0.017672733678404755,
+            "minMs": 1.3782209999999395,
+            "medianMs": 1.4073960000005172,
+            "p95Ms": 1.4221239999997124,
+            "maxMs": 1.604855999999927,
+            "stdDevMs": 0.04193017540717615,
             "iterations": 25,
             "warmupIterations": 2
           }
@@ -504,11 +504,11 @@
             "itemCount": 20000
           },
           "durationMs": {
-            "minMs": 8.449626999999964,
-            "medianMs": 8.713932999999997,
-            "p95Ms": 18.256916999999703,
-            "maxMs": 18.256916999999703,
-            "stdDevMs": 2.673106374857158,
+            "minMs": 14.284023000000161,
+            "medianMs": 14.537506999999096,
+            "p95Ms": 15.21632900000077,
+            "maxMs": 15.21632900000077,
+            "stdDevMs": 0.2370793093596711,
             "iterations": 12,
             "warmupIterations": 1
           }
@@ -524,11 +524,11 @@
             "itemCount": 200
           },
           "durationMs": {
-            "minMs": 0.2075910000003205,
-            "medianMs": 0.2225429999998596,
-            "p95Ms": 0.37190700000019206,
-            "maxMs": 0.4682109999998829,
-            "stdDevMs": 0.04907725736821113,
+            "minMs": 0.40365599999950064,
+            "medianMs": 0.44142699999974866,
+            "p95Ms": 0.678541000000223,
+            "maxMs": 1.1924929999995584,
+            "stdDevMs": 0.113582722513645,
             "iterations": 60,
             "warmupIterations": 3
           }
@@ -540,11 +540,11 @@
             "itemCount": 2000
           },
           "durationMs": {
-            "minMs": 1.3985950000005687,
-            "medianMs": 1.4536870000001727,
-            "p95Ms": 1.6200770000004923,
-            "maxMs": 1.6349789999994755,
-            "stdDevMs": 0.06407651620565266,
+            "minMs": 1.7232770000000528,
+            "medianMs": 2.8860560000002806,
+            "p95Ms": 3.1615710000005492,
+            "maxMs": 3.249996999999894,
+            "stdDevMs": 0.27032222748092927,
             "iterations": 25,
             "warmupIterations": 2
           }
@@ -556,11 +556,11 @@
             "itemCount": 20000
           },
           "durationMs": {
-            "minMs": 11.553014999999505,
-            "medianMs": 12.64494999999988,
-            "p95Ms": 13.461835000000065,
-            "maxMs": 13.461835000000065,
-            "stdDevMs": 0.5125537982237024,
+            "minMs": 21.589084999999614,
+            "medianMs": 22.3955449999994,
+            "p95Ms": 23.04673399999956,
+            "maxMs": 23.04673399999956,
+            "stdDevMs": 0.3578611371862899,
             "iterations": 12,
             "warmupIterations": 1
           }
@@ -573,11 +573,11 @@
           "id": "runtime-canonicalize-fixed-s1-v1",
           "status": "completed",
           "durationMs": {
-            "minMs": 0.008643000000120082,
-            "medianMs": 0.009524000000055821,
-            "p95Ms": 0.025317999999970198,
-            "maxMs": 0.0568650000004709,
-            "stdDevMs": 0.007430004315678139,
+            "minMs": 0.017271999999138643,
+            "medianMs": 0.020768000000316533,
+            "p95Ms": 0.04195900000013353,
+            "maxMs": 0.06116500000098313,
+            "stdDevMs": 0.007751807313307915,
             "iterations": 100,
             "warmupIterations": 3
           }
@@ -594,11 +594,11 @@
             "concurrency": 25
           },
           "durationMs": {
-            "minMs": 0.2587280000007013,
-            "medianMs": 0.44103999999970256,
-            "p95Ms": 0.5235940000002302,
-            "maxMs": 0.7208799999998519,
-            "stdDevMs": 0.06106205206986143,
+            "minMs": 0.465371000000232,
+            "medianMs": 0.8507829999998648,
+            "p95Ms": 0.9751369999994495,
+            "maxMs": 1.006455000000642,
+            "stdDevMs": 0.09613589069625712,
             "iterations": 100,
             "warmupIterations": 3
           }
@@ -615,12 +615,12 @@
             "concurrency": 25
           },
           "durationMs": {
-            "minMs": 0.6860739999992802,
-            "medianMs": 0.7281330000005255,
-            "p95Ms": 1.0443379999996978,
-            "maxMs": 1.0443379999996978,
-            "stdDevMs": 0.0946306541709256,
-            "iterations": 13,
+            "minMs": 0.9755780000014056,
+            "medianMs": 1.041390999998839,
+            "p95Ms": 1.0893800000012561,
+            "maxMs": 1.0893800000012561,
+            "stdDevMs": 0.030279001062720155,
+            "iterations": 10,
             "warmupIterations": 3
           }
         }
@@ -636,12 +636,12 @@
             "getterCount": 6
           },
           "durationMs": {
-            "minMs": 0.6822410000004311,
-            "medianMs": 1.1949660000009317,
-            "p95Ms": 1.2526029999989987,
-            "maxMs": 1.2659930000008899,
-            "stdDevMs": 0.10340838229615784,
-            "iterations": 52,
+            "minMs": 1.3953029999993305,
+            "medianMs": 2.094231999999465,
+            "p95Ms": 2.2356280000003608,
+            "maxMs": 3.276898000000074,
+            "stdDevMs": 0.2378523351313474,
+            "iterations": 35,
             "warmupIterations": 3
           }
         }
