@@ -2225,6 +2225,95 @@
           }
         }
       }
+    },
+    {
+      "timestamp": "2026-09-29T14:39:41.849Z",
+      "gitCommit": "b08aca9a8398e288c595f3a1f1546b975681c3c7",
+      "dataCapVersion": "0.4.0",
+      "benchmarkSuiteVersion": 1,
+      "runner": "GitHub Actions",
+      "measurements": {
+        "cold-start": {
+          "baseline": {
+            "medianMs": 35.31424999999999
+          },
+          "stress": {
+            "medianMs": 51.291691000000014
+          },
+          "extreme": {
+            "medianMs": 121.73853499999996
+          }
+        },
+        "buildData": {
+          "fixed": {
+            "medianMs": 0.04022100000020146
+          }
+        },
+        "commitAuthoritative-array-replace": {
+          "baseline": {
+            "medianMs": 0.14057199999979275
+          },
+          "stress": {
+            "medianMs": 1.506014000000505
+          },
+          "extreme": {
+            "medianMs": 13.07594699999936
+          }
+        },
+        "commitAuthoritative-leaf": {
+          "baseline": {
+            "medianMs": 0.008642999999665335
+          },
+          "stress": {
+            "medianMs": 0.00941400000010617
+          },
+          "extreme": {
+            "medianMs": 0.024688000000423926
+          }
+        },
+        "reconcileArrayInfo": {
+          "baseline": {
+            "medianMs": 0.12819300000001022
+          },
+          "stress": {
+            "medianMs": 0.8021010000002207
+          },
+          "extreme": {
+            "medianMs": 9.515373000000181
+          }
+        },
+        "getterDispatch-cold": {
+          "baseline": {
+            "medianMs": 0.2560460000004241
+          },
+          "stress": {
+            "medianMs": 1.5672250000006898
+          },
+          "extreme": {
+            "medianMs": 13.571955999999773
+          }
+        },
+        "canonicalize": {
+          "fixed": {
+            "medianMs": 0.010104999999384745
+          }
+        },
+        "dedupeFanIn": {
+          "fixed": {
+            "medianMs": 0.4869150000013178
+          }
+        },
+        "dedupeFanIn-independent": {
+          "fixed": {
+            "medianMs": 0.7335869999988063
+          }
+        },
+        "runGettersFanOut": {
+          "fixed": {
+            "medianMs": 1.2871720000002824
+          }
+        }
+      }
     }
   ]
 }
