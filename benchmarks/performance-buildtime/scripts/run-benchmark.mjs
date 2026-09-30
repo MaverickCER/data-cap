@@ -22,8 +22,18 @@ import fs from "node:fs/promises"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 
-import { discoverCapabilityFiles, generateDataArtifacts } from "data-cap/build"
+import {
+  discoverCapabilityFiles,
+  generateDataArtifacts,
+  linkCapabilityFiles,
+  buildInventory,
+  buildLifecycleModel,
+  buildOwnershipModel,
+  buildEvidenceModel,
+  UNOWNED,
+} from "data-cap/build"
 import { nodeBuildFileSystem } from "data-cap/node"
+import { defineEvidenceProjection } from "data-cap/evidence"
 
 import { generateBuildtimeFixtures } from "../../benchmark-fixtures/generator.mjs"
 import { hashFixtureTree } from "../../benchmark-fixtures/fixture-hash.mjs"
@@ -123,11 +133,85 @@ async function runArtifactsTier(tierName, definitionVersion) {
   }
 }
 
+/**
+ * `data-cap/evidence`'s defineEvidenceProjection -- previously zero
+ * benchmark coverage for a whole separate, isomorphic, zero-dep entry
+ * point. Defines its own small multi-field projection (mirroring
+ * `src/build/reference-projections.ts`'s own `projectAuditEvidence`, not
+ * importing that ready-made instance) specifically so this benchmark
+ * exercises the public `data-cap/evidence` entry point directly -- the same
+ * "full package" resolution discipline every other benchmark in this repo
+ * already follows.
+ */
+const projectBenchmarkEvidence = defineEvidenceProjection({
+  capabilityCount: (evidence) => evidence.capability.capabilities.length,
+  fieldCount: (evidence) =>
+    evidence.capability.capabilities.reduce((sum, capability) => sum + capability.fields.length, 0),
+  ownedCapabilities: (evidence) =>
+    evidence.ownership?.entries
+      .filter((entry) => entry.owner !== UNOWNED)
+      .flatMap((entry) => entry.capabilities).length,
+  provenance: (evidence) => evidence.provenance,
+})
+
+/**
+ * Builds a real EvidenceModel (discover -> link -> inventory -> lifecycle/
+ * ownership -> buildEvidenceModel -- the same real pipeline `artifacts`
+ * above runs, minus the report-generation/file-write steps this benchmark
+ * has no use for) OUTSIDE the timed section, then times only
+ * `.project()` -- whose own cost is dominated by `structuredClone(evidence)`
+ * plus the read-tracking Proxy membrane's recursive wrap (see
+ * ../../../src/evidence/define-evidence-projection.ts), both of which
+ * genuinely scale with the Evidence Model's size, which scales with
+ * capability count (this example's own axis).
+ */
+async function runEvidenceProjectionTier(tierName, definitionVersion) {
+  const { discoveryRoot, generated, fixtureGenerationMs, fixtureHash } =
+    await prepareTierFixtures(tierName)
+
+  const files = await discoverCapabilityFiles({ root: discoveryRoot, fs: nodeBuildFileSystem })
+  const linkResult = await linkCapabilityFiles(files, {
+    fs: nodeBuildFileSystem,
+    root: discoveryRoot,
+    tsconfig: false,
+  })
+  const inventory = buildInventory(linkResult)
+  const generatedAt = new Date()
+  // 30 matches `DEFAULT_EXPIRING_WITHIN_DAYS` (src/build/expiring-window.ts)
+  // -- not re-exported from `data-cap/build`, so restated literally here.
+  const lifecycleModel = buildLifecycleModel(inventory, 30, generatedAt)
+  const ownershipModel = buildOwnershipModel(inventory)
+  const evidence = buildEvidenceModel(
+    { capability: inventory, lifecycle: lifecycleModel, ownership: ownershipModel },
+    { generatedAt: generatedAt.toISOString(), toolVersion: "benchmark", commit: undefined },
+  )
+
+  const { samples, configuration } = await adaptiveSample(async () => {
+    const t0 = performance.now()
+    projectBenchmarkEvidence.project(evidence)
+    return performance.now() - t0
+  }, SAMPLE_OPTS[tierName])
+
+  return {
+    entry: completed(benchmarkId("buildtime", "evidenceProjection", tierName, definitionVersion), {
+      inputs: { capabilities: generated.capabilities },
+      fixtureHash,
+      fixtureGenerationMs: Math.round(fixtureGenerationMs),
+      durationMs: computeDurationStats(samples, configuration.warmupIterations),
+    }),
+    configuration,
+  }
+}
+
 async function main() {
   const startedAt = new Date()
   const packageJson = JSON.parse(await fs.readFile(path.join(repoRoot, "package.json"), "utf8"))
 
-  const results = { discovery: { tiers: {} }, artifacts: { tiers: {} } }
+  const results = {
+    discovery: { tiers: {} },
+    artifacts: { tiers: {} },
+    evidenceProjection: { tiers: {} },
+  }
   let sharedConfiguration
 
   const discoveryDef = BUILDTIME_BENCHMARKS.discovery
@@ -149,6 +233,20 @@ async function main() {
     sharedConfiguration = configuration
     console.log(
       `[performance-buildtime] artifacts.${tier}: median ${entry.durationMs.medianMs.toFixed(2)}ms, n=${entry.durationMs.iterations}`,
+    )
+  }
+
+  const evidenceProjectionDef = BUILDTIME_BENCHMARKS.evidenceProjection
+  for (const tier of evidenceProjectionDef.tiers) {
+    console.log(`[performance-buildtime] evidenceProjection.${tier} ...`)
+    const { entry, configuration } = await runEvidenceProjectionTier(
+      tier,
+      evidenceProjectionDef.definitionVersion,
+    )
+    results.evidenceProjection.tiers[tier] = entry
+    sharedConfiguration = configuration
+    console.log(
+      `[performance-buildtime] evidenceProjection.${tier}: median ${entry.durationMs.medianMs.toFixed(4)}ms, n=${entry.durationMs.iterations}`,
     )
   }
 

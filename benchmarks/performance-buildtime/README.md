@@ -1,9 +1,10 @@
 # Build-time performance benchmark
 
-Measures `discoverCapabilityFiles()` and the full `generateDataArtifacts()` pipeline (discover -> link ->
-inventory -> manifest/documentation/ownership/flow/evidence generation, then write) as capability-file count
-scales. See [`../README.md`](../README.md) for full methodology, tier definitions, and the "never compare"
-rules. This README covers only what's specific to this example.
+Measures `discoverCapabilityFiles()`, the full `generateDataArtifacts()` pipeline (discover -> link ->
+inventory -> manifest/documentation/ownership/flow/evidence generation, then write), and
+`data-cap/evidence`'s `defineEvidenceProjection` as capability-file count scales. See
+[`../README.md`](../README.md) for full methodology, tier definitions, and the "never compare" rules. This
+README covers only what's specific to this example.
 
 ## Run it
 
@@ -37,6 +38,17 @@ axis from the runtime suite's fetched-collection-size tiers (see `../README.md`'
   not a toy shape. AST-parsing cost genuinely depends on this source-text volume and variety, and build
   tooling never executes a discovered file (never `import()`/`eval()` -- see `src/build/parse.ts`'s own
   doc comment), so this realism costs nothing at measurement time.
+- **`evidenceProjection`** -- `data-cap/evidence`'s `defineEvidenceProjection`, previously zero benchmark
+  coverage for a whole separate, isomorphic, zero-dep entry point. Builds a real Evidence Model (discover ->
+  link -> inventory -> lifecycle/ownership -> `buildEvidenceModel` -- the same real pipeline `artifacts`
+  above runs, minus the report-generation/file-write steps this benchmark has no use for) OUTSIDE the timed
+  section, then times only a projection's own `.project()` call. That cost is dominated by
+  `structuredClone(evidence)` plus a recursive read-tracking `Proxy` membrane (see
+  `../../src/evidence/define-evidence-projection.ts`), both of which genuinely scale with the Evidence
+  Model's size -- which scales with capability count, this example's own axis. Defines its own small
+  multi-field projection directly against `data-cap/evidence` (mirroring, but not importing,
+  `src/build/reference-projections.ts`'s own `projectAuditEvidence`) so the benchmark exercises that public
+  entry point itself, not just `data-cap/build`'s backward-compatible re-export of it.
 
 ## What's deliberately not here
 
@@ -54,3 +66,10 @@ Also considered and cut, matching `../README.md`'s "what's not (yet) benchmarked
 `documentation-payload`-equivalent (isolating docs-payload size independent of capability count) and a
 `scoped-include`-equivalent (the `include` option's discovery-vs-parse split) -- both real, narrower
 questions than `discovery`/`artifacts`, deferred rather than rushed.
+
+From the full public-API-surface coverage pass that added `evidenceProjection` above: `data-cap/eslint-plugin`
+(`stable-operation-reference`, `no-raw-external-io`) stays out of this suite entirely -- it's a different
+measurement domain (ESLint's own rule-execution runtime inside a consumer's lint run, not one of this
+package's own exported functions called directly), and neither `performance-runtime` nor
+`performance-buildtime` has any existing machinery for driving an ESLint run, unlike the direct function
+calls every benchmark above times.

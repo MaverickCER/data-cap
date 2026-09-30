@@ -49,6 +49,30 @@ export const BUILDTIME_FILE_TIERS = {
 }
 
 /**
+ * A third, independent axis -- neither collection size nor capability
+ * count: how many attempts `withRetry`'s own loop takes to reach success
+ * (the caller's `fn` fails `attempts - 1` times, then succeeds). Real
+ * workload shape for an opt-in retry wrapper, distinct from both existing
+ * axes -- see ../performance-runtime/README.md's `withRetry` section for
+ * why tiering by attempts (not item/capability count) is the meaningful
+ * question here.
+ *
+ * `baseline` is deliberately `2` (one retry), not `1` (zero retries,
+ * immediate success): a zero-retry call never reaches `withRetry`'s own
+ * `delay()` at all, so its measured cost is sub-microsecond try/catch
+ * overhead -- empirically ~4x noisier run-to-run than a real (even single-
+ * retry) pass through the timer/microtask machinery every other tier
+ * exercises, which would make budgets.mjs's `withRetry` entry flaky at that
+ * tier specifically. One retry is also a realistic floor: it is the
+ * smallest input for which `withRetry` does any retrying at all.
+ */
+export const RUNTIME_RETRY_TIERS = {
+  baseline: { attempts: 2 },
+  stress: { attempts: 8 },
+  extreme: { attempts: 30 },
+}
+
+/**
  * `id` embeds both the suite version (methodology, at generation time) and
  * this specific (category, name, tier)'s own definition version -- an id
  * pasted into an issue or dashboard stays unambiguous even out of context.
@@ -72,6 +96,14 @@ export const RUNTIME_BENCHMARKS = {
   dedupeFanIn: { tiers: ["fixed"], definitionVersion: 1 },
   "dedupeFanIn-independent": { tiers: ["fixed"], definitionVersion: 1 },
   runGettersFanOut: { tiers: ["fixed"], definitionVersion: 1 },
+  // `data-cap/runtime/cache`'s createDataCache -- previously zero benchmark
+  // coverage (a whole separate, independently-tree-shaken entry point). See
+  // ../performance-runtime/README.md.
+  dataCacheSetGet: { tiers: TIER_NAMES, definitionVersion: 1 },
+  // `data-cap/runtime/retry`'s withRetry -- previously zero benchmark
+  // coverage (another whole separate entry point). Tiered along
+  // RUNTIME_RETRY_TIERS's own attempts axis, not item/capability count.
+  withRetry: { tiers: TIER_NAMES, definitionVersion: 1 },
 }
 
 // Build-time: discovery alone, and the full generateDataArtifacts pipeline
@@ -79,6 +111,13 @@ export const RUNTIME_BENCHMARKS = {
 export const BUILDTIME_BENCHMARKS = {
   discovery: { tiers: TIER_NAMES, definitionVersion: 1 },
   artifacts: { tiers: TIER_NAMES, definitionVersion: 1 },
+  // `data-cap/evidence`'s defineEvidenceProjection -- previously zero
+  // benchmark coverage (a whole separate, zero-dep entry point). Tiered by
+  // capability-file count (BUILDTIME_FILE_TIERS): a projection's own
+  // structuredClone + read-tracking membrane cost scales with the Evidence
+  // Model's size, which scales with capability count. See
+  // ../performance-buildtime/README.md.
+  evidenceProjection: { tiers: TIER_NAMES, definitionVersion: 1 },
 }
 
 /** Every (category, name, tier) the suite declares, independent of whether a given run produced a result for it. */

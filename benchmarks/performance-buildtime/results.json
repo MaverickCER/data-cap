@@ -1,19 +1,19 @@
 {
   "metadata": {
     "environment": {
-      "cpuModel": "AMD EPYC 7763 64-Core Processor",
-      "cpuArchitecture": "x64",
-      "processArch": "x64",
-      "logicalCores": 4,
-      "physicalCores": 2,
-      "cpuFrequencyMHz": 0,
-      "platform": "linux",
-      "osRelease": "6.17.0-1022-azure",
-      "totalMemoryMb": 15990,
-      "nodeVersion": "v22.23.3",
-      "timezoneOffsetMinutes": 0,
-      "isCI": true,
-      "runner": "GitHub Actions"
+      "cpuModel": "Apple M3",
+      "cpuArchitecture": "arm64",
+      "processArch": "arm64",
+      "logicalCores": 8,
+      "physicalCores": 8,
+      "cpuFrequencyMHz": 2400,
+      "platform": "darwin",
+      "osRelease": "25.6.0",
+      "totalMemoryMb": 24576,
+      "nodeVersion": "v24.20.0",
+      "timezoneOffsetMinutes": 240,
+      "isCI": false,
+      "runner": "local"
     },
     "package": {
       "coreBundleBytes": 2321,
@@ -31,9 +31,9 @@
       "gcEnabled": true
     },
     "timing": {
-      "startedAtUtc": "2026-09-30T14:36:56.393Z",
-      "finishedAtUtc": "2026-09-30T14:37:08.686Z",
-      "totalSuiteDurationMs": 12293
+      "startedAtUtc": "2026-09-30T16:59:56.424Z",
+      "finishedAtUtc": "2026-09-30T17:00:07.569Z",
+      "totalSuiteDurationMs": 11145
     },
     "generation": {
       "fixtureSeed": "deterministic-index-v1",
@@ -46,11 +46,11 @@
       "dataCapVersion": "0.4.0"
     },
     "git": {
-      "gitCommit": "09ae890794009feab93679db7a3c73e663b0e020",
-      "gitBranch": "feat/migrate-onto-shared-benchmark-engine",
+      "gitCommit": "2d1d612ba1c2f421c335d0ce3444ecfeef73965d",
+      "gitBranch": "main",
       "gitDirty": true
     },
-    "generatedBy": "ci"
+    "generatedBy": "npm run benchmark"
   },
   "benchmarkManifest": [
     {
@@ -100,6 +100,30 @@
       "tier": "extreme",
       "suiteVersion": 1,
       "definitionVersion": 1
+    },
+    {
+      "id": "buildtime-evidenceProjection-baseline-s1-v1",
+      "category": "buildtime",
+      "name": "evidenceProjection",
+      "tier": "baseline",
+      "suiteVersion": 1,
+      "definitionVersion": 1
+    },
+    {
+      "id": "buildtime-evidenceProjection-stress-s1-v1",
+      "category": "buildtime",
+      "name": "evidenceProjection",
+      "tier": "stress",
+      "suiteVersion": 1,
+      "definitionVersion": 1
+    },
+    {
+      "id": "buildtime-evidenceProjection-extreme-s1-v1",
+      "category": "buildtime",
+      "name": "evidenceProjection",
+      "tier": "extreme",
+      "suiteVersion": 1,
+      "definitionVersion": 1
     }
   ],
   "results": {
@@ -112,13 +136,13 @@
             "capabilities": 10
           },
           "fixtureHash": "sha256:e1ffb08a9e126996b40867fd352c88caa1641f646aa5a0bb3f2f18f9c77ea485",
-          "fixtureGenerationMs": 6,
+          "fixtureGenerationMs": 7,
           "durationMs": {
-            "minMs": 1.606382999999994,
-            "medianMs": 2.009074000000055,
-            "p95Ms": 2.5854170000000067,
-            "maxMs": 2.5854170000000067,
-            "stdDevMs": 0.2621923056430937,
+            "minMs": 1.0874160000000188,
+            "medianMs": 1.7732919999999694,
+            "p95Ms": 6.394207999999992,
+            "maxMs": 6.394207999999992,
+            "stdDevMs": 1.2474565268223943,
             "iterations": 20,
             "warmupIterations": 2
           }
@@ -130,13 +154,13 @@
             "capabilities": 100
           },
           "fixtureHash": "sha256:03fd1d65b3f08faf095a8cd5a04074c91f44acf22e282d67e09558624e1ed6e3",
-          "fixtureGenerationMs": 28,
+          "fixtureGenerationMs": 44,
           "durationMs": {
-            "minMs": 8.739553,
-            "medianMs": 9.695446999999945,
-            "p95Ms": 11.488383999999996,
-            "maxMs": 11.488383999999996,
-            "stdDevMs": 0.8653759015889112,
+            "minMs": 5.617624999999975,
+            "medianMs": 7.678209000000038,
+            "p95Ms": 9.43116699999996,
+            "maxMs": 9.43116699999996,
+            "stdDevMs": 0.89880564930699,
             "iterations": 10,
             "warmupIterations": 1
           }
@@ -148,13 +172,13 @@
             "capabilities": 400
           },
           "fixtureHash": "sha256:165601cc439bb70f0550105a6dd4f07ea898fc5e899423b5ce63e6665e585833",
-          "fixtureGenerationMs": 114,
+          "fixtureGenerationMs": 198,
           "durationMs": {
-            "minMs": 30.73034500000017,
-            "medianMs": 34.377527999999984,
-            "p95Ms": 38.36058200000002,
-            "maxMs": 38.36058200000002,
-            "stdDevMs": 2.552908823229152,
+            "minMs": 25.559000000000196,
+            "medianMs": 27.97024999999985,
+            "p95Ms": 30.50675000000001,
+            "maxMs": 30.50675000000001,
+            "stdDevMs": 1.6943181315994607,
             "iterations": 6,
             "warmupIterations": 1
           }
@@ -170,13 +194,13 @@
             "capabilities": 10
           },
           "fixtureHash": "sha256:e1ffb08a9e126996b40867fd352c88caa1641f646aa5a0bb3f2f18f9c77ea485",
-          "fixtureGenerationMs": 5,
+          "fixtureGenerationMs": 6,
           "durationMs": {
-            "minMs": 47.60053799999969,
-            "medianMs": 55.134203999999954,
-            "p95Ms": 64.6921299999999,
-            "maxMs": 64.6921299999999,
-            "stdDevMs": 4.037656563855188,
+            "minMs": 26.76974999999993,
+            "medianMs": 30.589917000000014,
+            "p95Ms": 38.17166700000007,
+            "maxMs": 38.17166700000007,
+            "stdDevMs": 2.941733508550623,
             "iterations": 20,
             "warmupIterations": 2
           }
@@ -188,14 +212,14 @@
             "capabilities": 100
           },
           "fixtureHash": "sha256:03fd1d65b3f08faf095a8cd5a04074c91f44acf22e282d67e09558624e1ed6e3",
-          "fixtureGenerationMs": 36,
+          "fixtureGenerationMs": 40,
           "durationMs": {
-            "minMs": 335.03739499999983,
-            "medianMs": 351.04954799999996,
-            "p95Ms": 362.0544889999992,
-            "maxMs": 362.0544889999992,
-            "stdDevMs": 8.766377918281796,
-            "iterations": 6,
+            "minMs": 225.61212499999965,
+            "medianMs": 252.7575409999995,
+            "p95Ms": 274.05779200000006,
+            "maxMs": 274.05779200000006,
+            "stdDevMs": 15.564580952998588,
+            "iterations": 8,
             "warmupIterations": 1
           }
         },
@@ -206,14 +230,72 @@
             "capabilities": 400
           },
           "fixtureHash": "sha256:165601cc439bb70f0550105a6dd4f07ea898fc5e899423b5ce63e6665e585833",
-          "fixtureGenerationMs": 158,
+          "fixtureGenerationMs": 160,
           "durationMs": {
-            "minMs": 1732.253055000001,
-            "medianMs": 1758.488659999999,
-            "p95Ms": 1770.7674380000008,
-            "maxMs": 1770.7674380000008,
-            "stdDevMs": 16.063876164169354,
+            "minMs": 1160.9543749999993,
+            "medianMs": 1320.4106249999995,
+            "p95Ms": 1564.434792,
+            "maxMs": 1564.434792,
+            "stdDevMs": 165.9218479507751,
             "iterations": 3,
+            "warmupIterations": 1
+          }
+        }
+      }
+    },
+    "evidenceProjection": {
+      "tiers": {
+        "baseline": {
+          "id": "buildtime-evidenceProjection-baseline-s1-v1",
+          "status": "completed",
+          "inputs": {
+            "capabilities": 10
+          },
+          "fixtureHash": "sha256:e1ffb08a9e126996b40867fd352c88caa1641f646aa5a0bb3f2f18f9c77ea485",
+          "fixtureGenerationMs": 3,
+          "durationMs": {
+            "minMs": 1.2985410000001139,
+            "medianMs": 1.4213749999998981,
+            "p95Ms": 3.3628329999992275,
+            "maxMs": 3.3628329999992275,
+            "stdDevMs": 0.4640228258307075,
+            "iterations": 20,
+            "warmupIterations": 2
+          }
+        },
+        "stress": {
+          "id": "buildtime-evidenceProjection-stress-s1-v1",
+          "status": "completed",
+          "inputs": {
+            "capabilities": 100
+          },
+          "fixtureHash": "sha256:03fd1d65b3f08faf095a8cd5a04074c91f44acf22e282d67e09558624e1ed6e3",
+          "fixtureGenerationMs": 30,
+          "durationMs": {
+            "minMs": 11.106292000000394,
+            "medianMs": 11.43487500000083,
+            "p95Ms": 16.221292000000176,
+            "maxMs": 16.221292000000176,
+            "stdDevMs": 1.8897094609826937,
+            "iterations": 10,
+            "warmupIterations": 1
+          }
+        },
+        "extreme": {
+          "id": "buildtime-evidenceProjection-extreme-s1-v1",
+          "status": "completed",
+          "inputs": {
+            "capabilities": 400
+          },
+          "fixtureHash": "sha256:165601cc439bb70f0550105a6dd4f07ea898fc5e899423b5ce63e6665e585833",
+          "fixtureGenerationMs": 162,
+          "durationMs": {
+            "minMs": 45.9016249999986,
+            "medianMs": 46.93870900000002,
+            "p95Ms": 47.57583400000112,
+            "maxMs": 47.57583400000112,
+            "stdDevMs": 0.6114136889023087,
+            "iterations": 6,
             "warmupIterations": 1
           }
         }
