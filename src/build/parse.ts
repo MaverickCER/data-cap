@@ -709,6 +709,39 @@ export function readDataResidencyProp(
   return undefined
 }
 
+/**
+ * Reads a named property whose value must be an all-string array literal --
+ * unlike `readDataResidencyProp`, a lone string is never accepted here
+ * (`recipientCategories` is always a list, even a single-element one; the
+ * schema type itself is `readonly string[]`, not `string | readonly
+ * string[]`). A non-array, or an array containing a non-string element,
+ * warns and returns `undefined` rather than guessing at a partial result.
+ */
+/** @internal Exported for direct unit coverage (reached only through the recursive parse walk in production). */
+export function readStringArrayProp(
+  obj: ts.ObjectLiteralExpression,
+  name: string,
+  contextLabel: string,
+  file: string,
+  warnings: ParseWarning[],
+): readonly string[] | undefined {
+  const prop = findProp(obj, name)
+  if (prop === undefined) return undefined
+  const evaluated = evaluateLiteral(prop.initializer)
+  if (
+    evaluated.ok &&
+    Array.isArray(evaluated.value) &&
+    evaluated.value.every((v) => typeof v === "string")
+  ) {
+    return evaluated.value
+  }
+  warnings.push({
+    file,
+    message: `"${name}" for "${contextLabel}" is not a statically-resolvable string-array literal; ignoring it.`,
+  })
+  return undefined
+}
+
 /** Extracts a single `DataFlowEndpoint` array entry -- an entry that isn't a fully literal, well-formed endpoint is dropped with a warning, never guessed at (the rest of the array is still used). */
 /** @internal Exported for direct unit coverage -- in production it is only
  *  reached through `readEndpointsProp` → `extractOperationDocsMap`. */
@@ -815,7 +848,16 @@ function extractFieldDocsMap(
       purpose: readStringProp(init, "purpose", fieldLabel, file, warnings),
       legalBasis: readStringProp(init, "legalBasis", fieldLabel, file, warnings),
       dataResidency: readDataResidencyProp(init, fieldLabel, file, warnings),
+      transferSafeguard: readStringProp(init, "transferSafeguard", fieldLabel, file, warnings),
       auditRequired: readBooleanProp(init, "auditRequired", fieldLabel, file, warnings),
+      dataSubjectCategory: readStringProp(init, "dataSubjectCategory", fieldLabel, file, warnings),
+      recipientCategories: readStringArrayProp(
+        init,
+        "recipientCategories",
+        fieldLabel,
+        file,
+        warnings,
+      ),
       // Lifecycle vocabulary (EVD-05) -- extracted exactly like every other
       // declared fact above: a literal string/boolean or nothing. `expiresAt`/
       // `removeBy` are never parsed as dates here; `lifecycle-model.ts` is the
@@ -983,6 +1025,7 @@ export function extractCapabilityDocs(
     purpose: readStringProp(docsNode, "purpose", contextLabel, file, warnings),
     legalBasis: readStringProp(docsNode, "legalBasis", contextLabel, file, warnings),
     dataResidency: readDataResidencyProp(docsNode, contextLabel, file, warnings),
+    transferSafeguard: readStringProp(docsNode, "transferSafeguard", contextLabel, file, warnings),
     auditRequired: readBooleanProp(docsNode, "auditRequired", contextLabel, file, warnings),
     // Capability-level lifecycle is deliberately narrower than a field's:
     // no `removeBy`/`renamedFrom`, which only mean something per-field (see

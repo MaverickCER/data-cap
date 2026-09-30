@@ -48,6 +48,14 @@ documentData(identitySchema, {
       protections: "Session-authenticated access only; TLS in transit; password never leaves the server.",
       purpose: "Authorizing access to every other capability in this platform.",
       auditRequired: true,
+      // GDPR Art. 30(1)(c) -- staff members are the data subjects here.
+      // `recipientCategories`/`transferSafeguard` are deliberately left
+      // undeclared: this data never leaves platform-security's own
+      // single-region (`dataResidency: "us"`, below) systems, so there is
+      // no external recipient or cross-border transfer to document --
+      // `docs/ROPA.md` reports both as "Not documented" for this field,
+      // which is the honest state, not a gap in this generator.
+      dataSubjectCategory: "staff members",
     },
   },
   getters: {

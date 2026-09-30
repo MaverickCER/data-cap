@@ -632,8 +632,8 @@ concept for -- opaque, never inspected or validated by any code path in
 this package (e.g. jurisdiction-specific regulatory classification:
 `{ regulatory: "GDPR,PCI-DSS" }`). Once a concept matters enough for
 data-cap to reason about, it gets its own named field above (as
-`purpose`/`legalBasis`/`dataResidency`/`auditRequired` did); everything
-else stays here.
+`purpose`/`legalBasis`/`dataResidency`/`transferSafeguard`/`auditRequired`
+did); everything else stays here.
 
 ##### mutators?
 
@@ -701,6 +701,18 @@ readonly optional subscriptions?: SchemaOperationDocs<TSchema, "subscriptions">;
 ```
 
 Per-subscription documentation. Keys are checked against the schema's real `subscriptions` names.
+
+##### transferSafeguard?
+
+```ts
+readonly optional transferSafeguard?: string;
+```
+
+The declared safeguard relied on for any transfer of this capability's
+data out of `dataResidency`'s own jurisdiction(s) -- paired conceptually
+with `dataResidency`, same presence-only discipline. A field's own
+`transferSafeguard` (see `FieldDocs`) overrides this for that field
+specifically.
 
 ***
 
@@ -934,15 +946,19 @@ Registers `listener` to be called after every committed state change; returns an
 
 Documentation metadata for one field.
 
-`owner`, `sensitivity`, and `protections` override the capability-level
-value of the same name for this field specifically -- not every field in
-a capability is equally sensitive or equally owned. `protections` and
-`retention` are documentation-presence signals only: a generator may say
-a safeguard/policy is "documented" or "not documented," never that it is
-adequate, correct, or enforced. `purpose`/`legalBasis`/`dataResidency`/
-`auditRequired` carry the same presence-only discipline -- declared
-governance facts, never a claim that data-cap has determined they satisfy
-any law (see `specs/decisions/0051-documentdata-metadata-and-governance-fields.md`).
+`owner`, `sensitivity`, `protections`, and `transferSafeguard` override the
+capability-level value of the same name for this field specifically -- not
+every field in a capability is equally sensitive, equally owned, or
+crosses the same transfer boundary. `protections` and `retention` are
+documentation-presence signals only: a generator may say a safeguard/
+policy is "documented" or "not documented," never that it is adequate,
+correct, or enforced. `purpose`/`legalBasis`/`dataResidency`/
+`transferSafeguard`/`auditRequired` carry the same presence-only
+discipline -- declared governance facts, never a claim that data-cap has
+determined they satisfy any law (see `specs/decisions/0051-documentdata-metadata-and-governance-fields.md`).
+`dataSubjectCategory`/`recipientCategories` are field-level only (no
+capability-level counterpart) -- see each property's own doc comment for
+why.
 
 The boundary this interface draws is deliberate: a named property here is
 reserved for a concept data-cap itself understands, projects, or reports
@@ -985,6 +1001,20 @@ The declared jurisdiction(s) this field's data is permitted/expected to
 be *stored* in -- a policy constraint, not an observed fact, not a
 processing-location claim, not a data-subject-location claim. Overrides
 the capability's own `dataResidency` for this field specifically.
+
+##### dataSubjectCategory?
+
+```ts
+readonly optional dataSubjectCategory?: string;
+```
+
+The declared category of data subject this field's data concerns (e.g.
+`"customers"`, `"employees"`, `"minors"`). Declared only -- data-cap
+never verifies who a field's actual data subjects are. Field-level only:
+unlike `owner`/`sensitivity`/`purpose`/etc., this has no capability-level
+counterpart to override -- which data subjects a field concerns is a
+fact about that field's own data, not something a whole capability can
+meaningfully state once for every field under it.
 
 ##### deprecated?
 
@@ -1072,6 +1102,23 @@ The declared reason this field's data is collected/retained. Declared
 only -- data-cap never verifies the stated purpose matches actual usage.
 Overrides the capability's own `purpose` for this field specifically.
 
+##### recipientCategories?
+
+```ts
+readonly optional recipientCategories?: readonly string[];
+```
+
+The declared categories of recipient this field's data has been or will
+be disclosed to (e.g. `"payment processor"`, `"tax authority"`,
+`"internal support staff"`). Always explicitly authored -- data-cap
+never infers a recipient category from its own dependency graph (a
+proven *consumer* relationship inside this codebase is a categorically
+different fact from a declared *external recipient*, and conflating the
+two would misrepresent both). Field-level only, for the same reason as
+`dataSubjectCategory`. See
+`specs/decisions/0067-ropa-fields-recipient-categories-never-inferred.md`
+for the full reasoning on why this is never derived.
+
 ##### removeBy?
 
 ```ts
@@ -1111,6 +1158,23 @@ readonly optional sensitivity?: string;
 ```
 
 Overrides the capability's own `sensitivity` for this field specifically.
+
+##### transferSafeguard?
+
+```ts
+readonly optional transferSafeguard?: string;
+```
+
+The declared safeguard relied on for any transfer of this field's data
+out of `dataResidency`'s own jurisdiction(s) (e.g. `"EU Standard
+Contractual Clauses"`, `"adequacy decision"`) -- paired conceptually
+with `dataResidency` (which states where data is permitted to be
+*stored*; this states what protects a transfer *out of* that
+jurisdiction), same presence-only discipline as every other field here.
+Declared only -- data-cap never verifies a transfer actually occurred or
+that the named safeguard is legally adequate. Overrides the capability's
+own `transferSafeguard` for this field specifically. See
+`specs/decisions/0067-ropa-fields-recipient-categories-never-inferred.md`.
 
 ***
 

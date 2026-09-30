@@ -221,6 +221,17 @@ documentData(billingSchema, {
       // some jurisdictions' recordkeeping rules require an invoice to also
       // be retrievable from within the client's own region.
       dataResidency: ["us", "eu"],
+      // GDPR Art. 30(1)(e) -- the declared safeguard for moving this field's
+      // data between the two jurisdictions `dataResidency` (above) permits
+      // it to be stored in.
+      transferSafeguard: "EU Standard Contractual Clauses",
+      // GDPR Art. 30(1)(c)/(d) -- clients are the data subjects; invoice
+      // data is disclosed to a payment processor (to collect payment) and,
+      // where legally required, a tax authority -- always explicitly
+      // declared here, never inferred from data-cap's own dependency graph
+      // (see `src/core/document.ts`'s own doc comment on `recipientCategories`).
+      dataSubjectCategory: "clients",
+      recipientCategories: ["payment processor", "tax authority"],
     },
   },
   getters: {

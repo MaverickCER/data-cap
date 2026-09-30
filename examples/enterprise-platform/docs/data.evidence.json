@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "provenance": {
-    "generatedAt": "2026-09-29T19:53:25.492Z",
+    "generatedAt": "2026-09-30T12:33:09.247Z",
     "toolVersion": "0.4.0"
   },
   "capability": {
@@ -38,7 +38,13 @@
                 "us",
                 "eu"
               ],
-              "auditRequired": true
+              "transferSafeguard": "EU Standard Contractual Clauses",
+              "auditRequired": true,
+              "dataSubjectCategory": "clients",
+              "recipientCategories": [
+                "payment processor",
+                "tax authority"
+              ]
             }
           },
           "getters": {
@@ -132,7 +138,13 @@
                 "us",
                 "eu"
               ],
-              "auditRequired": true
+              "transferSafeguard": "EU Standard Contractual Clauses",
+              "auditRequired": true,
+              "dataSubjectCategory": "clients",
+              "recipientCategories": [
+                "payment processor",
+                "tax authority"
+              ]
             },
             "owner": {
               "value": "finance-team",
@@ -378,7 +390,8 @@
               "sensitivity": "confidential",
               "protections": "Session-authenticated access only; TLS in transit; password never leaves the server.",
               "purpose": "Authorizing access to every other capability in this platform.",
-              "auditRequired": true
+              "auditRequired": true,
+              "dataSubjectCategory": "staff members"
             }
           },
           "getters": {
@@ -412,7 +425,8 @@
               "sensitivity": "confidential",
               "protections": "Session-authenticated access only; TLS in transit; password never leaves the server.",
               "purpose": "Authorizing access to every other capability in this platform.",
-              "auditRequired": true
+              "auditRequired": true,
+              "dataSubjectCategory": "staff members"
             },
             "owner": {
               "value": "platform-security",
