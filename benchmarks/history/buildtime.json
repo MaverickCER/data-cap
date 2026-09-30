@@ -496,6 +496,68 @@
           }
         }
       }
+    },
+    {
+      "timestamp": "2026-09-29T23:55:08.840Z",
+      "gitCommit": "52d893311149e6ce17750b53a0b26a0b193b6952",
+      "dataCapVersion": "0.4.0",
+      "benchmarkSuiteVersion": 1,
+      "runner": "GitHub Actions",
+      "measurements": {
+        "discovery": {
+          "baseline": {
+            "medianMs": 1.181258000000014
+          },
+          "stress": {
+            "medianMs": 5.788621999999975
+          },
+          "extreme": {
+            "medianMs": 20.242367999999942
+          }
+        },
+        "artifacts": {
+          "baseline": {
+            "medianMs": 38.65379599999994
+          },
+          "stress": {
+            "medianMs": 247.9175909999999
+          },
+          "extreme": {
+            "medianMs": 1873.269870000001
+          }
+        }
+      }
+    },
+    {
+      "timestamp": "2026-09-30T09:28:25.655Z",
+      "gitCommit": "b081ceacf924546f6ad5e8c289736976ad64b7df",
+      "dataCapVersion": "0.4.0",
+      "benchmarkSuiteVersion": 1,
+      "runner": "GitHub Actions",
+      "measurements": {
+        "discovery": {
+          "baseline": {
+            "medianMs": 1.6949500000000626
+          },
+          "stress": {
+            "medianMs": 9.461483000000044
+          },
+          "extreme": {
+            "medianMs": 30.795043000000078
+          }
+        },
+        "artifacts": {
+          "baseline": {
+            "medianMs": 51.54056199999968
+          },
+          "stress": {
+            "medianMs": 331.1114629999993
+          },
+          "extreme": {
+            "medianMs": 1646.901602
+          }
+        }
+      }
     }
   ]
 }

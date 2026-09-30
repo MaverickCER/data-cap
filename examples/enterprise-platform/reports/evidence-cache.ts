@@ -45,7 +45,25 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
 // this path in the whole project; every other reference imports it from here.
 export const EVIDENCE_PATH = path.join(root, "docs/data.evidence.json")
 
-/** The exact `computeDataArtifacts()` options `litigation-evidence.ts`/`audit-prep.ts`/`npm run docs` all share. */
+/**
+ * The exact `computeDataArtifacts()` options `litigation-evidence.ts`/
+ * `audit-prep.ts` share, via `getEvidence()` below.
+ *
+ * `location`/`docs`/`ownership`/`flow` are real `computeDataArtifacts()`
+ * options (unaffected by the CLI's own narrower surface -- ADR 0066): they
+ * request the manifest/flow passes purely so this run's composed
+ * `EvidenceModel.finding.findings` includes their own finding kinds
+ * (`MANIFEST_EXPORT_NAME_COLLISION`, `SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY`/
+ * `SENSITIVE_FIELD_ENDPOINT_MISSING_HANDLING`) -- the same completeness
+ * `test/examples/enterprise-platform-reports.test.ts` asserts via
+ * `evidence.computed`. `getEvidenceModel()` (below) never writes anything to
+ * disk on a cache miss (see its own doc comment), so these paths are never
+ * actually written here -- `scripts/generate-docs/run.ts` is what writes the
+ * real `src/generated/data.manifest.ts`/`docs/DATA.md`/`docs/OWNERSHIP.md`/
+ * `docs/flow/` files, as a wholly separate discover+scan pass; removing
+ * these four keys would silently thin the Evidence Model these reports read,
+ * not just skip a write that was never happening here anyway.
+ */
 export const COMPUTE_OPTIONS: GetEvidenceModelOptions = {
   fs: nodeBuildFileSystem,
   root,

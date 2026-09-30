@@ -75,7 +75,7 @@ describe("module auto-run guard (isDirectRun)", () => {
     // to reach the `String(error)` side of the catch handler's ternary at
     // all, generateDataArtifacts() itself has to be the one to reject with a
     // non-Error value, which only a mock can force.
-    process.argv = ["node", cliEntryPath, "--location", "out.ts"]
+    process.argv = ["node", cliEntryPath, "--evidence", "out.json"]
 
     vi.doMock("../../src/build/generate-data-artifacts.js", () => ({
       generateDataArtifacts: vi.fn().mockRejectedValue("boom -- not an Error instance"),

@@ -26,7 +26,7 @@ Owner: identity-team · Category: — · Active: yes
 
 | Field | Description | Owner | Sensitivity (declared) | Protections (documented) | Retention (documented) | Written by | Consumed at (proven) |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `user` | The authoritative user row, read from and written back to the database. | identity-team | confidential | Row-level security; database-internal network only. | not documented | (none found) | (not scanned) |
+| `user` | The authoritative user row, read from and written back to the database. | identity-team | confidential | Row-level security; database-internal network only. | not documented | (none found) | (none found) |
 
 ## Sensitivity & protections review
 

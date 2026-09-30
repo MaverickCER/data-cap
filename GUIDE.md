@@ -454,19 +454,26 @@ const inventory = buildInventory(
 
 ### Generated artifacts
 
-The CLI (or `generateDataArtifacts()` directly) can produce:
+`generateDataArtifacts()` (directly, from application code -- see
+"Programmatic orchestration" below) can produce:
 
-| Artifact                                      | Flag                 | What it is                                                                                                                                                                    |
-| --------------------------------------------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Manifest                                      | `--location <path>`  | A deterministic `.ts` file re-exporting every active capability, with a "changes since last report" diff.                                                                     |
-| Documentation catalog                         | `--docs <path>`      | A Markdown catalog of every field/getter/mutator/subscription, including sensitivity and documented protections.                                                              |
-| Dependency & Ownership report                 | `--ownership <path>` | The owner → {capabilities, fields} matrix, plus a real, AST-proven consumer graph (never guessed at).                                                                         |
-| Data Flow Diagram + Security Data-Flow Review | `--flow <directory>` | A Mermaid diagram set using OWASP's data-flow-diagram vocabulary, plus a severity-grouped findings review headlined by any sensitive field that crosses an external boundary. |
+| Artifact                                      | Option              | What it is                                                                                                                                                                    |
+| --------------------------------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Manifest                                      | `location: <path>`  | A deterministic `.ts` file re-exporting every active capability, with a "changes since last report" diff.                                                                     |
+| Documentation catalog                         | `docs: <path>`      | A Markdown catalog of every field/getter/mutator/subscription, including sensitivity and documented protections.                                                              |
+| Dependency & Ownership report                 | `ownership: <path>` | The owner → {capabilities, fields} matrix, plus a real, AST-proven consumer graph (never guessed at).                                                                         |
+| Data Flow Diagram + Security Data-Flow Review | `flow: <directory>` | A Mermaid diagram set using OWASP's data-flow-diagram vocabulary, plus a severity-grouped findings review headlined by any sensitive field that crosses an external boundary. |
 
-Every one of these draws a hard line between **declared** facts (author
-metadata — `owner`, `sensitivity`, `protections`, `endpoints` — presence is
-checked, correctness never is) and **proven** facts (AST-derived — `writes`,
-a `DependencyEdge`). See
+None of the four above has a real _runtime_ consumer, so none is exposed as
+a CLI flag (ADR 0066) -- request them from application code via the options
+above, either through `generateDataArtifacts()`/`checkArtifacts()` or the
+individual `generateManifest`/`generateDocumentation`/`generateUsage`/
+`generateFlow` generators (see
+[`examples/nextjs-app/scripts/generate-docs`](examples/nextjs-app/scripts/generate-docs)
+for a worked example). Every one of these draws a hard line between
+**declared** facts (author metadata — `owner`, `sensitivity`, `protections`,
+`endpoints` — presence is checked, correctness never is) and **proven**
+facts (AST-derived — `writes`, a `DependencyEdge`). See
 [`specs/generated-artifacts.md`](specs/generated-artifacts.md) for the full
 list of what's generated today, which industry model (OWASP, NIST Privacy
 Framework) each aligns with, and — just as importantly — what's explicitly
@@ -474,21 +481,28 @@ deferred and why, so nothing here is assumed silently.
 
 ### The CLI
 
+`--evidence` is the only flag the CLI itself still exposes (ADR 0066) -- the
+one output with a real, versioned contract (the composed Evidence Model,
+ADR 0050):
+
 ```bash
-npx data-cap --location src/generated/data.manifest.ts --docs docs/DATA.md --ownership docs/OWNERSHIP.md --flow docs/flow
+npx data-cap --evidence docs/data.evidence.json
 ```
 
 ```bash
 npx data-cap --help
 ```
 
-`--check` verifies every requested artifact is up to date without writing
+`--check` verifies the evidence artifact is up to date without writing
 anything (exit `1` if stale — a CI freshness gate); `--json` emits the full
 machine-readable `ReportResult` instead of formatted text;
 `--strict`/`--strict-docs`/`--strict-ownership`/`--strict-flow` escalate
-that pass's `warning` findings to hard errors (never `info`). See `--help`
-for the complete flag reference, including `--include`/`--exclude` globs and
-the `--package`/`--tsconfig` cross-package/path-alias options.
+that pass's `warning` findings to hard errors (never `info`) -- these
+remain meaningful even without `--docs`/`--ownership`/`--flow` flags to
+pair them with, since the static/usage passes they escalate run
+unconditionally alongside `--evidence` (F1/F2). See `--help` for the
+complete flag reference, including `--include`/`--exclude` globs and the
+`--package`/`--tsconfig` cross-package/path-alias options.
 
 ### Programmatic orchestration
 
@@ -626,10 +640,7 @@ userData.fields;`) stays out of scope on purpose — this rule follows a
 ## GitHub Action
 
 The first-party GitHub Action runs `data-cap --json` and turns the result
-into pull request annotations and a summary comment — including a rendered
-Data Flow Diagram when `--flow` is requested (GitHub renders fenced
-` ```mermaid ` blocks natively, so the diagram appears directly in the job
-summary and PR comment, no image generation involved).
+into pull request annotations and a summary comment.
 
 Example:
 
@@ -653,17 +664,27 @@ jobs:
 
       - uses: maverickcer/data-cap@v1
         with:
-          args: "--docs docs/DATA.md --ownership docs/OWNERSHIP.md --flow docs/flow --strict-flow"
+          args: "--evidence docs/data.evidence.json --strict-docs --strict-ownership"
 ```
 
-| Input               | Default               | Purpose                                                                                                 |
-| ------------------- | --------------------- | ------------------------------------------------------------------------------------------------------- |
-| `args`              | _(required)_          | Arguments passed to `data-cap --json`, such as `--docs`, `--ownership`, `--flow`, and `--strict*` flags |
-| `working-directory` | `.`                   | Directory where `data-cap` executes                                                                     |
-| `version`           | _(latest)_            | Version to execute through `npx` when `data-cap` is not installed locally                               |
-| `comment`           | `true`                | Creates or updates a sticky pull request summary comment                                                |
-| `annotations`       | `true`                | Emits GitHub workflow annotations for detected findings                                                 |
-| `report-key`        | _(working-directory)_ | Identifies this report when multiple workflows run against the same pull request                        |
+| Input               | Default               | Purpose                                                                           |
+| ------------------- | --------------------- | --------------------------------------------------------------------------------- |
+| `args`              | _(required)_          | Arguments passed to `data-cap --json`, such as `--evidence` and `--strict*` flags |
+| `working-directory` | `.`                   | Directory where `data-cap` executes                                               |
+| `version`           | _(latest)_            | Version to execute through `npx` when `data-cap` is not installed locally         |
+| `comment`           | `true`                | Creates or updates a sticky pull request summary comment                          |
+| `annotations`       | `true`                | Emits GitHub workflow annotations for detected findings                           |
+| `report-key`        | _(working-directory)_ | Identifies this report when multiple workflows run against the same pull request  |
+
+**Known gap (ADR 0066):** `scripts/github-action/report.mjs` still reads
+`result.manifest`/`result.flow` from the `--json` payload -- for the
+manifest-written summary line and the rendered Data Flow Diagram (GitHub
+renders fenced ` ```mermaid ` blocks natively) respectively -- but the CLI
+can no longer populate either field (`--location`/`--flow` are gone). Those
+two report sections are silently empty until `report.mjs` is migrated to
+read `result.evidence` instead; that migration is intentionally not bundled
+into ADR 0066. Everything else the Action reports (findings, annotations,
+the evidence-check summary) is unaffected.
 
 The Action does not create its own policy layer. Pass/fail behavior always
 follows the CLI exit code and configured flags such as `--strict`,

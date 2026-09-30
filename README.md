@@ -49,27 +49,27 @@ const user = createData({
 })
 ```
 
-Then inspect the application as a whole:
+Then inspect the application as a whole. `data-cap`'s CLI surface is
+deliberately narrow (ADR 0066) -- `--evidence` is the only flag it still
+exposes, since it's the one output with a real, versioned contract (ADR
+0050). The manifest, documentation catalog, dependency & ownership report,
+and data flow diagram have no runtime consumer, so a project that wants them
+requests them from application code instead, via `generateDataArtifacts()`'s
+`location`/`docs`/`ownership`/`flow` options (see
+[`examples/application/scripts/generate-docs`](examples/application/scripts/generate-docs)):
 
 ```text
-$ npx data-cap --root . --include "src/**" --location src/generated/data.manifest.ts --docs docs/DATA.md --ownership docs/OWNERSHIP.md --flow docs/flow --evidence docs/data.evidence.json
+$ npm run docs
 
-Wrote manifest: src/generated/data.manifest.ts
-Discovered 1 active capability(ies).
-
-Manifest changes since last execution:
-  No changes.
-Wrote docs: docs/DATA.md
-Wrote dependency & ownership report: docs/OWNERSHIP.md
-Wrote data flow diagram set to: docs/flow (4 file(s))
 Wrote evidence model: docs/data.evidence.json
+[generate-docs] wrote src/generated/data.manifest.ts (1 active capability(ies)), docs/DATA.md, docs/OWNERSHIP.md, 4 flow file(s), and docs/data.evidence.json.
 
 0 error(s), 2 warning(s), 0 info finding(s):
-  - [warning] [SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY] [taskData] (tasks) Field "tasks" on "taskData" is sensitivity "internal" and has a declared endpoint crossing an external-service/api/queue boundary -- verify this is intentional and adequately protected.
-  - [warning] [SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY] [taskData] (selectedTask) Field "selectedTask" on "taskData" is sensitivity "internal" and has a declared endpoint crossing an external-service/api/queue boundary -- verify this is intentional and adequately protected.
+  - [warning] [SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY] [taskData] Field "tasks" on "taskData" is sensitivity "internal" and has a declared endpoint crossing an external-service/api/queue boundary -- verify this is intentional and adequately protected.
+  - [warning] [SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY] [taskData] Field "selectedTask" on "taskData" is sensitivity "internal" and has a declared endpoint crossing an external-service/api/queue boundary -- verify this is intentional and adequately protected.
 ```
 
-This is real CLI output from [`examples/application`](examples/application), not a mockup — including the two warnings. Nobody had declared `tasks`/`selectedTask` as crossing an external boundary on purpose; the tool found it because the field's own declared `sensitivity` and its getter's own declared network endpoint disagreed, not because anyone remembered to ask.
+This is real output from [`examples/application`](examples/application)'s own `npm run docs` (a `data-cap --evidence` CLI step chained with the `generate-docs` script above), not a mockup — including the two warnings. Nobody had declared `tasks`/`selectedTask` as crossing an external boundary on purpose; the tool found it because the field's own declared `sensitivity` and its getter's own declared network endpoint disagreed, not because anyone remembered to ask.
 
 The generated artifacts make the contract visible to developers, reviewers, and automated contributors.
 

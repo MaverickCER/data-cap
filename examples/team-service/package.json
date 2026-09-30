@@ -6,8 +6,8 @@
   "scripts": {
     "start": "tsx src/main.ts",
     "typecheck": "tsc --noEmit",
-    "docs": "data-cap --root . --include \"src/**\" --location src/generated/data.manifest.ts --docs docs/DATA.md --ownership docs/OWNERSHIP.md --flow docs/flow --evidence docs/data.evidence.json",
-    "check": "data-cap --root . --include \"src/**\" --location src/generated/data.manifest.ts --docs docs/DATA.md --ownership docs/OWNERSHIP.md --flow docs/flow --evidence docs/data.evidence.json --check"
+    "docs": "data-cap --root . --include \"src/**\" --evidence docs/data.evidence.json && tsx scripts/generate-docs/run.ts",
+    "check": "tsx scripts/generate-docs/check.ts"
   },
   "dependencies": {
     "data-cap": "file:../.."

@@ -4,8 +4,8 @@
   "type": "module",
   "description": "A minimal Next.js todo app demonstrating a real user/admin data-ownership authorization model, enforced server-side, with a client-side createData() capability documented via data-cap's own ownership/classification contract.",
   "scripts": {
-    "docs": "data-cap --root . --include \"src/**\" --location src/generated/data.manifest.ts --docs docs/DATA.md --ownership docs/OWNERSHIP.md --evidence docs/data.evidence.json",
-    "check": "data-cap --root . --include \"src/**\" --location src/generated/data.manifest.ts --docs docs/DATA.md --ownership docs/OWNERSHIP.md --evidence docs/data.evidence.json --check",
+    "docs": "data-cap --root . --include \"src/**\" --evidence docs/data.evidence.json && tsx scripts/generate-docs/run.ts",
+    "check": "tsx scripts/generate-docs/check.ts",
     "typecheck": "npm run docs && tsc --noEmit",
     "dev": "npm run docs && next dev",
     "build": "npm run docs && next build",
@@ -22,6 +22,7 @@
     "@types/node": "^20.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "tsx": "^4.7.0",
     "typescript": "^5.5.0"
   }
 }
