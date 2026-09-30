@@ -75,6 +75,14 @@ export default tseslint.config(
       "examples",
       "benchmarks/performance-runtime",
       "benchmarks/performance-buildtime",
+      // Tooling-owned data, not source: api-contract/ holds one subdirectory per ApiContract
+      // target (core/, runtime/, helpers/, build/, eslint-plugin/) of API-Extractor-backed
+      // snapshots of src/'s public surface (baseline.* committed as the compatibility diffing
+      // target, current.* regenerated every run -- `eslint --fix` rewriting baseline.* would
+      // corrupt that diff; see internal-package-contract's own
+      // scripts/api-contract/baseline-store.ts), and exceptions/ holds the reviewed-exception
+      // registries. Matches internal-package-contract's own repo-contract's identical exclusion.
+      ".repo-contract",
       // Explicit, not a `*/*/*` glob: ESLint's flat-config nested-config
       // auto-discovery (each package in a tree may carry its own
       // eslint.config.js) still descends into and loads a fixture's own

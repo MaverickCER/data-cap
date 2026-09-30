@@ -101,11 +101,17 @@ results/history files these runs produce), the same job goes further and commits
 `results.json`/`RESULTS.md` straight onto the PR's own branch, appending one entry to each of
 `benchmarks/history/runtime.json` and `benchmarks/history/buildtime.json` — so main already carries fresh
 numbers the moment the PR merges, with no separate follow-up PR. A PR that doesn't touch benchmarked code
-still gets the comparison comment above, just without that commit. See
-[`benchmarks/append-benchmark-history.mjs`](benchmarks/append-benchmark-history.mjs) and
-[`benchmarks/render-benchmark-summary.mjs`](benchmarks/render-benchmark-summary.mjs). Each history entry is
-intentionally compact (median per benchmark×tier, plus commit/version/runner metadata) — the full per-run
-detail (min/max/p95/stdDev/memory/inputs) stays in that commit's own `results.json`, never duplicated here.
+still gets the comparison comment above, just without that commit. This is
+[`internal-package-contract`](https://github.com/MaverickCER/internal-package-contract)'s shared benchmark
+engine (`scripts/benchmark/append-history.mjs` / `render-summary.mjs`, called via its reusable
+`benchmark-pr.yml` workflow — see `.github/workflows/ci.yml`'s `benchmark-pr` job) — data-cap keeps only the
+measuring (`benchmarks/run-benchmarks.mjs` and each example's own `scripts/run-benchmark.mjs`) and its own
+`benchmark-fixtures/budgets.mjs` thresholds; everything downstream of a fresh `results.json` is shared,
+consumer-agnostic code. Each history entry is intentionally compact (median + per-tier `inputs`, plus
+commit/version/runner metadata) — the full per-run detail (min/max/p95/stdDev/memory) stays in that commit's
+own `results.json`, never duplicated here. A static history page (small-multiples charts, one per benchmark
+group, annotated with its currently-inferred algorithmic complexity class) is rendered fresh at
+`docs/benchmarks/index.html` on every deploy — never committed, same treatment `docs/api/` already gets.
 
 ## Non-goals
 

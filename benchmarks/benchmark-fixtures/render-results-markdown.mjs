@@ -1,6 +1,7 @@
 // Renders a committed results.json into a human-readable RESULTS.md.
 // Current-snapshot only -- no comparison, no history, no regression
-// language. That's render-benchmark-summary.mjs's job, run separately by CI.
+// language. That's internal-package-contract's shared
+// scripts/benchmark/render-summary.mjs's job, run separately by CI.
 
 function isDurationStats(value) {
   return (

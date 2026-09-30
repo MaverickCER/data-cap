@@ -121,8 +121,10 @@ architectural split), never compared against each other (see "Never compare" bel
 
 [`benchmark-fixtures/budgets.mjs`](benchmark-fixtures/budgets.mjs) defines a `maxRegressionPercent` per
 named benchmark. This is a **highlighting** threshold only, checked by
-[`render-benchmark-summary.mjs`](render-benchmark-summary.mjs) -- never a gate, never something that fails a
-CI check. A named benchmark with no budget entry is still reported, just never flagged -- these are
+`internal-package-contract`'s shared `scripts/benchmark/render-summary.mjs` (see the `benchmark:summary` npm
+script, or `.github/workflows/ci.yml`'s `benchmark-pr` job, which calls it via
+`internal-package-contract`'s reusable `benchmark-pr.yml` workflow) -- never a gate, never something that
+fails a CI check. A named benchmark with no budget entry is still reported, just never flagged -- these are
 fixed-size sanity checks or coordination-cost comparisons, not tiered regression targets.
 
 ## Benchmark interpretation rules
@@ -140,7 +142,7 @@ Stated up front so a future contributor doesn't have to re-derive them from a ra
   the gap it measures is ONLY data-cap's own coordination bookkeeping -- real, small, and worth catching a
   regression in, but NOT the redundant-network-call cost dedup actually saves in production.
 - A `benchmarkSuiteVersion` mismatch against a history entry is warned about, never silently diffed across
-  -- see `render-benchmark-summary.mjs`.
+  -- see `internal-package-contract`'s shared `render-summary.mjs`.
 
 ## Never compare
 
@@ -151,7 +153,7 @@ Stated up front so a future contributor doesn't have to re-derive them from a ra
 - `dedupeFanIn`'s gap over `dedupeFanIn-independent` against any real-world "dedup saved us N requests"
   claim -- see the interpretation rule above.
 - Numbers produced under different `benchmarkSuiteVersion`s or `generatorVersion`s -- even when they look
-  close. `render-benchmark-summary.mjs` warns on a mismatch rather than silently diffing across one.
+  close. `render-summary.mjs` warns on a mismatch rather than silently diffing across one.
 - Absolute millisecond numbers across machines/Node versions/CI runners -- the committed history is a
   same-runner (GitHub-hosted `ubuntu-latest`) time series for exactly this reason; every result also records
   its own `metadata.environment`.
@@ -201,11 +203,13 @@ Four independent version numbers, each answering a different question:
 ## `benchmarks/history/`
 
 `benchmarks/history/runtime.json` and `.../buildtime.json` are append-only arrays of compact entries
-(`medianMs` per completed named-benchmark×tier, plus commit/version/timestamp/runner metadata) -- not the
-full per-run detail already in each commit's own `results.json` (min/max/p95/stdDev/memory/inputs). Written
-to by CI only (`benchmark-pr`'s job, on a PR whose own diff touches benchmarked code), in the same
-commit that refreshes `results.json`/`RESULTS.md` directly onto that PR's branch -- never by a local
-`npm run benchmark`.
+(`medianMs` + each tier's own `inputs` + a derived `unitsPerSecond` figure per completed named-benchmark×
+tier, plus commit/version/timestamp/runner metadata -- history schema v2, written by
+`internal-package-contract`'s shared `append-history.mjs`) -- not the full per-run detail already in each
+commit's own `results.json` (min/max/p95/stdDev/memory). An older v1 entry (no `inputs`) stays valid
+forever; it's just excluded from the page's complexity-class inference. Written to by CI only
+(`benchmark-pr`'s job, on a PR whose own diff touches benchmarked code), in the same commit that refreshes
+`results.json`/`RESULTS.md` directly onto that PR's branch -- never by a local `npm run benchmark`.
 
 ## Reproduction
 

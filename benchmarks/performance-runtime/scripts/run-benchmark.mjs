@@ -5,7 +5,9 @@
 //
 // Only measures. Never reads a previous results.json, never computes a
 // diff, never decides what's a regression -- that's
-// ../../render-benchmark-summary.mjs's job, run separately by CI.
+// internal-package-contract's shared scripts/benchmark/render-summary.mjs's
+// job (called via the benchmark-pr job in ../../../.github/workflows/ci.yml),
+// run separately by CI.
 //
 // Imports data-cap via its PACKAGE NAME, resolved through this directory's
 // own `node_modules/data-cap` (a `file:../..` dependency,
