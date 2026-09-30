@@ -23,6 +23,8 @@ import { fileURLToPath } from "node:url"
 
 import { buildData } from "data-cap"
 import { createDataStore, createData, createCoordinator } from "data-cap/runtime"
+import { createDataCache } from "data-cap/runtime/cache"
+import { withRetry } from "data-cap/runtime/retry"
 import { canonicalize, identity } from "data-cap/helpers"
 
 import {
@@ -40,6 +42,7 @@ import {
   RUNTIME_BENCHMARKS,
   RUNTIME_ITEM_TIERS,
   RUNTIME_CAPABILITY_TIERS,
+  RUNTIME_RETRY_TIERS,
   TIER_NAMES,
 } from "../../benchmark-fixtures/scenarios.mjs"
 import { renderResultsMarkdown } from "../../benchmark-fixtures/render-results-markdown.mjs"
@@ -232,6 +235,63 @@ async function benchReconcileArrayInfo(tierName, definitionVersion) {
   }
 }
 
+// `data-cap/runtime/cache`'s createDataCache -- a bounded, LRU-eviction
+// cache of complete DataState snapshots (see ../../../src/runtime/cache.ts's
+// own doc comment). Deliberately tiered along the SAME collection-size axis
+// as commitAuthoritative-leaf, and for the same reason: `set`/`get` only
+// ever touch `Map` entries keyed by an opaque string -- the cached
+// DataState itself is stored BY REFERENCE, never deep-copied -- so this is
+// expected to stay flat across tiers, proving the cache doesn't silently
+// introduce an O(items) cost env-cap-style caches don't need to worry
+// about (env-cap has no equivalent array/collection field). A real
+// regression here (the curve stops being flat) would mean the cache
+// started copying instead of referencing.
+const DATA_CACHE_MAX_ENTRIES = 50
+
+async function benchDataCacheSetGet(tierName, definitionVersion) {
+  const { itemCount } = RUNTIME_ITEM_TIERS[tierName]
+  const opts = ITEM_SAMPLE_OPTS[tierName]
+  const cache = createDataCache({ maxEntries: DATA_CACHE_MAX_ENTRIES })
+  function freshSnapshot() {
+    const store = createDataStore(buildData({ fields: capabilitySchemaFields(0) }))
+    store.commitAuthoritative({ items: generateRecords(itemCount) }, { items: { status: "success" } })
+    return store.getSnapshot()
+  }
+  // Pre-fills the cache to capacity, under keys the timed loop below never
+  // reuses, OUTSIDE the timed section -- so every timed `set()` is
+  // guaranteed to be the (maxEntries + 1)th LIVE entry, evicting the
+  // cache's current oldest key on every single call, real LRU churn from
+  // the first timed sample onward. Without this, a tier whose total
+  // iteration count (warmup + sampled) never reaches `maxEntries` --
+  // `stress`/`extreme` here, at up to 27/13 calls against 50 entries --
+  // would never even fill the cache, let alone evict from it.
+  for (let p = 0; p < DATA_CACHE_MAX_ENTRIES; p++) {
+    cache.set(`prefill-${String(p)}`, freshSnapshot())
+  }
+  // One fresh, already-committed snapshot per timed call, pre-built OUTSIDE
+  // the timed section -- committing a collection is `commitAuthoritative-
+  // array-replace`'s own job to measure, not this benchmark's.
+  const snapshots = Array.from({ length: poolBudget(opts) }, () => freshSnapshot())
+  let i = 0
+  const { samples, configuration } = await adaptiveSample(
+    () =>
+      timeItSync(() => {
+        const key = `entry-${String(i)}`
+        cache.set(key, snapshots[i])
+        cache.get(key)
+        i += 1
+      }),
+    opts,
+  )
+  return {
+    entry: completed(benchmarkId("runtime", "dataCacheSetGet", tierName, definitionVersion), {
+      inputs: { itemCount },
+      durationMs: computeDurationStats(samples, configuration.warmupIterations),
+    }),
+    configuration,
+  }
+}
+
 async function benchCanonicalize(definitionVersion) {
   let i = 0
   const { samples, configuration } = await adaptiveSample(
@@ -405,6 +465,50 @@ async function benchRunGettersFanOut(definitionVersion) {
   }
 }
 
+const RETRY_SAMPLE_OPTS = {
+  baseline: { warmupIterations: 3, targetDurationMs: 1000, minIterations: 10, maxIterations: 60 },
+  stress: { warmupIterations: 2, targetDurationMs: 1200, minIterations: 8, maxIterations: 40 },
+  extreme: { warmupIterations: 1, targetDurationMs: 1500, minIterations: 5, maxIterations: 20 },
+}
+
+/**
+ * `data-cap/runtime/retry`'s withRetry -- tiered along RUNTIME_RETRY_TIERS's
+ * own `attempts` axis (how many total calls `fn` takes to succeed), never
+ * item/capability count: retry's own cost driver is "how many times did the
+ * loop go around," not how big any one payload is. `delayMs: () => 0`
+ * overrides the real (multi-second) default backoff -- exercises the real
+ * loop/try-catch/AbortSignal-check/delay() control flow every real retry
+ * goes through, without burning real wall-clock time waiting on it (the
+ * same "simulate the async boundary, never skip real dispatch logic"
+ * principle `simulatedExecuteFromPool` applies to getter execution above).
+ */
+async function benchWithRetry(tierName, definitionVersion) {
+  const { attempts } = RUNTIME_RETRY_TIERS[tierName]
+  const opts = RETRY_SAMPLE_OPTS[tierName]
+  const signal = new AbortController().signal
+  const { samples, configuration } = await adaptiveSample(async () => {
+    let call = 0
+    const t0 = performance.now()
+    await withRetry(
+      async () => {
+        call += 1
+        if (call < attempts) throw new Error("simulated transient failure")
+        return call
+      },
+      signal,
+      { maxAttempts: attempts, delayMs: () => 0 },
+    )
+    return performance.now() - t0
+  }, opts)
+  return {
+    entry: completed(benchmarkId("runtime", "withRetry", tierName, definitionVersion), {
+      inputs: { attempts },
+      durationMs: computeDurationStats(samples, configuration.warmupIterations),
+    }),
+    configuration,
+  }
+}
+
 /* -------------------------------------------------------------------------- */
 /* Run everything                                                             */
 /* -------------------------------------------------------------------------- */
@@ -437,6 +541,7 @@ async function main() {
   results["commitAuthoritative-leaf"] = { tiers: {} }
   results.reconcileArrayInfo = { tiers: {} }
   results["getterDispatch-cold"] = { tiers: {} }
+  results.dataCacheSetGet = { tiers: {} }
   for (const tier of TIER_NAMES) {
     const arrayReplace = await benchCommitArrayReplace(tier, 1)
     results["commitAuthoritative-array-replace"].tiers[tier] = arrayReplace.entry
@@ -446,8 +551,10 @@ async function main() {
     results.reconcileArrayInfo.tiers[tier] = reconcile.entry
     const getterDispatch = await benchGetterDispatchCold(tier, 1)
     results["getterDispatch-cold"].tiers[tier] = getterDispatch.entry
+    const dataCache = await benchDataCacheSetGet(tier, 1)
+    results.dataCacheSetGet.tiers[tier] = dataCache.entry
     console.log(
-      `[performance-runtime] ${tier}: array-replace ${arrayReplace.entry.durationMs.medianMs.toFixed(4)}ms, leaf ${leaf.entry.durationMs.medianMs.toFixed(4)}ms, reconcile ${reconcile.entry.durationMs.medianMs.toFixed(4)}ms, getterDispatch ${getterDispatch.entry.durationMs.medianMs.toFixed(4)}ms`,
+      `[performance-runtime] ${tier}: array-replace ${arrayReplace.entry.durationMs.medianMs.toFixed(4)}ms, leaf ${leaf.entry.durationMs.medianMs.toFixed(4)}ms, reconcile ${reconcile.entry.durationMs.medianMs.toFixed(4)}ms, getterDispatch ${getterDispatch.entry.durationMs.medianMs.toFixed(4)}ms, dataCacheSetGet ${dataCache.entry.durationMs.medianMs.toFixed(4)}ms`,
     )
   }
 
@@ -458,6 +565,15 @@ async function main() {
   console.log(
     `[performance-runtime] dedupeFanIn ${results.dedupeFanIn.tiers.fixed.durationMs.medianMs.toFixed(4)}ms vs. dedupeFanIn-independent ${results["dedupeFanIn-independent"].tiers.fixed.durationMs.medianMs.toFixed(4)}ms`,
   )
+
+  results.withRetry = { tiers: {} }
+  for (const tier of TIER_NAMES) {
+    const retry = await benchWithRetry(tier, 1)
+    results.withRetry.tiers[tier] = retry.entry
+    console.log(
+      `[performance-runtime] withRetry.${tier}: median ${retry.entry.durationMs.medianMs.toFixed(4)}ms (attempts=${String(RUNTIME_RETRY_TIERS[tier].attempts)})`,
+    )
+  }
 
   const finishedAt = new Date()
   const metadata = buildMetadata({

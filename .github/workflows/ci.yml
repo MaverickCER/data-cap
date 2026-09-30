@@ -245,6 +245,21 @@ jobs:
           cache: npm
 
       - run: npm ci
+      # DocsLinks (inside `npm run contract` below) crawls docs/index.html's
+      # real HTML link graph, recursing into docs/api/** once ApiDocs's own
+      # `npm run docs:api` step (run by the contract tool itself) generates
+      # it -- which is why the existing "API reference" nav link already
+      # resolves there with no extra step here. The new "Benchmarks" nav
+      # link needs the same treatment: docs/benchmarks/index.html has to
+      # actually exist on disk for that same crawl to resolve it, and
+      # nothing inside the contract tool knows how to generate a
+      # data-cap-specific benchmark history page. Mirrors `deploy`'s own
+      # generation command below exactly -- generated fresh here too, never
+      # committed.
+      - run: >-
+          npm run benchmark:page -- --out docs/benchmarks/index.html
+          --history 'Runtime|benchmarks/history/runtime.json'
+          --history 'Build-time|benchmarks/history/buildtime.json'
       # internal-package-contract's own runner deletes reports/ and coverage/
       # after the run UNLESS they existed before it started -- pre-creating
       # them here is what makes the mutation-report artifact upload below

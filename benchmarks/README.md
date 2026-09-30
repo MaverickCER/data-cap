@@ -109,13 +109,17 @@ See [`performance-runtime/README.md`](performance-runtime/README.md) for what ea
 `cold-start` is a fresh-child-process, capability-count-tiered benchmark (no throw-until-ready gate to split
 a "validate" phase out of, unlike env-cap's own `createEnv`/`validateEnv` -- see that README). The rest is
 an in-process, collection-size-tiered (or fixed-size) suite covering `buildData`, `commitAuthoritative`,
-`helpers/identity.ts`, and `createData`'s getter/coordinator dispatch machinery.
+`helpers/identity.ts`, `createData`'s getter/coordinator dispatch machinery, `data-cap/runtime/cache`'s
+`createDataCache` (`dataCacheSetGet`, collection-size-tiered), and `data-cap/runtime/retry`'s `withRetry`
+(`withRetry`, tiered along its own retry-attempt-count axis -- see that README's own section).
 
-### Build-time -- `discovery`, `artifacts`
+### Build-time -- `discovery`, `artifacts`, `evidenceProjection`
 
 See [`performance-buildtime/README.md`](performance-buildtime/README.md) for what each measures.
 Runtime and build-time are measured in separate examples (mirrors ADR 0001's runtime/build-time
 architectural split), never compared against each other (see "Never compare" below).
+`evidenceProjection` additionally covers `data-cap/evidence`'s `defineEvidenceProjection`, tiered along the
+same capability-file-count axis as `discovery`/`artifacts`.
 
 ## How regressions are surfaced
 
@@ -132,9 +136,13 @@ fixed-size sanity checks or coordination-cost comparisons, not tiered regression
 Stated up front so a future contributor doesn't have to re-derive them from a raw results diff:
 
 - `cold-start`, `commitAuthoritative-array-replace`, `reconcileArrayInfo`, `getterDispatch-cold`,
-  `discovery`, and `artifacts` should all scale approximately linearly with their own axis (capability
-  count or collection size) once each benchmark's fixed per-call overhead is accounted for.
-- `commitAuthoritative-leaf` should stay flat across every tier -- see `performance-runtime/README.md`.
+  `discovery`, `artifacts`, `withRetry`, and `evidenceProjection` should all scale approximately linearly
+  with their own axis (capability count, collection size, or -- for `withRetry` -- retry-attempt count) once
+  each benchmark's fixed per-call overhead is accounted for.
+- `commitAuthoritative-leaf` and `dataCacheSetGet` should both stay flat across every tier -- see
+  `performance-runtime/README.md`. `dataCacheSetGet`'s flatness is the same kind of structural-sharing
+  proof `commitAuthoritative-leaf` is: it shows `createDataCache` stores a `DataState` by reference, never
+  by deep copy.
 - `getterDispatch-cold` should track `commitAuthoritative-array-replace` closely at the same tier; the gap
   is coordinator dedup + ownership-walk + the extra loading commit.
 - **Never read `dedupeFanIn`'s number without its `dedupeFanIn-independent` counterpart, and never read the
