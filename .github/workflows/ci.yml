@@ -247,6 +247,13 @@ jobs:
   # internal-package-contract's own engines.node floor.
   contract:
     needs: [verify, lint]
+    # Same reasoning as `verify`/`lint`'s own identical-shaped condition: GitHub's default
+    # `success()` considers the *entire* transitive dependency graph, not just this job's direct
+    # `needs` -- since `verify`/`lint` themselves depend on `benchmark-pr`, a skipped `benchmark-pr`
+    # (every push-to-main run, every fork PR) still propagates through as "not success" here even
+    # when `verify`/`lint` genuinely ran and passed, silently skipping `contract` itself. Confirmed
+    # live: a real PR run where `verify`/`lint` both concluded "success" still skipped `contract`.
+    if: always() && (needs.verify.result == 'success' || needs.verify.result == 'skipped') && (needs.lint.result == 'success' || needs.lint.result == 'skipped')
     runs-on: ubuntu-latest
     steps:
       # fetch-depth: 0 -- the Commits check reads origin/main..HEAD.
@@ -509,7 +516,16 @@ jobs:
 
   badges:
     needs: [verify, lint, cross-runtime]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Same transitive-skip reasoning as `contract`'s own identical-shaped condition above --
+    # `verify`/`lint` depend on `benchmark-pr`, which is always skipped on a push-to-main event
+    # (it only ever runs for `pull_request`), so without this, GitHub's default `success()` here
+    # sees that skipped ancestor and silently skips `badges` (and therefore `deploy` below) even
+    # when `verify`/`lint` genuinely ran and passed. Confirmed live on a real push to `main`.
+    if: >-
+      github.event_name == 'push' && github.ref == 'refs/heads/main' && always() &&
+      (needs.verify.result == 'success' || needs.verify.result == 'skipped') &&
+      (needs.lint.result == 'success' || needs.lint.result == 'skipped') &&
+      needs.cross-runtime.result == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -542,6 +558,12 @@ jobs:
   # permissions.
   deploy:
     needs: badges
+    # Same transitive-skip reasoning as `badges`'/`contract`'s own conditions above -- `badges`'
+    # own ancestry runs back through `verify`/`lint` to `benchmark-pr`, which is always skipped on
+    # a push-to-main event, so without this, GitHub's default `success()` here still sees that
+    # skipped ancestor deep in the chain and silently skips `deploy` even when `badges` genuinely
+    # ran and passed. Confirmed live on a real push to `main`.
+    if: always() && needs.badges.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: read
