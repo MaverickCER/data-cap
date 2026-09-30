@@ -1,5 +1,5 @@
 {
-  "historySchemaVersion": 1,
+  "historySchemaVersion": 2,
   "entries": [
     {
       "timestamp": "2026-08-19T10:49:10.206Z",
@@ -1599,6 +1599,174 @@
         "runGettersFanOut": {
           "fixed": {
             "medianMs": 2.0490309999986493
+          }
+        }
+      }
+    },
+    {
+      "timestamp": "2026-09-30T14:36:55.710Z",
+      "gitCommit": "09ae890794009feab93679db7a3c73e663b0e020",
+      "runner": "GitHub Actions",
+      "versions": {
+        "benchmarkSchemaVersion": 1,
+        "benchmarkSuiteVersion": 1,
+        "benchmarkToolVersion": "1.0.0",
+        "dataCapVersion": "0.4.0"
+      },
+      "measurements": {
+        "cold-start": {
+          "baseline": {
+            "medianMs": 57.06053000000003,
+            "inputs": {
+              "capabilities": 10
+            },
+            "unitsPerSecond": 175.25
+          },
+          "stress": {
+            "medianMs": 92.94086700000025,
+            "inputs": {
+              "capabilities": 100
+            },
+            "unitsPerSecond": 1075.95
+          },
+          "extreme": {
+            "medianMs": 254.22488199999998,
+            "inputs": {
+              "capabilities": 500
+            },
+            "unitsPerSecond": 1966.76
+          }
+        },
+        "buildData": {
+          "fixed": {
+            "medianMs": 0.0818120000003546
+          }
+        },
+        "commitAuthoritative-array-replace": {
+          "baseline": {
+            "medianMs": 0.2953000000006796,
+            "inputs": {
+              "itemCount": 200
+            },
+            "unitsPerSecond": 677277.35
+          },
+          "stress": {
+            "medianMs": 2.9620089999998527,
+            "inputs": {
+              "itemCount": 2000
+            },
+            "unitsPerSecond": 675217.39
+          },
+          "extreme": {
+            "medianMs": 23.484999000000244,
+            "inputs": {
+              "itemCount": 20000
+            },
+            "unitsPerSecond": 851607.45
+          }
+        },
+        "commitAuthoritative-leaf": {
+          "baseline": {
+            "medianMs": 0.0197969999999259,
+            "inputs": {
+              "itemCount": 200
+            },
+            "unitsPerSecond": 10102540.79
+          },
+          "stress": {
+            "medianMs": 0.019475999999485794,
+            "inputs": {
+              "itemCount": 2000
+            },
+            "unitsPerSecond": 102690490.86
+          },
+          "extreme": {
+            "medianMs": 0.04474299999856157,
+            "inputs": {
+              "itemCount": 20000
+            },
+            "unitsPerSecond": 446997295.68
+          }
+        },
+        "reconcileArrayInfo": {
+          "baseline": {
+            "medianMs": 0.26036500000009255,
+            "inputs": {
+              "itemCount": 200
+            },
+            "unitsPerSecond": 768152.4
+          },
+          "stress": {
+            "medianMs": 1.4587780000001658,
+            "inputs": {
+              "itemCount": 2000
+            },
+            "unitsPerSecond": 1371010.53
+          },
+          "extreme": {
+            "medianMs": 15.314163999999437,
+            "inputs": {
+              "itemCount": 20000
+            },
+            "unitsPerSecond": 1305980.53
+          }
+        },
+        "getterDispatch-cold": {
+          "baseline": {
+            "medianMs": 0.5115029999997205,
+            "inputs": {
+              "itemCount": 200
+            },
+            "unitsPerSecond": 391004.55
+          },
+          "stress": {
+            "medianMs": 3.086170999999922,
+            "inputs": {
+              "itemCount": 2000
+            },
+            "unitsPerSecond": 648052.23
+          },
+          "extreme": {
+            "medianMs": 23.294324000000415,
+            "inputs": {
+              "itemCount": 20000
+            },
+            "unitsPerSecond": 858578.25
+          }
+        },
+        "canonicalize": {
+          "fixed": {
+            "medianMs": 0.02213099999971746
+          }
+        },
+        "dedupeFanIn": {
+          "fixed": {
+            "medianMs": 0.9271380000009231,
+            "inputs": {
+              "itemCount": 200,
+              "concurrency": 25
+            },
+            "unitsPerSecond": 242682.32
+          }
+        },
+        "dedupeFanIn-independent": {
+          "fixed": {
+            "medianMs": 1.1451140000008309,
+            "inputs": {
+              "itemCount": 200,
+              "concurrency": 25
+            },
+            "unitsPerSecond": 196486.99
+          }
+        },
+        "runGettersFanOut": {
+          "fixed": {
+            "medianMs": 2.2541499999970256,
+            "inputs": {
+              "itemCount": 200,
+              "getterCount": 6
+            },
+            "unitsPerSecond": 91387
           }
         }
       }
