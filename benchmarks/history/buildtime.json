@@ -617,6 +617,88 @@
           }
         }
       }
+    },
+    {
+      "timestamp": "2026-09-30T17:20:22.914Z",
+      "gitCommit": "2f2dc00cb7ac2fd4b1416f8f59678fd7f27b9dfa",
+      "runner": "GitHub Actions",
+      "versions": {
+        "benchmarkSchemaVersion": 1,
+        "benchmarkSuiteVersion": 1,
+        "benchmarkToolVersion": "1.0.0",
+        "dataCapVersion": "0.4.0"
+      },
+      "measurements": {
+        "discovery": {
+          "baseline": {
+            "medianMs": 1.4459620000000086,
+            "inputs": {
+              "capabilities": 10
+            },
+            "unitsPerSecond": 6915.81
+          },
+          "stress": {
+            "medianMs": 6.978396999999973,
+            "inputs": {
+              "capabilities": 100
+            },
+            "unitsPerSecond": 14329.94
+          },
+          "extreme": {
+            "medianMs": 23.08143199999995,
+            "inputs": {
+              "capabilities": 400
+            },
+            "unitsPerSecond": 17329.95
+          }
+        },
+        "artifacts": {
+          "baseline": {
+            "medianMs": 49.85316499999999,
+            "inputs": {
+              "capabilities": 10
+            },
+            "unitsPerSecond": 200.59
+          },
+          "stress": {
+            "medianMs": 295.65821600000027,
+            "inputs": {
+              "capabilities": 100
+            },
+            "unitsPerSecond": 338.23
+          },
+          "extreme": {
+            "medianMs": 1480.0205299999998,
+            "inputs": {
+              "capabilities": 400
+            },
+            "unitsPerSecond": 270.27
+          }
+        },
+        "evidenceProjection": {
+          "baseline": {
+            "medianMs": 1.9361840000001393,
+            "inputs": {
+              "capabilities": 10
+            },
+            "unitsPerSecond": 5164.8
+          },
+          "stress": {
+            "medianMs": 13.4125499999991,
+            "inputs": {
+              "capabilities": 100
+            },
+            "unitsPerSecond": 7455.7
+          },
+          "extreme": {
+            "medianMs": 53.90711200000078,
+            "inputs": {
+              "capabilities": 400
+            },
+            "unitsPerSecond": 7420.17
+          }
+        }
+      }
     }
   ]
 }

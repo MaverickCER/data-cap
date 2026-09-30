@@ -1770,6 +1770,220 @@
           }
         }
       }
+    },
+    {
+      "timestamp": "2026-09-30T17:20:10.125Z",
+      "gitCommit": "2f2dc00cb7ac2fd4b1416f8f59678fd7f27b9dfa",
+      "runner": "GitHub Actions",
+      "versions": {
+        "benchmarkSchemaVersion": 1,
+        "benchmarkSuiteVersion": 1,
+        "benchmarkToolVersion": "1.0.0",
+        "dataCapVersion": "0.4.0"
+      },
+      "measurements": {
+        "cold-start": {
+          "baseline": {
+            "medianMs": 53.57763900000003,
+            "inputs": {
+              "capabilities": 10
+            },
+            "unitsPerSecond": 186.65
+          },
+          "stress": {
+            "medianMs": 84.58624399999985,
+            "inputs": {
+              "capabilities": 100
+            },
+            "unitsPerSecond": 1182.23
+          },
+          "extreme": {
+            "medianMs": 216.84674500000028,
+            "inputs": {
+              "capabilities": 500
+            },
+            "unitsPerSecond": 2305.78
+          }
+        },
+        "buildData": {
+          "fixed": {
+            "medianMs": 0.07336800000030053
+          }
+        },
+        "commitAuthoritative-array-replace": {
+          "baseline": {
+            "medianMs": 0.26141499999994267,
+            "inputs": {
+              "itemCount": 200
+            },
+            "unitsPerSecond": 765067.04
+          },
+          "stress": {
+            "medianMs": 2.547997000000578,
+            "inputs": {
+              "itemCount": 2000
+            },
+            "unitsPerSecond": 784930.28
+          },
+          "extreme": {
+            "medianMs": 21.848313999998936,
+            "inputs": {
+              "itemCount": 20000
+            },
+            "unitsPerSecond": 915402.44
+          }
+        },
+        "commitAuthoritative-leaf": {
+          "baseline": {
+            "medianMs": 0.017346000000543427,
+            "inputs": {
+              "itemCount": 200
+            },
+            "unitsPerSecond": 11530035.74
+          },
+          "stress": {
+            "medianMs": 0.017845999999735795,
+            "inputs": {
+              "itemCount": 2000
+            },
+            "unitsPerSecond": 112069931.64
+          },
+          "extreme": {
+            "medianMs": 0.02199299999847426,
+            "inputs": {
+              "itemCount": 20000
+            },
+            "unitsPerSecond": 909380257.42
+          }
+        },
+        "reconcileArrayInfo": {
+          "baseline": {
+            "medianMs": 0.23403499999949418,
+            "inputs": {
+              "itemCount": 200
+            },
+            "unitsPerSecond": 854573.03
+          },
+          "stress": {
+            "medianMs": 1.3640709999999672,
+            "inputs": {
+              "itemCount": 2000
+            },
+            "unitsPerSecond": 1466199.34
+          },
+          "extreme": {
+            "medianMs": 14.587047000000894,
+            "inputs": {
+              "itemCount": 20000
+            },
+            "unitsPerSecond": 1371079.42
+          }
+        },
+        "getterDispatch-cold": {
+          "baseline": {
+            "medianMs": 0.4246370000000752,
+            "inputs": {
+              "itemCount": 200
+            },
+            "unitsPerSecond": 470990.52
+          },
+          "stress": {
+            "medianMs": 2.7947610000001077,
+            "inputs": {
+              "itemCount": 2000
+            },
+            "unitsPerSecond": 715624.7
+          },
+          "extreme": {
+            "medianMs": 21.844285999999556,
+            "inputs": {
+              "itemCount": 20000
+            },
+            "unitsPerSecond": 915571.24
+          }
+        },
+        "dataCacheSetGet": {
+          "baseline": {
+            "medianMs": 0.009104000000661472,
+            "inputs": {
+              "itemCount": 200
+            },
+            "unitsPerSecond": 21968365.55
+          },
+          "stress": {
+            "medianMs": 0.013700999999855412,
+            "inputs": {
+              "itemCount": 2000
+            },
+            "unitsPerSecond": 145974746.37
+          },
+          "extreme": {
+            "medianMs": 0.016063999999460066,
+            "inputs": {
+              "itemCount": 20000
+            },
+            "unitsPerSecond": 1245019920.36
+          }
+        },
+        "canonicalize": {
+          "fixed": {
+            "medianMs": 0.021903000000747852
+          }
+        },
+        "dedupeFanIn": {
+          "fixed": {
+            "medianMs": 0.7777060000007623,
+            "inputs": {
+              "itemCount": 200,
+              "concurrency": 25
+            },
+            "unitsPerSecond": 289312.41
+          }
+        },
+        "dedupeFanIn-independent": {
+          "fixed": {
+            "medianMs": 1.0424569999995583,
+            "inputs": {
+              "itemCount": 200,
+              "concurrency": 25
+            },
+            "unitsPerSecond": 215836.24
+          }
+        },
+        "runGettersFanOut": {
+          "fixed": {
+            "medianMs": 2.0555720000011206,
+            "inputs": {
+              "itemCount": 200,
+              "getterCount": 6
+            },
+            "unitsPerSecond": 100215.41
+          }
+        },
+        "withRetry": {
+          "baseline": {
+            "medianMs": 1.1922480000030191,
+            "inputs": {
+              "attempts": 2
+            },
+            "unitsPerSecond": 1677.5
+          },
+          "stress": {
+            "medianMs": 7.735140000000683,
+            "inputs": {
+              "attempts": 8
+            },
+            "unitsPerSecond": 1034.24
+          },
+          "extreme": {
+            "medianMs": 31.713490999998612,
+            "inputs": {
+              "attempts": 30
+            },
+            "unitsPerSecond": 945.97
+          }
+        }
+      }
     }
   ]
 }
