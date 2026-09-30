@@ -59,13 +59,16 @@ jobs:
   # keeping this job's own name unchanged (rather than, say, inlining the
   # reusable workflow's job under a name like `benchmark`) is what keeps
   # every downstream `if:` below correct without also having to rewrite them.
-  # The `if:`/`concurrency:` below are UNCHANGED from the pre-migration job
-  # (only the `steps:` moved into the reusable workflow) -- same same-repo-
-  # PRs-only + `github.actor != 'github-actions[bot]'` anti-recursion-loop
-  # guard, same per-PR push serialization. A `uses:` job cannot also declare
-  # `runs-on:`/`steps:` (the reusable workflow's own job declares those), but
-  # `if:`/`permissions:`/`concurrency:` are all still job-level keys a caller
-  # job can set.
+  # The `if:` below is UNCHANGED from the pre-migration job (only the
+  # `steps:` moved into the reusable workflow) -- same same-repo-PRs-only +
+  # `github.actor != 'github-actions[bot]'` anti-recursion-loop guard. The
+  # per-PR push serialization (`concurrency: group: benchmarks-<PR#>`) is
+  # NOT duplicated here even though it's still a legal caller-job key --
+  # see this job's own `permissions:`-adjacent comment below for why
+  # declaring it on both this caller job and the reusable workflow's own
+  # internal job (which already declares it) deadlocks the run instead of
+  # doubly-guarding it. A `uses:` job cannot also declare `runs-on:`/
+  # `steps:` (the reusable workflow's own job declares those).
   benchmark-pr:
     # Same-repo PRs only -- a fork PR's GITHUB_TOKEN is read-only here, so the
     # comment/commit/push steps inside the reusable workflow would just fail
@@ -87,13 +90,19 @@ jobs:
       github.event_name == 'pull_request' &&
       github.event.pull_request.head.repo.full_name == github.repository &&
       github.actor != 'github-actions[bot]'
-    # Committing refreshed results onto the PR branch below is a real write
-    # to that PR's own history -- serialize per-PR so two overlapping runs (a
-    # fast second push right behind the first) never race that push, and
-    # cancel a stale one outright once a newer commit supersedes it.
-    concurrency:
-      group: benchmarks-${{ github.event.pull_request.number }}
-      cancel-in-progress: true
+    # NOT duplicated here: the reusable workflow's own internal job already
+    # declares this exact `concurrency: group: benchmarks-<PR#>` (serializing
+    # the real write its commit/push step makes onto the PR branch). Adding
+    # the identical group name on this caller job too doesn't strengthen
+    # that guard -- it deadlocks it. GitHub detected exactly this live
+    # ("Canceling since a deadlock was detected for concurrency group:
+    # 'benchmarks-<PR#>' between 'benchmark-pr' and 'benchmark-pr /
+    # benchmark-pr'") the first time this was tried: the caller job and the
+    # reusable workflow's own inner job both waiting on one group across two
+    # levels of the same call is unsatisfiable, so the run cancels itself
+    # instead of ever starting. One declaration of a given concurrency group
+    # per call chain is what's actually required, and the reusable workflow
+    # is the one that owns the write this guard protects.
     # A caller job's own `permissions:` is what actually grants the token the
     # reusable workflow's internal job runs with -- the reusable workflow's
     # own job-level `permissions:` block (contents: write, pull-requests:
