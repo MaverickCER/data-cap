@@ -1,5 +1,5 @@
 {
-  "historySchemaVersion": 1,
+  "historySchemaVersion": 2,
   "entries": [
     {
       "timestamp": "2026-08-19T10:49:22.520Z",
@@ -555,6 +555,65 @@
           },
           "extreme": {
             "medianMs": 1646.901602
+          }
+        }
+      }
+    },
+    {
+      "timestamp": "2026-09-30T14:37:08.686Z",
+      "gitCommit": "09ae890794009feab93679db7a3c73e663b0e020",
+      "runner": "GitHub Actions",
+      "versions": {
+        "benchmarkSchemaVersion": 1,
+        "benchmarkSuiteVersion": 1,
+        "benchmarkToolVersion": "1.0.0",
+        "dataCapVersion": "0.4.0"
+      },
+      "measurements": {
+        "discovery": {
+          "baseline": {
+            "medianMs": 2.009074000000055,
+            "inputs": {
+              "capabilities": 10
+            },
+            "unitsPerSecond": 4977.42
+          },
+          "stress": {
+            "medianMs": 9.695446999999945,
+            "inputs": {
+              "capabilities": 100
+            },
+            "unitsPerSecond": 10314.12
+          },
+          "extreme": {
+            "medianMs": 34.377527999999984,
+            "inputs": {
+              "capabilities": 400
+            },
+            "unitsPerSecond": 11635.51
+          }
+        },
+        "artifacts": {
+          "baseline": {
+            "medianMs": 55.134203999999954,
+            "inputs": {
+              "capabilities": 10
+            },
+            "unitsPerSecond": 181.38
+          },
+          "stress": {
+            "medianMs": 351.04954799999996,
+            "inputs": {
+              "capabilities": 100
+            },
+            "unitsPerSecond": 284.86
+          },
+          "extreme": {
+            "medianMs": 1758.488659999999,
+            "inputs": {
+              "capabilities": 400
+            },
+            "unitsPerSecond": 227.47
           }
         }
       }

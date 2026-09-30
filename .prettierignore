@@ -55,3 +55,12 @@ package-lock.json
 
 # Benchmark run history -- appended by the benchmark runner, not hand-authored.
 benchmarks/history
+
+# Tooling-owned, never hand-formatted -- same rationale as eslint.config.js's own
+# `.repo-contract` ignore entry. api-contract/: baseline.api.json/baseline.d.ts are hash-verified
+# against baseline.meta.json (see internal-package-contract's own
+# scripts/api-contract/baseline-store.ts) and current.* is regenerated every run --
+# reformatting either corrupts the snapshot compatibility diffing depends on. exceptions/: the
+# reviewed-exception registries. Matches internal-package-contract's own repo-contract's identical
+# entry.
+.repo-contract

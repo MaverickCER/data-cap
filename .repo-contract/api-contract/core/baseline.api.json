@@ -1,0 +1,4832 @@
+{
+  "metadata": {
+    "toolPackage": "@microsoft/api-extractor",
+    "toolVersion": "7.59.3",
+    "schemaVersion": 1011,
+    "oldestForwardsCompatibleVersion": 1001,
+    "tsdocConfig": {
+      "$schema": "https://developer.microsoft.com/json-schemas/tsdoc/v0/tsdoc.schema.json",
+      "noStandardTags": true,
+      "tagDefinitions": [
+        {
+          "tagName": "@alpha",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@beta",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@defaultValue",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@decorator",
+          "syntaxKind": "block",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@deprecated",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@eventProperty",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@example",
+          "syntaxKind": "block",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@experimental",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@inheritDoc",
+          "syntaxKind": "inline"
+        },
+        {
+          "tagName": "@internal",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@label",
+          "syntaxKind": "inline"
+        },
+        {
+          "tagName": "@link",
+          "syntaxKind": "inline",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@override",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@packageDocumentation",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@param",
+          "syntaxKind": "block",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@privateRemarks",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@public",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@readonly",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@remarks",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@returns",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@sealed",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@see",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@throws",
+          "syntaxKind": "block",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@typeParam",
+          "syntaxKind": "block",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@virtual",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@jsx",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@jsxRuntime",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@jsxFrag",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@jsxImportSource",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@betaDocumentation",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@internalRemarks",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@preapproved",
+          "syntaxKind": "modifier"
+        }
+      ],
+      "supportForTags": {
+        "@alpha": true,
+        "@beta": true,
+        "@defaultValue": true,
+        "@decorator": true,
+        "@deprecated": true,
+        "@eventProperty": true,
+        "@example": true,
+        "@experimental": true,
+        "@inheritDoc": true,
+        "@internal": true,
+        "@label": true,
+        "@link": true,
+        "@override": true,
+        "@packageDocumentation": true,
+        "@param": true,
+        "@privateRemarks": true,
+        "@public": true,
+        "@readonly": true,
+        "@remarks": true,
+        "@returns": true,
+        "@sealed": true,
+        "@see": true,
+        "@throws": true,
+        "@typeParam": true,
+        "@virtual": true,
+        "@betaDocumentation": true,
+        "@internalRemarks": true,
+        "@preapproved": true
+      },
+      "reportUnsupportedHtmlElements": false
+    }
+  },
+  "kind": "Package",
+  "canonicalReference": "data-cap!",
+  "docComment": "",
+  "name": "data-cap",
+  "preserveMemberOrder": false,
+  "members": [
+    {
+      "kind": "EntryPoint",
+      "canonicalReference": "data-cap!",
+      "name": "",
+      "preserveMemberOrder": false,
+      "members": [
+        {
+          "kind": "Function",
+          "canonicalReference": "data-cap!buildData:function(1)",
+          "docComment": "/**\n * Declares a schema's field contract. `data.fields` is synchronously readable\n * the instant this returns -- populated with declared defaults -- there is no\n * throw-until-ready gate (a deliberate divergence from `@maverickcer/env-cap`'s\n * `createEnv`; see specs/architecture.md).\n *\n * `buildData` is the low-level, pure/synchronous primitive: `config` only ever\n * reads `fields` (a `getters`/`mutators`/`subscriptions` section on the same\n * object, if present, is simply ignored here -- that's what the batteries-\n * included `createData` from `data-cap/runtime` is for). `data.\n * info` is present (mandatory, never optional) but starts empty: nothing has\n * executed yet, so there is nothing to report metadata for.\n *\n * @remarks\n *\n * Throws synchronously, at call time, for a structurally invalid field\n * default (a function value, or a cyclic reference) -- this is a\n * schema-authoring mistake the developer must fix, not a runtime condition\n * to warn-and-continue past.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function buildData<TFields extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "FieldsShape",
+              "canonicalReference": "data-cap!FieldsShape:type"
+            },
+            {
+              "kind": "Content",
+              "text": ">(config: "
+            },
+            {
+              "kind": "Reference",
+              "text": "BuildDataConfig",
+              "canonicalReference": "data-cap!BuildDataConfig:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<TFields>"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Reference",
+              "text": "BuiltData",
+              "canonicalReference": "data-cap!BuiltData:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<TFields>"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "src/core/build.ts",
+          "returnTypeTokenRange": {
+            "startIndex": 6,
+            "endIndex": 8
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "config",
+              "parameterTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 5
+              },
+              "isOptional": false
+            }
+          ],
+          "typeParameters": [
+            {
+              "typeParameterName": "TFields",
+              "constraintTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            }
+          ],
+          "name": "buildData"
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "data-cap!BuildDataConfig:interface",
+          "docComment": "/**\n * `buildData`'s own config shape: fields only, nothing else.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface BuildDataConfig<TFields extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "FieldsShape",
+              "canonicalReference": "data-cap!FieldsShape:type"
+            },
+            {
+              "kind": "Content",
+              "text": "> "
+            }
+          ],
+          "fileUrlPath": "src/core/types.ts",
+          "releaseTag": "Public",
+          "typeParameters": [
+            {
+              "typeParameterName": "TFields",
+              "constraintTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            }
+          ],
+          "name": "BuildDataConfig",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!BuildDataConfig#fields:member",
+              "docComment": "/**\n * The default/example value for every field, declaring the capability's shape.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly fields: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "TFields"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "fields",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
+          "kind": "TypeAlias",
+          "canonicalReference": "data-cap!BuiltData:type",
+          "docComment": "/**\n * The synchronous `{fields, info}` state `buildData` returns -- structurally\n * just `DataState<InferFields<TFields>>`, not a distinct shape. This alias\n * exists so `buildData`'s own signature reads as \"the shape `buildData`\n * specifically returns,\" which is more informative at that one call site\n * than a bare `DataState` would be; every other consumer should keep using\n * `DataState` directly.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export type BuiltData<TFields extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "FieldsShape",
+              "canonicalReference": "data-cap!FieldsShape:type"
+            },
+            {
+              "kind": "Content",
+              "text": "> = "
+            },
+            {
+              "kind": "Reference",
+              "text": "DataState",
+              "canonicalReference": "data-cap!DataState:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "InferFields",
+              "canonicalReference": "data-cap!InferFields:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<TFields>>"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "src/core/build.ts",
+          "releaseTag": "Public",
+          "name": "BuiltData",
+          "typeParameters": [
+            {
+              "typeParameterName": "TFields",
+              "constraintTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            }
+          ],
+          "typeTokenRange": {
+            "startIndex": 3,
+            "endIndex": 7
+          }
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "data-cap!CapabilityDocs:interface",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface CapabilityDocs<TSchema extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "DataSchema",
+              "canonicalReference": "data-cap!DataSchema:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "FieldsShape",
+              "canonicalReference": "data-cap!FieldsShape:type"
+            },
+            {
+              "kind": "Content",
+              "text": ">"
+            },
+            {
+              "kind": "Content",
+              "text": "> "
+            }
+          ],
+          "fileUrlPath": "src/core/document.ts",
+          "releaseTag": "Public",
+          "typeParameters": [
+            {
+              "typeParameterName": "TSchema",
+              "constraintTokenRange": {
+                "startIndex": 1,
+                "endIndex": 5
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            }
+          ],
+          "name": "CapabilityDocs",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!CapabilityDocs#active:member",
+              "docComment": "/**\n * Defaults to `true` when omitted. Gates `exclusiveGroup` conflict checks and manifest membership.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly active?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "boolean"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "active",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!CapabilityDocs#auditRequired:member",
+              "docComment": "/**\n * Whether access to this capability's data is documented as requiring an\n * audit trail. Declared only, same presence-only discipline as\n * `protections`/`retention`. A field's own `auditRequired` overrides this\n * for that field specifically.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly auditRequired?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "boolean"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "auditRequired",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!CapabilityDocs#category:member",
+              "docComment": "/**\n * Free-form classification -- never validated.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly category?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "category",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!CapabilityDocs#dataResidency:member",
+              "docComment": "/**\n * The declared jurisdiction(s) this capability's data is permitted/\n * expected to be *stored* in -- a policy constraint, not an observed\n * fact, not a processing-location claim, not a data-subject-location\n * claim. A field's own `dataResidency` overrides this for that field\n * specifically.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly dataResidency?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string | readonly string[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "dataResidency",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!CapabilityDocs#deprecated:member",
+              "docComment": "/**\n * Whether this capability is documented as deprecated. Presence-only; nothing warns at runtime.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly deprecated?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "boolean"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "deprecated",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!CapabilityDocs#deprecatedReason:member",
+              "docComment": "/**\n * Why this capability is deprecated, and what to use instead. Only meaningful alongside `deprecated`.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly deprecatedReason?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "deprecatedReason",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!CapabilityDocs#description:member",
+              "docComment": "/**\n * Why this capability exists / what it's for.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly description?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "description",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!CapabilityDocs#evidence:member",
+              "docComment": "/**\n * Developer-supplied evidence assertions -- verified over time, unlike\n * every other field above, which is declared-only. Kept structurally\n * separate for exactly that reason (see `EvidenceFieldDocs`).\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly evidence?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "{\n        readonly fields?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Readonly",
+                  "canonicalReference": "!Readonly:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<"
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Record",
+                  "canonicalReference": "!Record:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<string, "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "EvidenceFieldDocs",
+                  "canonicalReference": "data-cap!~EvidenceFieldDocs:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ">>;\n    }"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "evidence",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 8
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!CapabilityDocs#exclusiveGroup:member",
+              "docComment": "/**\n * Mutual-exclusivity group: more than one *active* capability sharing this value is a real conflict (only one implementation of a group should be live at once).\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly exclusiveGroup?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "exclusiveGroup",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!CapabilityDocs#expiresAt:member",
+              "docComment": "/**\n * When this capability's data (or the credential/source behind it) is\n * declared to stop being valid, as an ISO-8601 date. A field's own\n * `expiresAt` (see `FieldDocs`) overrides this for that field\n * specifically. Declared only -- nothing expires at runtime.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly expiresAt?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "expiresAt",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!CapabilityDocs#fields:member",
+              "docComment": "/**\n * Per-field documentation, overriding this capability's own `owner`/`sensitivity`/`protections` where declared. Keys are checked against the schema's real `fields` shape.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly fields?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "CapabilityFieldDocs",
+                  "canonicalReference": "data-cap!CapabilityFieldDocs:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<TSchema[\"fields\"]>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "fields",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!CapabilityDocs#getters:member",
+              "docComment": "/**\n * Per-getter documentation. Keys are checked against the schema's real `getters` names -- a nonexistent or misspelled getter name is a compile error.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly getters?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "SchemaOperationDocs",
+                  "canonicalReference": "data-cap!~SchemaOperationDocs:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<TSchema, \"getters\">"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "getters",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!CapabilityDocs#legalBasis:member",
+              "docComment": "/**\n * The declared legal basis asserted for processing this capability's data\n * (e.g. `\"consent\"`, `\"contract\"`, `\"legitimate interest\"`). Records that\n * a basis was declared -- never that data-cap has determined the basis is\n * legally valid; data-cap records declared governance facts, it does not\n * determine whether those facts satisfy a law. A field's own `legalBasis`\n * overrides this for that field specifically.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly legalBasis?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "legalBasis",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!CapabilityDocs#metadata:member",
+              "docComment": "/**\n * Free-form extension bag for anything data-cap itself has no named\n * concept for -- opaque, never inspected or validated by any code path in\n * this package (e.g. jurisdiction-specific regulatory classification:\n * `{ regulatory: \"GDPR,PCI-DSS\" }`). Once a concept matters enough for\n * data-cap to reason about, it gets its own named field above (as\n * `purpose`/`legalBasis`/`dataResidency`/`auditRequired` did); everything\n * else stays here.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly metadata?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Readonly",
+                  "canonicalReference": "!Readonly:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<"
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Record",
+                  "canonicalReference": "!Record:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<string, unknown>>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "metadata",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 5
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!CapabilityDocs#mutators:member",
+              "docComment": "/**\n * Per-mutator documentation. Keys are checked against the schema's real `mutators` names.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly mutators?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "SchemaOperationDocs",
+                  "canonicalReference": "data-cap!~SchemaOperationDocs:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<TSchema, \"mutators\">"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "mutators",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!CapabilityDocs#name:member",
+              "docComment": "/**\n * Display name -- falls back to the export/binding name when omitted.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly name?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "name",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!CapabilityDocs#owner:member",
+              "docComment": "/**\n * Who's accountable for this capability. A field's own `owner` (see `FieldDocs`) overrides this for that field specifically.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly owner?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "owner",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!CapabilityDocs#protections:member",
+              "docComment": "/**\n * Documented safeguard -- presence only, never an adequacy claim.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly protections?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "protections",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!CapabilityDocs#purpose:member",
+              "docComment": "/**\n * The declared reason this capability's data is collected/retained.\n * Declared only -- data-cap never verifies the stated purpose matches\n * actual usage. A field's own `purpose` (see `FieldDocs`) overrides this\n * for that field specifically.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly purpose?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "purpose",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!CapabilityDocs#retention:member",
+              "docComment": "/**\n * Documented retention policy -- presence only, never an enforcement claim.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly retention?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "retention",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!CapabilityDocs#sensitivity:member",
+              "docComment": "/**\n * Data classification. Standard vocabulary: `\"public\"` / `\"internal\"` / `\"confidential\"` / `\"restricted\"` (ascending) -- custom values are allowed but flagged as non-standard, never blocking.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly sensitivity?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "sensitivity",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!CapabilityDocs#subscriptions:member",
+              "docComment": "/**\n * Per-subscription documentation. Keys are checked against the schema's real `subscriptions` names.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly subscriptions?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "SchemaOperationDocs",
+                  "canonicalReference": "data-cap!~SchemaOperationDocs:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<TSchema, \"subscriptions\">"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "subscriptions",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              }
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
+          "kind": "TypeAlias",
+          "canonicalReference": "data-cap!CapabilityFieldDocs:type",
+          "docComment": "/**\n * `FieldDocs` for every field in `TFields`, keyed the same way.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export type CapabilityFieldDocs<TFields> = "
+            },
+            {
+              "kind": "Content",
+              "text": "{\n    [K in keyof TFields]?: "
+            },
+            {
+              "kind": "Reference",
+              "text": "FieldDocs",
+              "canonicalReference": "data-cap!FieldDocs:interface"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n}"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "src/core/document.ts",
+          "releaseTag": "Public",
+          "name": "CapabilityFieldDocs",
+          "typeParameters": [
+            {
+              "typeParameterName": "TFields",
+              "constraintTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            }
+          ],
+          "typeTokenRange": {
+            "startIndex": 1,
+            "endIndex": 4
+          }
+        },
+        {
+          "kind": "TypeAlias",
+          "canonicalReference": "data-cap!CapabilityOperationDocs:type",
+          "docComment": "/**\n * `OperationDocs` for every operation in `TOperations`, keyed the same way.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export type CapabilityOperationDocs<TOperations> = "
+            },
+            {
+              "kind": "Content",
+              "text": "{\n    [K in keyof TOperations]?: "
+            },
+            {
+              "kind": "Reference",
+              "text": "OperationDocs",
+              "canonicalReference": "data-cap!OperationDocs:interface"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n}"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "src/core/document.ts",
+          "releaseTag": "Public",
+          "name": "CapabilityOperationDocs",
+          "typeParameters": [
+            {
+              "typeParameterName": "TOperations",
+              "constraintTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            }
+          ],
+          "typeTokenRange": {
+            "startIndex": 1,
+            "endIndex": 4
+          }
+        },
+        {
+          "kind": "Class",
+          "canonicalReference": "data-cap!DataCapError:class",
+          "docComment": "/**\n * Throw-based error hierarchy with a stable `code` discriminant, preferred\n * over `instanceof` for programmatic handling across bundling boundaries\n * (mirrors env-cap's own `EnvValidationError`/`EnvNotReadyError` convention).\n *\n * Invariant: no error here ever embeds a raw or processed field value in its\n * message -- only field paths (key names), which are never sensitive.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare abstract class DataCapError extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "Error",
+              "canonicalReference": "!Error:interface"
+            },
+            {
+              "kind": "Content",
+              "text": " "
+            }
+          ],
+          "fileUrlPath": "src/core/errors.ts",
+          "releaseTag": "Public",
+          "isAbstract": true,
+          "name": "DataCapError",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "Property",
+              "canonicalReference": "data-cap!DataCapError#code:member",
+              "docComment": "/**\n * Stable, programmatic discriminant -- prefer this over `instanceof` across bundling boundaries.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "abstract readonly code: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "code",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false,
+              "isProtected": false,
+              "isAbstract": true
+            }
+          ],
+          "extendsTokenRange": {
+            "startIndex": 1,
+            "endIndex": 2
+          },
+          "implementsTokenRanges": []
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "data-cap!DataError:interface",
+          "docComment": "/**\n * The latest relevant error for a field/operation, never a history -- see FieldInfo.error.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface DataError "
+            }
+          ],
+          "fileUrlPath": "src/core/types.ts",
+          "releaseTag": "Public",
+          "name": "DataError",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!DataError#error:member",
+              "docComment": "/**\n * The raw error value the operation rejected/threw with, unwrapped.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly error: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "unknown"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "error",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!DataError#operator:member",
+              "docComment": "/**\n * The getter/mutator/subscription operation key that produced this error.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly operator: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "operator",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
+          "kind": "TypeAlias",
+          "canonicalReference": "data-cap!DataFlowDirection:type",
+          "docComment": "/**\n * Which direction data moves across a declared boundary, and what kind of\n * boundary it is. Author-declared documentation only -- never statically\n * verified against an operation's actual `execute`/`subscribe` body (those\n * stay opaque per AGENTS.md invariant 6). A report may never present an\n * endpoint as a proven fact; see AGENTS.md's declared-vs-proven invariant.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export type DataFlowDirection = "
+            },
+            {
+              "kind": "Content",
+              "text": "\"input\" | \"output\""
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "src/core/document.ts",
+          "releaseTag": "Public",
+          "name": "DataFlowDirection",
+          "typeTokenRange": {
+            "startIndex": 1,
+            "endIndex": 2
+          }
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "data-cap!DataFlowEndpoint:interface",
+          "docComment": "/**\n * One declared data-flow boundary an operation crosses. A getter/\n * subscription's endpoints are typically `\"input\"` (where `execute`/\n * `subscribe` acquires data from); a mutator's are typically `\"output\"`\n * (where it sends data to) -- nothing enforces the typical case, since this\n * is documentation, not a runtime contract.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface DataFlowEndpoint "
+            }
+          ],
+          "fileUrlPath": "src/core/document.ts",
+          "releaseTag": "Public",
+          "name": "DataFlowEndpoint",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!DataFlowEndpoint#direction:member",
+              "docComment": "/**\n * Which way data moves across this boundary.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly direction: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "DataFlowDirection",
+                  "canonicalReference": "data-cap!DataFlowDirection:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "direction",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!DataFlowEndpoint#handling:member",
+              "docComment": "/**\n * The declared data-safety state of this field's value AT this specific\n * boundary crossing -- e.g. a field that arrives `\"encrypted\"` on an\n * `\"input\"` endpoint and is sent back out `\"redacted\"` on an `\"output\"`\n * endpoint. Declared only, same presence-only discipline as every other\n * field in this vocabulary: this records what a developer states about\n * handling at this crossing, never that data-cap has verified the field's\n * actual runtime value matches the claim.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly handling?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "\"plaintext\" | \"masked\" | \"redacted\" | \"hashed\" | \"encrypted\""
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "handling",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!DataFlowEndpoint#kind:member",
+              "docComment": "/**\n * What kind of boundary this is.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly kind: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "DataFlowEndpointKind",
+                  "canonicalReference": "data-cap!DataFlowEndpointKind:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "kind",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!DataFlowEndpoint#name:member",
+              "docComment": "/**\n * Short identifier, e.g. \"stripe-api\", \"postgres:users\" -- a semantic label, not a sentence.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly name: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "name",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!DataFlowEndpoint#url:member",
+              "docComment": "/**\n * A literal, trackable location for this endpoint -- a URL, a route path, a `table:column` reference. Distinct from `name` (a short label): this is meant to be compared/matched across capabilities (e.g. flagging two capabilities that declare the same URL as likely-duplicate fetches), not just read by a person.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly url?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "url",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
+          "kind": "TypeAlias",
+          "canonicalReference": "data-cap!DataFlowEndpointKind:type",
+          "docComment": "/**\n * What kind of boundary a declared data-flow endpoint crosses -- a data store (`database`/`cache`/`storage`/`queue`), an external entity (`api`/`external-service`/`user-input`), or something internal to this codebase (`computed`/`internal`).\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export type DataFlowEndpointKind = "
+            },
+            {
+              "kind": "Content",
+              "text": "\"database\" | \"cache\" | \"storage\" | \"queue\" | \"api\" | \"external-service\" | \"user-input\" | \"computed\" | \"internal\""
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "src/core/document.ts",
+          "releaseTag": "Public",
+          "name": "DataFlowEndpointKind",
+          "typeTokenRange": {
+            "startIndex": 1,
+            "endIndex": 2
+          }
+        },
+        {
+          "kind": "TypeAlias",
+          "canonicalReference": "data-cap!DataInfo:type",
+          "docComment": "/**\n * Mandatory, sparse metadata mirroring `fields`' logical structure -- never\n * generated eagerly for an untouched field. `fields` stay ordinary arrays;\n * only `info` represents array items as identity-keyed objects (a bare\n * `string` key here, since the identity-joining scheme lives in\n * `identity.ts`, added in a later phase).\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export type DataInfo<T> = "
+            },
+            {
+              "kind": "Content",
+              "text": "T extends readonly (infer Item)[] ? "
+            },
+            {
+              "kind": "Reference",
+              "text": "Partial",
+              "canonicalReference": "!Partial:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "Record",
+              "canonicalReference": "!Record:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, "
+            },
+            {
+              "kind": "Reference",
+              "text": "DataInfo",
+              "canonicalReference": "data-cap!DataInfo:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<Item> & "
+            },
+            {
+              "kind": "Reference",
+              "text": "FieldInfo",
+              "canonicalReference": "data-cap!FieldInfo:interface"
+            },
+            {
+              "kind": "Content",
+              "text": ">> : T extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "Date",
+              "canonicalReference": "!Date:interface"
+            },
+            {
+              "kind": "Content",
+              "text": " | "
+            },
+            {
+              "kind": "Reference",
+              "text": "URL",
+              "canonicalReference": "!URL:interface"
+            },
+            {
+              "kind": "Content",
+              "text": " | "
+            },
+            {
+              "kind": "Reference",
+              "text": "RegExp",
+              "canonicalReference": "!RegExp:interface"
+            },
+            {
+              "kind": "Content",
+              "text": " ? "
+            },
+            {
+              "kind": "Reference",
+              "text": "FieldInfo",
+              "canonicalReference": "data-cap!FieldInfo:interface"
+            },
+            {
+              "kind": "Content",
+              "text": " : T extends object ? {\n    [K in keyof T]?: "
+            },
+            {
+              "kind": "Reference",
+              "text": "DataInfo",
+              "canonicalReference": "data-cap!DataInfo:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<T[K]>;\n} & "
+            },
+            {
+              "kind": "Reference",
+              "text": "FieldInfo",
+              "canonicalReference": "data-cap!FieldInfo:interface"
+            },
+            {
+              "kind": "Content",
+              "text": " : "
+            },
+            {
+              "kind": "Reference",
+              "text": "FieldInfo",
+              "canonicalReference": "data-cap!FieldInfo:interface"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "src/core/types.ts",
+          "releaseTag": "Public",
+          "name": "DataInfo",
+          "typeParameters": [
+            {
+              "typeParameterName": "T",
+              "constraintTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            }
+          ],
+          "typeTokenRange": {
+            "startIndex": 1,
+            "endIndex": 23
+          }
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "data-cap!DataSchema:interface",
+          "docComment": "/**\n * The full schema shape both `buildData` and the runtime's `createData`\n * accept -- each reads only the part it needs (`buildData` only ever reads\n * `fields`; a `getters`/`mutators`/`subscriptions` section on the same\n * object is simply ignored by it). `documentData` accepts this same shape\n * so one `documentData(schema, docs)` call documents whichever of the two\n * a given schema is ultimately passed to.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface DataSchema<TFields extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "FieldsShape",
+              "canonicalReference": "data-cap!FieldsShape:type"
+            },
+            {
+              "kind": "Content",
+              "text": "> extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "BuildDataConfig",
+              "canonicalReference": "data-cap!BuildDataConfig:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<TFields>"
+            },
+            {
+              "kind": "Content",
+              "text": " "
+            }
+          ],
+          "fileUrlPath": "src/core/types.ts",
+          "releaseTag": "Public",
+          "typeParameters": [
+            {
+              "typeParameterName": "TFields",
+              "constraintTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            }
+          ],
+          "name": "DataSchema",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!DataSchema#getters:member",
+              "docComment": "/**\n * Named getter operations, keyed by the name they're called/documented under.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly getters?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Record",
+                  "canonicalReference": "!Record:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<string, "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "GetterDefinition",
+                  "canonicalReference": "data-cap!GetterDefinition:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<"
+                },
+                {
+                  "kind": "Reference",
+                  "text": "InferFields",
+                  "canonicalReference": "data-cap!InferFields:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<TFields>, any, any, any>>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "getters",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 7
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!DataSchema#mutators:member",
+              "docComment": "/**\n * Named mutator operations, keyed by the name they're called/documented under.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly mutators?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Record",
+                  "canonicalReference": "!Record:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<string, "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "MutatorDefinition",
+                  "canonicalReference": "data-cap!MutatorDefinition:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<"
+                },
+                {
+                  "kind": "Reference",
+                  "text": "InferFields",
+                  "canonicalReference": "data-cap!InferFields:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<TFields>, any, any, any>>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "mutators",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 7
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!DataSchema#subscriptions:member",
+              "docComment": "/**\n * Named subscription operations, keyed by the name they're called/documented under.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly subscriptions?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Record",
+                  "canonicalReference": "!Record:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<string, "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "SubscriptionDefinition",
+                  "canonicalReference": "data-cap!SubscriptionDefinition:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<"
+                },
+                {
+                  "kind": "Reference",
+                  "text": "InferFields",
+                  "canonicalReference": "data-cap!InferFields:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<TFields>, any, any, any>>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "subscriptions",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 7
+              }
+            }
+          ],
+          "extendsTokenRanges": [
+            {
+              "startIndex": 3,
+              "endIndex": 5
+            }
+          ]
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "data-cap!DataState:interface",
+          "docComment": "/**\n * `fields` and `info` are always present and always committed/published\n * together as one atomic snapshot -- never independently. See\n * specs/architecture.md.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface DataState<TFields> "
+            }
+          ],
+          "fileUrlPath": "src/core/types.ts",
+          "releaseTag": "Public",
+          "typeParameters": [
+            {
+              "typeParameterName": "TFields",
+              "constraintTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            }
+          ],
+          "name": "DataState",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!DataState#fields:member",
+              "docComment": "/**\n * The capability's current field values.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly fields: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "TFields"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "fields",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!DataState#info:member",
+              "docComment": "/**\n * Execution metadata mirroring `fields`' shape -- status/error/timestamps, never the values themselves.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly info: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "DataInfo",
+                  "canonicalReference": "data-cap!DataInfo:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<TFields>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "info",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              }
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
+          "kind": "TypeAlias",
+          "canonicalReference": "data-cap!DataStatus:type",
+          "docComment": "/**\n * Distinguishes \"first attempt in flight\" (`loading`) from \"recovering after a failure\" (`retrying`).\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export type DataStatus = "
+            },
+            {
+              "kind": "Content",
+              "text": "\"idle\" | \"loading\" | \"success\" | \"error\" | \"retrying\""
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "src/core/types.ts",
+          "releaseTag": "Public",
+          "name": "DataStatus",
+          "typeTokenRange": {
+            "startIndex": 1,
+            "endIndex": 2
+          }
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "data-cap!DataStore:interface",
+          "docComment": "/**\n * The store contract the standalone runtime implements --\n * `useSyncExternalStore`-compatible without importing React.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface DataStore<TFields> "
+            }
+          ],
+          "fileUrlPath": "src/core/types.ts",
+          "releaseTag": "Public",
+          "typeParameters": [
+            {
+              "typeParameterName": "TFields",
+              "constraintTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            }
+          ],
+          "name": "DataStore",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "MethodSignature",
+              "canonicalReference": "data-cap!DataStore#getSnapshot:member(1)",
+              "docComment": "/**\n * Returns the current, immutable `DataState` snapshot.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "getSnapshot(): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "DataState",
+                  "canonicalReference": "data-cap!DataState:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<TFields>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "returnTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [],
+              "name": "getSnapshot"
+            },
+            {
+              "kind": "MethodSignature",
+              "canonicalReference": "data-cap!DataStore#subscribe:member(1)",
+              "docComment": "/**\n * Registers `listener` to be called after every committed state change; returns an unsubscribe function.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "subscribe(listener: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "() => void"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "() => void"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "returnTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "listener",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                }
+              ],
+              "name": "subscribe"
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
+          "kind": "Function",
+          "canonicalReference": "data-cap!documentData:function(1)",
+          "docComment": "/**\n * Adds documentation/operational metadata to the same capability graph a\n * `buildData`/`createData` call describes, without introducing runtime\n * behavior.\n *\n * `config` should be the exact same schema object passed to `createData`/\n * `buildData` (typically a separately-declared `const` reused by both\n * calls, the same way a `fields` identifier is already shared) -- passing\n * the same object is what lets `docs`' `getters`/`mutators`/`subscriptions`\n * keys be checked against the schema's real operation names, not just its\n * `fields`. A `{fields}`-only config (no operations) still works for a\n * capability with none to document.\n *\n * @remarks\n *\n * Intentionally inert: everything here happens at build time, in build\n * tooling that statically discovers this call -- never at runtime, in every\n * process that imports the capability file, which is exactly what this\n * split (mirroring env-cap's `documentEnv`) exists to avoid. Never throws,\n * regardless of malformed input, and a `documentData` call is never itself\n * evidence that an executable capability exists -- static analysis (`build`)\n * inspects only real `buildData`/`createData` calls.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function documentData<TSchema extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "DataSchema",
+              "canonicalReference": "data-cap!DataSchema:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "FieldsShape",
+              "canonicalReference": "data-cap!FieldsShape:type"
+            },
+            {
+              "kind": "Content",
+              "text": ">"
+            },
+            {
+              "kind": "Content",
+              "text": ">(config: "
+            },
+            {
+              "kind": "Content",
+              "text": "TSchema"
+            },
+            {
+              "kind": "Content",
+              "text": ", docs: "
+            },
+            {
+              "kind": "Reference",
+              "text": "CapabilityDocs",
+              "canonicalReference": "data-cap!CapabilityDocs:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<TSchema>"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Content",
+              "text": "void"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "src/core/document.ts",
+          "returnTypeTokenRange": {
+            "startIndex": 11,
+            "endIndex": 12
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "config",
+              "parameterTypeTokenRange": {
+                "startIndex": 6,
+                "endIndex": 7
+              },
+              "isOptional": false
+            },
+            {
+              "parameterName": "docs",
+              "parameterTypeTokenRange": {
+                "startIndex": 8,
+                "endIndex": 10
+              },
+              "isOptional": false
+            }
+          ],
+          "typeParameters": [
+            {
+              "typeParameterName": "TSchema",
+              "constraintTokenRange": {
+                "startIndex": 1,
+                "endIndex": 5
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            }
+          ],
+          "name": "documentData"
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "data-cap!FieldDocs:interface",
+          "docComment": "/**\n * Documentation metadata for one field.\n *\n * `owner`, `sensitivity`, and `protections` override the capability-level\n * value of the same name for this field specifically -- not every field in\n * a capability is equally sensitive or equally owned. `protections` and\n * `retention` are documentation-presence signals only: a generator may say\n * a safeguard/policy is \"documented\" or \"not documented,\" never that it is\n * adequate, correct, or enforced. `purpose`/`legalBasis`/`dataResidency`/\n * `auditRequired` carry the same presence-only discipline -- declared\n * governance facts, never a claim that data-cap has determined they satisfy\n * any law (see `specs/decisions/0051-documentdata-metadata-and-governance-fields.md`).\n *\n * The boundary this interface draws is deliberate: a named property here is\n * reserved for a concept data-cap itself understands, projects, or reports\n * on. Anything else -- organization-specific detail with no data-cap-defined\n * meaning -- belongs in `metadata`, never as an ad hoc extra property, so\n * this vocabulary stays bounded instead of accreting one-off keys over time.\n *\n * Note what is deliberately absent: there is no per-field `validate`/\n * `validator` property, and no `helpers.validators` combinator library\n * backing one, unlike `@maverickcer/env-cap`'s `EnvVarDocs`. That is a\n * design choice, not a gap. `env-cap` validates on a reject-and-throw\n * pipeline, where a failing validator must carry a message explaining the\n * rejection; `data-cap` has no reject path to write a message for --\n * invalid processor/operation output resets the field to its declared\n * default via `core/schema.ts`'s `checkValueAgainstSchema`, keeping fields\n * synchronously readable (AGENTS.md invariant 2) and surfacing the\n * mismatch through `DataInfo`. See `helpers/shape.ts`'s own module comment\n * for the full reasoning.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface FieldDocs "
+            }
+          ],
+          "fileUrlPath": "src/core/document.ts",
+          "releaseTag": "Public",
+          "name": "FieldDocs",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!FieldDocs#auditRequired:member",
+              "docComment": "/**\n * Whether access to this field is documented as requiring an audit trail.\n * Declared only, same presence-only discipline as `protections`/\n * `retention`. Overrides the capability's own `auditRequired` for this\n * field specifically.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly auditRequired?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "boolean"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "auditRequired",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!FieldDocs#dataResidency:member",
+              "docComment": "/**\n * The declared jurisdiction(s) this field's data is permitted/expected to\n * be *stored* in -- a policy constraint, not an observed fact, not a\n * processing-location claim, not a data-subject-location claim. Overrides\n * the capability's own `dataResidency` for this field specifically.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly dataResidency?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string | readonly string[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "dataResidency",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!FieldDocs#deprecated:member",
+              "docComment": "/**\n * Whether this field is documented as deprecated. Presence-only, same discipline as every other declared fact here -- nothing warns at runtime.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly deprecated?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "boolean"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "deprecated",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!FieldDocs#deprecatedReason:member",
+              "docComment": "/**\n * Why this field is deprecated, and what to use instead. Only meaningful alongside `deprecated`.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly deprecatedReason?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "deprecatedReason",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!FieldDocs#description:member",
+              "docComment": "/**\n * Why this field exists / what it's for.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly description?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "description",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!FieldDocs#expiresAt:member",
+              "docComment": "/**\n * When this field's data (or the credential/source behind it) is declared\n * to stop being valid, as an ISO-8601 date (`\"2026-12-31\"`). Declared\n * only: nothing expires anything at runtime, and `data-cap` never fetches\n * a real expiry from a provider. Build tooling reads it to report what is\n * expiring soon (see the Lifecycle Model) -- a date that has already\n * passed is reported as expired, never acted on.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly expiresAt?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "expiresAt",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!FieldDocs#legalBasis:member",
+              "docComment": "/**\n * The declared legal basis asserted for processing this field (e.g.\n * `\"consent\"`, `\"contract\"`, `\"legitimate interest\"`). Records that a\n * basis was declared -- never that data-cap has determined the basis is\n * legally valid. Overrides the capability's own `legalBasis` for this\n * field specifically.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly legalBasis?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "legalBasis",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!FieldDocs#metadata:member",
+              "docComment": "/**\n * Free-form extension bag for anything data-cap itself has no named\n * concept for -- opaque, never inspected or validated by any code path in\n * this package. Once a concept matters enough for data-cap to reason\n * about, it gets its own named field above; everything else stays here.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly metadata?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Readonly",
+                  "canonicalReference": "!Readonly:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<"
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Record",
+                  "canonicalReference": "!Record:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<string, unknown>>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "metadata",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 5
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!FieldDocs#owner:member",
+              "docComment": "/**\n * Overrides the capability's own `owner` for this field specifically.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly owner?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "owner",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!FieldDocs#protections:member",
+              "docComment": "/**\n * Overrides the capability's own `protections` for this field specifically.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly protections?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "protections",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!FieldDocs#purpose:member",
+              "docComment": "/**\n * The declared reason this field's data is collected/retained. Declared\n * only -- data-cap never verifies the stated purpose matches actual usage.\n * Overrides the capability's own `purpose` for this field specifically.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly purpose?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "purpose",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!FieldDocs#removeBy:member",
+              "docComment": "/**\n * The date by which a deprecated field is intended to be removed, ISO-8601.\n * Field-level only: a removal deadline is about one specific field's own\n * migration, and a capability-wide `removeBy` would say nothing about\n * which of its fields still need work.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly removeBy?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "removeBy",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!FieldDocs#renamedFrom:member",
+              "docComment": "/**\n * The previous name of this field, when it was renamed. Field-level only,\n * for the same reason as `removeBy`. Build tooling uses this to correlate\n * an added-field/removed-field pair across two runs into one rename rather\n * than reporting an unrelated addition and deletion -- see `ChangeModel`'s\n * `renamedFields`. Only ever populated from an *authored* value, never\n * guessed from name similarity.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly renamedFrom?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "renamedFrom",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!FieldDocs#retention:member",
+              "docComment": "/**\n * Documented retention policy for this field -- presence only, never an enforcement claim.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly retention?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "retention",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!FieldDocs#sensitivity:member",
+              "docComment": "/**\n * Overrides the capability's own `sensitivity` for this field specifically.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly sensitivity?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "sensitivity",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "data-cap!FieldInfo:interface",
+          "docComment": "/**\n * Current authoritative execution metadata for one field -- never an event\n * history. `source` is the operation key that most recently established the\n * field's current value; `error` clears on the next successful establishing\n * operation unless a still-newer operation has since set a different one.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface FieldInfo "
+            }
+          ],
+          "fileUrlPath": "src/core/types.ts",
+          "releaseTag": "Public",
+          "name": "FieldInfo",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!FieldInfo#error:member",
+              "docComment": "/**\n * The error the establishing operation settled with, if it failed.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly error?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "DataError",
+                  "canonicalReference": "data-cap!DataError:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "error",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!FieldInfo#fetchedAt:member",
+              "docComment": "/**\n * When `source` most recently committed a value via a getter/subscription, as epoch ms.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly fetchedAt?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "fetchedAt",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!FieldInfo#optimistic:member",
+              "docComment": "/**\n * True while an uncommitted pending optimistic transition is contributing to this field's visible value.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly optimistic?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "boolean"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "optimistic",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!FieldInfo#source:member",
+              "docComment": "/**\n * The operation key that most recently established this field's current value.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly source?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "source",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!FieldInfo#stale:member",
+              "docComment": "/**\n * True once a newer request for this field has superseded the value currently shown.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly stale?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "boolean"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "stale",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!FieldInfo#status:member",
+              "docComment": "/**\n * This field's current lifecycle status.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly status?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "DataStatus",
+                  "canonicalReference": "data-cap!DataStatus:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "status",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!FieldInfo#subscription:member",
+              "docComment": "/**\n * Connection/lifecycle metadata, populated only when this field is established by a subscription.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly subscription?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "SubscriptionInfo",
+                  "canonicalReference": "data-cap!SubscriptionInfo:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "subscription",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!FieldInfo#updatedAt:member",
+              "docComment": "/**\n * When `source` most recently committed a value via any operation, as epoch ms.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly updatedAt?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "updatedAt",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
+          "kind": "TypeAlias",
+          "canonicalReference": "data-cap!FieldOwnership:type",
+          "docComment": "/**\n * Declares which fields an operation may write. `true` claims a whole\n * subtree (at any level, including the root -- a getter may legitimately\n * declare `fields: true` to mean \"the entire capability\"); a nested object\n * claims only the listed sub-keys. Arrays can only ever be owned wholesale\n * (`true`) -- there is no per-item ownership concept, matching arrays being\n * atomic, ordinary values.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export type FieldOwnership<T> = "
+            },
+            {
+              "kind": "Content",
+              "text": "true | {\n    [K in keyof T]?: T[K] extends readonly unknown[] ? true : T[K] extends object ? "
+            },
+            {
+              "kind": "Reference",
+              "text": "FieldOwnership",
+              "canonicalReference": "data-cap!FieldOwnership:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<T[K]> : true;\n}"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "src/core/types.ts",
+          "releaseTag": "Public",
+          "name": "FieldOwnership",
+          "typeParameters": [
+            {
+              "typeParameterName": "T",
+              "constraintTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            }
+          ],
+          "typeTokenRange": {
+            "startIndex": 1,
+            "endIndex": 4
+          }
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "data-cap!fields:var",
+          "docComment": "/**\n * Field-default authoring helpers, recognized only inside a `buildData`/`createData` schema.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "fields: "
+            },
+            {
+              "kind": "Content",
+              "text": "{\n    nullable<T>(defaultInner: T): "
+            },
+            {
+              "kind": "Reference",
+              "text": "NullableMarker",
+              "canonicalReference": "data-cap!NullableMarker:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<T>;\n    optional<T>(defaultInner: T): "
+            },
+            {
+              "kind": "Reference",
+              "text": "OptionalMarker",
+              "canonicalReference": "data-cap!OptionalMarker:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<T>;\n}"
+            }
+          ],
+          "fileUrlPath": "src/core/fields.ts",
+          "isReadonly": true,
+          "releaseTag": "Public",
+          "name": "fields",
+          "variableTypeTokenRange": {
+            "startIndex": 1,
+            "endIndex": 6
+          }
+        },
+        {
+          "kind": "TypeAlias",
+          "canonicalReference": "data-cap!FieldsShape:type",
+          "docComment": "/**\n * The generic *bound* only, never surfaced to a consumer's inferred type --\n * the same variance workaround env-cap's `EnvSchema` uses so `TFields extends\n * FieldsShape` still infers a precise, per-key literal type from the actual\n * object literal passed to `buildData`.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export type FieldsShape = "
+            },
+            {
+              "kind": "Reference",
+              "text": "Record",
+              "canonicalReference": "!Record:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, any>"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "src/core/types.ts",
+          "releaseTag": "Public",
+          "name": "FieldsShape",
+          "typeTokenRange": {
+            "startIndex": 1,
+            "endIndex": 3
+          }
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "data-cap!GetterDefinition:interface",
+          "docComment": "/**\n * A getter operation: acquires data. `writes` is required and explicit\n * (ADR 0011) -- a getter's ownership is typically narrow and specific, so\n * an explicit declaration keeps that scope visible and enforced. `TParams`\n * is inferred purely from `params`'s own literal value (or an explicit `{}\n * as TParams` type-only anchor when there's no sensible runtime default) --\n * never derived from this capability's `fields` nullability, so a\n * `fields.nullable(...)` declaration elsewhere never leaks an `| null`/\n * `| undefined` into an operation's parameter type.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface GetterDefinition<TFields, TParams, TRaw, TWrites extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "FieldOwnership",
+              "canonicalReference": "data-cap!FieldOwnership:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<TFields>"
+            },
+            {
+              "kind": "Content",
+              "text": "> "
+            }
+          ],
+          "fileUrlPath": "src/core/types.ts",
+          "releaseTag": "Public",
+          "typeParameters": [
+            {
+              "typeParameterName": "TFields",
+              "constraintTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            },
+            {
+              "typeParameterName": "TParams",
+              "constraintTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            },
+            {
+              "typeParameterName": "TRaw",
+              "constraintTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            },
+            {
+              "typeParameterName": "TWrites",
+              "constraintTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            }
+          ],
+          "name": "GetterDefinition",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!GetterDefinition#execute:member",
+              "docComment": "/**\n * Performs the actual acquisition (fetch, query, etc.), aborted via `signal`.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly execute: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "(params: TParams, signal: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "AbortSignal",
+                  "canonicalReference": "!AbortSignal:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ") => "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Promise",
+                  "canonicalReference": "!Promise:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<TRaw>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "execute",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 6
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!GetterDefinition#params:member",
+              "docComment": "/**\n * Default/example params, deep-merged with a caller's partial at call time. Omit and annotate via `{} as TParams` to require every param explicitly on every call.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly params?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "TParams"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "params",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!GetterDefinition#processor:member",
+              "docComment": "/**\n * Defaults to identity when omitted -- `execute`'s raw result is then used directly as the patch, and must already be shaped like one.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly processor?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "(raw: TRaw, params: TParams) => "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "OwnedPatch",
+                  "canonicalReference": "data-cap!OwnedPatch:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<TFields, TWrites>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "processor",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 4
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!GetterDefinition#writes:member",
+              "docComment": "/**\n * Declares which fields this getter is permitted to write -- see `FieldOwnership`.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly writes: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "TWrites"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "writes",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
+          "kind": "TypeAlias",
+          "canonicalReference": "data-cap!InferFields:type",
+          "docComment": "/**\n * Resolves the application-facing field-value type for an entire `fields` shape, key by key.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export type InferFields<F extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "FieldsShape",
+              "canonicalReference": "data-cap!FieldsShape:type"
+            },
+            {
+              "kind": "Content",
+              "text": "> = "
+            },
+            {
+              "kind": "Content",
+              "text": "{\n    [K in keyof F]: "
+            },
+            {
+              "kind": "Reference",
+              "text": "InferFieldValue",
+              "canonicalReference": "data-cap!InferFieldValue:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<F[K]>;\n}"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "src/core/types.ts",
+          "releaseTag": "Public",
+          "name": "InferFields",
+          "typeParameters": [
+            {
+              "typeParameterName": "F",
+              "constraintTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            }
+          ],
+          "typeTokenRange": {
+            "startIndex": 3,
+            "endIndex": 6
+          }
+        },
+        {
+          "kind": "TypeAlias",
+          "canonicalReference": "data-cap!InferFieldValue:type",
+          "docComment": "/**\n * Resolves the application-facing type for one declared field default.\n * Functions are never valid field values -- a function-typed default\n * resolves to `never` (see fields.ts's runtime counterpart, which throws).\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export type InferFieldValue<F> = "
+            },
+            {
+              "kind": "Content",
+              "text": "F extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "NullableMarker",
+              "canonicalReference": "data-cap!NullableMarker:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<infer Inner> ? "
+            },
+            {
+              "kind": "Reference",
+              "text": "InferFieldValue",
+              "canonicalReference": "data-cap!InferFieldValue:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<Inner> | null : F extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "OptionalMarker",
+              "canonicalReference": "data-cap!OptionalMarker:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<infer Inner> ? "
+            },
+            {
+              "kind": "Reference",
+              "text": "InferFieldValue",
+              "canonicalReference": "data-cap!InferFieldValue:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<Inner> | undefined : F extends readonly (infer Item)[] ? "
+            },
+            {
+              "kind": "Reference",
+              "text": "InferFieldValue",
+              "canonicalReference": "data-cap!InferFieldValue:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<Item>[] : F extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "Date",
+              "canonicalReference": "!Date:interface"
+            },
+            {
+              "kind": "Content",
+              "text": " | "
+            },
+            {
+              "kind": "Reference",
+              "text": "URL",
+              "canonicalReference": "!URL:interface"
+            },
+            {
+              "kind": "Content",
+              "text": " | "
+            },
+            {
+              "kind": "Reference",
+              "text": "RegExp",
+              "canonicalReference": "!RegExp:interface"
+            },
+            {
+              "kind": "Content",
+              "text": " ? F : F extends (...args: never[]) => unknown ? never : F extends object ? {\n    [K in keyof F]: "
+            },
+            {
+              "kind": "Reference",
+              "text": "InferFieldValue",
+              "canonicalReference": "data-cap!InferFieldValue:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<F[K]>;\n} : F"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "src/core/types.ts",
+          "releaseTag": "Public",
+          "name": "InferFieldValue",
+          "typeParameters": [
+            {
+              "typeParameterName": "F",
+              "constraintTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            }
+          ],
+          "typeTokenRange": {
+            "startIndex": 1,
+            "endIndex": 20
+          }
+        },
+        {
+          "kind": "Class",
+          "canonicalReference": "data-cap!InvalidFieldDefaultError:class",
+          "docComment": "/**\n * Thrown synchronously by `buildData()`/`documentData()` when a declared\n * field default is structurally invalid: a function value (functions are\n * never valid field data) or a cyclic reference (a value that contains\n * itself, directly or transitively).\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare class InvalidFieldDefaultError extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "DataCapError",
+              "canonicalReference": "data-cap!DataCapError:class"
+            },
+            {
+              "kind": "Content",
+              "text": " "
+            }
+          ],
+          "fileUrlPath": "src/core/errors.ts",
+          "releaseTag": "Public",
+          "isAbstract": false,
+          "name": "InvalidFieldDefaultError",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "Constructor",
+              "canonicalReference": "data-cap!InvalidFieldDefaultError:constructor(1)",
+              "docComment": "/**\n * Constructs a new instance of the `InvalidFieldDefaultError` class\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "constructor(path: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "readonly string[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ", reason: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ");"
+                }
+              ],
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "path",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                },
+                {
+                  "parameterName": "reason",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 3,
+                    "endIndex": 4
+                  },
+                  "isOptional": false
+                }
+              ]
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "data-cap!InvalidFieldDefaultError#code:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly code = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "\"DATA_CAP_INVALID_FIELD_DEFAULT\""
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "code",
+              "propertyTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              },
+              "initializerTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false,
+              "isProtected": false,
+              "isAbstract": false
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "data-cap!InvalidFieldDefaultError#path:member",
+              "docComment": "/**\n * Path (key names only, never values) to the invalid default.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly path: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "readonly string[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "path",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false,
+              "isProtected": false,
+              "isAbstract": false
+            }
+          ],
+          "extendsTokenRange": {
+            "startIndex": 1,
+            "endIndex": 2
+          },
+          "implementsTokenRanges": []
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "data-cap!MutatorDefinition:interface",
+          "docComment": "/**\n * A mutator operation: performs a side effect. `writes` is optional --\n * omitting it defaults to full-capability-tree ownership, bounded to the\n * declared schema (ADR 0011) -- the common \"this mutator can touch\n * anything the schema allows\" case doesn't pay a declaration tax.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface MutatorDefinition<TFields, TParams, TRaw, TWrites extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "FieldOwnership",
+              "canonicalReference": "data-cap!FieldOwnership:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<TFields> | undefined"
+            },
+            {
+              "kind": "Content",
+              "text": "> "
+            }
+          ],
+          "fileUrlPath": "src/core/types.ts",
+          "releaseTag": "Public",
+          "typeParameters": [
+            {
+              "typeParameterName": "TFields",
+              "constraintTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            },
+            {
+              "typeParameterName": "TParams",
+              "constraintTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            },
+            {
+              "typeParameterName": "TRaw",
+              "constraintTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            },
+            {
+              "typeParameterName": "TWrites",
+              "constraintTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            }
+          ],
+          "name": "MutatorDefinition",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!MutatorDefinition#execute:member",
+              "docComment": "/**\n * Performs the actual side effect (a write, an API call, etc.), aborted via `signal`.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly execute: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "(params: TParams, signal: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "AbortSignal",
+                  "canonicalReference": "!AbortSignal:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ") => "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Promise",
+                  "canonicalReference": "!Promise:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<TRaw>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "execute",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 6
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!MutatorDefinition#optimistic:member",
+              "docComment": "/**\n * Computes an optimistic patch from CURRENT AUTHORITATIVE state (never the\n * visible/projected state -- a second concurrent optimistic transition\n * must never compute against a first transition's still-pending value).\n * Returning `undefined` means no optimistic transition for this call.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly optimistic?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "(authoritativeState: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "DataState",
+                  "canonicalReference": "data-cap!DataState:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<TFields>, params: TParams) => "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "OwnedPatch",
+                  "canonicalReference": "data-cap!OwnedPatch:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<TFields, TWrites extends undefined ? true : TWrites> | undefined"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "optimistic",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 6
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!MutatorDefinition#params:member",
+              "docComment": "/**\n * Default/example params, deep-merged with a caller's partial at call time.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly params?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "TParams"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "params",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!MutatorDefinition#processor:member",
+              "docComment": "/**\n * Defaults to identity when omitted -- `execute`'s raw result is then used directly as the patch.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly processor?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "(raw: TRaw, params: TParams) => "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "OwnedPatch",
+                  "canonicalReference": "data-cap!OwnedPatch:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<TFields, TWrites extends undefined ? true : TWrites>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "processor",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 4
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!MutatorDefinition#writes:member",
+              "docComment": "/**\n * Declares which fields this mutator may write -- omitting it defaults to the full capability tree.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly writes?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "TWrites"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "writes",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "data-cap!NullableMarker:interface",
+          "docComment": "/**\n * Produced by `fields.nullable(...)` -- recognized only during `buildData`'s schema-authoring walk; the resolved runtime default is always `null`.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface NullableMarker<T> "
+            }
+          ],
+          "fileUrlPath": "src/core/fields.ts",
+          "releaseTag": "Public",
+          "typeParameters": [
+            {
+              "typeParameterName": "T",
+              "constraintTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            }
+          ],
+          "name": "NullableMarker",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!NullableMarker#[FIELD_MARKER]:member",
+              "docComment": "/**\n * Internal marker discriminant -- see the module doc comment.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly ["
+                },
+                {
+                  "kind": "Reference",
+                  "text": "FIELD_MARKER",
+                  "canonicalReference": "data-cap!~FIELD_MARKER:var"
+                },
+                {
+                  "kind": "Content",
+                  "text": "]: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "\"nullable\""
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "[FIELD_MARKER]",
+              "propertyTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!NullableMarker#inner:member",
+              "docComment": "/**\n * The declared inner default, kept only so the underlying type can be inferred -- never the resolved runtime value.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly inner: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "T"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "inner",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "data-cap!OperationDocs:interface",
+          "docComment": "/**\n * Documentation metadata for one getter/mutator/subscription. Reserved keys\n * are explicitly typed (mirroring the vocabulary real capabilities tend to\n * document -- what it does, where it talks to, what it costs to call) while\n * still accepting arbitrary extra keys for anything project-specific, so\n * documenting never fights the type checker.\n *\n * `credentials` is descriptive only -- documenting `credentials: \"user\n * session\"` is never proof that authorization is actually enforced.\n * `endpoints` is likewise author-declared, never verified.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface OperationDocs "
+            }
+          ],
+          "fileUrlPath": "src/core/document.ts",
+          "releaseTag": "Public",
+          "name": "OperationDocs",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "IndexSignature",
+              "canonicalReference": "data-cap!OperationDocs:index(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly [key: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": "]: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "unknown"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "returnTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "key",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                }
+              ]
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!OperationDocs#credentials:member",
+              "docComment": "/**\n * What's required to call this operation -- descriptive only, never an authorization/enforcement claim.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly credentials?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "credentials",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!OperationDocs#description:member",
+              "docComment": "/**\n * What this operation does.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly description?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "description",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!OperationDocs#endpoints:member",
+              "docComment": "/**\n * Declared data-flow boundaries this operation crosses -- see `DataFlowEndpoint`.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly endpoints?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "readonly "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "DataFlowEndpoint",
+                  "canonicalReference": "data-cap!DataFlowEndpoint:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "endpoints",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 4
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!OperationDocs#metadata:member",
+              "docComment": "/**\n * Free-form extension bag for anything data-cap itself has no named\n * concept for -- opaque, never inspected or validated by any code path in\n * this package. The index signature below remains for the same reason it\n * always has (documenting never fights the type checker); `metadata` is\n * the recommended place for new extension data going forward.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly metadata?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Readonly",
+                  "canonicalReference": "!Readonly:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<"
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Record",
+                  "canonicalReference": "!Record:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<string, unknown>>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "metadata",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 5
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!OperationDocs#response:member",
+              "docComment": "/**\n * Documented shape of what this operation returns/produces.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly response?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "response",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!OperationDocs#source:member",
+              "docComment": "/**\n * Short identifier for where this operation acquires/sends data (e.g. `\"stripe-api\"`, `\"postgres:users\"`), not prose.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly source?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "source",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "data-cap!OptionalMarker:interface",
+          "docComment": "/**\n * Produced by `fields.optional(...)` -- recognized only during `buildData`'s schema-authoring walk; the resolved runtime default is always `undefined`.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface OptionalMarker<T> "
+            }
+          ],
+          "fileUrlPath": "src/core/fields.ts",
+          "releaseTag": "Public",
+          "typeParameters": [
+            {
+              "typeParameterName": "T",
+              "constraintTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            }
+          ],
+          "name": "OptionalMarker",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!OptionalMarker#[FIELD_MARKER]:member",
+              "docComment": "/**\n * Internal marker discriminant -- see the module doc comment.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly ["
+                },
+                {
+                  "kind": "Reference",
+                  "text": "FIELD_MARKER",
+                  "canonicalReference": "data-cap!~FIELD_MARKER:var"
+                },
+                {
+                  "kind": "Content",
+                  "text": "]: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "\"optional\""
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "[FIELD_MARKER]",
+              "propertyTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!OptionalMarker#inner:member",
+              "docComment": "/**\n * The declared inner default, kept only so the underlying type can be inferred -- never the resolved runtime value.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly inner: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "T"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "inner",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
+          "kind": "TypeAlias",
+          "canonicalReference": "data-cap!OwnedPatch:type",
+          "docComment": "/**\n * Narrows `DeepPartial<T>` down to exactly the keys `TOwnership` (a\n * `FieldOwnership<T>` value) permits, mirroring its shape one-for-one. A\n * `processor`/`optimistic` callback declared against `writes: {user:\n * {email: true}}` cannot type-check while returning `{post: ...}`, or even\n * `{user: {name: ...}}` -- a sibling field it doesn't own. This narrows the\n * *legal* shape at compile time only; `resolveOperationPatch` still enforces\n * the same boundary at runtime regardless, since a processor's actual\n * return value is never statically provable to match its declared type.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export type OwnedPatch<T, TOwnership> = "
+            },
+            {
+              "kind": "Content",
+              "text": "TOwnership extends true ? "
+            },
+            {
+              "kind": "Reference",
+              "text": "DeepPartial",
+              "canonicalReference": "data-cap!~DeepPartial:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<T> : T extends readonly unknown[] ? never : T extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "Date",
+              "canonicalReference": "!Date:interface"
+            },
+            {
+              "kind": "Content",
+              "text": " | "
+            },
+            {
+              "kind": "Reference",
+              "text": "URL",
+              "canonicalReference": "!URL:interface"
+            },
+            {
+              "kind": "Content",
+              "text": " | "
+            },
+            {
+              "kind": "Reference",
+              "text": "RegExp",
+              "canonicalReference": "!RegExp:interface"
+            },
+            {
+              "kind": "Content",
+              "text": " ? never : T extends object ? {\n    [K in keyof TOwnership & keyof T]?: "
+            },
+            {
+              "kind": "Reference",
+              "text": "OwnedPatch",
+              "canonicalReference": "data-cap!OwnedPatch:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<T[K], TOwnership[K]>;\n} : never"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "src/core/types.ts",
+          "releaseTag": "Public",
+          "name": "OwnedPatch",
+          "typeParameters": [
+            {
+              "typeParameterName": "T",
+              "constraintTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            },
+            {
+              "typeParameterName": "TOwnership",
+              "constraintTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            }
+          ],
+          "typeTokenRange": {
+            "startIndex": 1,
+            "endIndex": 12
+          }
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "data-cap!SubscriptionDefinition:interface",
+          "docComment": "/**\n * A subscription operation: continuously observes data. `writes` is\n * required and explicit, same rationale as a getter's. `onEvent`/\n * `onStatusChange` map to `writes`-bounded `fields` commits and\n * `info.<field>.subscription` commits respectively -- a status transition\n * alone never touches `fields` (ADR 0029). `subscribe`'s own shape matches\n * `coordinator.acquireSubscription`'s `SubscribeFn` exactly (params bound in\n * by the runtime, handlers, a teardown function returned directly) -- no\n * separate `AbortSignal`, since the returned teardown function is already\n * the sanctioned way to stop a subscription.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface SubscriptionDefinition<TFields, TParams, TEvent, TWrites extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "FieldOwnership",
+              "canonicalReference": "data-cap!FieldOwnership:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<TFields>"
+            },
+            {
+              "kind": "Content",
+              "text": "> "
+            }
+          ],
+          "fileUrlPath": "src/core/types.ts",
+          "releaseTag": "Public",
+          "typeParameters": [
+            {
+              "typeParameterName": "TFields",
+              "constraintTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            },
+            {
+              "typeParameterName": "TParams",
+              "constraintTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            },
+            {
+              "typeParameterName": "TEvent",
+              "constraintTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            },
+            {
+              "typeParameterName": "TWrites",
+              "constraintTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            }
+          ],
+          "name": "SubscriptionDefinition",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!SubscriptionDefinition#params:member",
+              "docComment": "/**\n * Default/example params, deep-merged with a caller's partial at call time.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly params?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "TParams"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "params",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!SubscriptionDefinition#processor:member",
+              "docComment": "/**\n * Defaults to identity when omitted -- the raw event is used directly as the patch.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly processor?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "(event: TEvent, params: TParams) => "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "OwnedPatch",
+                  "canonicalReference": "data-cap!OwnedPatch:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<TFields, TWrites>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "processor",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 4
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!SubscriptionDefinition#subscribe:member",
+              "docComment": "/**\n * Opens the connection and drives `handlers`; the returned function tears the subscription down.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly subscribe: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "(params: TParams, handlers: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "SubscriptionEventHandlers",
+                  "canonicalReference": "data-cap!SubscriptionEventHandlers:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<TEvent>) => () => void"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "subscribe",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 4
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!SubscriptionDefinition#writes:member",
+              "docComment": "/**\n * Declares which fields this subscription is permitted to write -- see `FieldOwnership`.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly writes: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "TWrites"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "writes",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "data-cap!SubscriptionEventHandlers:interface",
+          "docComment": "/**\n * Handlers a subscription's `subscribe` implementation drives -- the same shape `coordinator.acquireSubscription` already uses.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface SubscriptionEventHandlers<TEvent> "
+            }
+          ],
+          "fileUrlPath": "src/core/types.ts",
+          "releaseTag": "Public",
+          "typeParameters": [
+            {
+              "typeParameterName": "TEvent",
+              "constraintTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            }
+          ],
+          "name": "SubscriptionEventHandlers",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!SubscriptionEventHandlers#onEvent:member",
+              "docComment": "/**\n * Call with each incoming event; committed through `processor` into a `writes`-bounded fields patch.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly onEvent: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "(event: TEvent) => void"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "onEvent",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!SubscriptionEventHandlers#onStatusChange:member",
+              "docComment": "/**\n * Call whenever the subscription's connection status changes, optionally with the triggering error.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly onStatusChange: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "(status: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "SubscriptionInfo",
+                  "canonicalReference": "data-cap!SubscriptionInfo:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "[\"status\"], detail?: {\n        readonly error?: unknown;\n    }) => void"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "onStatusChange",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 4
+              }
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "data-cap!SubscriptionInfo:interface",
+          "docComment": "/**\n * Current connection/lifecycle metadata for a field's subscription, if it has one.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface SubscriptionInfo "
+            }
+          ],
+          "fileUrlPath": "src/core/types.ts",
+          "releaseTag": "Public",
+          "name": "SubscriptionInfo",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!SubscriptionInfo#connectedAt:member",
+              "docComment": "/**\n * When the subscription most recently entered `\"connected\"`, as epoch ms.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly connectedAt?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "connectedAt",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!SubscriptionInfo#disconnectedAt:member",
+              "docComment": "/**\n * When the subscription most recently entered `\"disconnected\"`, as epoch ms.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly disconnectedAt?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "disconnectedAt",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!SubscriptionInfo#error:member",
+              "docComment": "/**\n * The error the connection settled with, if it's currently in an `\"error\"` status.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly error?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "DataError",
+                  "canonicalReference": "data-cap!DataError:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "error",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!SubscriptionInfo#lastEventAt:member",
+              "docComment": "/**\n * When the subscription most recently delivered an event, as epoch ms.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly lastEventAt?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "lastEventAt",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!SubscriptionInfo#reconnectAttempt:member",
+              "docComment": "/**\n * How many consecutive reconnect attempts have occurred since the last successful connection.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly reconnectAttempt?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "reconnectAttempt",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!SubscriptionInfo#source:member",
+              "docComment": "/**\n * The subscription operation key that owns this connection.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly source?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "source",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!SubscriptionInfo#status:member",
+              "docComment": "/**\n * The subscription's current connection status.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly status: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "\"connecting\" | \"connected\" | \"reconnecting\" | \"disconnected\" | \"error\""
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "status",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "extendsTokenRanges": []
+        }
+      ]
+    }
+  ]
+}
