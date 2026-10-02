@@ -4,19 +4,19 @@ What does adopting this package add to latency, CPU, memory and compute spend --
 
 ## What adopting this package costs
 
-For a typical workload of **160 files** per operation, routing the work through `data-cap` adds **442 ms** per operation compared with a bare-minimum baseline (16× baseline), about **$0.920 – $9.86 per million operations** of compute. Overall, it grows O(n) with workload size (measured exponent 1.04).
+For a typical workload of **160 files** per operation, routing the work through `data-cap` adds **450 ms** per operation compared with a bare-minimum baseline (17× baseline), about **$0.937 – $10.23 per million operations** of compute. Overall, it grows O(n) with workload size (measured exponent 1.04).
 
 > Dollar figures are **estimates** from published list prices (see _Cost model_ below) and are for comparing orders of magnitude, not for budgeting to the cent.
 
 | Cost | Typical (160 files) | Largest (640 files) |
 | --- | --- | --- |
-| Added latency per operation | 442 ms | 2.76 s |
-| Added latency, relative to baseline | 16× baseline | 25× baseline |
-| Added CPU time per operation | 877 ms | 4.71 s |
-| Added memory per operation (heap delta) | 71.1 MiB | 556.4 MiB |
-| Estimated compute cost per 1M operations | $0.920 – $9.86 | $24.98 – $53.01 |
+| Added latency per operation | 450 ms | 2.80 s |
+| Added latency, relative to baseline | 17× baseline | 23× baseline |
+| Added CPU time per operation | 910 ms | 4.88 s |
+| Added memory per operation (heap delta) | 71.1 MiB | 557.0 MiB |
+| Estimated compute cost per 1M operations | $0.937 – $10.23 | $25.41 – $54.82 |
 | Single-core throughput ceiling of the overhead alone | 2 ops/s | 0 ops/s |
-| Shipped code parsed at every cold start (gzip) | 40.1 KiB | 40.1 KiB |
+| Shipped code parsed at every cold start (gzip) | 40.2 KiB | 40.2 KiB |
 
 ## 1. End-to-end: the package's total impact
 
@@ -43,12 +43,12 @@ The baseline is an empty or minimal function, so it costs almost nothing and the
 
 | files | Baseline | With package | Added | Added vs baseline | Added CPU | Est. $ / 1M ops |
 | --- | --- | --- | --- | --- | --- | --- |
-| 20 | 5.10 ms | 77.3 ms | 72.2 ms | 15× baseline | 169 ms | $0.150 – $1.90 |
-| 40 | 9.13 ms | 129 ms | 120 ms | 14× baseline | 269 ms | $0.250 – $3.02 |
-| 80 | 14.0 ms | 225 ms | 211 ms | 16× baseline | 418 ms | $0.439 – $4.70 |
-| 160 | 30.5 ms | 472 ms | 442 ms | 16× baseline | 877 ms | $0.920 – $9.86 |
-| 320 | 57.2 ms | 1.07 s | 1.01 s | 19× baseline | 1.75 s | $2.26 – $19.69 |
-| 640 | 115 ms | 2.87 s | 2.76 s | 25× baseline | 4.71 s | $24.98 – $53.01 |
+| 20 | 5.10 ms | 79.0 ms | 73.9 ms | 15× baseline | 170 ms | $0.154 – $1.91 |
+| 40 | 8.07 ms | 131 ms | 123 ms | 16× baseline | 277 ms | $0.256 – $3.11 |
+| 80 | 15.9 ms | 237 ms | 221 ms | 15× baseline | 440 ms | $0.460 – $4.94 |
+| 160 | 28.7 ms | 479 ms | 450 ms | 17× baseline | 910 ms | $0.937 – $10.23 |
+| 320 | 60.4 ms | 1.09 s | 1.03 s | 18× baseline | 1.82 s | $2.30 – $20.42 |
+| 640 | 127 ms | 2.93 s | 2.80 s | 23× baseline | 4.88 s | $25.41 – $54.82 |
 
 **How the total grows:** O(n) (linear), exponent 1.04 over 6 sizes.
 
@@ -58,13 +58,13 @@ Every function the package exposes is measured on its own across the full size l
 
 | Function | Documented | Measured | Agreement | At 160 | At 2560 |
 | --- | --- | --- | --- | --- | --- |
-| `discoverCapabilityFiles` | O(n) | O(n) | ✅ matches | 9.97 ms | 140 ms |
-| `linkCapabilityFiles` | O(n) | O(n) | ✅ matches | 141 ms | 1.29 s |
-| `buildInventory` | O(n) | O(n) | ✅ matches | 2.14 ms | 27.4 ms |
-| `buildOwnershipModel` | O(n) | O(n) | ✅ matches | 238 µs | 3.45 ms |
-| `buildLifecycleModel` | O(n) | O(n) | ✅ matches | 72.9 µs | 1.68 ms |
-| `buildEvidenceModel` | O(1) | O(1) | ✅ matches | 1.82 µs | 1.90 µs |
-| `defineEvidenceProjection (project)` | O(n) | O(n) | ✅ matches | 21.8 ms | 425 ms |
+| `discoverCapabilityFiles` | O(n) | O(n) | ✅ matches | 11.4 ms | 147 ms |
+| `linkCapabilityFiles` | O(n) | O(n) | ✅ matches | 119 ms | 1.34 s |
+| `buildInventory` | O(n) | O(n) | ✅ matches | 2.03 ms | 30.7 ms |
+| `buildOwnershipModel` | O(n) | O(n) | ✅ matches | 251 µs | 4.10 ms |
+| `buildLifecycleModel` | O(n) | O(n) | ✅ matches | 50.5 µs | 781 µs |
+| `buildEvidenceModel` | O(1) | O(1) | ✅ matches | 1.63 µs | 1.97 µs |
+| `defineEvidenceProjection (project)` | O(n) | O(n) | ✅ matches | 22.4 ms | 464 ms |
 
 ### `discoverCapabilityFiles`
 
@@ -86,18 +86,18 @@ Every function the package exposes is measured on its own across the full size l
 
 **In the end-to-end run:** Once at the start of every artifact generation.
 
-**Measured: O(n)** (exponent 0.93, 8 sizes) -- ✅ matches.
+**Measured: O(n)** (exponent 0.89, 8 sizes) -- ✅ matches.
 
 | files | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
-| 20 | 1.48 ms | 2.23 ms | 4.34 ms | 286.6 KiB | 676 |
-| 40 | 3.14 ms | 7.43 ms | 5.75 ms | 544.7 KiB | 318 |
-| 80 | 5.77 ms | 6.86 ms | 8.23 ms | 1.0 MiB | 173 |
-| 160 | 9.97 ms | 12.0 ms | 15.6 ms | 2.1 MiB | 100 |
-| 320 | 20.4 ms | 21.2 ms | 29.2 ms | 4.1 MiB | 49 |
-| 640 | 40.7 ms | 42.5 ms | 52.5 ms | 8.2 MiB | 25 |
-| 1280 | 74.1 ms | 79.0 ms | 83.0 ms | 4.0 MiB | 14 |
-| 2560 | 140 ms | 161 ms | 157 ms | 8.1 MiB | 7 |
+| 20 | 2.26 ms | 2.35 ms | 4.61 ms | 283.5 KiB | 443 |
+| 40 | 3.14 ms | 3.48 ms | 6.62 ms | 538.5 KiB | 319 |
+| 80 | 5.54 ms | 6.96 ms | 8.23 ms | 1.0 MiB | 180 |
+| 160 | 11.4 ms | 11.9 ms | 16.0 ms | 2.1 MiB | 87 |
+| 320 | 20.4 ms | 21.6 ms | 28.5 ms | 4.1 MiB | 49 |
+| 640 | 41.2 ms | 42.7 ms | 52.8 ms | 8.2 MiB | 24 |
+| 1280 | 76.2 ms | 83.8 ms | 91.6 ms | 3.9 MiB | 13 |
+| 2560 | 147 ms | 164 ms | 171 ms | 8.1 MiB | 7 |
 
 ### `linkCapabilityFiles`
 
@@ -123,14 +123,14 @@ Every function the package exposes is measured on its own across the full size l
 
 | files | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
-| 20 | 24.7 ms | 30.2 ms | 67.5 ms | 3.7 MiB | 40 |
-| 40 | 39.7 ms | 43.4 ms | 92.2 ms | 6.8 MiB | 25 |
-| 80 | 68.8 ms | 80.7 ms | 177 ms | 13.0 MiB | 15 |
-| 160 | 141 ms | 163 ms | 324 ms | 13.8 MiB | 7 |
-| 320 | 242 ms | 261 ms | 541 ms | 22.6 MiB | 4 |
-| 640 | 405 ms | 408 ms | 839 ms | 45.9 MiB | 2 |
-| 1280 | 689 ms | 698 ms | 1.23 s | 86.4 MiB | 1 |
-| 2560 | 1.29 s | 1.31 s | 2.15 s | 167.8 MiB | 1 |
+| 20 | 26.4 ms | 29.2 ms | 70.9 ms | 3.7 MiB | 38 |
+| 40 | 42.3 ms | 49.2 ms | 108 ms | 7.0 MiB | 24 |
+| 80 | 66.1 ms | 83.2 ms | 164 ms | 5.8 MiB | 15 |
+| 160 | 119 ms | 133 ms | 279 ms | 13.7 MiB | 8 |
+| 320 | 235 ms | 244 ms | 530 ms | 22.7 MiB | 4 |
+| 640 | 414 ms | 426 ms | 869 ms | 46.1 MiB | 2 |
+| 1280 | 725 ms | 737 ms | 1.30 s | 86.9 MiB | 1 |
+| 2560 | 1.34 s | 1.36 s | 2.34 s | 168.6 MiB | 1 |
 
 ### `buildInventory`
 
@@ -150,18 +150,18 @@ Every function the package exposes is measured on its own across the full size l
 
 **In the end-to-end run:** Once per artifact run.
 
-**Measured: O(n)** (exponent 0.90, 8 sizes) -- ✅ matches.
+**Measured: O(n)** (exponent 0.91, 8 sizes) -- ✅ matches.
 
 | files | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
-| 20 | 292 µs | 374 µs | 939 µs | 230.3 KiB | 3,423 |
-| 40 | 577 µs | 647 µs | 2.07 ms | 439.4 KiB | 1,733 |
-| 80 | 1.18 ms | 1.32 ms | 3.97 ms | 878.2 KiB | 850 |
-| 160 | 2.14 ms | 2.38 ms | 6.86 ms | 1.7 MiB | 467 |
-| 320 | 3.55 ms | 4.61 ms | 9.57 ms | 3.4 MiB | 282 |
-| 640 | 6.23 ms | 10.1 ms | 15.7 ms | 6.8 MiB | 161 |
-| 1280 | 12.0 ms | 15.9 ms | 33.2 ms | 13.5 MiB | 83 |
-| 2560 | 27.4 ms | 29.7 ms | 59.3 ms | 14.4 MiB | 37 |
+| 20 | 327 µs | 421 µs | 1.15 ms | 231.8 KiB | 3,058 |
+| 40 | 607 µs | 698 µs | 1.99 ms | 447.8 KiB | 1,646 |
+| 80 | 1.24 ms | 1.37 ms | 4.32 ms | 895.1 KiB | 805 |
+| 160 | 2.03 ms | 2.45 ms | 6.44 ms | 1.7 MiB | 492 |
+| 320 | 3.79 ms | 5.05 ms | 10.9 ms | 3.5 MiB | 264 |
+| 640 | 7.06 ms | 11.2 ms | 18.4 ms | 6.9 MiB | 142 |
+| 1280 | 13.0 ms | 17.7 ms | 33.8 ms | 14.4 MiB | 77 |
+| 2560 | 30.7 ms | 32.2 ms | 65.8 ms | 15.1 MiB | 33 |
 
 ### `buildOwnershipModel`
 
@@ -181,18 +181,18 @@ Every function the package exposes is measured on its own across the full size l
 
 **In the end-to-end run:** Once per artifact run.
 
-**Measured: O(n)** (exponent 0.97, 8 sizes) -- ✅ matches.
+**Measured: O(n)** (exponent 1.00, 8 sizes) -- ✅ matches.
 
 | files | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
-| 20 | 31.9 µs | 33.9 µs | 34.1 µs | 19.6 KiB | 31,385 |
-| 40 | 62.1 µs | 66.3 µs | 150 µs | 28.5 KiB | 16,114 |
-| 80 | 120 µs | 128 µs | 282 µs | 43.6 KiB | 8,305 |
-| 160 | 238 µs | 258 µs | 782 µs | 75.8 KiB | 4,193 |
-| 320 | 497 µs | 537 µs | 1.74 ms | 146.9 KiB | 2,013 |
-| 640 | 994 µs | 1.09 ms | 2.59 ms | 276.4 KiB | 1,006 |
-| 1280 | 1.76 ms | 2.15 ms | 6.09 ms | 562.0 KiB | 568 |
-| 2560 | 3.45 ms | 3.80 ms | 10.6 ms | 1.1 MiB | 290 |
+| 20 | 34.5 µs | 39.7 µs | 35.8 µs | 19.6 KiB | 28,989 |
+| 40 | 64.1 µs | 68.3 µs | 114 µs | 28.5 KiB | 15,591 |
+| 80 | 124 µs | 147 µs | 355 µs | 43.5 KiB | 8,073 |
+| 160 | 251 µs | 265 µs | 858 µs | 75.8 KiB | 3,978 |
+| 320 | 536 µs | 582 µs | 1.88 ms | 146.9 KiB | 1,864 |
+| 640 | 1.15 ms | 1.28 ms | 3.80 ms | 276.4 KiB | 872 |
+| 1280 | 2.17 ms | 2.48 ms | 7.58 ms | 561.1 KiB | 460 |
+| 2560 | 4.10 ms | 4.65 ms | 12.2 ms | 1.1 MiB | 244 |
 
 ### `buildLifecycleModel`
 
@@ -212,18 +212,18 @@ Every function the package exposes is measured on its own across the full size l
 
 **In the end-to-end run:** Once per artifact run.
 
-**Measured: O(n)** (exponent 0.91, 8 sizes) -- ✅ matches.
+**Measured: O(n)** (exponent 0.90, 8 sizes) -- ✅ matches.
 
 | files | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
-| 20 | 17.3 µs | 19.4 µs | 17.7 µs | 19.5 KiB | 57,859 |
-| 40 | 23.2 µs | 33.6 µs | 76.8 µs | 36.4 KiB | 43,130 |
-| 80 | 37.4 µs | 68.9 µs | 100 µs | 67.6 KiB | 26,717 |
-| 160 | 72.9 µs | 133 µs | 242 µs | 134.5 KiB | 13,719 |
-| 320 | 86.9 µs | 259 µs | 321 µs | 268.2 KiB | 11,504 |
-| 640 | 395 µs | 422 µs | 825 µs | 571.1 KiB | 2,529 |
-| 1280 | 362 µs | 813 µs | 1.49 ms | 913.7 KiB | 2,760 |
-| 2560 | 1.68 ms | 1.76 ms | 4.64 ms | 2.2 MiB | 594 |
+| 20 | 20.2 µs | 24.5 µs | 21.1 µs | 19.5 KiB | 49,557 |
+| 40 | 22.3 µs | 35.4 µs | 23.4 µs | 29.3 KiB | 44,766 |
+| 80 | 24.0 µs | 41.9 µs | 80.4 µs | 57.7 KiB | 41,745 |
+| 160 | 50.5 µs | 52.6 µs | 52.9 µs | 134.5 KiB | 19,801 |
+| 320 | 182 µs | 367 µs | 499 µs | 268.4 KiB | 5,481 |
+| 640 | 361 µs | 745 µs | 887 µs | 536.0 KiB | 2,773 |
+| 1280 | 741 µs | 1.37 ms | 2.68 ms | 969.2 KiB | 1,349 |
+| 2560 | 781 µs | 4.57 ms | 2.98 ms | 2.1 MiB | 1,281 |
 
 ### `buildEvidenceModel`
 
@@ -242,18 +242,18 @@ Every function the package exposes is measured on its own across the full size l
 
 **In the end-to-end run:** Once per artifact run.
 
-**Measured: O(1)** (exponent 0.03, 8 sizes) -- ✅ matches.
+**Measured: O(1)** (exponent -0.09, 8 sizes) -- ✅ matches.
 
 | files | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
-| 20 | 1.61 µs | 3.71 µs | 1.77 µs | 1.4 KiB | 621,816 |
-| 40 | 1.46 µs | 3.65 µs | 1.53 µs | 1.4 KiB | 685,350 |
-| 80 | 1.49 µs | 3.68 µs | 1.56 µs | 1.4 KiB | 672,963 |
-| 160 | 1.82 µs | 3.72 µs | 2.03 µs | 1.4 KiB | 548,469 |
-| 320 | 1.49 µs | 2.13 µs | 1.55 µs | 1.4 KiB | 669,448 |
-| 640 | 1.49 µs | 2.03 µs | 1.55 µs | 1.4 KiB | 669,269 |
-| 1280 | 1.64 µs | 2.56 µs | 1.89 µs | 1.4 KiB | 608,901 |
-| 2560 | 1.90 µs | 2.51 µs | 2.02 µs | 1.5 KiB | 525,464 |
+| 20 | 4.08 µs | 5.59 µs | 4.41 µs | 1.8 KiB | 245,257 |
+| 40 | 1.86 µs | 4.02 µs | 1.94 µs | 1.4 KiB | 538,445 |
+| 80 | 1.56 µs | 3.71 µs | 1.66 µs | 1.4 KiB | 640,393 |
+| 160 | 1.63 µs | 3.82 µs | 1.71 µs | 1.4 KiB | 612,102 |
+| 320 | 1.69 µs | 3.32 µs | 1.82 µs | 1.4 KiB | 591,966 |
+| 640 | 1.62 µs | 2.60 µs | 1.71 µs | 1.4 KiB | 617,111 |
+| 1280 | 1.76 µs | 2.32 µs | 1.90 µs | 1.4 KiB | 569,503 |
+| 2560 | 1.97 µs | 3.06 µs | 2.11 µs | 1.5 KiB | 507,935 |
 
 ### `defineEvidenceProjection (project)`
 
@@ -271,34 +271,34 @@ Every function the package exposes is measured on its own across the full size l
 | projection shape | fixed at "four derived fields" | A projection reading fewer fields still pays the clone; one computing more adds proportional work. |
 | runtime | fixed at "Node (V8)" | Measured on Node only. |
 
-**Measured: O(n)** (exponent 1.01, 8 sizes) -- ✅ matches.
+**Measured: O(n)** (exponent 1.02, 8 sizes) -- ✅ matches.
 
 | files | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
-| 20 | 3.29 ms | 3.42 ms | 6.10 ms | 1.0 MiB | 304 |
-| 40 | 5.92 ms | 7.24 ms | 8.75 ms | 2.0 MiB | 169 |
-| 80 | 11.2 ms | 12.4 ms | 14.5 ms | 3.9 MiB | 89 |
-| 160 | 21.8 ms | 23.4 ms | 26.6 ms | 7.6 MiB | 46 |
-| 320 | 43.5 ms | 44.5 ms | 49.1 ms | 15.0 MiB | 23 |
-| 640 | 96.0 ms | 100 ms | 118 ms | 10.0 MiB | 10 |
-| 1280 | 209 ms | 211 ms | 284 ms | 37.9 MiB | 5 |
-| 2560 | 425 ms | 428 ms | 574 ms | 81.3 MiB | 2 |
+| 20 | 3.38 ms | 3.73 ms | 6.42 ms | 1.0 MiB | 296 |
+| 40 | 6.11 ms | 8.92 ms | 9.95 ms | 2.0 MiB | 164 |
+| 80 | 11.5 ms | 12.8 ms | 14.7 ms | 4.0 MiB | 87 |
+| 160 | 22.4 ms | 23.8 ms | 27.6 ms | 7.7 MiB | 45 |
+| 320 | 47.0 ms | 48.2 ms | 53.3 ms | 15.6 MiB | 21 |
+| 640 | 103 ms | 105 ms | 125 ms | 10.7 MiB | 10 |
+| 1280 | 219 ms | 223 ms | 299 ms | 38.6 MiB | 5 |
+| 2560 | 464 ms | 472 ms | 649 ms | 81.9 MiB | 2 |
 
 ## 3. What makes up the end-to-end overhead
 
 Each function's measured cost is multiplied by how many times one end-to-end operation calls it, then compared with the total overhead from section 1. This shows where the cost actually lives, so effort goes to the function that matters. Shares are estimates: they can sum to slightly more or less than 100% because the two measurements were taken separately (the remainder is shown as _unattributed_).
 
-**At 160 files** (total added: 442 ms)
+**At 160 files** (total added: 450 ms)
 
 | Function | Calls / operation | Estimated time | Share of added time | Share of operation |
 | --- | --- | --- | --- | --- |
-| `link-capability-files` | 1 | 141 ms | 32% | 30% |
-| `discover-capability-files` | 1 | 9.97 ms | 2.3% | 2.1% |
-| `build-inventory` | 1 | 2.14 ms | 0.5% | 0.5% |
-| `build-ownership-model` | 1 | 238 µs | 0.1% | 0.1% |
-| `build-lifecycle-model` | 1 | 72.9 µs | 0.0% | 0.0% |
-| `build-evidence-model` | 1 | 1.82 µs | 0.0% | 0.0% |
-| _unattributed_ |  | 288 ms | 65% |  |
+| `link-capability-files` | 1 | 119 ms | 26% | 25% |
+| `discover-capability-files` | 1 | 11.4 ms | 2.5% | 2.4% |
+| `build-inventory` | 1 | 2.03 ms | 0.5% | 0.4% |
+| `build-ownership-model` | 1 | 251 µs | 0.1% | 0.1% |
+| `build-lifecycle-model` | 1 | 50.5 µs | 0.0% | 0.0% |
+| `build-evidence-model` | 1 | 1.63 µs | 0.0% | 0.0% |
+| _unattributed_ |  | 317 ms | 70% |  |
 
 ## Failed measurements
 
@@ -311,9 +311,9 @@ Estimates use two bracketing price shapes: **low** = CPU-priced compute ($0.040 
 
 ## Environment and method
 
-- Run: `2026-10-02T01:05:03.387Z` → `2026-10-02T01:06:49.369Z` (106 s), ci
+- Run: `2026-10-02T13:30:44.208Z` → `2026-10-02T13:32:32.440Z` (108 s), ci
 - Machine: AMD EPYC 9V74 80-Core Processor, 4 logical core(s) (2 physical), 15990 MB RAM, linux/x64, Node v22.23.3, GitHub Actions
-- Git: `29b74756425d93fc965acb3462d57908c2ab8649` on `chore/no-minify-no-dist-urls` (uncommitted changes)
+- Git: `a4cfb755011c545987f9bdabe077c250c91dbe6d` on `feat/gdpr-ropa-generator` (uncommitted changes)
 - Sizes: 20, 40, 80, 160, 320, 640, 1280, 2560 files -- One capability file in the project. 160 is a large application's worth of capabilities; 640 a large monorepo's. The ladder stops at 2,560, not 10,240, because every size writes a real project of TypeScript files and links them with the TypeScript compiler API, which takes minutes at the largest sizes.
 
 **Do not compare these numbers with another machine's, another day's, or another package's.** They exist to show how _this_ package's cost changes between runs on comparable hardware and how it scales with size. See [READING-BENCHMARKS.md](../READING-BENCHMARKS.md).
