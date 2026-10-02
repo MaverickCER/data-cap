@@ -117,7 +117,7 @@ jobs:
     # The `suites`/`install-dirs` inputs below exist only in internal-package-contract commits that
     # include the generalized benchmark kit: bump this SHA to such a commit together with the
     # internal-package-contract devDependency pin, in the same pull request.
-    uses: MaverickCER/internal-package-contract/.github/workflows/benchmark-pr.yml@8e8f6809fd77b44b6946d93c1df11e011f363680 # main -- PR #22, "feat(benchmark): add shared benchmark engine"
+    uses: MaverickCER/internal-package-contract/.github/workflows/benchmark-pr.yml@6e4fd08e6a5fe3f175a8f3db420c48b509662435 # main -- PR #22, "feat(benchmark): add shared benchmark engine"
     with:
       suites: |
         Runtime|benchmarks/performance-runtime|benchmarks/history/runtime.json
@@ -269,8 +269,16 @@ jobs:
       # CI checkout, which starts with neither directory present.
       - run: mkdir -p reports coverage
       - run: npm run benchmark:check --if-present
+      # Socket scores a published version, so one score serves every run for a day. The contract
+      # scans only after every other check passes, and this keeps even that to once per version.
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/ipc-socket-score
+          key: ipc-socket-score-${{ github.run_id }}
+          restore-keys: ipc-socket-score-
       - run: npm run contract
         env:
+          IPC_SOCKET_CACHE_DIR: ${{ runner.temp }}/ipc-socket-score
           # SecuritySocket scores the package on Socket.dev and FAILS without a token. Create a
           # token at socket.dev (Settings > API Tokens, `packages:list`) and add it as the
           # repository or organization secret SOCKET_SECURITY_API_KEY.
