@@ -20,7 +20,7 @@ jobs:
       contents: write
       pull-requests: write
       actions: write
-    uses: MaverickCER/internal-package-contract/.github/workflows/dependency-pin-sync.yml@8e8f6809fd77b44b6946d93c1df11e011f363680 # main, parts B/C/D/E/F/G/I
+    uses: MaverickCER/internal-package-contract/.github/workflows/dependency-pin-sync.yml@6e4fd08e6a5fe3f175a8f3db420c48b509662435 # main, parts B/C/D/E/F/G/I
     with:
       dependency-name: internal-package-contract
       new-version: ${{ github.event.client_payload.version }}
