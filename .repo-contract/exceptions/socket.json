@@ -66,19 +66,6 @@
       "type": "gptAnomaly"
     },
     {
-      "id": "socket:data-cap@self:minifiedFile",
-      "version": 1,
-      "justification": "Describes the latest already-published release, which cannot be altered after publishing. The repository now forbids minified output (NoMinify), so the next published release no longer carries it; the published release is part of the package's history and cannot be removed without removing the package.",
-      "alternatives": "Unpublish or deprecate the old release, which would break consumers pinned to it.",
-      "exceptionType": "required-for-package-to-exist",
-      "method": "independent-human-review",
-      "package": "data-cap",
-      "packageVersion": "self",
-      "remediation": "Cleared by publishing the next release, which is built unminified.",
-      "severity": "low",
-      "type": "minifiedFile"
-    },
-    {
       "id": "socket:data-cap@self:unpopularPackage",
       "version": 1,
       "justification": "Socket flags packages with little adoption. data-cap is young, and adoption cannot be produced by code; the alert is a property of the package existing at this stage of its life.",
