@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
   "provenance": {
-    "generatedAt": "2026-10-02T14:03:30.252Z",
-    "toolVersion": "0.5.1"
+    "generatedAt": "2026-10-02T15:23:28.042Z",
+    "toolVersion": "0.6.0"
   },
   "capability": {
     "schemaVersion": 3,
@@ -804,7 +804,7 @@
   },
   "runtimeContract": {
     "schemaVersion": 1,
-    "packageVersion": "0.5.1",
+    "packageVersion": "0.6.0",
     "policies": [
       {
         "key": "getter-concurrency",
