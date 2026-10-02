@@ -114,17 +114,18 @@ jobs:
       contents: write
       pull-requests: write
       statuses: write
-    uses: MaverickCER/internal-package-contract/.github/workflows/benchmark-pr.yml@d02029611467d32911f1be3331f5d21e6e04e09b # main -- PR #22, "feat(benchmark): add shared benchmark engine"
+    # The `suites`/`install-dirs` inputs below exist only in internal-package-contract commits that
+    # include the generalized benchmark kit: bump this SHA to such a commit together with the
+    # internal-package-contract devDependency pin, in the same pull request.
+    uses: MaverickCER/internal-package-contract/.github/workflows/benchmark-pr.yml@8e8f6809fd77b44b6946d93c1df11e011f363680 # main -- PR #22, "feat(benchmark): add shared benchmark engine"
     with:
-      # data-cap's own existing directory convention (see benchmarks/README.md)
-      # -- unlike env-cap's benchmark/ + docs/benchmark-history/, nothing to
-      # rename or move here.
-      benchmark-dir: benchmarks
-      history-dir: benchmarks/history
-      budgets-path: benchmarks/benchmark-fixtures/budgets.mjs
-      # Unchanged from the pre-migration render-benchmark-summary.mjs's own
-      # hardcoded MARKER -- keeps finding/updating the same PR comment across
-      # this migration instead of posting a duplicate.
+      suites: |
+        Runtime|benchmarks/performance-runtime|benchmarks/history/runtime.json
+        Build-time|benchmarks/performance-buildtime|benchmarks/history/buildtime.json
+      install-dirs: |
+        benchmarks/performance-runtime
+        benchmarks/performance-buildtime
+      budgets-path: benchmarks/budgets.mjs
       comment-marker: "<!-- data-cap-benchmark-summary -->"
       node-version: 22.x
 
@@ -258,6 +259,7 @@ jobs:
       # committed.
       - run: >-
           npm run benchmark:page -- --out docs/benchmarks/index.html
+          --readme https://github.com/maverickcer/data-cap/blob/main/benchmarks/README.md
           --history 'Runtime|benchmarks/history/runtime.json'
           --history 'Build-time|benchmarks/history/buildtime.json'
       # internal-package-contract's own runner deletes reports/ and coverage/
@@ -266,7 +268,13 @@ jobs:
       # (and Coverage's own reports) survive past the run at all on a fresh
       # CI checkout, which starts with neither directory present.
       - run: mkdir -p reports coverage
+      - run: npm run benchmark:check --if-present
       - run: npm run contract
+        env:
+          # SecuritySocket scores the package on Socket.dev and FAILS without a token. Create a
+          # token at socket.dev (Settings > API Tokens, `packages:list`) and add it as the
+          # repository or organization secret SOCKET_SECURITY_API_KEY.
+          SOCKET_SECURITY_API_KEY: ${{ secrets.SOCKET_SECURITY_API_KEY }}
 
       # Diagnostic aid, not part of the gate itself: `always()` so a failed
       # Mutation run's exact per-mutant detail (file, mutator, location,
@@ -588,6 +596,7 @@ jobs:
       # Lands at maverickcer.github.io/data-cap/benchmarks/.
       - run: >-
           npm run benchmark:page -- --out docs/benchmarks/index.html
+          --readme https://github.com/maverickcer/data-cap/blob/main/benchmarks/README.md
           --history 'Runtime|benchmarks/history/runtime.json'
           --history 'Build-time|benchmarks/history/buildtime.json'
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1

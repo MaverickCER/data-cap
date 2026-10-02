@@ -23,5 +23,9 @@ for (const name of EXAMPLES) {
   }
 
   console.log(`[benchmark] ${name}: running...`)
-  execFileSync("npm", ["run", "--silent", "benchmark"], { cwd: exampleDir, stdio: "inherit" })
+  execFileSync(
+    "npm",
+    ["run", "--silent", process.argv.includes("--check") ? "benchmark:check" : "benchmark"],
+    { cwd: exampleDir, stdio: "inherit" },
+  )
 }
