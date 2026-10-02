@@ -30,7 +30,10 @@ const BUDGETS = [
   // `runtime/cache`/`runtime/retry`, which are optional add-ons most
   // capabilities never touch) because `createData` is meant to be the
   // first thing most consumers reach for, not an edge-case extra.
-  { label: "runtime", file: "dist/runtime/index.js", maxGzipBytes: 6 * 1024 },
+  // Raised from 6KB to 8KB when minification became forbidden (internal-package-contract's
+  // NoMinify check): the budget was calibrated on minified output, and the same code unminified
+  // gzips to about 6.9KB. A one-time recalibration to the new baseline, not unexamined growth.
+  { label: "runtime", file: "dist/runtime/index.js", maxGzipBytes: 8 * 1024 },
   { label: "runtime/cache", file: "dist/runtime/cache.js", maxGzipBytes: 1 * 1024 },
   { label: "runtime/retry", file: "dist/runtime/retry.js", maxGzipBytes: 2 * 1024 },
   { label: "helpers", file: "dist/helpers.js", maxGzipBytes: 3 * 1024 },
