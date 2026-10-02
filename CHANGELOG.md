@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.1
+
+### Patch Changes
+
+- chore(deps): bump the npm_and_yarn group across 3 directories with 2 updates (#39)
+
 ## 0.6.0
 
 ### Minor Changes
