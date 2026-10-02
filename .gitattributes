@@ -17,3 +17,15 @@ yarn.lock -diff
 # Generated -- collapse in review
 CHANGELOG.md -diff
 schemas/*.json linguist-generated=true
+
+# Machine-generated snapshot compared byte-for-byte against a fresh
+# regeneration -- the api-contract baseline (.repo-contract, via
+# internal-package-contract's own scripts/api-contract/baseline-store.ts,
+# API-Extractor-backed under the hood) emits CRLF unconditionally, so git
+# must leave its line endings untouched or every regeneration's hash check
+# breaks (baseline.meta.json's apiJsonHash/dtsHash are computed against the
+# CRLF bytes api-extractor actually wrote; `* text=auto eol=lf` above
+# rewriting them to LF on checkout/commit corrupts that hash). Mirrors this
+# path's existing .prettierignore / eslint ignore entries, and
+# internal-package-contract's own repo-contract's identical override.
+/.repo-contract/**  -text

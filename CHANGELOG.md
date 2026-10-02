@@ -1,5 +1,80 @@
 # Changelog
 
+## 0.5.1
+
+### Patch Changes
+
+- chore(socket): drop the record for the minified-file alert that no longer applies
+- 0fe2d1c: Re-pin internal-package-contract to its 0.6.0 release, which scans Socket last and caches the score so the quota is spent once per version.
+
+## 0.5.0
+
+### Minor Changes
+
+- feat(benchmarks): extend coverage to the full public API surface
+- c3d7e44: Migrates the benchmark pipeline (history append, PR-comment summary, history page) onto `internal-package-contract`'s new shared benchmark engine (`scripts/benchmark/*.mjs`, called via its reusable `benchmark-pr.yml` workflow), replacing this repo's own now-deleted `benchmarks/append-benchmark-history.mjs` / `benchmarks/render-benchmark-summary.mjs` copies.
+
+  This repo's directory convention (`benchmarks/`, `benchmarks/history/`) is unchanged -- nothing moved or renamed. What did change:
+
+  - `.github/workflows/ci.yml`'s `benchmark-pr` job is now a thin caller of `internal-package-contract`'s reusable `benchmark-pr.yml` (pinned to its merged commit), with the exact same trigger condition, anti-recursion-loop guard, and per-PR concurrency serialization as before -- only the step bodies moved into the shared workflow.
+  - Three new npm scripts (`benchmark:history`, `benchmark:summary`, `benchmark:page`) forward to `internal-package-contract`'s copies, matching its README's documented consumer wiring.
+  - Committed benchmark history (`benchmarks/history/{runtime,buildtime}.json`) moves to schema v2: each tier measurement now also carries its full `inputs` object and a derived `unitsPerSecond` figure, alongside the existing `medianMs`. Older v1 entries stay valid as-is; nothing is migrated or rewritten.
+  - The `deploy` job now renders a static benchmark-history page (`docs/benchmarks/index.html` -- small-multiples charts per benchmark group, each annotated with its currently-inferred algorithmic complexity class) fresh on every deploy, the same treatment `docs/api/` already gets. Never committed.
+
+  No change to what's measured, this package's public API, or the PR-comment's own methodology/budgets -- `benchmarks/run-benchmarks.mjs`, each example's own `scripts/run-benchmark.mjs`, and `benchmark-fixtures/budgets.mjs` are untouched.
+
+- 52d8933: Restricts the CLI to `--evidence` -- the only output with a verified real consumer or a versioned reporting contract (ADR 0050). `--location`, `--docs`, `--ownership`, and `--flow` are removed from the CLI surface: none of the manifest, documentation catalog, dependency & ownership report, or Data Flow Diagram has ever had a verified runtime consumer in this repo's own examples.
+
+  The underlying generator functions are **unchanged and remain fully exported** from `data-cap/build`: `generateManifest`, `generateDocumentation`, `generateUsage`, `generateFlow`, and the higher-level `generateDataArtifacts`/`checkArtifacts` orchestrators that compose them (including their own `location`/`docs`/`ownership`/`flow` options). A project that wants any of the four removed artifacts now calls these directly from its own build script -- see `examples/*/scripts/generate-docs/{run.ts,check.ts,README.md}` for a worked pattern used by all four of this repo's own examples, and [ADR 0066](specs/decisions/0066-cli-restricted-to-runtime-and-evidence-output.md) for the full reasoning.
+
+  `--expiring-within-days` stays a CLI flag (unlike the equivalent change env-cap made): it feeds the Evidence Model's Lifecycle Model unconditionally, independent of `--docs`. `--strict-docs`/`--strict-ownership`/`--strict-flow` also stay -- the findings they escalate are computed unconditionally alongside `--evidence` (F1/F2), even though `--strict-flow` is now a CLI-level no-op with `--flow` gone (it remains meaningful for a direct `generateDataArtifacts({ flow, strictFlow: true })` library call).
+
+  This is a breaking change to the CLI's flag set (minor, per this repo's pre-1.0 semver convention -- see `VERSIONING.md`): any script invoking `data-cap --location/--docs/--ownership/--flow ...` now fails with `Unknown argument: ...` instead of generating output. Migrate by calling the equivalent `data-cap/build` function directly, following the pattern in any of this repo's own `examples/*/scripts/generate-docs/` directories.
+
+- cc0db67: Removes the `examples/nextjs-app` NIST-Privacy-Framework-informed alignment report generator (`scripts/nist-privacy-framework/`, `npm run docs:privacy`, and the generated `docs/ISO-IEC-27701-2025.md`). The generated document's title claimed alignment with ISO/IEC 27701:2025 — a copyrighted, purchasable standard — while its actual content was derived entirely from the openly published NIST Privacy Framework. That mismatch between the title and the real source is a real mislabeling/copyright-exposure risk, not a design preference, so the generator and its output are deleted outright with no replacement in this change. `npm run build` for the example no longer chains `docs:privacy`; the unused `tsx` devDependency is also removed.
+- 6cc8acd: The usage scan and change-detection/citation-verification no longer silently skip when only `--evidence` is requested.
+
+  Previously, the Dependency Model (`evidence.dependency`) was only populated when `--ownership` or `--flow` was also passed, and the Change Model (`evidence.change`) plus dynamic-access citation freshness-verification were only computed when `--location` was also passed. A caller that only ever requests `--evidence` -- the expected pattern once the CLI's flag surface narrows down to just `--evidence` -- got a materially thinner Evidence Model as a result: no proven consumption edges, no blast-radius/change-since-last-run facts, and no citation staleness findings.
+
+  Both now run unconditionally alongside `--evidence`:
+
+  - The usage scan (proven consumption positions, dependency edges, ownership/abandonment findings) always runs. `--ownership` now only controls whether the rendered Dependency & Ownership report is additionally written to disk.
+  - Change-detection (a real manifest diff against the persisted `.data-cap-manifest-snapshot.json` sidecar) and dynamic-access citation freshness-verification now run whenever `--location` OR `--evidence` is requested, not only `--location`. The manifest snapshot sidecar's own read/write now follows the same broadened gate; only `manifest.ts`'s own file write stays exclusively gated on `--location`.
+
+  `ReportResult.usage` is now always present (no longer `| undefined`). `--check`'s own staleness comparison now also masks `EvidenceModel.change` the same way it already masks `provenance.generatedAt`, since a manifest diff is inherently not reproducible by a second computation.
+
+### Patch Changes
+
+- chore(benchmarks): refresh results.json
+- chore(benchmarks): refresh results.json
+- chore(benchmarks): refresh results.json
+- chore(benchmarks): refresh results.json
+- chore(benchmarks): refresh results.json
+- chore: commit the first-ever api-contract baseline
+- fix(size): recalibrate the runtime budget to unminified output
+- chore(benchmarks): refresh results.json
+- chore(benchmarks): refresh results.json
+- chore(benchmarks): refresh results.json
+- chore(benchmarks): refresh results.json
+- fix: stop git line-ending normalization from corrupting the api-contract baseline hash
+- chore: clear stale CodeRabbit exception placeholders
+- chore(benchmarks): refresh results.json
+- ci: run benchmarks before contract/lint, in one workflow, to stop the re-approval loop
+- chore(benchmarks): refresh results.json
+- chore(benchmarks): refresh results.json
+- chore(benchmarks): refresh results.json
+- chore(benchmarks): refresh results.json
+- chore(benchmarks): refresh results.json
+- chore(benchmarks): refresh results.json from main@1cb3c4e [skip ci] (#18)
+- chore(benchmarks): refresh results.json
+- chore(benchmarks): refresh results.json
+- chore(benchmarks): refresh results.json
+- chore(benchmarks): refresh results.json
+- fix: real CI for bot-authored branches; benchmark results land in the PR itself (#19)
+- chore(benchmarks): refresh results.json
+- chore(benchmarks): refresh results.json
+- 2e46cef: Stop minifying the published build, move the benchmarks onto internal-package-contract's shared benchmark kit (documented suites, cost-first `BENCHMARKS.md`, `benchmarks/README.md`), and record the shipped URLs and Socket alerts as fully written exceptions.
+
 ## 0.4.0
 
 ### Minor Changes

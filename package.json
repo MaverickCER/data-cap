@@ -1,6 +1,6 @@
 {
   "name": "data-cap",
-  "version": "0.4.0",
+  "version": "0.5.1",
   "description": "Executable, analyzable data contracts. Capabilities declare the fields they own and the getters/mutators/subscriptions that acquire, mutate, or observe them, independent of databases, transports, frameworks, and state-management libraries.",
   "keywords": [
     "data",
@@ -153,6 +153,9 @@
     "docs:api:report:check": "node scripts/check-api-report.mjs",
     "examples:update-golden": "node scripts/update-example-goldens.mjs",
     "benchmark": "node benchmarks/run-benchmarks.mjs",
+    "benchmark:history": "node node_modules/internal-package-contract/scripts/benchmark/append-history.mjs",
+    "benchmark:summary": "node node_modules/internal-package-contract/scripts/benchmark/render-summary.mjs",
+    "benchmark:page": "node node_modules/internal-package-contract/scripts/benchmark/render-page.mjs",
     "setup": "npm install && npm run build && npm run schema",
     "stage": "npm run typecheck && npm run build && npm run test && npm run size",
     "verify:no-ambient-fs": "node scripts/verify-no-ambient-fs.mjs",
@@ -161,7 +164,8 @@
     "precommit": "npm run typecheck && npm run lint && npm run format && npm run build && npm run schema && npm run test:coverage && npm run size && npm run verify:no-ambient-fs && npm run verify:no-ambient-child-process && npm run docs:api:report:check",
     "prepublishOnly": "npm run verify",
     "version": "changeset version && npm run build && npm run examples:update-golden",
-    "release": "changeset publish"
+    "release": "changeset publish",
+    "benchmark:check": "node benchmarks/run-benchmarks.mjs --check"
   },
   "peerDependencies": {
     "eslint": "^8.57.0 || ^9.0.0 || ^10.0.0",

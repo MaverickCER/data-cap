@@ -2,9 +2,12 @@
   "name": "data-cap-performance-buildtime",
   "private": true,
   "type": "module",
-  "description": "Build-time tooling benchmark: discovery and full generateDataArtifacts (discover -> link -> inventory -> manifest/docs/ownership/flow/evidence) cost as capability-file count scales.",
+  "description": "Build-time performance benchmark suite (shared internal-package-contract benchmark contract): cost of data-cap discovery, linking and artifact generation as a project grows.",
   "scripts": {
-    "benchmark": "node --expose-gc scripts/run-benchmark.mjs"
+    "benchmark": "node ../../node_modules/internal-package-contract/scripts/benchmark/run-suite.mjs suite.mjs",
+    "benchmark:quick": "node ../../node_modules/internal-package-contract/scripts/benchmark/run-suite.mjs suite.mjs --quick",
+    "benchmark:check": "node ../../node_modules/internal-package-contract/scripts/benchmark/run-suite.mjs suite.mjs --check",
+    "benchmark:render": "node ../../node_modules/internal-package-contract/scripts/benchmark/run-suite.mjs suite.mjs --render"
   },
   "dependencies": {
     "data-cap": "file:../.."

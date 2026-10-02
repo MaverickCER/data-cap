@@ -20,7 +20,7 @@
   // 2. `config` reproduces the bundled baseline rule set so hand-authored
   //    Markdown (root *.md files) keeps exactly the same rules as before --
   //    this file only changes what's in scope, not how it's linted.
-  "ignores": ["docs/api-report/**"],
+  "ignores": ["docs/api-report/**", "benchmarks/performance-runtime/BENCHMARKS.md"],
   "config": {
     "default": true,
     "MD013": false, // line length

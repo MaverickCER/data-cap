@@ -2,9 +2,12 @@
   "name": "data-cap-performance-runtime",
   "private": true,
   "type": "module",
-  "description": "Runtime performance benchmark: cold-start cost as capability count scales, plus the sync-core/async-dispatch suite as fetched collection size scales.",
+  "description": "Runtime performance benchmark suite (shared internal-package-contract benchmark contract): end-to-end cost of data-cap, every runtime function across a ten-size ladder, and what drives the overhead.",
   "scripts": {
-    "benchmark": "node --expose-gc scripts/run-benchmark.mjs"
+    "benchmark": "node ../../node_modules/internal-package-contract/scripts/benchmark/run-suite.mjs suite.mjs",
+    "benchmark:quick": "node ../../node_modules/internal-package-contract/scripts/benchmark/run-suite.mjs suite.mjs --quick",
+    "benchmark:check": "node ../../node_modules/internal-package-contract/scripts/benchmark/run-suite.mjs suite.mjs --check",
+    "benchmark:render": "node ../../node_modules/internal-package-contract/scripts/benchmark/run-suite.mjs suite.mjs --render"
   },
   "dependencies": {
     "data-cap": "file:../.."

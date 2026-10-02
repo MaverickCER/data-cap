@@ -1,16 +1,9 @@
 import { readFileSync } from "node:fs"
 import { defineConfig } from "tsup"
 
-// See env-cap's tsup.config.ts for the full rationale (this package follows
-// the same convention): `minifyWhitespace` only -- strips comments/whitespace
-// but leaves every identifier intact, so dist/*.js stack traces still read
-// like the source. `dts: false` because declarations (with working
-// declaration maps) are emitted separately by `tsc -p tsconfig.build.json`
-// and shimmed into place by scripts/emit-dts-shims.mjs -- tsup's own dts
-// pipeline can't produce declaration maps.
-const esbuildOptions = (options: { minifyWhitespace?: boolean }): void => {
-  options.minifyWhitespace = true
-}
+// Nothing here may minify: no `minify*` option, no esbuildOptions that sets one. Minified code is a
+// Socket.dev supply-chain alert and internal-package-contract's NoMinify check fails the contract
+// on it. The built output ships exactly as esbuild prints it, comments included.
 
 // Read once, here, at build time -- NOT shipped in dist/. Substituted into
 // `src/build/package-version.ts` and (transitively) `src/cli/json.ts` via
@@ -43,7 +36,6 @@ export default defineConfig([
     // `dist/` is cleaned once, deterministically, by `npm run clean` as an
     // explicit prior step in the `build` script instead.
     treeshake: true,
-    esbuildOptions,
   },
   {
     name: "runtime",
@@ -54,7 +46,6 @@ export default defineConfig([
     dts: false,
     sourcemap: true,
     treeshake: true,
-    esbuildOptions,
   },
   {
     // Separate tsup entries (not just named exports) for cache/retry --
@@ -68,7 +59,6 @@ export default defineConfig([
     dts: false,
     sourcemap: true,
     treeshake: true,
-    esbuildOptions,
   },
   {
     name: "runtime-retry",
@@ -79,7 +69,6 @@ export default defineConfig([
     dts: false,
     sourcemap: true,
     treeshake: true,
-    esbuildOptions,
   },
   {
     name: "helpers",
@@ -94,7 +83,6 @@ export default defineConfig([
     dts: false,
     sourcemap: true,
     treeshake: true,
-    esbuildOptions,
   },
   {
     name: "build",
@@ -109,7 +97,6 @@ export default defineConfig([
     sourcemap: true,
     treeshake: true,
     define: versionDefine,
-    esbuildOptions,
   },
   {
     name: "node",
@@ -125,7 +112,6 @@ export default defineConfig([
     dts: false,
     sourcemap: true,
     treeshake: true,
-    esbuildOptions,
   },
   {
     name: "evidence",
@@ -140,7 +126,6 @@ export default defineConfig([
     dts: false,
     sourcemap: true,
     treeshake: true,
-    esbuildOptions,
   },
   {
     name: "eslint-plugin",
@@ -152,7 +137,6 @@ export default defineConfig([
     dts: false,
     sourcemap: true,
     treeshake: true,
-    esbuildOptions,
     // `@typescript-eslint/utils` internally does a dynamic `require("eslint")`
     // for its FlatESLint/ESLint wrapper types, which esbuild's ESM output
     // can't satisfy for a bundled dependency -- external keeps both as real
@@ -172,6 +156,5 @@ export default defineConfig([
     sourcemap: true,
     banner: { js: "#!/usr/bin/env node" },
     define: versionDefine,
-    esbuildOptions,
   },
 ])

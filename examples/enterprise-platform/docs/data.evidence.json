@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
   "provenance": {
-    "generatedAt": "2026-09-30T12:33:09.247Z",
-    "toolVersion": "0.4.0"
+    "generatedAt": "2026-10-02T06:41:20.293Z",
+    "toolVersion": "0.5.1"
   },
   "capability": {
     "schemaVersion": 3,
@@ -38,13 +38,7 @@
                 "us",
                 "eu"
               ],
-              "transferSafeguard": "EU Standard Contractual Clauses",
-              "auditRequired": true,
-              "dataSubjectCategory": "clients",
-              "recipientCategories": [
-                "payment processor",
-                "tax authority"
-              ]
+              "auditRequired": true
             }
           },
           "getters": {
@@ -138,13 +132,7 @@
                 "us",
                 "eu"
               ],
-              "transferSafeguard": "EU Standard Contractual Clauses",
-              "auditRequired": true,
-              "dataSubjectCategory": "clients",
-              "recipientCategories": [
-                "payment processor",
-                "tax authority"
-              ]
+              "auditRequired": true
             },
             "owner": {
               "value": "finance-team",
@@ -390,8 +378,7 @@
               "sensitivity": "confidential",
               "protections": "Session-authenticated access only; TLS in transit; password never leaves the server.",
               "purpose": "Authorizing access to every other capability in this platform.",
-              "auditRequired": true,
-              "dataSubjectCategory": "staff members"
+              "auditRequired": true
             }
           },
           "getters": {
@@ -425,8 +412,7 @@
               "sensitivity": "confidential",
               "protections": "Session-authenticated access only; TLS in transit; password never leaves the server.",
               "purpose": "Authorizing access to every other capability in this platform.",
-              "auditRequired": true,
-              "dataSubjectCategory": "staff members"
+              "auditRequired": true
             },
             "owner": {
               "value": "platform-security",
@@ -1198,7 +1184,7 @@
   },
   "runtimeContract": {
     "schemaVersion": 1,
-    "packageVersion": "0.4.0",
+    "packageVersion": "0.5.1",
     "policies": [
       {
         "key": "getter-concurrency",

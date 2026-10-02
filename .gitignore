@@ -7,6 +7,19 @@ api-docs
 # job (never committed). The Markdown API report (docs/api-report/) IS
 # committed and drift-checked -- see scripts/check-api-report.mjs.
 docs/api
+# Same "generated fresh in CI's Pages deploy job, never committed" treatment
+# as docs/api above -- built by internal-package-contract's shared
+# scripts/benchmark/render-page.mjs from the committed benchmarks/history/
+# JSON, which IS committed (see .github/workflows/ci.yml's deploy job).
+docs/benchmarks
+
+# Ephemeral, fully re-derivable from dist/.dts/ on every `npm run contract` run -- one
+# subdirectory per ApiContract target (core/, runtime/, helpers/, build/, eslint-plugin/ -- see
+# internal-package-contract's own scripts/api-contract/targets.ts), each target's own baseline.* is
+# the only committed state. Mirrors internal-package-contract's own repo-contract's identical entry.
+.repo-contract/api-contract/*/current.api.md
+.repo-contract/api-contract/*/current.api.json
+.repo-contract/api-contract/*/current.d.ts
 benchmarks/performance-runtime/fixtures
 benchmarks/performance-buildtime/fixtures
 # Written on the fly by test/build/json-schema.test.ts and left behind for

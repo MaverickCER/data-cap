@@ -1,0 +1,94 @@
+{
+  "exceptions": [
+    {
+      "id": "dist-url:https://docs.oasis-open.org/sarif/sarif/v2.1.0/",
+      "version": 1,
+      "justification": "A reference to the SARIF 2.1.0 specification in the shipped type declarations (.dts/build/sarif.d.ts); it documents the shape of the SARIF log data-cap emits for consumers.",
+      "alternatives": "Delete the comment or reword it without a URL; consumers would lose the pointer to the specification the types implement.",
+      "exceptionType": "accepted-risk",
+      "method": "independent-human-review",
+      "remediation": "Reword the declaration comment to name the SARIF version without a link when the SARIF types are next touched.",
+      "url": "https://docs.oasis-open.org/sarif/sarif/v2.1.0/"
+    },
+    {
+      "id": "dist-url:https://eslint.org/docs/latest/developer-guide/scope-manager-interface#scopemanager-interface",
+      "version": 1,
+      "justification": "Appears only inside the sourcemap (`eslint-plugin/index.cjs.map`) as source text of third-party packages bundled into the ESLint plugin (TypeScript, jsdoc-type-pratt-parser, @humanwhocodes/ESLint tooling); data-cap does not author it and cannot edit it without patching those packages.",
+      "alternatives": "Ship the plugin without sourcemaps (loses debuggability of the bundled plugin) or stop bundling those dependencies.",
+      "exceptionType": "platform-or-vendor-constraint",
+      "method": "independent-human-review",
+      "remediation": "Revisit when the ESLint plugin is split into its own package or its bundling is reworked.",
+      "url": "https://eslint.org/docs/latest/developer-guide/scope-manager-interface#scopemanager-interface"
+    },
+    {
+      "id": "dist-url:https://github.com/Microsoft/TypeScript/pull/26349",
+      "version": 1,
+      "justification": "Appears only inside the sourcemap (`eslint-plugin/index.cjs.map`) as source text of third-party packages bundled into the ESLint plugin (TypeScript, jsdoc-type-pratt-parser, @humanwhocodes/ESLint tooling); data-cap does not author it and cannot edit it without patching those packages.",
+      "alternatives": "Ship the plugin without sourcemaps (loses debuggability of the bundled plugin) or stop bundling those dependencies.",
+      "exceptionType": "platform-or-vendor-constraint",
+      "method": "independent-human-review",
+      "remediation": "Revisit when the ESLint plugin is split into its own package or its bundling is reworked.",
+      "url": "https://github.com/Microsoft/TypeScript/pull/26349"
+    },
+    {
+      "id": "dist-url:https://github.com/jsdoc-type-pratt-parser/jsdoc-type-pratt-parser/issues/164",
+      "version": 1,
+      "justification": "Appears only inside the sourcemap (`eslint-plugin/index.cjs.map`) as source text of third-party packages bundled into the ESLint plugin (TypeScript, jsdoc-type-pratt-parser, @humanwhocodes/ESLint tooling); data-cap does not author it and cannot edit it without patching those packages.",
+      "alternatives": "Ship the plugin without sourcemaps (loses debuggability of the bundled plugin) or stop bundling those dependencies.",
+      "exceptionType": "platform-or-vendor-constraint",
+      "method": "independent-human-review",
+      "remediation": "Revisit when the ESLint plugin is split into its own package or its bundling is reworked.",
+      "url": "https://github.com/jsdoc-type-pratt-parser/jsdoc-type-pratt-parser/issues/164"
+    },
+    {
+      "id": "dist-url:https://github.com/maverickcer/data-cap#eslint-plugin-${name",
+      "version": 1,
+      "justification": "The `meta.docs.url` of each data-cap ESLint rule, built from the rule name; ESLint's rule-metadata convention uses it so editors and `eslint --format` can link to the rule's documentation.",
+      "alternatives": "Omit `meta.docs.url` (optional in ESLint) at the cost of editors losing the per-rule documentation link.",
+      "exceptionType": "accepted-risk",
+      "method": "independent-human-review",
+      "remediation": "Decide whether the per-rule links are worth the Socket urlStrings alert and drop them if not.",
+      "url": "https://github.com/maverickcer/data-cap#eslint-plugin-${name"
+    },
+    {
+      "id": "dist-url:https://github.com/maverickcer/data-cap#readme",
+      "version": 1,
+      "justification": "The `informationUri` of the SARIF tool driver data-cap reports, which SARIF consumers show as the tool's documentation link.",
+      "alternatives": "Omit `informationUri` (it is optional in SARIF) at the cost of consumers losing the link to data-cap's documentation.",
+      "exceptionType": "accepted-risk",
+      "method": "independent-human-review",
+      "remediation": "Decide whether the documentation link is worth a Socket urlStrings alert and drop it if not.",
+      "url": "https://github.com/maverickcer/data-cap#readme"
+    },
+    {
+      "id": "dist-url:https://github.com/mysticatea",
+      "version": 1,
+      "justification": "Appears only inside the sourcemap (`eslint-plugin/index.cjs.map`) as source text of third-party packages bundled into the ESLint plugin (TypeScript, jsdoc-type-pratt-parser, @humanwhocodes/ESLint tooling); data-cap does not author it and cannot edit it without patching those packages.",
+      "alternatives": "Ship the plugin without sourcemaps (loses debuggability of the bundled plugin) or stop bundling those dependencies.",
+      "exceptionType": "platform-or-vendor-constraint",
+      "method": "independent-human-review",
+      "remediation": "Revisit when the ESLint plugin is split into its own package or its bundling is reworked.",
+      "url": "https://github.com/mysticatea"
+    },
+    {
+      "id": "dist-url:https://raw.githubusercontent.com/oasis-tcs/sarif-spec/main/Schemata/sarif-schema-2.1.0.json",
+      "version": 1,
+      "justification": "The `$schema` value of every SARIF log data-cap emits. The SARIF 2.1.0 format defines this exact URL as the log's schema identifier, and SARIF consumers (GitHub code scanning, editors) key off it, so the emitted output must carry it.",
+      "alternatives": "Omit `$schema`: the log would still parse for lenient readers but would no longer be a self-describing, schema-valid SARIF document.",
+      "exceptionType": "platform-or-vendor-constraint",
+      "method": "independent-human-review",
+      "remediation": "None possible while data-cap emits SARIF 2.1.0; revisit only if the SARIF specification stops requiring the identifier.",
+      "url": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/main/Schemata/sarif-schema-2.1.0.json"
+    },
+    {
+      "id": "dist-url:https://tseslint.com/typed-linting",
+      "version": 1,
+      "justification": "Appears in an error message of the typescript-eslint code bundled into the eslint-plugin entry (eslint-plugin/index.cjs). It is third-party code bundled unmodified, not text data-cap authors.",
+      "alternatives": "Stop bundling typescript-eslint and require it as a peer, which would remove the code (and the URL) from this package at the cost of a heavier install.",
+      "exceptionType": "platform-or-vendor-constraint",
+      "method": "independent-human-review",
+      "remediation": "Revisit when the ESLint plugin is split into its own package or its bundling is reworked.",
+      "url": "https://tseslint.com/typed-linting"
+    }
+  ]
+}
