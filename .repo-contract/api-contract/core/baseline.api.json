@@ -835,7 +835,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!CapabilityDocs#metadata:member",
-              "docComment": "/**\n * Free-form extension bag for anything data-cap itself has no named\n * concept for -- opaque, never inspected or validated by any code path in\n * this package (e.g. jurisdiction-specific regulatory classification:\n * `{ regulatory: \"GDPR,PCI-DSS\" }`). Once a concept matters enough for\n * data-cap to reason about, it gets its own named field above (as\n * `purpose`/`legalBasis`/`dataResidency`/`auditRequired` did); everything\n * else stays here.\n */\n",
+              "docComment": "/**\n * Free-form extension bag for anything data-cap itself has no named\n * concept for -- opaque, never inspected or validated by any code path in\n * this package (e.g. jurisdiction-specific regulatory classification:\n * `{ regulatory: \"GDPR,PCI-DSS\" }`). Once a concept matters enough for\n * data-cap to reason about, it gets its own named field above (as\n * `purpose`/`legalBasis`/`dataResidency`/`transferSafeguard`/`auditRequired`\n * did); everything else stays here.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -1097,6 +1097,33 @@
               "propertyTypeTokenRange": {
                 "startIndex": 1,
                 "endIndex": 3
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!CapabilityDocs#transferSafeguard:member",
+              "docComment": "/**\n * The declared safeguard relied on for any transfer of this capability's\n * data out of `dataResidency`'s own jurisdiction(s) -- paired conceptually\n * with `dataResidency`, same presence-only discipline. A field's own\n * `transferSafeguard` (see `FieldDocs`) overrides this for that field\n * specifically.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly transferSafeguard?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "transferSafeguard",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
               }
             }
           ],
@@ -2210,7 +2237,7 @@
         {
           "kind": "Interface",
           "canonicalReference": "data-cap!FieldDocs:interface",
-          "docComment": "/**\n * Documentation metadata for one field.\n *\n * `owner`, `sensitivity`, and `protections` override the capability-level\n * value of the same name for this field specifically -- not every field in\n * a capability is equally sensitive or equally owned. `protections` and\n * `retention` are documentation-presence signals only: a generator may say\n * a safeguard/policy is \"documented\" or \"not documented,\" never that it is\n * adequate, correct, or enforced. `purpose`/`legalBasis`/`dataResidency`/\n * `auditRequired` carry the same presence-only discipline -- declared\n * governance facts, never a claim that data-cap has determined they satisfy\n * any law (see `specs/decisions/0051-documentdata-metadata-and-governance-fields.md`).\n *\n * The boundary this interface draws is deliberate: a named property here is\n * reserved for a concept data-cap itself understands, projects, or reports\n * on. Anything else -- organization-specific detail with no data-cap-defined\n * meaning -- belongs in `metadata`, never as an ad hoc extra property, so\n * this vocabulary stays bounded instead of accreting one-off keys over time.\n *\n * Note what is deliberately absent: there is no per-field `validate`/\n * `validator` property, and no `helpers.validators` combinator library\n * backing one, unlike `@maverickcer/env-cap`'s `EnvVarDocs`. That is a\n * design choice, not a gap. `env-cap` validates on a reject-and-throw\n * pipeline, where a failing validator must carry a message explaining the\n * rejection; `data-cap` has no reject path to write a message for --\n * invalid processor/operation output resets the field to its declared\n * default via `core/schema.ts`'s `checkValueAgainstSchema`, keeping fields\n * synchronously readable (AGENTS.md invariant 2) and surfacing the\n * mismatch through `DataInfo`. See `helpers/shape.ts`'s own module comment\n * for the full reasoning.\n */\n",
+          "docComment": "/**\n * Documentation metadata for one field.\n *\n * `owner`, `sensitivity`, `protections`, and `transferSafeguard` override the\n * capability-level value of the same name for this field specifically -- not\n * every field in a capability is equally sensitive, equally owned, or\n * crosses the same transfer boundary. `protections` and `retention` are\n * documentation-presence signals only: a generator may say a safeguard/\n * policy is \"documented\" or \"not documented,\" never that it is adequate,\n * correct, or enforced. `purpose`/`legalBasis`/`dataResidency`/\n * `transferSafeguard`/`auditRequired` carry the same presence-only\n * discipline -- declared governance facts, never a claim that data-cap has\n * determined they satisfy any law (see `specs/decisions/0051-documentdata-metadata-and-governance-fields.md`).\n * `dataSubjectCategory`/`recipientCategories` are field-level only (no\n * capability-level counterpart) -- see each property's own doc comment for\n * why.\n *\n * The boundary this interface draws is deliberate: a named property here is\n * reserved for a concept data-cap itself understands, projects, or reports\n * on. Anything else -- organization-specific detail with no data-cap-defined\n * meaning -- belongs in `metadata`, never as an ad hoc extra property, so\n * this vocabulary stays bounded instead of accreting one-off keys over time.\n *\n * Note what is deliberately absent: there is no per-field `validate`/\n * `validator` property, and no `helpers.validators` combinator library\n * backing one, unlike `@maverickcer/env-cap`'s `EnvVarDocs`. That is a\n * design choice, not a gap. `env-cap` validates on a reject-and-throw\n * pipeline, where a failing validator must carry a message explaining the\n * rejection; `data-cap` has no reject path to write a message for --\n * invalid processor/operation output resets the field to its declared\n * default via `core/schema.ts`'s `checkValueAgainstSchema`, keeping fields\n * synchronously readable (AGENTS.md invariant 2) and surfacing the\n * mismatch through `DataInfo`. See `helpers/shape.ts`'s own module comment\n * for the full reasoning.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -2271,6 +2298,33 @@
               "isOptional": true,
               "releaseTag": "Public",
               "name": "dataResidency",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!FieldDocs#dataSubjectCategory:member",
+              "docComment": "/**\n * The declared category of data subject this field's data concerns (e.g.\n * `\"customers\"`, `\"employees\"`, `\"minors\"`). Declared only -- data-cap\n * never verifies who a field's actual data subjects are. Field-level only:\n * unlike `owner`/`sensitivity`/`purpose`/etc., this has no capability-level\n * counterpart to override -- which data subjects a field concerns is a\n * fact about that field's own data, not something a whole capability can\n * meaningfully state once for every field under it.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly dataSubjectCategory?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "dataSubjectCategory",
               "propertyTypeTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -2535,6 +2589,33 @@
             },
             {
               "kind": "PropertySignature",
+              "canonicalReference": "data-cap!FieldDocs#recipientCategories:member",
+              "docComment": "/**\n * The declared categories of recipient this field's data has been or will\n * be disclosed to (e.g. `\"payment processor\"`, `\"tax authority\"`,\n * `\"internal support staff\"`). Always explicitly authored -- data-cap\n * never infers a recipient category from its own dependency graph (a\n * proven *consumer* relationship inside this codebase is a categorically\n * different fact from a declared *external recipient*, and conflating the\n * two would misrepresent both). Field-level only, for the same reason as\n * `dataSubjectCategory`. See\n * `specs/decisions/0067-ropa-fields-recipient-categories-never-inferred.md`\n * for the full reasoning on why this is never derived.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly recipientCategories?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "readonly string[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "recipientCategories",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
               "canonicalReference": "data-cap!FieldDocs#removeBy:member",
               "docComment": "/**\n * The date by which a deprecated field is intended to be removed, ISO-8601.\n * Field-level only: a removal deadline is about one specific field's own\n * migration, and a capability-wide `removeBy` would say nothing about\n * which of its fields still need work.\n */\n",
               "excerptTokens": [
@@ -2636,6 +2717,33 @@
               "isOptional": true,
               "releaseTag": "Public",
               "name": "sensitivity",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!FieldDocs#transferSafeguard:member",
+              "docComment": "/**\n * The declared safeguard relied on for any transfer of this field's data\n * out of `dataResidency`'s own jurisdiction(s) (e.g. `\"EU Standard\n * Contractual Clauses\"`, `\"adequacy decision\"`) -- paired conceptually\n * with `dataResidency` (which states where data is permitted to be\n * *stored*; this states what protects a transfer *out of* that\n * jurisdiction), same presence-only discipline as every other field here.\n * Declared only -- data-cap never verifies a transfer actually occurred or\n * that the named safeguard is legally adequate. Overrides the capability's\n * own `transferSafeguard` for this field specifically. See\n * `specs/decisions/0067-ropa-fields-recipient-categories-never-inferred.md`.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly transferSafeguard?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "transferSafeguard",
               "propertyTypeTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
