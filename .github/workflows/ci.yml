@@ -147,11 +147,11 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          # refs/pull/<N>/head, not the branch name -- resolves for a fork
-          # PR too (whose branch lives in the fork, not this repo), and is
-          # the PR's real head commit rather than a speculative merge with
-          # main. Falls back to the pushed ref outside pull_request events.
-          ref: ${{ github.event_name == 'pull_request' && format('refs/pull/{0}/head', github.event.pull_request.number) || github.ref }}
+          # github.sha: the merge commit for a pull_request (what would actually land), the pushed
+          # commit for a push, and the dispatched branch's head for a workflow_dispatch. Never the PR
+          # head by name -- checking that out in a workflow that can also be dispatched runs untrusted
+          # code with a privileged cache scope (CodeQL actions/cache-poisoning).
+          ref: ${{ github.sha }}
 
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
@@ -183,7 +183,7 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          ref: ${{ github.event_name == 'pull_request' && format('refs/pull/{0}/head', github.event.pull_request.number) || github.ref }}
+          ref: ${{ github.sha }}
 
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
@@ -233,7 +233,7 @@ jobs:
       # fetch-depth: 0 -- the Commits check reads origin/main..HEAD.
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          ref: ${{ github.event_name == 'pull_request' && format('refs/pull/{0}/head', github.event.pull_request.number) || github.ref }}
+          ref: ${{ github.sha }}
           fetch-depth: 0
           persist-credentials: false
 
