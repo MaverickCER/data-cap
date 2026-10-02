@@ -1,7 +1,0 @@
----
-"data-cap": minor
----
-
-Adds three new declarable governance fields to `documentData()`'s field-level docs shape (`src/core/document.ts`): `dataSubjectCategory` (field-level only), `recipientCategories` (field-level only, `readonly string[]`, always author-declared -- never inferred from data-cap's own dependency graph), and `transferSafeguard` (field-level and capability-level, overriding the same way `dataResidency` already does). All three follow the same presence-only, declared-never-verified discipline as every other governance field in this vocabulary, and are purely additive -- no existing field's shape or meaning changes.
-
-These support a new example generator, `examples/enterprise-platform/scripts/ropa/` (peer to `../generate-docs`, following the same `types.ts`/`build-model.ts`/`render.ts`/`print-lines.ts`/`run.ts` architecture as `@maverickcer/env-cap`'s own rotation-log generator), which produces `docs/ROPA.md` -- an illustrative GDPR Article 30(1) Record of Processing Activities document. The generator's own README states exactly which of the 7 required items are direct schema fields, which are partial/approximate mappings (`sensitivity` for personal-data categories, `protections` for security measures), and which require an adopting organization's own real controller identity before external publication -- data-cap cannot verify any of these mappings' accuracy itself.
