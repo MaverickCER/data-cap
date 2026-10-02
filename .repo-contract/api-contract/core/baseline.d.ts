@@ -79,6 +79,14 @@ export declare interface CapabilityDocs<TSchema extends DataSchema<FieldsShape>>
      */
     readonly dataResidency?: string | readonly string[];
     /**
+     * The declared safeguard relied on for any transfer of this capability's
+     * data out of `dataResidency`'s own jurisdiction(s) -- paired conceptually
+     * with `dataResidency`, same presence-only discipline. A field's own
+     * `transferSafeguard` (see `FieldDocs`) overrides this for that field
+     * specifically.
+     */
+    readonly transferSafeguard?: string;
+    /**
      * Whether access to this capability's data is documented as requiring an
      * audit trail. Declared only, same presence-only discipline as
      * `protections`/`retention`. A field's own `auditRequired` overrides this
@@ -102,8 +110,8 @@ export declare interface CapabilityDocs<TSchema extends DataSchema<FieldsShape>>
      * this package (e.g. jurisdiction-specific regulatory classification:
      * `{ regulatory: "GDPR,PCI-DSS" }`). Once a concept matters enough for
      * data-cap to reason about, it gets its own named field above (as
-     * `purpose`/`legalBasis`/`dataResidency`/`auditRequired` did); everything
-     * else stays here.
+     * `purpose`/`legalBasis`/`dataResidency`/`transferSafeguard`/`auditRequired`
+     * did); everything else stays here.
      */
     readonly metadata?: Readonly<Record<string, unknown>>;
     /**
@@ -340,15 +348,19 @@ declare const FIELD_MARKER: unique symbol;
 /**
  * Documentation metadata for one field.
  *
- * `owner`, `sensitivity`, and `protections` override the capability-level
- * value of the same name for this field specifically -- not every field in
- * a capability is equally sensitive or equally owned. `protections` and
- * `retention` are documentation-presence signals only: a generator may say
- * a safeguard/policy is "documented" or "not documented," never that it is
- * adequate, correct, or enforced. `purpose`/`legalBasis`/`dataResidency`/
- * `auditRequired` carry the same presence-only discipline -- declared
- * governance facts, never a claim that data-cap has determined they satisfy
- * any law (see `specs/decisions/0051-documentdata-metadata-and-governance-fields.md`).
+ * `owner`, `sensitivity`, `protections`, and `transferSafeguard` override the
+ * capability-level value of the same name for this field specifically -- not
+ * every field in a capability is equally sensitive, equally owned, or
+ * crosses the same transfer boundary. `protections` and `retention` are
+ * documentation-presence signals only: a generator may say a safeguard/
+ * policy is "documented" or "not documented," never that it is adequate,
+ * correct, or enforced. `purpose`/`legalBasis`/`dataResidency`/
+ * `transferSafeguard`/`auditRequired` carry the same presence-only
+ * discipline -- declared governance facts, never a claim that data-cap has
+ * determined they satisfy any law (see `specs/decisions/0051-documentdata-metadata-and-governance-fields.md`).
+ * `dataSubjectCategory`/`recipientCategories` are field-level only (no
+ * capability-level counterpart) -- see each property's own doc comment for
+ * why.
  *
  * The boundary this interface draws is deliberate: a named property here is
  * reserved for a concept data-cap itself understands, projects, or reports
@@ -401,12 +413,48 @@ export declare interface FieldDocs {
      */
     readonly dataResidency?: string | readonly string[];
     /**
+     * The declared safeguard relied on for any transfer of this field's data
+     * out of `dataResidency`'s own jurisdiction(s) (e.g. `"EU Standard
+     * Contractual Clauses"`, `"adequacy decision"`) -- paired conceptually
+     * with `dataResidency` (which states where data is permitted to be
+     * *stored*; this states what protects a transfer *out of* that
+     * jurisdiction), same presence-only discipline as every other field here.
+     * Declared only -- data-cap never verifies a transfer actually occurred or
+     * that the named safeguard is legally adequate. Overrides the capability's
+     * own `transferSafeguard` for this field specifically. See
+     * `specs/decisions/0067-ropa-fields-recipient-categories-never-inferred.md`.
+     */
+    readonly transferSafeguard?: string;
+    /**
      * Whether access to this field is documented as requiring an audit trail.
      * Declared only, same presence-only discipline as `protections`/
      * `retention`. Overrides the capability's own `auditRequired` for this
      * field specifically.
      */
     readonly auditRequired?: boolean;
+    /**
+     * The declared category of data subject this field's data concerns (e.g.
+     * `"customers"`, `"employees"`, `"minors"`). Declared only -- data-cap
+     * never verifies who a field's actual data subjects are. Field-level only:
+     * unlike `owner`/`sensitivity`/`purpose`/etc., this has no capability-level
+     * counterpart to override -- which data subjects a field concerns is a
+     * fact about that field's own data, not something a whole capability can
+     * meaningfully state once for every field under it.
+     */
+    readonly dataSubjectCategory?: string;
+    /**
+     * The declared categories of recipient this field's data has been or will
+     * be disclosed to (e.g. `"payment processor"`, `"tax authority"`,
+     * `"internal support staff"`). Always explicitly authored -- data-cap
+     * never infers a recipient category from its own dependency graph (a
+     * proven *consumer* relationship inside this codebase is a categorically
+     * different fact from a declared *external recipient*, and conflating the
+     * two would misrepresent both). Field-level only, for the same reason as
+     * `dataSubjectCategory`. See
+     * `specs/decisions/0067-ropa-fields-recipient-categories-never-inferred.md`
+     * for the full reasoning on why this is never derived.
+     */
+    readonly recipientCategories?: readonly string[];
     /**
      * When this field's data (or the credential/source behind it) is declared
      * to stop being valid, as an ISO-8601 date (`"2026-12-31"`). Declared
