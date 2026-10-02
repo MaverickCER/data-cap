@@ -44,7 +44,7 @@ describe("documentData", () => {
     expect(capability.info).toEqual({})
   })
 
-  it("accepts the full governance metadata vocabulary (owner/category/exclusiveGroup/active/sensitivity/protections/retention/purpose/legalBasis/dataResidency/auditRequired/metadata) without throwing", () => {
+  it("accepts the full governance metadata vocabulary (owner/category/exclusiveGroup/active/sensitivity/protections/retention/purpose/legalBasis/dataResidency/transferSafeguard/auditRequired/metadata) without throwing", () => {
     const config = { fields: { email: "" } }
     expect(() => {
       documentData(config, {
@@ -58,6 +58,7 @@ describe("documentData", () => {
         purpose: "account management",
         legalBasis: "contract",
         dataResidency: ["us", "eu"],
+        transferSafeguard: "EU Standard Contractual Clauses",
         auditRequired: true,
         // `metadata` is a genuinely arbitrary-shaped bag (Record<string, unknown>)
         // -- a non-string value here proves the widened type, not just presence.
@@ -72,7 +73,10 @@ describe("documentData", () => {
             purpose: "delivery notifications",
             legalBasis: "consent",
             dataResidency: "eu",
+            transferSafeguard: "adequacy decision",
             auditRequired: true,
+            dataSubjectCategory: "customers",
+            recipientCategories: ["payment processor", "tax authority"],
             metadata: { internalClassification: "matter-data" },
           },
         },
@@ -143,13 +147,18 @@ describe("CapabilityDocs / FieldDocs / OperationDocs -- type-level", () => {
     expectTypeOf<Docs["purpose"]>().toEqualTypeOf<string | undefined>()
     expectTypeOf<Docs["legalBasis"]>().toEqualTypeOf<string | undefined>()
     expectTypeOf<Docs["dataResidency"]>().toEqualTypeOf<string | readonly string[] | undefined>()
+    expectTypeOf<Docs["transferSafeguard"]>().toEqualTypeOf<string | undefined>()
     expectTypeOf<Docs["auditRequired"]>().toEqualTypeOf<boolean | undefined>()
     // Widened from Record<string, string> -- metadata is a genuinely opaque,
     // arbitrary-shaped extension bag (ADR 0051), not a string-only vocabulary.
     expectTypeOf<Docs["metadata"]>().toEqualTypeOf<Readonly<Record<string, unknown>> | undefined>()
+    // dataSubjectCategory/recipientCategories are deliberately field-level
+    // only -- CapabilityDocs has no property for either.
+    expectTypeOf<Docs>().not.toHaveProperty("dataSubjectCategory")
+    expectTypeOf<Docs>().not.toHaveProperty("recipientCategories")
   })
 
-  it("FieldDocs accepts owner/sensitivity/protections/retention/purpose/legalBasis/dataResidency/auditRequired/metadata alongside description", () => {
+  it("FieldDocs accepts owner/sensitivity/protections/retention/purpose/legalBasis/dataResidency/transferSafeguard/auditRequired/dataSubjectCategory/recipientCategories/metadata alongside description", () => {
     expectTypeOf<FieldDocs["description"]>().toEqualTypeOf<string | undefined>()
     expectTypeOf<FieldDocs["owner"]>().toEqualTypeOf<string | undefined>()
     expectTypeOf<FieldDocs["sensitivity"]>().toEqualTypeOf<string | undefined>()
@@ -160,7 +169,10 @@ describe("CapabilityDocs / FieldDocs / OperationDocs -- type-level", () => {
     expectTypeOf<FieldDocs["dataResidency"]>().toEqualTypeOf<
       string | readonly string[] | undefined
     >()
+    expectTypeOf<FieldDocs["transferSafeguard"]>().toEqualTypeOf<string | undefined>()
     expectTypeOf<FieldDocs["auditRequired"]>().toEqualTypeOf<boolean | undefined>()
+    expectTypeOf<FieldDocs["dataSubjectCategory"]>().toEqualTypeOf<string | undefined>()
+    expectTypeOf<FieldDocs["recipientCategories"]>().toEqualTypeOf<readonly string[] | undefined>()
     expectTypeOf<FieldDocs["metadata"]>().toEqualTypeOf<
       Readonly<Record<string, unknown>> | undefined
     >()

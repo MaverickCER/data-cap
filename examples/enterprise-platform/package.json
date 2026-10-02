@@ -2,14 +2,15 @@
   "name": "data-cap-example-enterprise-platform",
   "private": true,
   "type": "module",
-  "description": "Tier 3 -- Atlas, an org-wide work-management platform (TanStack Start + MongoDB/Mongoose) with three independently-owned capabilities (identity/projects/billing), a real running service, and two generated governance reports (litigation-evidence, audit-prep) plus a real --strict-docs/--strict-flow CI guard.",
+  "description": "Tier 3 -- Atlas, an org-wide work-management platform (TanStack Start + MongoDB/Mongoose) with three independently-owned capabilities (identity/projects/billing), a real running service, and three generated governance reports (litigation-evidence, audit-prep, GDPR Art. 30(1) ROPA) plus a real --strict-docs/--strict-flow CI guard.",
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
     "start": "tsx main-headless.ts",
     "typecheck": "tsc --noEmit",
     "docs": "data-cap --root . --include \"src/**\" --evidence docs/data.evidence.json && tsx scripts/generate-docs/run.ts",
-    "reports": "tsx reports/litigation-evidence.ts && tsx reports/audit-prep.ts",
+    "ropa": "tsx scripts/ropa/run.ts",
+    "reports": "tsx reports/litigation-evidence.ts && tsx reports/audit-prep.ts && tsx scripts/ropa/run.ts",
     "check": "tsx scripts/generate-docs/check.ts && tsx reports/litigation-evidence.ts --check && tsx reports/audit-prep.ts --check",
     "guard": "data-cap --root . --include \"src/**\" --evidence .guard-check/data.evidence.json --strict-docs"
   },

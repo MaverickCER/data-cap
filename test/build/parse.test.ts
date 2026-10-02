@@ -20,6 +20,7 @@ import {
   readDynamicAccessCitations,
   readEndpointsProp,
   readMetadataProp,
+  readStringArrayProp,
   readStringProp,
 } from "../../src/build/parse.js"
 import type { ImportBinding, ParseWarning } from "../../src/build/parse.js"
@@ -767,6 +768,7 @@ describe("extractCapabilityDocs", () => {
         purpose: "purp",
         legalBasis: "lb",
         dataResidency: ["us", "eu"],
+        transferSafeguard: "SCCs",
         auditRequired: true,
         expiresAt: "2030-01-01",
         deprecated: true,
@@ -783,7 +785,10 @@ describe("extractCapabilityDocs", () => {
             purpose: "fpu",
             legalBasis: "flb",
             dataResidency: "us",
+            transferSafeguard: "adequacy decision",
             auditRequired: false,
+            dataSubjectCategory: "customers",
+            recipientCategories: ["payment processor"],
             expiresAt: "2031-02-02",
             deprecated: false,
             deprecatedReason: "fdr",
@@ -812,6 +817,7 @@ describe("extractCapabilityDocs", () => {
       purpose: "purp",
       legalBasis: "lb",
       dataResidency: ["us", "eu"],
+      transferSafeguard: "SCCs",
       auditRequired: true,
       expiresAt: "2030-01-01",
       deprecated: true,
@@ -828,7 +834,10 @@ describe("extractCapabilityDocs", () => {
           purpose: "fpu",
           legalBasis: "flb",
           dataResidency: "us",
+          transferSafeguard: "adequacy decision",
           auditRequired: false,
+          dataSubjectCategory: "customers",
+          recipientCategories: ["payment processor"],
           expiresAt: "2031-02-02",
           deprecated: false,
           deprecatedReason: "fdr",
@@ -953,6 +962,18 @@ describe("extractCapabilityDocs", () => {
     expect(warnings[0]!.message).toContain('"dataResidency"')
   })
 
+  it("extracts transferSafeguard at the capability level", () => {
+    const docs = extract(`{ transferSafeguard: "EU Standard Contractual Clauses" }`)
+    expect(docs?.transferSafeguard).toBe("EU Standard Contractual Clauses")
+  })
+
+  it("warns and omits a non-string-literal transferSafeguard at the capability level", () => {
+    const warnings: ParseWarning[] = []
+    const docs = extract(`{ transferSafeguard: someVariable }`, warnings)
+    expect(docs?.transferSafeguard).toBeUndefined()
+    expect(warnings[0]!.message).toContain('"transferSafeguard"')
+  })
+
   describe("fields section", () => {
     it("extracts description/owner/sensitivity/protections/retention per field", () => {
       const docs = extract(`{
@@ -1015,6 +1036,76 @@ describe("extractCapabilityDocs", () => {
         },
       }`)
       expect(Object.keys(docs?.fields ?? {})).toEqual(["email"])
+    })
+
+    it("extracts dataSubjectCategory/recipientCategories/transferSafeguard per field", () => {
+      const docs = extract(`{
+        fields: {
+          email: {
+            dataSubjectCategory: "customers",
+            recipientCategories: ["payment processor", "tax authority"],
+            transferSafeguard: "adequacy decision",
+          },
+        },
+      }`)
+      expect(docs?.fields?.["email"]).toEqual({
+        dataSubjectCategory: "customers",
+        recipientCategories: ["payment processor", "tax authority"],
+        transferSafeguard: "adequacy decision",
+      })
+    })
+
+    it("recipientCategories/dataSubjectCategory/transferSafeguard are undefined (never inferred) when absent", () => {
+      const docs = extract(`{ fields: { email: { description: "x" } } }`)
+      expect(docs?.fields?.["email"]?.dataSubjectCategory).toBeUndefined()
+      expect(docs?.fields?.["email"]?.recipientCategories).toBeUndefined()
+      expect(docs?.fields?.["email"]?.transferSafeguard).toBeUndefined()
+    })
+
+    it("warns and omits a non-string-literal dataSubjectCategory", () => {
+      const warnings: ParseWarning[] = []
+      const docs = extract(`{ fields: { email: { dataSubjectCategory: someVariable } } }`, warnings)
+      expect(docs?.fields?.["email"]?.dataSubjectCategory).toBeUndefined()
+      expect(warnings[0]!.message).toContain('"userCapability.fields.email"')
+      expect(warnings[0]!.message).toContain('"dataSubjectCategory"')
+    })
+
+    it("warns and omits a non-string-literal transferSafeguard on a field", () => {
+      const warnings: ParseWarning[] = []
+      const docs = extract(`{ fields: { email: { transferSafeguard: someVariable } } }`, warnings)
+      expect(docs?.fields?.["email"]?.transferSafeguard).toBeUndefined()
+      expect(warnings[0]!.message).toContain('"transferSafeguard"')
+    })
+
+    it("warns and omits recipientCategories when it isn't a string-array literal (a number)", () => {
+      const warnings: ParseWarning[] = []
+      const docs = extract(`{ fields: { email: { recipientCategories: 5 } } }`, warnings)
+      expect(docs?.fields?.["email"]?.recipientCategories).toBeUndefined()
+      expect(warnings[0]!.message).toContain('"recipientCategories"')
+    })
+
+    it("warns and omits recipientCategories when given a single string, not an array -- unlike dataResidency, no lone-string form is accepted", () => {
+      const warnings: ParseWarning[] = []
+      const docs = extract(
+        `{ fields: { email: { recipientCategories: "payment processor" } } }`,
+        warnings,
+      )
+      expect(docs?.fields?.["email"]?.recipientCategories).toBeUndefined()
+      expect(warnings[0]!.message).toContain('"recipientCategories"')
+    })
+
+    it("warns and omits recipientCategories when the array contains a non-string element", () => {
+      const warnings: ParseWarning[] = []
+      const docs = extract(
+        `{ fields: { email: { recipientCategories: ["payment processor", 5] } } }`,
+        warnings,
+      )
+      expect(docs?.fields?.["email"]?.recipientCategories).toBeUndefined()
+    })
+
+    it("extracts an empty recipientCategories array literal as an empty array, not undefined", () => {
+      const docs = extract(`{ fields: { email: { recipientCategories: [] } } }`)
+      expect(docs?.fields?.["email"]?.recipientCategories).toEqual([])
     })
   })
 
@@ -1639,6 +1730,60 @@ describe("readStringProp / readBooleanProp / readMetadataProp / readDataResidenc
       readDataResidencyProp(objLitFrom(`{ dataResidency: ["us", 5] }`), "c", "f", w()),
     ).toBeUndefined()
     expect(readDataResidencyProp(objLitFrom(`{ dataResidency: 5 }`), "c", "f", w())).toBeUndefined()
+  })
+  it("readStringArrayProp: all-string array only -- rejects a lone string, a mixed array, and a number; accepts an empty array", () => {
+    expect(
+      readStringArrayProp(
+        objLitFrom(`{ recipientCategories: ["payment processor", "tax authority"] }`),
+        "recipientCategories",
+        "c",
+        "f",
+        w(),
+      ),
+    ).toEqual(["payment processor", "tax authority"])
+    expect(
+      readStringArrayProp(
+        objLitFrom(`{ recipientCategories: [] }`),
+        "recipientCategories",
+        "c",
+        "f",
+        w(),
+      ),
+    ).toEqual([])
+    expect(
+      readStringArrayProp(
+        objLitFrom(`{ recipientCategories: "payment processor" }`),
+        "recipientCategories",
+        "c",
+        "f",
+        w(),
+      ),
+    ).toBeUndefined()
+    expect(
+      readStringArrayProp(
+        objLitFrom(`{ recipientCategories: ["payment processor", 5] }`),
+        "recipientCategories",
+        "c",
+        "f",
+        w(),
+      ),
+    ).toBeUndefined()
+    const ws = w()
+    expect(
+      readStringArrayProp(
+        objLitFrom(`{ recipientCategories: 5 }`),
+        "recipientCategories",
+        "c",
+        "f",
+        ws,
+      ),
+    ).toBeUndefined()
+    expect(ws[0]?.message).toContain('"recipientCategories" for "c"')
+  })
+  it("readStringArrayProp: undefined when the property is absent", () => {
+    expect(
+      readStringArrayProp(objLitFrom(`{}`), "recipientCategories", "c", "f", w()),
+    ).toBeUndefined()
   })
 })
 

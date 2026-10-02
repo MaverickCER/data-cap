@@ -291,6 +291,10 @@
           ],
           "description": "The declared jurisdiction(s) this capability's data is permitted/ expected to be *stored* in -- a policy constraint, not an observed fact, not a processing-location claim, not a data-subject-location claim. A field's own `dataResidency` overrides this for that field specifically."
         },
+        "transferSafeguard": {
+          "type": "string",
+          "description": "The declared safeguard relied on for any transfer of this capability's data out of `dataResidency`'s own jurisdiction(s) -- paired conceptually with `dataResidency`, same presence-only discipline. A field's own `transferSafeguard` (see `FieldDocs`) overrides this for that field specifically."
+        },
         "auditRequired": {
           "type": "boolean",
           "description": "Whether access to this capability's data is documented as requiring an audit trail. Declared only, same presence-only discipline as `protections`/`retention`. A field's own `auditRequired` overrides this for that field specifically."
@@ -310,7 +314,7 @@
         "metadata": {
           "type": "object",
           "additionalProperties": {},
-          "description": "Free-form extension bag for anything data-cap itself has no named concept for -- opaque, never inspected or validated by any code path in this package (e.g. jurisdiction-specific regulatory classification: `{ regulatory: \"GDPR,PCI-DSS\" }`). Once a concept matters enough for data-cap to reason about, it gets its own named field above (as `purpose`/`legalBasis`/`dataResidency`/`auditRequired` did); everything else stays here."
+          "description": "Free-form extension bag for anything data-cap itself has no named concept for -- opaque, never inspected or validated by any code path in this package (e.g. jurisdiction-specific regulatory classification: `{ regulatory: \"GDPR,PCI-DSS\" }`). Once a concept matters enough for data-cap to reason about, it gets its own named field above (as `purpose`/`legalBasis`/`dataResidency`/`transferSafeguard`/`auditRequired` did); everything else stays here."
         }
       }
     },
@@ -359,9 +363,24 @@
           ],
           "description": "The declared jurisdiction(s) this field's data is permitted/expected to be *stored* in -- a policy constraint, not an observed fact, not a processing-location claim, not a data-subject-location claim. Overrides the capability's own `dataResidency` for this field specifically."
         },
+        "transferSafeguard": {
+          "type": "string",
+          "description": "The declared safeguard relied on for any transfer of this field's data out of `dataResidency`'s own jurisdiction(s) (e.g. `\"EU Standard Contractual Clauses\"`, `\"adequacy decision\"`) -- paired conceptually with `dataResidency` (which states where data is permitted to be\n*stored*; this states what protects a transfer *out of* that jurisdiction), same presence-only discipline as every other field here. Declared only -- data-cap never verifies a transfer actually occurred or that the named safeguard is legally adequate. Overrides the capability's own `transferSafeguard` for this field specifically. See `specs/decisions/0067-ropa-fields-recipient-categories-never-inferred.md`."
+        },
         "auditRequired": {
           "type": "boolean",
           "description": "Whether access to this field is documented as requiring an audit trail. Declared only, same presence-only discipline as `protections`/ `retention`. Overrides the capability's own `auditRequired` for this field specifically."
+        },
+        "dataSubjectCategory": {
+          "type": "string",
+          "description": "The declared category of data subject this field's data concerns (e.g. `\"customers\"`, `\"employees\"`, `\"minors\"`). Declared only -- data-cap never verifies who a field's actual data subjects are. Field-level only: unlike `owner`/`sensitivity`/`purpose`/etc., this has no capability-level counterpart to override -- which data subjects a field concerns is a fact about that field's own data, not something a whole capability can meaningfully state once for every field under it."
+        },
+        "recipientCategories": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The declared categories of recipient this field's data has been or will be disclosed to (e.g. `\"payment processor\"`, `\"tax authority\"`, `\"internal support staff\"`). Always explicitly authored -- data-cap never infers a recipient category from its own dependency graph (a proven *consumer* relationship inside this codebase is a categorically different fact from a declared *external recipient*, and conflating the two would misrepresent both). Field-level only, for the same reason as `dataSubjectCategory`. See `specs/decisions/0067-ropa-fields-recipient-categories-never-inferred.md` for the full reasoning on why this is never derived."
         },
         "expiresAt": {
           "type": "string",
@@ -658,9 +677,24 @@
           ],
           "description": "The declared jurisdiction(s) this field's data is permitted/expected to be *stored* in -- a policy constraint, not an observed fact, not a processing-location claim, not a data-subject-location claim. Overrides the capability's own `dataResidency` for this field specifically."
         },
+        "transferSafeguard": {
+          "type": "string",
+          "description": "The declared safeguard relied on for any transfer of this field's data out of `dataResidency`'s own jurisdiction(s) (e.g. `\"EU Standard Contractual Clauses\"`, `\"adequacy decision\"`) -- paired conceptually with `dataResidency` (which states where data is permitted to be\n*stored*; this states what protects a transfer *out of* that jurisdiction), same presence-only discipline as every other field here. Declared only -- data-cap never verifies a transfer actually occurred or that the named safeguard is legally adequate. Overrides the capability's own `transferSafeguard` for this field specifically. See `specs/decisions/0067-ropa-fields-recipient-categories-never-inferred.md`."
+        },
         "auditRequired": {
           "type": "boolean",
           "description": "Whether access to this field is documented as requiring an audit trail. Declared only, same presence-only discipline as `protections`/ `retention`. Overrides the capability's own `auditRequired` for this field specifically."
+        },
+        "dataSubjectCategory": {
+          "type": "string",
+          "description": "The declared category of data subject this field's data concerns (e.g. `\"customers\"`, `\"employees\"`, `\"minors\"`). Declared only -- data-cap never verifies who a field's actual data subjects are. Field-level only: unlike `owner`/`sensitivity`/`purpose`/etc., this has no capability-level counterpart to override -- which data subjects a field concerns is a fact about that field's own data, not something a whole capability can meaningfully state once for every field under it."
+        },
+        "recipientCategories": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The declared categories of recipient this field's data has been or will be disclosed to (e.g. `\"payment processor\"`, `\"tax authority\"`, `\"internal support staff\"`). Always explicitly authored -- data-cap never infers a recipient category from its own dependency graph (a proven *consumer* relationship inside this codebase is a categorically different fact from a declared *external recipient*, and conflating the two would misrepresent both). Field-level only, for the same reason as `dataSubjectCategory`. See `specs/decisions/0067-ropa-fields-recipient-categories-never-inferred.md` for the full reasoning on why this is never derived."
         },
         "expiresAt": {
           "type": "string",
@@ -689,7 +723,7 @@
         }
       },
       "additionalProperties": false,
-      "description": "Documentation metadata for one field.\n\n`owner`, `sensitivity`, and `protections` override the capability-level value of the same name for this field specifically -- not every field in a capability is equally sensitive or equally owned. `protections` and `retention` are documentation-presence signals only: a generator may say a safeguard/policy is \"documented\" or \"not documented,\" never that it is adequate, correct, or enforced. `purpose`/`legalBasis`/`dataResidency`/ `auditRequired` carry the same presence-only discipline -- declared governance facts, never a claim that data-cap has determined they satisfy any law (see `specs/decisions/0051-documentdata-metadata-and-governance-fields.md`).\n\nThe boundary this interface draws is deliberate: a named property here is reserved for a concept data-cap itself understands, projects, or reports on. Anything else -- organization-specific detail with no data-cap-defined meaning -- belongs in `metadata`, never as an ad hoc extra property, so this vocabulary stays bounded instead of accreting one-off keys over time.\n\nNote what is deliberately absent: there is no per-field `validate`/ `validator` property, and no `helpers.validators` combinator library backing one, unlike `@maverickcer/env-cap`'s `EnvVarDocs`. That is a design choice, not a gap. `env-cap` validates on a reject-and-throw pipeline, where a failing validator must carry a message explaining the rejection; `data-cap` has no reject path to write a message for -- invalid processor/operation output resets the field to its declared default via `core/schema.ts`'s `checkValueAgainstSchema`, keeping fields synchronously readable (AGENTS.md invariant 2) and surfacing the mismatch through `DataInfo`. See `helpers/shape.ts`'s own module comment for the full reasoning."
+      "description": "Documentation metadata for one field.\n\n`owner`, `sensitivity`, `protections`, and `transferSafeguard` override the capability-level value of the same name for this field specifically -- not every field in a capability is equally sensitive, equally owned, or crosses the same transfer boundary. `protections` and `retention` are documentation-presence signals only: a generator may say a safeguard/ policy is \"documented\" or \"not documented,\" never that it is adequate, correct, or enforced. `purpose`/`legalBasis`/`dataResidency`/ `transferSafeguard`/`auditRequired` carry the same presence-only discipline -- declared governance facts, never a claim that data-cap has determined they satisfy any law (see `specs/decisions/0051-documentdata-metadata-and-governance-fields.md`). `dataSubjectCategory`/`recipientCategories` are field-level only (no capability-level counterpart) -- see each property's own doc comment for why.\n\nThe boundary this interface draws is deliberate: a named property here is reserved for a concept data-cap itself understands, projects, or reports on. Anything else -- organization-specific detail with no data-cap-defined meaning -- belongs in `metadata`, never as an ad hoc extra property, so this vocabulary stays bounded instead of accreting one-off keys over time.\n\nNote what is deliberately absent: there is no per-field `validate`/ `validator` property, and no `helpers.validators` combinator library backing one, unlike `@maverickcer/env-cap`'s `EnvVarDocs`. That is a design choice, not a gap. `env-cap` validates on a reject-and-throw pipeline, where a failing validator must carry a message explaining the rejection; `data-cap` has no reject path to write a message for -- invalid processor/operation output resets the field to its declared default via `core/schema.ts`'s `checkValueAgainstSchema`, keeping fields synchronously readable (AGENTS.md invariant 2) and surfacing the mismatch through `DataInfo`. See `helpers/shape.ts`'s own module comment for the full reasoning."
     },
     "ResolvedGovernanceValue<string>": {
       "type": "object",
