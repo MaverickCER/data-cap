@@ -4,18 +4,18 @@ What does adopting this package add to latency, CPU, memory and compute spend --
 
 ## What adopting this package costs
 
-For a typical workload of **640 records** per operation, routing the work through `data-cap` adds **662 µs** per operation compared with a bare-minimum baseline (1,993× baseline), about **$0.0014 – $0.019 per million operations** of compute. Overall, it grows O(log n) with workload size (measured exponent 0.56).
+For a typical workload of **640 records** per operation, routing the work through `data-cap` adds **666 µs** per operation compared with a bare-minimum baseline (1,889× baseline), about **$0.0014 – $0.019 per million operations** of compute. Overall, it grows O(log n) with workload size (measured exponent 0.56).
 
 > Dollar figures are **estimates** from published list prices (see _Cost model_ below) and are for comparing orders of magnitude, not for budgeting to the cent.
 
 | Cost | Typical (640 records) | Largest (10240 records) |
 | --- | --- | --- |
-| Added latency per operation | 662 µs | 7.46 ms |
-| Added latency, relative to baseline | 1,993× baseline | 20,827× baseline |
-| Added CPU time per operation | 1.73 ms | 10.3 ms |
+| Added latency per operation | 666 µs | 7.38 ms |
+| Added latency, relative to baseline | 1,889× baseline | 20,395× baseline |
+| Added CPU time per operation | 1.72 ms | 11.0 ms |
 | Added memory per operation (heap delta) | 222.5 KiB | 3.1 MiB |
-| Estimated compute cost per 1M operations | $0.0014 – $0.019 | $0.016 – $0.116 |
-| Single-core throughput ceiling of the overhead alone | 1,511 ops/s | 134 ops/s |
+| Estimated compute cost per 1M operations | $0.0014 – $0.019 | $0.015 – $0.124 |
+| Single-core throughput ceiling of the overhead alone | 1,502 ops/s | 135 ops/s |
 | Shipped code parsed at every cold start (gzip) | 10.4 KiB | 10.4 KiB |
 
 ## 1. End-to-end: the package's total impact
@@ -41,16 +41,16 @@ The baseline is an empty or minimal function, so it costs almost nothing and the
 
 | records | Baseline | With package | Added | Added vs baseline | Added CPU | Est. $ / 1M ops |
 | --- | --- | --- | --- | --- | --- | --- |
-| 20 | 0.518 µs | 216 µs | 215 µs | 417× baseline | 224 µs | $0.00045 – $0.0025 |
-| 40 | 0.424 µs | 230 µs | 230 µs | 542× baseline | 237 µs | $0.00048 – $0.0027 |
-| 80 | 0.349 µs | 278 µs | 278 µs | 796× baseline | 950 µs | $0.00058 – $0.011 |
-| 160 | 0.436 µs | 354 µs | 353 µs | 812× baseline | 1.41 ms | $0.00074 – $0.016 |
-| 320 | 0.433 µs | 457 µs | 456 µs | 1,055× baseline | 1.54 ms | $0.00095 – $0.017 |
-| 640 | 0.332 µs | 662 µs | 662 µs | 1,993× baseline | 1.73 ms | $0.0014 – $0.019 |
-| 1280 | 0.334 µs | 1.07 ms | 1.07 ms | 3,198× baseline | 2.16 ms | $0.0022 – $0.024 |
-| 2560 | 0.355 µs | 1.87 ms | 1.87 ms | 5,258× baseline | 2.79 ms | $0.0039 – $0.031 |
-| 5120 | 0.361 µs | 3.50 ms | 3.50 ms | 9,678× baseline | 3.58 ms | $0.0073 – $0.040 |
-| 10240 | 0.358 µs | 7.46 ms | 7.46 ms | 20,827× baseline | 10.3 ms | $0.016 – $0.116 |
+| 20 | 0.677 µs | 216 µs | 215 µs | 318× baseline | 222 µs | $0.00045 – $0.0025 |
+| 40 | 0.434 µs | 236 µs | 236 µs | 545× baseline | 242 µs | $0.00049 – $0.0027 |
+| 80 | 0.361 µs | 287 µs | 287 µs | 796× baseline | 955 µs | $0.0006 – $0.011 |
+| 160 | 0.441 µs | 363 µs | 363 µs | 824× baseline | 1.39 ms | $0.00076 – $0.016 |
+| 320 | 0.446 µs | 465 µs | 465 µs | 1,044× baseline | 1.52 ms | $0.00097 – $0.017 |
+| 640 | 0.353 µs | 666 µs | 666 µs | 1,889× baseline | 1.72 ms | $0.0014 – $0.019 |
+| 1280 | 0.357 µs | 1.08 ms | 1.08 ms | 3,017× baseline | 2.14 ms | $0.0022 – $0.024 |
+| 2560 | 0.362 µs | 1.88 ms | 1.88 ms | 5,186× baseline | 2.91 ms | $0.0039 – $0.033 |
+| 5120 | 0.359 µs | 3.42 ms | 3.42 ms | 9,522× baseline | 3.73 ms | $0.0071 – $0.042 |
+| 10240 | 0.362 µs | 7.38 ms | 7.38 ms | 20,395× baseline | 11.0 ms | $0.015 – $0.124 |
 
 **How the total grows:** O(log n) (logarithmic), exponent 0.56 over 10 sizes.
 
@@ -61,17 +61,17 @@ Every function the package exposes is measured on its own across the full size l
 | Function | Documented | Measured | Agreement | At 640 | At 10240 |
 | --- | --- | --- | --- | --- | --- |
 | `createData (cold start)` | O(n) | n/a | ❔ not enough data | n/a | n/a |
-| `buildData` | O(n) | O(n) | ✅ matches | 1.65 ms | 29.0 ms |
-| `commitAuthoritative (replace a whole array)` | O(n) | O(n) | ✅ matches | 585 µs | 6.65 ms |
-| `commitAuthoritative (change one small field)` | O(1) | O(1) | ✅ matches | 3.06 µs | 3.18 µs |
-| `reconcileArrayInfo` | O(n) | O(n) | ✅ matches | 248 µs | 4.78 ms |
-| `getter dispatch (one full round trip)` | O(n) | O(log n) | 🟡 close (neighbouring class) | 680 µs | 8.15 ms |
-| `canonicalize (request key)` | O(n log n) | O(n) | 🟡 close (neighbouring class) | 150 µs | 2.37 ms |
-| `coordinator dedup (identical concurrent calls)` (identical) | O(n) | O(n) | ✅ matches | 7.20 ms | 84.0 ms |
-| `coordinator dedup (identical concurrent calls)` (independent) | O(n) | O(n) | ✅ matches | 6.41 ms | 81.9 ms |
-| `runGetters (one call, many getters)` | O(n²) | O(n²) | ✅ matches | 237 ms | 142 s |
-| `createDataCache (set then get)` | O(1) | O(log n) | 🟡 close (neighbouring class) | 29.4 µs | 30.8 µs |
-| `withRetry` | O(n) | O(n) | ✅ matches | 88.1 ms (at 80) | 88.1 ms (at 80) |
+| `buildData` | O(n) | O(n) | ✅ matches | 1.69 ms | 27.7 ms |
+| `commitAuthoritative (replace a whole array)` | O(n) | O(n) | ✅ matches | 580 µs | 6.51 ms |
+| `commitAuthoritative (change one small field)` | O(1) | O(1) | ✅ matches | 3.07 µs | 3.08 µs |
+| `reconcileArrayInfo` | O(n) | O(n) | ✅ matches | 267 µs | 4.85 ms |
+| `getter dispatch (one full round trip)` | O(n) | O(log n) | 🟡 close (neighbouring class) | 702 µs | 8.05 ms |
+| `canonicalize (request key)` | O(n log n) | O(n) | 🟡 close (neighbouring class) | 151 µs | 2.34 ms |
+| `coordinator dedup (identical concurrent calls)` (identical) | O(n) | O(n) | ✅ matches | 8.02 ms | 83.1 ms |
+| `coordinator dedup (identical concurrent calls)` (independent) | O(n) | O(n) | ✅ matches | 7.52 ms | 83.6 ms |
+| `runGetters (one call, many getters)` | O(n²) | O(n²) | ✅ matches | 243 ms | 128 s |
+| `createDataCache (set then get)` | O(1) | O(log n) | 🟡 close (neighbouring class) | 23.2 µs | 26.5 µs |
+| `withRetry` | O(n) | O(n) | ✅ matches | 90.6 ms (at 80) | 90.6 ms (at 80) |
 
 ### `createData (cold start)`
 
@@ -308,20 +308,20 @@ Node.js v22.23.3
 
 - **schemas with validators** -- Validators are application code; their cost belongs to the application.
 
-**Measured: O(n)** (exponent 0.96, 10 sizes) -- ✅ matches.
+**Measured: O(n)** (exponent 0.93, 10 sizes) -- ✅ matches.
 
 | records | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
-| 20 | 89.4 µs | 208 µs | 365 µs | 138.6 KiB | 11,184 |
-| 40 | 112 µs | 156 µs | 253 µs | 268.6 KiB | 8,923 |
-| 80 | 223 µs | 318 µs | 502 µs | 528.7 KiB | 4,486 |
-| 160 | 444 µs | 548 µs | 1.01 ms | 1.0 MiB | 2,253 |
-| 320 | 801 µs | 989 µs | 1.44 ms | 2.0 MiB | 1,249 |
-| 640 | 1.65 ms | 2.07 ms | 3.44 ms | 4.1 MiB | 608 |
-| 1280 | 3.31 ms | 3.63 ms | 5.33 ms | 8.2 MiB | 302 |
-| 2560 | 6.93 ms | 7.35 ms | 10.5 ms | 1.4 MiB | 144 |
-| 5120 | 14.5 ms | 15.4 ms | 21.5 ms | 3.5 MiB | 69 |
-| 10240 | 29.0 ms | 30.1 ms | 42.1 ms | 7.6 MiB | 34 |
+| 20 | 98.1 µs | 221 µs | 375 µs | 138.6 KiB | 10,191 |
+| 40 | 133 µs | 204 µs | 351 µs | 268.6 KiB | 7,500 |
+| 80 | 231 µs | 332 µs | 500 µs | 528.7 KiB | 4,320 |
+| 160 | 467 µs | 631 µs | 1.00 ms | 1.0 MiB | 2,142 |
+| 320 | 836 µs | 1.39 ms | 1.62 ms | 2.0 MiB | 1,196 |
+| 640 | 1.69 ms | 2.04 ms | 3.29 ms | 4.1 MiB | 593 |
+| 1280 | 3.17 ms | 3.54 ms | 4.97 ms | 8.2 MiB | 316 |
+| 2560 | 6.73 ms | 7.14 ms | 9.82 ms | 1.4 MiB | 149 |
+| 5120 | 14.2 ms | 17.2 ms | 20.9 ms | 3.5 MiB | 70 |
+| 10240 | 27.7 ms | 28.5 ms | 39.8 ms | 7.6 MiB | 36 |
 
 ### `commitAuthoritative (replace a whole array)`
 
@@ -346,20 +346,20 @@ Node.js v22.23.3
 
 **In the end-to-end run:** One commit per fetch.
 
-**Measured: O(n)** (exponent 0.79, 10 sizes) -- ✅ matches.
+**Measured: O(n)** (exponent 0.78, 10 sizes) -- ✅ matches.
 
 | records | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
-| 20 | 48.9 µs | 65.7 µs | 54.0 µs | 10.3 KiB | 20,432 |
-| 40 | 71.0 µs | 88.8 µs | 74.0 µs | 16.4 KiB | 14,077 |
-| 80 | 117 µs | 134 µs | 120 µs | 28.9 KiB | 8,568 |
-| 160 | 207 µs | 227 µs | 211 µs | 53.9 KiB | 4,827 |
-| 320 | 376 µs | 420 µs | 1.48 ms | 103.9 KiB | 2,663 |
-| 640 | 585 µs | 669 µs | 1.69 ms | 203.9 KiB | 1,711 |
-| 1280 | 997 µs | 1.12 ms | 2.13 ms | 403.9 KiB | 1,003 |
-| 2560 | 1.81 ms | 2.03 ms | 2.97 ms | 804.0 KiB | 552 |
-| 5120 | 3.37 ms | 3.50 ms | 3.74 ms | 1.6 MiB | 297 |
-| 10240 | 6.65 ms | 6.82 ms | 6.66 ms | 3.1 MiB | 150 |
+| 20 | 48.8 µs | 71.7 µs | 54.0 µs | 10.3 KiB | 20,487 |
+| 40 | 73.1 µs | 96.8 µs | 77.0 µs | 16.4 KiB | 13,683 |
+| 80 | 124 µs | 145 µs | 128 µs | 28.9 KiB | 8,042 |
+| 160 | 217 µs | 248 µs | 220 µs | 53.9 KiB | 4,609 |
+| 320 | 380 µs | 437 µs | 1.46 ms | 103.9 KiB | 2,635 |
+| 640 | 580 µs | 799 µs | 1.67 ms | 203.9 KiB | 1,724 |
+| 1280 | 986 µs | 1.59 ms | 2.10 ms | 403.9 KiB | 1,014 |
+| 2560 | 1.79 ms | 3.18 ms | 2.93 ms | 804.0 KiB | 559 |
+| 5120 | 3.29 ms | 3.40 ms | 3.65 ms | 1.6 MiB | 304 |
+| 10240 | 6.51 ms | 6.62 ms | 6.52 ms | 3.1 MiB | 154 |
 
 ### `commitAuthoritative (change one small field)`
 
@@ -381,20 +381,20 @@ Node.js v22.23.3
 
 - **deeply nested change paths** -- Path length adds a small constant per level; the store's fields are shallow by design.
 
-**Measured: O(1)** (exponent -0.03, 10 sizes) -- ✅ matches.
+**Measured: O(1)** (exponent -0.04, 10 sizes) -- ✅ matches.
 
 | records | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
-| 20 | 4.21 µs | 4.82 µs | 4.30 µs | 2.3 KiB | 237,668 |
-| 40 | 3.49 µs | 4.33 µs | 3.63 µs | 2.1 KiB | 286,400 |
-| 80 | 3.09 µs | 4.36 µs | 3.16 µs | 2.1 KiB | 323,444 |
-| 160 | 3.10 µs | 4.27 µs | 3.17 µs | 2.1 KiB | 322,826 |
-| 320 | 3.06 µs | 4.33 µs | 3.11 µs | 2.1 KiB | 327,322 |
-| 640 | 3.06 µs | 4.66 µs | 3.13 µs | 2.1 KiB | 326,734 |
-| 1280 | 3.07 µs | 4.96 µs | 3.14 µs | 2.1 KiB | 325,347 |
-| 2560 | 3.23 µs | 3.98 µs | 4.72 µs | 2.1 KiB | 309,672 |
-| 5120 | 3.10 µs | 4.64 µs | 3.21 µs | 2.1 KiB | 322,700 |
-| 10240 | 3.18 µs | 4.43 µs | 3.29 µs | 2.1 KiB | 314,159 |
+| 20 | 4.41 µs | 5.16 µs | 4.50 µs | 2.3 KiB | 226,636 |
+| 40 | 3.30 µs | 4.40 µs | 3.38 µs | 2.1 KiB | 303,470 |
+| 80 | 3.21 µs | 3.62 µs | 7.20 µs | 2.1 KiB | 311,582 |
+| 160 | 3.20 µs | 3.48 µs | 3.26 µs | 2.1 KiB | 312,467 |
+| 320 | 3.16 µs | 3.53 µs | 3.21 µs | 2.1 KiB | 316,438 |
+| 640 | 3.07 µs | 3.34 µs | 3.11 µs | 2.1 KiB | 325,535 |
+| 1280 | 3.06 µs | 3.37 µs | 3.10 µs | 2.1 KiB | 326,608 |
+| 2560 | 3.09 µs | 3.34 µs | 3.11 µs | 2.1 KiB | 323,918 |
+| 5120 | 3.07 µs | 3.33 µs | 3.10 µs | 2.1 KiB | 326,092 |
+| 10240 | 3.08 µs | 3.35 µs | 3.11 µs | 2.1 KiB | 325,126 |
 
 ### `reconcileArrayInfo`
 
@@ -415,20 +415,20 @@ Node.js v22.23.3
 
 **In the end-to-end run:** Once per collection commit.
 
-**Measured: O(n)** (exponent 0.96, 10 sizes) -- ✅ matches.
+**Measured: O(n)** (exponent 0.93, 10 sizes) -- ✅ matches.
 
 | records | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
-| 20 | 14.8 µs | 32.4 µs | 17.2 µs | 11.0 KiB | 67,573 |
-| 40 | 18.2 µs | 19.8 µs | 71.6 µs | 21.2 KiB | 55,051 |
-| 80 | 35.3 µs | 37.5 µs | 130 µs | 42.1 KiB | 28,312 |
-| 160 | 60.6 µs | 64.2 µs | 189 µs | 83.6 KiB | 16,515 |
-| 320 | 122 µs | 137 µs | 361 µs | 167.2 KiB | 8,186 |
-| 640 | 248 µs | 256 µs | 667 µs | 335.6 KiB | 4,039 |
-| 1280 | 481 µs | 491 µs | 1.18 ms | 674.7 KiB | 2,080 |
-| 2560 | 1.04 ms | 1.06 ms | 2.64 ms | 1.4 MiB | 962 |
-| 5120 | 2.23 ms | 2.30 ms | 4.24 ms | 2.7 MiB | 447 |
-| 10240 | 4.78 ms | 4.90 ms | 7.75 ms | 5.4 MiB | 209 |
+| 20 | 17.0 µs | 36.4 µs | 26.9 µs | 11.0 KiB | 58,767 |
+| 40 | 23.0 µs | 25.7 µs | 91.1 µs | 21.2 KiB | 43,547 |
+| 80 | 39.0 µs | 40.9 µs | 130 µs | 42.1 KiB | 25,639 |
+| 160 | 72.9 µs | 77.9 µs | 233 µs | 83.9 KiB | 13,718 |
+| 320 | 135 µs | 143 µs | 365 µs | 167.2 KiB | 7,401 |
+| 640 | 267 µs | 276 µs | 664 µs | 335.6 KiB | 3,745 |
+| 1280 | 524 µs | 543 µs | 1.19 ms | 674.7 KiB | 1,907 |
+| 2560 | 1.14 ms | 1.34 ms | 2.73 ms | 1.4 MiB | 874 |
+| 5120 | 2.34 ms | 2.42 ms | 4.26 ms | 2.7 MiB | 427 |
+| 10240 | 4.85 ms | 5.20 ms | 7.81 ms | 5.4 MiB | 206 |
 
 ### `getter dispatch (one full round trip)`
 
@@ -449,20 +449,20 @@ Node.js v22.23.3
 
 **In the end-to-end run:** This is the end-to-end operation itself.
 
-**Measured: O(log n)** (exponent 0.58, 10 sizes) -- 🟡 close (neighbouring class).
+**Measured: O(log n)** (exponent 0.59, 10 sizes) -- 🟡 close (neighbouring class).
 
 | records | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
-| 20 | 198 µs | 239 µs | 202 µs | 25.1 KiB | 5,062 |
-| 40 | 222 µs | 261 µs | 226 µs | 31.3 KiB | 4,508 |
-| 80 | 266 µs | 292 µs | 587 µs | 43.8 KiB | 3,765 |
-| 160 | 354 µs | 410 µs | 1.48 ms | 68.8 KiB | 2,821 |
-| 320 | 477 µs | 583 µs | 1.68 ms | 118.8 KiB | 2,096 |
-| 640 | 680 µs | 907 µs | 1.95 ms | 218.8 KiB | 1,470 |
-| 1280 | 1.11 ms | 1.63 ms | 2.44 ms | 418.8 KiB | 903 |
-| 2560 | 2.00 ms | 2.05 ms | 3.65 ms | 819.0 KiB | 500 |
-| 5120 | 3.53 ms | 3.93 ms | 4.26 ms | 1.6 MiB | 283 |
-| 10240 | 8.15 ms | 8.31 ms | 13.8 ms | 3.1 MiB | 123 |
+| 20 | 196 µs | 230 µs | 201 µs | 25.1 KiB | 5,100 |
+| 40 | 222 µs | 257 µs | 229 µs | 31.3 KiB | 4,503 |
+| 80 | 267 µs | 298 µs | 597 µs | 43.8 KiB | 3,747 |
+| 160 | 359 µs | 439 µs | 1.48 ms | 68.8 KiB | 2,785 |
+| 320 | 487 µs | 577 µs | 1.64 ms | 118.8 KiB | 2,052 |
+| 640 | 702 µs | 973 µs | 1.91 ms | 218.8 KiB | 1,424 |
+| 1280 | 1.14 ms | 1.79 ms | 2.40 ms | 418.8 KiB | 875 |
+| 2560 | 2.04 ms | 2.64 ms | 3.61 ms | 819.0 KiB | 490 |
+| 5120 | 3.67 ms | 3.70 ms | 4.25 ms | 1.6 MiB | 272 |
+| 10240 | 8.05 ms | 8.16 ms | 13.6 ms | 3.1 MiB | 124 |
 
 ### `canonicalize (request key)`
 
@@ -488,16 +488,16 @@ Node.js v22.23.3
 
 | records | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
-| 20 | 11.1 µs | 18.5 µs | 11.6 µs | 8.1 KiB | 90,140 |
-| 40 | 9.77 µs | 10.5 µs | 21.7 µs | 11.1 KiB | 102,366 |
-| 80 | 15.6 µs | 19.3 µs | 56.6 µs | 20.6 KiB | 63,976 |
-| 160 | 29.8 µs | 33.0 µs | 96.0 µs | 39.8 KiB | 33,537 |
-| 320 | 64.0 µs | 67.7 µs | 177 µs | 78.2 KiB | 15,625 |
-| 640 | 150 µs | 158 µs | 379 µs | 155.6 KiB | 6,685 |
-| 1280 | 263 µs | 268 µs | 647 µs | 321.6 KiB | 3,806 |
-| 2560 | 552 µs | 566 µs | 1.15 ms | 646.7 KiB | 1,811 |
-| 5120 | 1.20 ms | 1.23 ms | 2.38 ms | 1.3 MiB | 835 |
-| 10240 | 2.37 ms | 2.41 ms | 2.82 ms | 2.6 MiB | 421 |
+| 20 | 11.2 µs | 15.9 µs | 11.6 µs | 8.1 KiB | 89,092 |
+| 40 | 9.16 µs | 10.7 µs | 33.9 µs | 11.1 KiB | 109,119 |
+| 80 | 15.4 µs | 16.7 µs | 50.6 µs | 20.6 KiB | 64,841 |
+| 160 | 31.3 µs | 33.2 µs | 92.1 µs | 39.8 KiB | 31,908 |
+| 320 | 71.3 µs | 74.3 µs | 193 µs | 78.2 KiB | 14,017 |
+| 640 | 151 µs | 160 µs | 374 µs | 155.6 KiB | 6,633 |
+| 1280 | 266 µs | 274 µs | 630 µs | 321.6 KiB | 3,758 |
+| 2560 | 554 µs | 569 µs | 1.11 ms | 646.7 KiB | 1,805 |
+| 5120 | 1.18 ms | 1.23 ms | 2.29 ms | 1.3 MiB | 847 |
+| 10240 | 2.34 ms | 2.42 ms | 2.99 ms | 2.6 MiB | 426 |
 
 ### `coordinator dedup (identical concurrent calls)`
 
@@ -523,16 +523,16 @@ Every caller asks for the same page; the coordinator runs one fetch and shares i
 
 | records | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
-| 20 | 583 µs | 734 µs | 1.74 ms | 235.8 KiB | 1,715 |
-| 40 | 735 µs | 1.02 ms | 1.98 ms | 393.5 KiB | 1,360 |
-| 80 | 1.36 ms | 1.59 ms | 3.37 ms | 708.2 KiB | 735 |
-| 160 | 2.15 ms | 2.52 ms | 6.59 ms | 1.3 MiB | 464 |
-| 320 | 3.82 ms | 4.71 ms | 13.7 ms | 2.5 MiB | 262 |
-| 640 | 7.20 ms | 8.60 ms | 25.1 ms | 5.0 MiB | 139 |
-| 1280 | 13.5 ms | 17.6 ms | 47.1 ms | 9.8 MiB | 74 |
-| 2560 | 29.2 ms | 31.4 ms | 92.7 ms | 8.5 MiB | 34 |
-| 5120 | 47.4 ms | 52.9 ms | 121 ms | 19.7 MiB | 21 |
-| 10240 | 84.0 ms | 87.5 ms | 196 ms | 28.5 MiB | 12 |
+| 20 | 589 µs | 756 µs | 1.74 ms | 235.8 KiB | 1,699 |
+| 40 | 768 µs | 1.12 ms | 2.09 ms | 395.6 KiB | 1,302 |
+| 80 | 1.30 ms | 1.69 ms | 3.34 ms | 710.2 KiB | 768 |
+| 160 | 2.44 ms | 2.82 ms | 6.67 ms | 1.3 MiB | 411 |
+| 320 | 4.31 ms | 5.18 ms | 14.5 ms | 2.5 MiB | 232 |
+| 640 | 8.02 ms | 9.07 ms | 26.7 ms | 4.9 MiB | 125 |
+| 1280 | 15.0 ms | 18.7 ms | 49.9 ms | 9.8 MiB | 67 |
+| 2560 | 30.4 ms | 31.4 ms | 90.3 ms | 8.5 MiB | 33 |
+| 5120 | 47.3 ms | 53.5 ms | 130 ms | 19.7 MiB | 21 |
+| 10240 | 83.1 ms | 88.0 ms | 189 ms | 28.6 MiB | 12 |
 
 #### Variant `independent`
 
@@ -542,16 +542,16 @@ Every caller asks for a different page; nothing can be shared, so this is the no
 
 | records | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
-| 20 | 541 µs | 652 µs | 1.72 ms | 233.0 KiB | 1,847 |
-| 40 | 757 µs | 981 µs | 2.13 ms | 392.1 KiB | 1,322 |
-| 80 | 1.24 ms | 1.49 ms | 3.58 ms | 708.6 KiB | 808 |
-| 160 | 2.15 ms | 2.68 ms | 7.19 ms | 1.3 MiB | 465 |
-| 320 | 3.66 ms | 4.56 ms | 12.5 ms | 2.5 MiB | 274 |
-| 640 | 6.41 ms | 8.57 ms | 22.6 ms | 4.9 MiB | 156 |
-| 1280 | 13.8 ms | 16.0 ms | 48.0 ms | 9.8 MiB | 72 |
-| 2560 | 26.3 ms | 31.4 ms | 84.1 ms | 8.4 MiB | 38 |
-| 5120 | 44.0 ms | 49.9 ms | 111 ms | 19.7 MiB | 23 |
-| 10240 | 81.9 ms | 88.8 ms | 191 ms | 28.5 MiB | 12 |
+| 20 | 551 µs | 602 µs | 1.70 ms | 233.0 KiB | 1,816 |
+| 40 | 757 µs | 1.04 ms | 1.99 ms | 391.9 KiB | 1,320 |
+| 80 | 1.40 ms | 1.74 ms | 3.51 ms | 710.2 KiB | 715 |
+| 160 | 2.24 ms | 2.77 ms | 6.71 ms | 1.3 MiB | 446 |
+| 320 | 4.11 ms | 5.11 ms | 12.8 ms | 2.5 MiB | 243 |
+| 640 | 7.52 ms | 8.94 ms | 26.0 ms | 4.9 MiB | 133 |
+| 1280 | 16.4 ms | 19.0 ms | 56.1 ms | 9.7 MiB | 61 |
+| 2560 | 29.3 ms | 33.4 ms | 88.0 ms | 8.3 MiB | 34 |
+| 5120 | 43.7 ms | 52.3 ms | 112 ms | 19.6 MiB | 23 |
+| 10240 | 83.6 ms | 84.8 ms | 196 ms | 28.6 MiB | 12 |
 
 ### `runGetters (one call, many getters)`
 
@@ -570,20 +570,20 @@ Every caller asks for a different page; nothing can be shared, so this is the no
 | payload per getter | fixed at "20 records" | Small and constant so the getter count, not payload size, drives the result. |
 | getter independence | fixed at "all independent, all succeed" | A failing getter takes the error path, which is cheaper and not representative. |
 
-**Measured: O(n²)** (exponent 1.92, 10 sizes) -- ✅ matches.
+**Measured: O(n²)** (exponent 1.90, 10 sizes) -- ✅ matches.
 
 | records | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
-| 20 | 1.00 ms | 1.45 ms | 2.36 ms | 534.5 KiB | 1,000 |
-| 40 | 2.14 ms | 3.31 ms | 4.70 ms | 1.4 MiB | 466 |
-| 80 | 5.48 ms | 9.18 ms | 9.05 ms | 4.4 MiB | 183 |
-| 160 | 20.5 ms | 24.6 ms | 30.9 ms | 14.8 MiB | 49 |
-| 320 | 63.6 ms | 67.9 ms | 89.0 ms | 8.8 MiB | 16 |
-| 640 | 237 ms | 242 ms | 324 ms | 6.8 MiB | 4 |
-| 1280 | 960 ms | 976 ms | 1.07 s | 13.8 MiB | 1 |
-| 2560 | 4.38 s | 4.40 s | 4.52 s | 27.9 MiB | 0 |
-| 5120 | 29.2 s | 29.3 s | 29.4 s | 297.6 MiB | 0 |
-| 10240 | 142 s | 145 s | 149 s | 66.3 MiB | 0 |
+| 20 | 1.10 ms | 1.68 ms | 2.66 ms | 534.5 KiB | 908 |
+| 40 | 2.22 ms | 3.86 ms | 5.59 ms | 1.4 MiB | 451 |
+| 80 | 5.88 ms | 10.0 ms | 11.5 ms | 4.4 MiB | 170 |
+| 160 | 19.4 ms | 23.2 ms | 29.2 ms | 14.8 MiB | 52 |
+| 320 | 62.3 ms | 66.2 ms | 95.4 ms | 8.8 MiB | 16 |
+| 640 | 243 ms | 244 ms | 328 ms | 6.9 MiB | 4 |
+| 1280 | 959 ms | 971 ms | 1.07 s | 13.6 MiB | 1 |
+| 2560 | 4.87 s | 4.91 s | 5.02 s | 27.9 MiB | 0 |
+| 5120 | 26.9 s | 27.1 s | 27.1 s | 298.6 MiB | 0 |
+| 10240 | 128 s | 129 s | 135 s | 86.9 MiB | 0 |
 
 ### `createDataCache (set then get)`
 
@@ -601,20 +601,20 @@ Every caller asks for a different page; nothing can be shared, so this is the no
 | cache fullness | fixed at "full (50 entries), every set evicts" | The worst case: each set evicts the oldest entry. |
 | hit versus miss | fixed at "hit" | The get immediately follows the set, so it is always a hit; a miss is cheaper. |
 
-**Measured: O(log n)** (exponent 0.19, 10 sizes) -- 🟡 close (neighbouring class).
+**Measured: O(log n)** (exponent 0.21, 10 sizes) -- 🟡 close (neighbouring class).
 
 | records | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
-| 20 | 11.0 µs | 12.8 µs | 14.0 µs | 680 B | 91,025 |
-| 40 | 12.1 µs | 17.5 µs | 16.0 µs | 600 B | 82,454 |
-| 80 | 12.9 µs | 15.0 µs | 16.0 µs | 600 B | 77,700 |
-| 160 | 18.0 µs | 21.0 µs | 22.0 µs | 600 B | 55,411 |
-| 320 | 23.1 µs | 26.8 µs | 27.0 µs | 680 B | 43,243 |
-| 640 | 29.4 µs | 30.2 µs | 34.0 µs | 680 B | 33,985 |
-| 1280 | 28.5 µs | 43.6 µs | 34.0 µs | 680 B | 35,095 |
-| 2560 | 30.2 µs | 30.4 µs | 35.0 µs | 680 B | 33,095 |
-| 5120 | 29.3 µs | 30.8 µs | 35.0 µs | 680 B | 34,160 |
-| 10240 | 30.8 µs | 33.5 µs | 37.0 µs | 680 B | 32,439 |
+| 20 | 9.67 µs | 12.5 µs | 13.0 µs | 680 B | 103,434 |
+| 40 | 9.11 µs | 10.4 µs | 12.0 µs | 600 B | 109,806 |
+| 80 | 10.3 µs | 13.8 µs | 13.0 µs | 600 B | 96,805 |
+| 160 | 11.3 µs | 14.5 µs | 14.0 µs | 600 B | 88,331 |
+| 320 | 17.4 µs | 18.2 µs | 21.0 µs | 680 B | 57,597 |
+| 640 | 23.2 µs | 24.7 µs | 28.0 µs | 680 B | 43,115 |
+| 1280 | 24.0 µs | 26.1 µs | 29.0 µs | 680 B | 41,623 |
+| 2560 | 27.1 µs | 28.4 µs | 32.0 µs | 680 B | 36,913 |
+| 5120 | 26.9 µs | 27.9 µs | 32.0 µs | 680 B | 37,202 |
+| 10240 | 26.5 µs | 28.9 µs | 32.0 µs | 680 B | 37,750 |
 
 ### `withRetry`
 
@@ -642,31 +642,31 @@ Every caller asks for a different page; nothing can be shared, so this is the no
 
 | records | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
-| 10 | 9.94 ms | 11.0 ms | 1.49 ms | 34.7 KiB | 101 |
-| 20 | 21.8 ms | 22.0 ms | 1.80 ms | 68.2 KiB | 46 |
-| 40 | 43.7 ms | 44.8 ms | 2.65 ms | 135.0 KiB | 23 |
-| 80 | 88.1 ms | 90.5 ms | 3.71 ms | 264.4 KiB | 11 |
+| 10 | 10.1 ms | 11.2 ms | 1.57 ms | 35.9 KiB | 99 |
+| 20 | 22.3 ms | 23.3 ms | 2.40 ms | 68.2 KiB | 45 |
+| 40 | 43.3 ms | 47.7 ms | 3.51 ms | 134.2 KiB | 23 |
+| 80 | 90.6 ms | 91.8 ms | 4.83 ms | 264.4 KiB | 11 |
 
 ## 3. What makes up the end-to-end overhead
 
 Each function's measured cost is multiplied by how many times one end-to-end operation calls it, then compared with the total overhead from section 1. This shows where the cost actually lives, so effort goes to the function that matters. Shares are estimates: they can sum to slightly more or less than 100% because the two measurements were taken separately (the remainder is shown as _unattributed_).
 
-**At 640 records** (total added: 662 µs)
+**At 640 records** (total added: 666 µs)
 
 | Function | Calls / operation | Estimated time | Share of added time | Share of operation |
 | --- | --- | --- | --- | --- |
-| `getter-dispatch-cold` | 1 | 680 µs | 103% | 103% |
-| `commit-authoritative-array-replace` | 1 | 585 µs | 88% | 88% |
-| `reconcile-array-info` | 1 | 248 µs | 37% | 37% |
+| `getter-dispatch-cold` | 1 | 702 µs | 106% | 105% |
+| `commit-authoritative-array-replace` | 1 | 580 µs | 87% | 87% |
+| `reconcile-array-info` | 1 | 267 µs | 40% | 40% |
 | _unattributed_ |  | 0 | 0.0% |  |
 
-**At 10240 records** (total added: 7.46 ms)
+**At 10240 records** (total added: 7.38 ms)
 
 | Function | Calls / operation | Estimated time | Share of added time | Share of operation |
 | --- | --- | --- | --- | --- |
-| `getter-dispatch-cold` | 1 | 8.15 ms | 109% | 109% |
-| `commit-authoritative-array-replace` | 1 | 6.65 ms | 89% | 89% |
-| `reconcile-array-info` | 1 | 4.78 ms | 64% | 64% |
+| `getter-dispatch-cold` | 1 | 8.05 ms | 109% | 109% |
+| `commit-authoritative-array-replace` | 1 | 6.51 ms | 88% | 88% |
+| `reconcile-array-info` | 1 | 4.85 ms | 66% | 66% |
 | _unattributed_ |  | 0 | 0.0% |  |
 
 ## Failed measurements
@@ -868,9 +868,9 @@ Estimates use two bracketing price shapes: **low** = CPU-priced compute ($0.040 
 
 ## Environment and method
 
-- Run: `2026-10-02T13:09:05.127Z` → `2026-10-02T13:30:43.500Z` (1298 s), ci
-- Machine: AMD EPYC 9V74 80-Core Processor, 4 logical core(s) (2 physical), 15990 MB RAM, linux/x64, Node v22.23.3, GitHub Actions
-- Git: `a4cfb755011c545987f9bdabe077c250c91dbe6d` on `feat/gdpr-ropa-generator` (uncommitted changes)
+- Run: `2026-10-02T14:04:53.795Z` → `2026-10-02T14:24:43.608Z` (1190 s), ci
+- Machine: AMD EPYC 7763 64-Core Processor, 4 logical core(s) (2 physical), 15990 MB RAM, linux/x64, Node v22.23.3, GitHub Actions
+- Git: `c7233e83f8e7c7e16e01866bb364781cfa73bd35` on `fix/code-scanning-and-caches` (uncommitted changes)
 - Sizes: 20, 40, 80, 160, 320, 640, 1280, 2560, 5120, 10240 records -- One record in the collection a getter fetches and commits (a CRM contact, an order, a support ticket). 640 is a typical full page of a mid-sized table or a busy list endpoint.
 
 **Do not compare these numbers with another machine's, another day's, or another package's.** They exist to show how _this_ package's cost changes between runs on comparable hardware and how it scales with size. See [READING-BENCHMARKS.md](../READING-BENCHMARKS.md).

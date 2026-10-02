@@ -295,6 +295,23 @@ describe("renderDocumentation -- fields table", () => {
     )
     expect(content).toContain("before \\| after")
   })
+
+  it("escapes a backslash before a pipe so the pipe stays escaped", () => {
+    const content = renderDocumentation(
+      inventory([capability({ fields: [field({ docs: { description: "a\\|b" } })] })]),
+      ROOT,
+    )
+    // `a\|b` must render as an escaped backslash (`\\`) then an escaped pipe (`\|`), never `\|` alone.
+    expect(content).toContain("a\\\\\\|b")
+  })
+
+  it("escapes a lone backslash by doubling it", () => {
+    const content = renderDocumentation(
+      inventory([capability({ fields: [field({ docs: { description: "C:\\path" } })] })]),
+      ROOT,
+    )
+    expect(content).toContain("C:\\\\path")
+  })
 })
 
 describe("renderDocumentation -- operation tables", () => {

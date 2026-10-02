@@ -19,7 +19,8 @@ import type { LifecycleModel } from "./lifecycle-model.js"
 import type { ManifestChangeReport } from "./manifest-snapshot.js"
 
 function escapeCell(text: string): string {
-  return text.replace(/\|/g, "\\|").replace(/\r?\n/g, " ")
+  // Backslashes first: a trailing `\` would otherwise swallow the `\` that escapes the next pipe.
+  return text.replace(/\\/g, "\\\\").replace(/\|/g, "\\|").replace(/\r?\n/g, " ")
 }
 
 function cell(value: string | undefined, whenMissing = "—"): string {

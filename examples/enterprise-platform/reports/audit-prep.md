@@ -4,7 +4,7 @@
 
 > Presence only, never an adequacy claim: a checked column means the property is declared, never that it is correct, sufficient, or independently verified.
 
-Generated: 2026-10-02T12:36:43.419Z
+Generated: 2026-10-02T14:03:37.164Z
 
 ## Rollup
 

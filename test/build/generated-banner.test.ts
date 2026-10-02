@@ -16,8 +16,8 @@ describe("generatedBanner", () => {
   })
 
   it("renders a Markdown-style HTML comment", () => {
-    expect(generatedBanner("markdown")).toMatch(/^<!-- GENERATED FILE/)
-    expect(generatedBanner("markdown")).toMatch(/-->$/)
+    expect(generatedBanner("markdown").startsWith("<!-- GENERATED FILE")).toBe(true)
+    expect(generatedBanner("markdown").endsWith("-->")).toBe(true)
   })
 
   it("renders the exact banner text in both formats", () => {

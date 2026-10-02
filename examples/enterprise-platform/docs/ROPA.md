@@ -2,7 +2,7 @@
 
 > This document is a generated illustration of GDPR Article 30(1) record-of-processing-activities (ROPA) content, produced from data-cap's own declared governance metadata. It is not legal advice, not a compliance certification, and not a substitute for your organization's own Art. 30 review -- see this generator's own README (scripts/ropa/README.md) for exactly which of the 7 required items below are direct schema fields, which are partial/approximate mappings, and which require your own input before this document is published externally.
 
-Generated at: 2026-10-02T12:36:43.419Z
+Generated at: 2026-10-02T14:03:37.164Z
 
 ## (a) Controller identity
 
