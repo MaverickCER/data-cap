@@ -450,7 +450,7 @@ export function documentData<TSchema extends DataSchema<FieldsShape>>(
   // consumer's editor hover.
   // eslint-disable-next-line @typescript-eslint/no-meaningless-void-operator
   void config
-  // eslint-disable-next-line @typescript-eslint/no-meaningless-void-operator
+  // eslint-disable-next-line @typescript-eslint/no-meaningless-void-operator -- documentData is an intentional runtime no-op marker read by static analysis; voiding the argument keeps it referenced
   void docs
 }
 // Stryker restore BlockStatement

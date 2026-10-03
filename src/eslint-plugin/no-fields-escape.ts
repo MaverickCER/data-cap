@@ -187,7 +187,7 @@ function isCallArgument(node: TSESTree.Node): boolean {
  * unchanged.
  */
 function isNamedJsxAttributeValue(node: TSESTree.Node): boolean {
-  // Stryker disable next-line OptionalChaining
+  // Stryker disable next-line OptionalChaining: both optional hops are for the compiler; ESLint traversal always populates them (see the note above)
   return node.parent?.parent?.type === AST_NODE_TYPES.JSXAttribute
 }
 
@@ -221,7 +221,7 @@ function isNamedJsxAttributeValue(node: TSESTree.Node): boolean {
  */
 function isExportedName(name: string, program: TSESTree.Program): boolean {
   return program.body.some((statement) => {
-    // Stryker disable next-line ConditionalExpression, BooleanLiteral
+    // Stryker disable next-line ConditionalExpression, BooleanLiteral: the first guard is subsumed by the check on the next line (see the note above)
     if (statement.type !== AST_NODE_TYPES.ExportNamedDeclaration) return false
     if (statement.source !== null) return false
     return statement.specifiers.some((specifier) => specifier.local.name === name)
@@ -268,7 +268,7 @@ function isExportedVariableInit(node: TSESTree.Node, program: TSESTree.Program):
   // node.parent is always populated for a MemberExpression/CallExpression
   // reached via a real ESLint traversal (never the Program root).
   const declarator = node.parent
-  // Stryker disable next-line OptionalChaining
+  // Stryker disable next-line OptionalChaining: node.parent is always populated in a real traversal; the optional chain is for the compiler
   if (declarator?.type !== AST_NODE_TYPES.VariableDeclarator) return false
   if (declarator.id.type !== AST_NODE_TYPES.Identifier) return false
   // A `VariableDeclarator` is only ever a child of a `VariableDeclaration`

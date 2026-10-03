@@ -48,7 +48,7 @@ export function rejectOnAbort<T>(promise: Promise<T>, signal: AbortSignal): Prom
   }
   return new Promise<T>((resolve, reject) => {
     const onAbort = (): void => {
-      // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- see above
+      // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- an AbortSignal's reason is any value, and rejecting with it unchanged preserves what the caller aborted with
       reject(abortReason(signal))
     }
     signal.addEventListener("abort", onAbort, { once: true })

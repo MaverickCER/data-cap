@@ -110,7 +110,7 @@ function normalizeForComparison(content: string): string {
       // comparison never depends on which specific string is chosen.
       // Stryker disable next-line StringLiteral
       provenance: { ...(provenance as Record<string, unknown>), generatedAt: "" },
-      // Stryker disable next-line StringLiteral
+      // Stryker disable next-line StringLiteral: same masking as the line above: the compared value is masked identically on both sides, so it cannot differ
       change: null,
     },
     null,

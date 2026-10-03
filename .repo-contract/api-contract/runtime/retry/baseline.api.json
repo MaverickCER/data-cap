@@ -1,0 +1,627 @@
+{
+  "metadata": {
+    "toolPackage": "@microsoft/api-extractor",
+    "toolVersion": "7.59.2",
+    "schemaVersion": 1011,
+    "oldestForwardsCompatibleVersion": 1001,
+    "tsdocConfig": {
+      "$schema": "https://developer.microsoft.com/json-schemas/tsdoc/v0/tsdoc.schema.json",
+      "noStandardTags": true,
+      "tagDefinitions": [
+        {
+          "tagName": "@alpha",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@beta",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@defaultValue",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@decorator",
+          "syntaxKind": "block",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@deprecated",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@eventProperty",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@example",
+          "syntaxKind": "block",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@experimental",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@inheritDoc",
+          "syntaxKind": "inline"
+        },
+        {
+          "tagName": "@internal",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@label",
+          "syntaxKind": "inline"
+        },
+        {
+          "tagName": "@link",
+          "syntaxKind": "inline",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@override",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@packageDocumentation",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@param",
+          "syntaxKind": "block",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@privateRemarks",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@public",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@readonly",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@remarks",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@returns",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@sealed",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@see",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@throws",
+          "syntaxKind": "block",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@typeParam",
+          "syntaxKind": "block",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@virtual",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@jsx",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@jsxRuntime",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@jsxFrag",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@jsxImportSource",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@betaDocumentation",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@internalRemarks",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@preapproved",
+          "syntaxKind": "modifier"
+        }
+      ],
+      "supportForTags": {
+        "@alpha": true,
+        "@beta": true,
+        "@defaultValue": true,
+        "@decorator": true,
+        "@deprecated": true,
+        "@eventProperty": true,
+        "@example": true,
+        "@experimental": true,
+        "@inheritDoc": true,
+        "@internal": true,
+        "@label": true,
+        "@link": true,
+        "@override": true,
+        "@packageDocumentation": true,
+        "@param": true,
+        "@privateRemarks": true,
+        "@public": true,
+        "@readonly": true,
+        "@remarks": true,
+        "@returns": true,
+        "@sealed": true,
+        "@see": true,
+        "@throws": true,
+        "@typeParam": true,
+        "@virtual": true,
+        "@betaDocumentation": true,
+        "@internalRemarks": true,
+        "@preapproved": true
+      },
+      "reportUnsupportedHtmlElements": false
+    }
+  },
+  "kind": "Package",
+  "canonicalReference": "data-cap!",
+  "docComment": "",
+  "name": "data-cap",
+  "preserveMemberOrder": false,
+  "members": [
+    {
+      "kind": "EntryPoint",
+      "canonicalReference": "data-cap!",
+      "name": "",
+      "preserveMemberOrder": false,
+      "members": [
+        {
+          "kind": "Function",
+          "canonicalReference": "data-cap!abortReason:function(1)",
+          "docComment": "/**\n * The reason value a `withRetry`/`delay` abort rejects with -- the signal's own `reason`, or a synthesized `AbortError` when it has none. Exported for direct unit coverage.\n *\n * @internal\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function abortReason(signal: "
+            },
+            {
+              "kind": "Reference",
+              "text": "AbortSignal",
+              "canonicalReference": "!AbortSignal:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Content",
+              "text": "unknown"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "src/runtime/retry.ts",
+          "returnTypeTokenRange": {
+            "startIndex": 3,
+            "endIndex": 4
+          },
+          "releaseTag": "Internal",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "signal",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isOptional": false
+            }
+          ],
+          "name": "abortReason"
+        },
+        {
+          "kind": "Function",
+          "canonicalReference": "data-cap!defaultBackoff:function(1)",
+          "docComment": "/**\n * Capped exponential backoff (1s, 2s, 4s, ... 30s max) for a 1-indexed attempt. Exported for direct unit coverage -- reached in production only through `withRetry`'s loop.\n *\n * @internal\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function defaultBackoff(attempt: "
+            },
+            {
+              "kind": "Content",
+              "text": "number"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Content",
+              "text": "number"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "src/runtime/retry.ts",
+          "returnTypeTokenRange": {
+            "startIndex": 3,
+            "endIndex": 4
+          },
+          "releaseTag": "Internal",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "attempt",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isOptional": false
+            }
+          ],
+          "name": "defaultBackoff"
+        },
+        {
+          "kind": "Function",
+          "canonicalReference": "data-cap!delay:function(1)",
+          "docComment": "/**\n * Resolves after `ms`, or immediately if `signal` aborts (now or during the wait). Exported for direct unit coverage.\n *\n * @internal\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function delay(ms: "
+            },
+            {
+              "kind": "Content",
+              "text": "number"
+            },
+            {
+              "kind": "Content",
+              "text": ", signal: "
+            },
+            {
+              "kind": "Reference",
+              "text": "AbortSignal",
+              "canonicalReference": "!AbortSignal:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Reference",
+              "text": "Promise",
+              "canonicalReference": "!Promise:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<void>"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "src/runtime/retry.ts",
+          "returnTypeTokenRange": {
+            "startIndex": 5,
+            "endIndex": 7
+          },
+          "releaseTag": "Internal",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "ms",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isOptional": false
+            },
+            {
+              "parameterName": "signal",
+              "parameterTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              },
+              "isOptional": false
+            }
+          ],
+          "name": "delay"
+        },
+        {
+          "kind": "Function",
+          "canonicalReference": "data-cap!isStillDefault:function(1)",
+          "docComment": "/**\n * One documented retry policy, exposed ready-made for the common case: retry\n * only when the target field currently holds nothing but its declared\n * schema default -- never risks overwriting already-valid data with an\n * ambiguous retry. Not the only valid policy. Uses the same canonicalization\n * comparison as array identity/coordinator dedup; a non-canonicalizable\n * value is conservatively treated as \"not the default\" (never retried).\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function isStillDefault(currentValue: "
+            },
+            {
+              "kind": "Content",
+              "text": "unknown"
+            },
+            {
+              "kind": "Content",
+              "text": ", declaredDefault: "
+            },
+            {
+              "kind": "Content",
+              "text": "unknown"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Content",
+              "text": "boolean"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "src/runtime/retry.ts",
+          "returnTypeTokenRange": {
+            "startIndex": 5,
+            "endIndex": 6
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "currentValue",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isOptional": false
+            },
+            {
+              "parameterName": "declaredDefault",
+              "parameterTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              },
+              "isOptional": false
+            }
+          ],
+          "name": "isStillDefault"
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "data-cap!RetryOptions:interface",
+          "docComment": "/**\n * Optional, opt-in retry. Never required by core, never applied\n * automatically to a processor/validation failure -- only the caller's`shouldRetry` predicate decides what's worth retrying, since retry.ts\n * itself has no knowledge of data-cap's operation-failure taxonomy (that\n * distinction belongs to whatever wires this into the real execution\n * pipeline, in a later phase). Never retries after the signal aborts, never\n * exceeds `maxAttempts`, and never assumes a mutation is idempotent -- the\n * developer opts a specific operation into retry, this module never decides\n * that on its own.\n *\n * Ships as its own `./runtime/retry` entry point (see tsup.config.ts) for\n * the same structural tree-shaking guarantee `./runtime/cache` has.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface RetryOptions "
+            }
+          ],
+          "fileUrlPath": "src/runtime/retry.ts",
+          "releaseTag": "Public",
+          "name": "RetryOptions",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!RetryOptions#delayMs:member",
+              "docComment": "/**\n * Delay (ms) before a given 1-indexed retry attempt. Defaults to capped exponential backoff.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly delayMs?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "(attempt: number) => number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "delayMs",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!RetryOptions#maxAttempts:member",
+              "docComment": "/**\n * Maximum retry attempts after the initial call (not counting the first attempt itself). Defaults to 3.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly maxAttempts?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "maxAttempts",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!RetryOptions#shouldRetry:member",
+              "docComment": "/**\n * Whether `error` (from the given 1-indexed attempt) is worth retrying at all. Defaults to retrying every error -- callers should narrow this for real use.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly shouldRetry?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "(error: unknown, attempt: number) => boolean"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "shouldRetry",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
+          "kind": "Function",
+          "canonicalReference": "data-cap!withRetry:function(1)",
+          "docComment": "/**\n * Runs `fn`, retrying on failure per `options`. Checks `signal` before every\n * attempt (including the first) and during any inter-attempt delay -- an\n * aborted signal always wins over a pending retry.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function withRetry<T>(fn: "
+            },
+            {
+              "kind": "Content",
+              "text": "(signal: "
+            },
+            {
+              "kind": "Reference",
+              "text": "AbortSignal",
+              "canonicalReference": "!AbortSignal:interface"
+            },
+            {
+              "kind": "Content",
+              "text": ") => "
+            },
+            {
+              "kind": "Reference",
+              "text": "Promise",
+              "canonicalReference": "!Promise:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<T>"
+            },
+            {
+              "kind": "Content",
+              "text": ", signal: "
+            },
+            {
+              "kind": "Reference",
+              "text": "AbortSignal",
+              "canonicalReference": "!AbortSignal:interface"
+            },
+            {
+              "kind": "Content",
+              "text": ", options?: "
+            },
+            {
+              "kind": "Reference",
+              "text": "RetryOptions",
+              "canonicalReference": "data-cap!RetryOptions:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Reference",
+              "text": "Promise",
+              "canonicalReference": "!Promise:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<T>"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "src/runtime/retry.ts",
+          "returnTypeTokenRange": {
+            "startIndex": 11,
+            "endIndex": 13
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "fn",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 6
+              },
+              "isOptional": false
+            },
+            {
+              "parameterName": "signal",
+              "parameterTypeTokenRange": {
+                "startIndex": 7,
+                "endIndex": 8
+              },
+              "isOptional": false
+            },
+            {
+              "parameterName": "options",
+              "parameterTypeTokenRange": {
+                "startIndex": 9,
+                "endIndex": 10
+              },
+              "isOptional": true
+            }
+          ],
+          "typeParameters": [
+            {
+              "typeParameterName": "T",
+              "constraintTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            }
+          ],
+          "name": "withRetry"
+        }
+      ]
+    }
+  ]
+}

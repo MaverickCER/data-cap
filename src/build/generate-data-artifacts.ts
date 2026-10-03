@@ -218,7 +218,7 @@ export async function computeDataArtifacts(
     // `true` and running the real suite passes unchanged.
     // Stryker disable next-line ConditionalExpression
     ...(options.include !== undefined ? { include: options.include } : {}),
-    // Stryker disable next-line ConditionalExpression
+    // Stryker disable next-line ConditionalExpression: spreading `exclude: undefined` is identical to omitting the key (see the note above)
     ...(options.exclude !== undefined ? { exclude: options.exclude } : {}),
   })
   const packageCache = new Map<string, Promise<PackageSchemaResolutionResult>>()

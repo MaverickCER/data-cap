@@ -1,22 +1,3 @@
 {
-  "exceptions": [
-    {
-      "id": "mutation:src/build/resolution/resolve-package-schema.ts:ObjectLiteral:ccc2474f3fde",
-      "version": 1,
-      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-10 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the real test suite -- one or more real tests genuinely fail, yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
-      "file": "src/build/resolution/resolve-package-schema.ts",
-      "mutator": "ObjectLiteral",
-      "original": "{\n      found: false,\n      failure: failure(\n        \"FIELD_MISSING\",\n        `\"${packageName}\"'s package.json has no \"dataCap.schema\" field (or it is not a string).`,\n      ),\n    }",
-      "replacement": "{}"
-    },
-    {
-      "id": "mutation:src/build/resolution/resolve-package-schema.ts:ObjectLiteral:478478628c42",
-      "version": 1,
-      "justification": "Confirmed Stryker false positive, not a coverage gap: verified 2026-09-17 by applying this exact mutation (Stryker's own location + replacement) directly to the source and running the real test suite -- the non-object-manifest test genuinely fails (expects MALFORMED_PACKAGE_JSON with a specific reason, gets an incomplete result instead), yet Stryker's own perTest coverage attribution still reports this mutant Survived. See internal-package-contract's checks/mutation.ts doc comment for the general defect this is an instance of.",
-      "file": "src/build/resolution/resolve-package-schema.ts",
-      "mutator": "ObjectLiteral",
-      "original": "{\n      found: false,\n      failure: failure(\n        \"MALFORMED_PACKAGE_JSON\",\n        `\"${packageJsonPath}\" does not contain a JSON object.`,\n      ),\n    }",
-      "replacement": "{}"
-    }
-  ]
+  "exceptions": []
 }

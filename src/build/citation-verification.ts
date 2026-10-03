@@ -39,10 +39,7 @@ function parseCitation(citation: string): ParsedCitation | undefined {
   const relativePath = match?.[1]
   const line = match?.[2]
   const column = match?.[3]
-  // Stryker disable next-line ConditionalExpression,LogicalOperator: once the
-  // regex matches, groups 1-3 are non-optional and therefore always present;
-  // this line only exists to narrow `string | undefined` (noUncheckedIndexedAccess)
-  // for the return, and no citation can make one group present but not another.
+  // Stryker disable next-line ConditionalExpression,LogicalOperator: once the regex matches, groups 1-3 are always present; this line only narrows `string | undefined` (noUncheckedIndexedAccess), and no citation can make one group present but not another.
   if (relativePath === undefined || line === undefined || column === undefined) return undefined
   return { relativePath, line: Number(line), column: Number(column) }
 }
