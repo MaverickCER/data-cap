@@ -12,11 +12,11 @@ transports, frameworks, and state-management libraries. It composes with TanStac
 Query, a custom application state manager, or Socket.IO/WebSocket subscriptions, or
 runs entirely standalone.
 
-**Current implementation status**: all five entry points are implemented, tested, and
-shipped — `core` (`.`), `runtime` (`./runtime`, `./runtime/cache`, `./runtime/retry`),
-`helpers` (`./helpers`), `build` (`./build`), and `eslint-plugin`
-(`./eslint-plugin`). The primary way to use a capability is `createData(schema)`
-(`data-cap/runtime`, Experimental tier), which composes the low-level
+**Current implementation status**: every entry point in `package.json` `exports` is implemented,
+tested, and shipped — `core` (`.`), `runtime` (`./runtime`, `./runtime/cache`, `./runtime/retry`),
+`helpers` (`./helpers`), `build` (`./build`), `node` (`./node`), `evidence` (`./evidence`), and
+`eslint-plugin` (`./eslint-plugin`). The primary way to use a capability is `createData(schema)`
+(`data-cap/runtime`, Stable tier since ADR 0065), which composes the low-level
 primitives (`buildData` + `createDataStore` + a `Coordinator`) into one batteries-
 included call owning dedup, per-operation status, optimistic mutation lifecycle, and
 `runGetters` concurrency (see ADR 0048 for the full behavioral contract). For full

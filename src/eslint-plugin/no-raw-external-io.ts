@@ -1,14 +1,10 @@
-// Deliberately narrow imports -- see `stable-operation-reference.ts`'s own
-// header for the full rationale: `@typescript-eslint/utils`'s main entry
-// re-exports FlatESLint/ESLint wrapper classes that do a runtime
-// `require("eslint")`, which throws once bundled into dependency-free ESM
-// output. `RuleCreator` alone lives at the `eslint-utils` subpath and
-// `AST_NODE_TYPES` in `@typescript-eslint/types`, neither of which touch
-// `eslint` at all.
+// `@typescript-eslint/utils` is an external optional peer (ADR 0068), resolved by the consumer's own
+// module loader, so its main entry is safe to import from; `RuleCreator` still comes from the
+// `eslint-utils` subpath to keep the loaded surface small.
 import { RuleCreator } from "@typescript-eslint/utils/eslint-utils"
-import { AST_NODE_TYPES } from "@typescript-eslint/types"
-import type { TSESTree } from "@typescript-eslint/types"
-import type { Scope } from "@typescript-eslint/scope-manager"
+import { AST_NODE_TYPES } from "@typescript-eslint/utils"
+import type { TSESTree } from "@typescript-eslint/utils"
+import type { TSESLint } from "@typescript-eslint/utils"
 import {
   CAPABILITY_CALL_NAMES,
   getStaticKeyName,
@@ -17,6 +13,8 @@ import {
   isOperationSectionKey,
 } from "./capability-call.js"
 import { globToRegExp } from "./glob.js"
+
+type Scope = TSESLint.Scope.Scope
 
 const createRule = RuleCreator(
   (name) => `https://github.com/maverickcer/data-cap#eslint-plugin-${name}`,

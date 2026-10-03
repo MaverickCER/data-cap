@@ -1,18 +1,16 @@
-// Deliberately narrow imports -- see env-cap's own eslint-plugin for the
-// full rationale: `@typescript-eslint/utils`'s main entry (and its
-// `ts-eslint` subpath) re-export FlatESLint/ESLint wrapper classes that do a
-// runtime `require("eslint")`, which throws once bundled into
-// dependency-free ESM output. `RuleCreator` alone lives at the
-// `eslint-utils` subpath and `AST_NODE_TYPES` in `@typescript-eslint/types`,
-// neither of which touch `eslint` at all. `@typescript-eslint/scope-manager`
-// (a dependency of `utils`, not `eslint` itself) is the same story --
-// `ScopeType` is used here as a real runtime enum, not just a type, to
-// distinguish "declared inside a function" from "declared at module scope".
+// `@typescript-eslint/utils` is an external optional peer (ADR 0068), resolved by the consumer's own
+// module loader, so its main entry is safe to import from; `RuleCreator` still comes from the
+// `eslint-utils` subpath to keep the loaded surface small.
 import { RuleCreator } from "@typescript-eslint/utils/eslint-utils"
-import type { TSESTree } from "@typescript-eslint/types"
-import { ScopeType } from "@typescript-eslint/scope-manager"
-import type { Scope, ScopeVariable } from "@typescript-eslint/scope-manager"
+import type { TSESTree } from "@typescript-eslint/utils"
+import { TSESLint } from "@typescript-eslint/utils"
 import { getStaticKeyName, isCapabilityCall, isInlineFunction } from "./capability-call.js"
+
+// `ScopeType` is a real runtime enum here, used to tell "declared inside a function" from
+// "declared at module scope".
+const ScopeType = TSESLint.Scope.ScopeType
+type Scope = TSESLint.Scope.Scope
+type ScopeVariable = TSESLint.Scope.Variable
 
 const createRule = RuleCreator(
   (name) => `https://github.com/maverickcer/data-cap#eslint-plugin-${name}`,

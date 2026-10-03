@@ -2,14 +2,14 @@ name: "data-cap report"
 description: "Runs data-cap and turns the result into PR annotations and a summary comment."
 inputs:
   args:
-    description: "Arguments passed to `data-cap --json`, e.g. '--evidence docs/data.evidence.json --strict-docs --strict-ownership' -- --location/--docs/--ownership/--flow are no longer CLI flags (ADR 0066); report.mjs's manifest/flow-diagram sections are silently empty until it's migrated to read result.evidence instead"
+    description: "Arguments passed to `data-cap --json`, e.g. '--evidence docs/data.evidence.json --strict-docs --strict-ownership' (the persisted evidence is always composed; --location/--docs/--ownership/--flow are no longer CLI flags, ADR 0066)"
     required: true
   working-directory:
     description: "Directory to run data-cap from."
     required: false
     default: "."
   version:
-    description: "data-cap version to use via npx if not already a local devDependency."
+    description: "data-cap version to fetch via npx when it is not a local devDependency. Required in that case: the action fails rather than run an unpinned `latest`. Ignored when the project has data-cap installed."
     required: false
     default: ""
   comment:
@@ -34,13 +34,12 @@ runs:
     - id: run
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      run: |
-        set +e
-        PKG="data-cap"
-        if [ -n "${{ inputs.version }}" ]; then PKG="data-cap@${{ inputs.version }}"; fi
-        npx --yes "$PKG" --json ${{ inputs.args }} > "$RUNNER_TEMP/data-cap-result.json"
-        echo "exit-code=$?" >> "$GITHUB_OUTPUT"
-        set -e
+      env:
+        INPUT_ARGS: ${{ inputs.args }}
+        INPUT_VERSION: ${{ inputs.version }}
+        RESULT_PATH: ${{ runner.temp }}/data-cap-result.json
+        ACTION_PATH: ${{ github.action_path }}
+      run: bash "$ACTION_PATH/scripts/github-action/run-cli.sh"
     - shell: bash
       working-directory: ${{ inputs.working-directory }}
       env:
@@ -50,6 +49,9 @@ runs:
         DO_ANNOTATIONS: ${{ inputs.annotations }}
         REPORT_KEY: ${{ inputs.report-key }}
         WORKING_DIRECTORY: ${{ inputs.working-directory }}
-      run: node "${{ github.action_path }}/scripts/github-action/report.mjs"
+        ACTION_PATH: ${{ github.action_path }}
+      run: node "$ACTION_PATH/scripts/github-action/report.mjs"
     - shell: bash
-      run: exit ${{ steps.run.outputs.exit-code }}
+      env:
+        CLI_EXIT_CODE: ${{ steps.run.outputs.exit-code }}
+      run: exit "$CLI_EXIT_CODE"

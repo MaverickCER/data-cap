@@ -166,7 +166,7 @@ jobs:
       # change can't land without the report, and the PR diff, updated too.
       - run: npm run docs:api:report:check
 
-  # Matches package.json's own `engines.node` floor (`>=20.0.0`). Was
+  # Matches package.json's own `engines.node` floor (`>=22.0.0`). Was
   # `[18.x, 22.x, 24.x]` until the dev toolchain itself (Vitest 4.x, whose
   # own `engines.node` is `^20.0.0 || ^22.0.0 || >=24.0.0`) stopped running
   # on Node 18 at all -- `vitest run --coverage` can't even start there,
@@ -179,7 +179,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [20.x, 22.x, 24.x]
+        node-version: [22.x, 24.x]
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:

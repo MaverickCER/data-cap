@@ -6,17 +6,13 @@
  * a second, drifting copy is the failure mode this folder is small enough to
  * still avoid.
  *
- * Deliberately narrow imports, same as each rule file's own: `AST_NODE_TYPES`
- * lives in `@typescript-eslint/types`, which never touches `eslint` itself
- * (see `stable-operation-reference.ts`'s header for the full rationale).
- *
  * Nothing here inspects what an operation's `execute`/`processor`/`subscribe`
  * body *does* -- that stays opaque, per AGENTS.md invariant 6. These helpers
  * only answer questions about the shape of the call expression itself.
  */
 
-import { AST_NODE_TYPES } from "@typescript-eslint/types"
-import type { TSESTree } from "@typescript-eslint/types"
+import { AST_NODE_TYPES } from "@typescript-eslint/utils"
+import type { TSESTree } from "@typescript-eslint/utils"
 
 /** The two call forms that declare a capability. `buildData` has no operations section; `createData` does. */
 export const CAPABILITY_CALL_NAMES: ReadonlySet<string> = new Set(["buildData", "createData"])

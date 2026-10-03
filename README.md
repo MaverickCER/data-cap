@@ -49,7 +49,11 @@ const user = createData({
 })
 ```
 
-Then inspect the application as a whole. `data-cap`'s CLI surface is
+Then inspect the application as a whole. The declaration above is deliberately minimal; the output
+below comes from a different, larger program --
+[`examples/application`](examples/application), whose `taskData` capability declares the two fields
+named in the warnings. Generate everything with one script, `node scripts/generate-data.mjs`
+(`npx data-cap init` scaffolds it). `data-cap`'s CLI surface is
 deliberately narrow (ADR 0066) -- `--evidence` is the only flag it still
 exposes, since it's the one output with a real, versioned contract (ADR
 0050). The manifest, documentation catalog, dependency & ownership report,
@@ -160,7 +164,7 @@ documentData(
 )
 ```
 
-That's the same declaration the [Dependency & Ownership report](#see-it-run) above is generated from — not a separate governance system, the same `documentData` call your fields already need to correlate with the capability. The same build pass cross-references every declared field against actual reads and writes in your source, so `owner`/`sensitivity`/`retention` stay attached to what the code actually does, not a document someone forgot to update. The [Guide](GUIDE.md#documented-example) has the full field-governance vocabulary.
+That is the kind of declaration the Dependency & Ownership report ([`examples/application`](examples/application) writes one to `docs/OWNERSHIP.md`) is generated from — not a separate governance system, the same `documentData` call your fields already need to correlate with the capability. (The `email` declaration above is an illustration; it does not appear in the example's output.) The same build pass cross-references every declared field against actual reads and writes in your source, so `owner`/`sensitivity`/`retention` stay attached to what the code actually does, not a document someone forgot to update. The [Guide](GUIDE.md#documented-example) has the full field-governance vocabulary.
 
 ## Why not just use your existing data library?
 
@@ -204,6 +208,7 @@ The core runtime, build tooling, CLI, ESLint integration, manifest generation, d
 
 ## Learn more
 
+- [Adoption guide](ADOPTION.md) - Decision-maker summary covering security posture, bundle size, and versioning/LTS considerations
 - [Guide](GUIDE.md) - Concepts, usage, integration patterns, and the [ESLint plugin](GUIDE.md#eslint-plugin) that catches an inline `execute`/`processor`/`subscribe` function silently breaking the coordinator's dedup/subscription sharing
 - [Architecture](specs/architecture.md) - Runtime and build architecture
 - [Migrations](specs/migrations/) - Adoption from common data-management patterns
@@ -219,10 +224,18 @@ The core runtime, build tooling, CLI, ESLint integration, manifest generation, d
 
 If `data-cap` helps make your application's data easier to understand and maintain, consider giving the project a star or sharing it with someone working on application architecture.
 
+## Part of the MaverickCER toolkit
+
+`@maverickcer/env-cap` governs configuration and `data-cap` governs application data: siblings that apply the same capability-ownership model. `repo-contract` and `internal-package-contract` are how they are verified. See [the toolkit overview and glossary](https://github.com/MaverickCER/internal-package-contract/blob/main/TOOLKIT.md).
+
 ## Contributing
 
 Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening an issue or pull request.
 
+## Requirements
+
+Node.js `>=22`. TypeScript 5 or 6 is only required for build-time manifest generation; the runtime works in plain JavaScript. TypeScript consumers need `moduleResolution` set to `node16`, `nodenext` or `bundler` to resolve the subpath exports (`data-cap/build`, `data-cap/helpers`, ...); the legacy `node10` resolver is not supported. `data-cap/eslint-plugin` also needs `@typescript-eslint/utils` installed (an optional peer).
+
 ## License
 
-See [LICENSE](LICENSE).
+MIT -- see [LICENSE](LICENSE).

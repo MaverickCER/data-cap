@@ -340,7 +340,7 @@ section[id] {
   justify-content: center;
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.5);
-  color: rgba(255, 255, 255, 0.85);
+  color: #fff;
   border-radius: var(--radius);
   min-width: 2.25rem;
   min-height: 2.25rem;
@@ -1094,5 +1094,30 @@ section[id] {
 
   .section {
     padding-block: var(--space-3);
+  }
+}
+
+/* The search input drops its own outline, so the row that wraps it must show focus instead --
+   an outline (not a box-shadow) survives forced-colors mode. */
+
+.search-input-row:focus-within {
+  outline: 2px solid var(--color-link);
+  outline-offset: -2px;
+}
+
+.code-block pre:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: -2px;
+}
+
+@media (forced-colors: active) {
+  .search-input-row:focus-within,
+  .code-block pre:focus-visible {
+    outline-color: Highlight;
+  }
+
+  .icon-button,
+  .copy-button {
+    border-color: ButtonText;
   }
 }

@@ -9,6 +9,7 @@
  */
 
 import ts from "typescript"
+import { assertCompilerApi } from "./compiler-api.js"
 import { collectImportBindings } from "./parse.js"
 import type { ImportBinding, ParseWarning } from "./parse.js"
 import { scanFileForUsage } from "./dependency-graph.js"
@@ -231,6 +232,7 @@ export async function scanDependencies(
     // `check-artifacts.ts` uses to recognize its own files, so a
     // hand-written file is never affected.
     if (isGeneratedFile(sourceText)) continue
+    assertCompilerApi(ts)
     const sourceFile = ts.createSourceFile(
       file,
       sourceText,

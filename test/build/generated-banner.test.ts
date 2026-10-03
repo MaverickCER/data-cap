@@ -69,3 +69,17 @@ describe("evidenceProjectionNote", () => {
     expect(text).toContain("This run also wrote it to `/project/docs/data.evidence.json`.")
   })
 })
+
+describe("generatedBanner regeneration hint", () => {
+  it("lets a caller name the command that really regenerates the file", () => {
+    expect(generatedBanner("markdown", "Run the thing.")).toBe(
+      "<!-- GENERATED FILE -- do not edit by hand. Run the thing. -->",
+    )
+  })
+
+  it("still recognises a banner that carries a custom hint as generated", () => {
+    expect(isGeneratedFile(`${generatedBanner("markdown", "Run the thing.")}\n# T`)).toBe(true)
+    expect(isGeneratedFile(`${generatedBanner("ts", "Run the thing.")}\nexport {}`)).toBe(true)
+    expect(isGeneratedFile("# hand written")).toBe(false)
+  })
+})

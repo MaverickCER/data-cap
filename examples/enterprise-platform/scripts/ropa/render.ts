@@ -25,8 +25,16 @@ const DISCLAIMER =
   "below are direct schema fields, which are partial/approximate mappings, and which require your own " +
   "input before this document is published externally."
 
+/**
+ * Makes a declared value safe inside a Markdown table cell: a literal `|` would end the cell and a
+ * newline would end the row, either of which corrupts a compliance-facing table.
+ */
+export function escapeCell(value: string): string {
+  return value.replace(/\\/g, "\\\\").replace(/\|/g, "\\|").replace(/\r?\n|\r/g, "<br>")
+}
+
 function joinCell(values: readonly string[]): string {
-  return values.length > 0 ? values.join(", ") : "Not documented"
+  return values.length > 0 ? escapeCell(values.join(", ")) : "Not documented"
 }
 
 function renderControllerSection(model: RopaModel): string[] {
@@ -74,7 +82,7 @@ function renderSummaryTable(records: readonly RopaRecord[]): string[] {
     const retention = uniqueField(record.fields, (f) => f.retention)
     const security = uniqueField(record.fields, (f) => f.securityMeasures)
     lines.push(
-      `| \`${record.capability}\` | ${record.purposesOfProcessing} | ${joinCell(dataSubjects)} | ${joinCell(personalData)} | ${joinCell(recipients)} | ${joinCell(safeguards)} | ${joinCell(retention)} | ${joinCell(security)} |`,
+      `| \`${escapeCell(record.capability)}\` | ${escapeCell(record.purposesOfProcessing)} | ${joinCell(dataSubjects)} | ${joinCell(personalData)} | ${joinCell(recipients)} | ${joinCell(safeguards)} | ${joinCell(retention)} | ${joinCell(security)} |`,
     )
   }
   lines.push("")
@@ -101,7 +109,7 @@ function renderRecordDetail(record: RopaRecord): string[] {
   lines.push("| --- | --- | --- | --- | --- | --- | --- |")
   for (const field of record.fields) {
     lines.push(
-      `| \`${field.field}\` | ${field.dataSubjectCategory} | ${field.personalDataCategory} | ${joinCell(field.recipientCategories)} | ${field.transferSafeguard} | ${field.retention} | ${field.securityMeasures} |`,
+      `| \`${escapeCell(field.field)}\` | ${escapeCell(field.dataSubjectCategory)} | ${escapeCell(field.personalDataCategory)} | ${joinCell(field.recipientCategories)} | ${escapeCell(field.transferSafeguard)} | ${escapeCell(field.retention)} | ${escapeCell(field.securityMeasures)} |`,
     )
   }
   lines.push("")

@@ -18,6 +18,7 @@
  */
 
 import ts from "typescript"
+import { assertCompilerApi } from "./compiler-api.js"
 import type {
   CapabilityDocs,
   DataFlowDirection,
@@ -1106,6 +1107,7 @@ export function collectImportBindings(node: ts.ImportDeclaration, imports: Impor
  * never found, never guessed at.
  */
 export function parseCapabilityFile(filePath: string, sourceText: string): ParseResult {
+  assertCompilerApi(ts)
   const sourceFile = ts.createSourceFile(
     filePath,
     sourceText,

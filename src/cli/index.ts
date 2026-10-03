@@ -179,8 +179,9 @@ now, not a CLI concern. Call \`generateManifest\`/\`generateDocumentation\`/
 \`generateUsage\`/\`generateFlow\` (or the higher-level \`generateDataArtifacts\`/
 \`checkArtifacts\` orchestrators, which still accept \`location\`/\`docs\`/
 \`ownership\`/\`flow\` options) directly from \`data-cap/build\` in your own build
-script -- see \`examples/nextjs-app/scripts/generate-docs\` for a worked
-example, and specs/decisions/0066-cli-restricted-to-runtime-and-evidence-output.md
+script -- see https://github.com/MaverickCER/data-cap/tree/main/examples/nextjs-app/scripts/generate-docs
+for a worked example, and
+https://github.com/MaverickCER/data-cap/blob/main/specs/decisions/0066-cli-restricted-to-runtime-and-evidence-output.md
 for why.
 `
 }

@@ -7,7 +7,12 @@
  */
 
 import { displayPath } from "./display-path.js"
-import { evidenceDisclaimer, evidenceProjectionNote, generatedBanner } from "./generated-banner.js"
+import {
+  reportRegenerateHint,
+  evidenceDisclaimer,
+  evidenceProjectionNote,
+  generatedBanner,
+} from "./generated-banner.js"
 import type { CapabilityInventory } from "./inventory.js"
 import { buildOwnershipMatrix } from "./ownership-model.js"
 import type { OwnershipMatrixEntry } from "./ownership-model.js"
@@ -341,7 +346,7 @@ export function renderUsageReport(
   const scanSurface = renderScanSurface(scannedPackages)
 
   return [
-    generatedBanner("markdown"),
+    generatedBanner("markdown", reportRegenerateHint()),
     "",
     `> ${evidenceDisclaimer()}`,
     "",
