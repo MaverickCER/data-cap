@@ -579,6 +579,11 @@ describe("mergeLocalAndPackageFiles", () => {
     expect(merged[0]).toBe(localSymlinkPath) // local path string identity wins on collision
   })
 
+  it("lists a package-resolved file once even when the package list repeats it", async () => {
+    const file = path.join(fixtureRoot, "node_modules/@fixtures/simple-pkg/src/data.schema.ts")
+    expect(await mergeLocalAndPackageFiles([], [file, file], nodeBuildFs)).toEqual([file])
+  })
+
   it("keeps genuinely distinct files distinct", async () => {
     const merged = await mergeLocalAndPackageFiles(
       [path.join(fixtureRoot, "node_modules/@fixtures/simple-pkg/src/data.schema.ts")],

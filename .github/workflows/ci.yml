@@ -229,6 +229,10 @@ jobs:
     # live: a real PR run where `verify`/`lint` both concluded "success" still skipped `contract`.
     if: always() && (needs.verify.result == 'success' || needs.verify.result == 'skipped') && (needs.lint.result == 'success' || needs.lint.result == 'skipped')
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # CodeScanning reads the repository's open alerts.
+      security-events: read
     steps:
       # fetch-depth: 0 -- the Commits check reads origin/main..HEAD.
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -271,6 +275,7 @@ jobs:
           # token at socket.dev (Settings > API Tokens, `packages:list`) and add it as the
           # repository or organization secret SOCKET_SECURITY_API_KEY.
           SOCKET_SECURITY_API_KEY: ${{ secrets.SOCKET_SECURITY_API_KEY }}
+          GH_TOKEN: ${{ github.token }}
 
       # Diagnostic aid, not part of the gate itself: `always()` so a failed
       # Mutation run's exact per-mutant detail (file, mutator, location,
