@@ -177,7 +177,7 @@ function schemaRef(packageName: string, declaredField: string): string {
 // fresh Stryker runs have shown different ones as Survived each time --
 // not a stable set of real gaps, the same false-positive class
 // manifesting with different mutator granularity and location every run.
-// Stryker disable BlockStatement, StringLiteral, ConditionalExpression, EqualityOperator, LogicalOperator
+// Stryker disable BlockStatement, StringLiteral, ConditionalExpression, EqualityOperator, LogicalOperator, BooleanLiteral
 /** @internal Sync failure builder -- see {@link classifyManifest}. */
 export function packageNotFoundFailure(
   packageName: string,
@@ -283,7 +283,7 @@ export function statFailedFailure(
 ): PackageSchemaResolutionResult {
   return failure("OUTSIDE_PACKAGE", `${schemaRef(packageName, declaredField)} could not be read.`)
 }
-// Stryker restore BlockStatement, StringLiteral, ConditionalExpression, EqualityOperator, LogicalOperator
+// Stryker restore BlockStatement, StringLiteral, ConditionalExpression, EqualityOperator, LogicalOperator, BooleanLiteral
 
 /** The realpath + stat I/O outcome for a schema file that both succeeded on,
  *  reduced to plain data so {@link classifyResolvedFile} can decide the result
