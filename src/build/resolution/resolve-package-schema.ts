@@ -363,6 +363,7 @@ export async function resolveUncached(
     // decoded string is identical to the previous Buffer.toString("utf8").
     // Stryker disable next-line StringLiteral
     manifest = JSON.parse(await fs.readFile(packageJsonPath, "utf8"))
+    // Stryker disable next-line BlockStatement: Stryker's perTest attribution reports this survived in some runs although applying the mutation by hand (an empty catch) fails the "reports MALFORMED_PACKAGE_JSON when the resolved package.json is not valid JSON" test; the set it flags changes from run to run
   } catch {
     return malformedJsonFailure(packageJsonPath)
   }
