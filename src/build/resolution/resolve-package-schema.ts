@@ -395,6 +395,7 @@ export async function resolveUncached(
   let stats
   try {
     stats = await fs.stat(realFile)
+    // Stryker disable next-line BlockStatement: Stryker's perTest attribution reports this survived in some runs although applying the mutation by hand (an empty catch) fails the "reports OUTSIDE_PACKAGE when fs.stat throws for the already-realpath'd file" test; the set it flags changes from run to run
   } catch {
     return statFailedFailure(packageName, declaredField)
   }
