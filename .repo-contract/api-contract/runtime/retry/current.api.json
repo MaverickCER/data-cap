@@ -1,7 +1,7 @@
 {
   "metadata": {
     "toolPackage": "@microsoft/api-extractor",
-    "toolVersion": "7.59.2",
+    "toolVersion": "7.59.3",
     "schemaVersion": 1011,
     "oldestForwardsCompatibleVersion": 1001,
     "tsdocConfig": {
@@ -410,7 +410,7 @@
         {
           "kind": "Interface",
           "canonicalReference": "data-cap!RetryOptions:interface",
-          "docComment": "/**\n * Optional, opt-in retry. Never required by core, never applied\n * automatically to a processor/validation failure -- only the caller's`shouldRetry` predicate decides what's worth retrying, since retry.ts\n * itself has no knowledge of data-cap's operation-failure taxonomy (that\n * distinction belongs to whatever wires this into the real execution\n * pipeline, in a later phase). Never retries after the signal aborts, never\n * exceeds `maxAttempts`, and never assumes a mutation is idempotent -- the\n * developer opts a specific operation into retry, this module never decides\n * that on its own.\n *\n * Ships as its own `./runtime/retry` entry point (see tsup.config.ts) for\n * the same structural tree-shaking guarantee `./runtime/cache` has.\n */\n",
+          "docComment": "/**\n * Optional, opt-in retry. Never required by core, never applied\n * automatically to a processor/validation failure -- only the caller's\n * `shouldRetry` predicate decides what's worth retrying, since retry.ts\n * itself has no knowledge of data-cap's operation-failure taxonomy (that\n * distinction belongs to whatever wires this into the real execution\n * pipeline, in a later phase). Never retries after the signal aborts, never\n * exceeds `maxAttempts`, and never assumes a mutation is idempotent -- the\n * developer opts a specific operation into retry, this module never decides\n * that on its own.\n *\n * Ships as its own `./runtime/retry` entry point (see tsup.config.ts) for\n * the same structural tree-shaking guarantee `./runtime/cache` has.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",

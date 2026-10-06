@@ -1,7 +1,7 @@
 {
   "metadata": {
     "toolPackage": "@microsoft/api-extractor",
-    "toolVersion": "7.59.2",
+    "toolVersion": "7.59.3",
     "schemaVersion": 1011,
     "oldestForwardsCompatibleVersion": 1001,
     "tsdocConfig": {
@@ -191,7 +191,7 @@
         {
           "kind": "Function",
           "canonicalReference": "data-cap!createDataCache:function(1)",
-          "docComment": "/**\n * Creates a bounded, least-recently-used-eviction cache of complete`DataState` snapshots keyed by an opaque string the caller computes (e.g.\n * a canonicalized function-identity + params key, mirroring the\n * coordinator's own dedup key -- computing that key is an integration\n * concern outside this module, which is deliberately keying-scheme-agnostic).\n */\n",
+          "docComment": "/**\n * Creates a bounded, least-recently-used-eviction cache of complete\n * `DataState` snapshots keyed by an opaque string the caller computes (e.g.\n * a canonicalized function-identity + params key, mirroring the\n * coordinator's own dedup key -- computing that key is an integration\n * concern outside this module, which is deliberately keying-scheme-agnostic).\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
