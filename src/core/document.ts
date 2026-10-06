@@ -448,9 +448,9 @@ export function documentData<TSchema extends DataSchema<FieldsShape>>(
   // expression statement trips `no-unused-expressions` instead, and renaming
   // these public parameters to `_config`/`_docs` would leak into every
   // consumer's editor hover.
-  // eslint-disable-next-line @typescript-eslint/no-meaningless-void-operator
+  // eslint-disable-next-line @typescript-eslint/no-meaningless-void-operator -- marks the parameter used without renaming a public parameter (see the note above)
   void config
-  // eslint-disable-next-line @typescript-eslint/no-meaningless-void-operator
+  // eslint-disable-next-line @typescript-eslint/no-meaningless-void-operator -- documentData is an intentional runtime no-op marker read by static analysis; voiding the argument keeps it referenced
   void docs
 }
 // Stryker restore BlockStatement

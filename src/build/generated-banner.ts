@@ -5,17 +5,38 @@
  * hand-written file that happens to occupy the same output path.
  */
 
-/** Renders the "do not edit by hand" marker in the given comment syntax. */
-export function generatedBanner(format: "ts" | "markdown" = "ts"): string {
-  const text = "GENERATED FILE -- do not edit by hand. Run `npx data-cap` to regenerate."
+/**
+ * Regeneration instruction for a report the CLI does not write (ADR 0066) -- a function, not a
+ * `const`, so mutation testing evaluates it per call: it is produced by the
+ * project's own script calling the `data-cap/build` generators, so naming `npx data-cap` there would
+ * send a reader to a command that cannot regenerate it.
+ */
+export function reportRegenerateHint(): string {
+  return "Regenerate it by re-running the script that calls `generateDocumentation()` / `generateUsage()` / `generateFlow()` from `data-cap/build`."
+}
+
+/** The literal marker text, as a function so mutation testing evaluates it per call rather than once at load. */
+function marker(): string {
+  return "GENERATED FILE -- do not edit by hand."
+}
+
+/**
+ * Renders the "do not edit by hand" marker in the given comment syntax.
+ * @param format - Comment syntax to render in.
+ * @param regenerate - How to regenerate; defaults to the CLI, which writes the manifest.
+ * @returns The comment line.
+ */
+export function generatedBanner(
+  format: "ts" | "markdown" = "ts",
+  regenerate = "Run `npx data-cap` to regenerate.",
+): string {
+  const text = `${marker()} ${regenerate}`
   return { ts: `// ${text}`, markdown: `<!-- ${text} -->` }[format]
 }
 
-/** Whether `content` starts with a `generatedBanner()`-produced marker, in either format. */
+/** Whether `content` starts with a `generatedBanner()`-produced marker, in either format and with any regeneration hint. */
 export function isGeneratedFile(content: string): boolean {
-  return (
-    content.startsWith(generatedBanner("ts")) || content.startsWith(generatedBanner("markdown"))
-  )
+  return content.startsWith(`// ${marker()}`) || content.startsWith(`<!-- ${marker()}`)
 }
 
 /**
@@ -42,7 +63,7 @@ export function evidenceDisclaimer(): string {
  */
 export function evidenceProjectionNote(evidencePath?: string): string {
   const concept =
-    "Projected from data-cap's Evidence Model (ADR 0050/0054), the same source every other generated artifact draws from."
+    "Projected from data-cap's Evidence Model (https://github.com/MaverickCER/data-cap/blob/main/GUIDE.md), the same source every other generated artifact draws from."
   return evidencePath === undefined
     ? concept
     : `${concept} This run also wrote it to \`${evidencePath}\`.`

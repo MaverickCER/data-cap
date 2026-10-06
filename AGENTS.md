@@ -12,7 +12,7 @@ agents that don't.
 `data-cap` gives each capability (a feature folder or an installable package) an
 executable, analyzable data contract: the fields it owns, and the getters/mutators/
 subscriptions that acquire, mutate, or observe them — independent of databases,
-transports, frameworks, and state-management libraries. All six entry points are
+transports, frameworks, and state-management libraries. Every entry point in `package.json` `exports` is
 implemented: `core` (`.`), `runtime` (`./runtime`, `./runtime/cache`, `./runtime/retry`),
 `helpers` (`./helpers`), `build` (`./build`), `evidence` (`./evidence`), and
 `eslint-plugin` (`./eslint-plugin`).

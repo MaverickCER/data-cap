@@ -4,10 +4,9 @@
  * (`internal-package-contract/config/stryker`) with data-cap-specific `mutate`
  * exclusions.
  *
- * The mutation-score threshold is NOT set here -- the `Mutation` check owns that
- * number (`MUTATION_THRESHOLD` in internal-package-contract) and reads the JSON
- * report directly. data-cap's own goal is 100% of tested mutants killed; the 80%
- * figure is the fleet floor, not the target.
+ * The mutation-score threshold is NOT set here -- the `Mutation` check owns the policy
+ * (zero tolerance: every non-ignored mutant must be killed, or carry an exception record in
+ * `.repo-contract/exceptions/mutation.json`) and reads the JSON report directly.
  *
  * @type {import('@stryker-mutator/api/core').PartialStrykerOptions}
  */
@@ -25,7 +24,9 @@ export default {
   // each -- the single largest contributor to wall time. Ignoring them trades
   // that for not mutating load-time-constant expressions.
   ignoreStatic: true,
-  disableTypeChecks: "{src,test}/**/*.{ts,tsx}",
+  // Limited to `src/`: matching `test/` too would prepend `// @ts-nocheck` to every fixture source
+  // file and shift the line numbers the goldens pin.
+  disableTypeChecks: "src/**/*.ts",
   mutate: [
     "src/**/*.ts",
     "!src/**/*.test.ts",

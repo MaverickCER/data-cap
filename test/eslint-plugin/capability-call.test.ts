@@ -1,6 +1,6 @@
 import * as espree from "espree"
 import { describe, expect, it } from "vitest"
-import type { TSESTree } from "@typescript-eslint/types"
+import type { TSESTree } from "@typescript-eslint/utils"
 import {
   CAPABILITY_CALL_NAMES,
   getStaticKeyName,

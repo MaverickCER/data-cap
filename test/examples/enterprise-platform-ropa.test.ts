@@ -320,6 +320,25 @@ describe.skipIf(!runnable)("example: enterprise-platform ROPA generator", () => 
       expect(markdown).toContain("dpo@acme.example")
     })
 
+    it("escapes a pipe or newline in a declared value so the table row stays intact", () => {
+      const capability = fixtureCapability({
+        exportName: "billingData",
+        fields: [
+          fixtureField({
+            path: ["invoices"],
+            purpose: { value: "billing | invoicing" },
+            docs: { dataSubjectCategory: "clients\nand prospects", retention: "7 years | statutory" },
+          }),
+        ],
+      })
+      const markdown = renderRopa(buildRopaModel(fixtureEvidence([capability]), undefined))
+      expect(markdown).toContain("billing \\| invoicing")
+      expect(markdown).toContain("clients<br>and prospects")
+      expect(markdown).toContain("7 years \\| statutory")
+      for (const row of markdown.split("\n").filter((line) => line.startsWith("| `billingData`")))
+        expect(row.replace(/\\\|/g, "").split("|")).toHaveLength(10)
+    })
+
     it("renders every declared field fact in both the summary table and the per-capability detail table", () => {
       const capability = fixtureCapability({
         exportName: "billingData",

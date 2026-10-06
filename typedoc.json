@@ -4,6 +4,10 @@
   "entryPoints": [
     "src/core/index.ts",
     "src/runtime/index.ts",
+    "src/runtime/cache.ts",
+    "src/runtime/retry.ts",
+    "src/node/index.ts",
+    "src/evidence/index.ts",
     "src/build/index.ts",
     "src/helpers/index.ts",
     "src/eslint-plugin/index.ts"

@@ -1,0 +1,18 @@
+{
+  "exceptions": [
+    {
+      "id": "environment:CodeRabbit:not-applicable",
+      "version": 2,
+      "justification": "CodeRabbit reviews pull requests as a GitHub App; its CLI is not run inside the CI contract job.",
+      "check": "CodeRabbit",
+      "code": "not-applicable",
+      "ruleBroken": "CodeRabbit findings must be addressed or recorded before merge.",
+      "attempted": "Running the CodeRabbit CLI in the workflow, which needs a CodeRabbit API key that is not issued to CI.",
+      "constraint": "In CI the review is the GitHub App's; the CLI only reviews uncommitted local edits.",
+      "whyPreferable": "The App's review threads are resolved on the pull request before merge, so its findings still block.",
+      "residualRisk": "A finding the App never raised is not seen; the same is true of any reviewer.",
+      "revisitWhen": "CodeRabbit ships a CI mode for the CLI, or the App is uninstalled.",
+      "expires": ""
+    }
+  ]
+}

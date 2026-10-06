@@ -8,7 +8,12 @@
 
 import path from "node:path"
 import { displayPath } from "./display-path.js"
-import { evidenceDisclaimer, evidenceProjectionNote, generatedBanner } from "./generated-banner.js"
+import {
+  reportRegenerateHint,
+  evidenceDisclaimer,
+  evidenceProjectionNote,
+  generatedBanner,
+} from "./generated-banner.js"
 import { buildFlowGraph } from "./flow-graph.js"
 import {
   renderCapabilityDiagram,
@@ -69,7 +74,7 @@ function renderOverviewMarkdown(
   evidencePath: string | undefined,
 ): string {
   return [
-    generatedBanner("markdown"),
+    generatedBanner("markdown", reportRegenerateHint()),
     "",
     `> ${evidenceDisclaimer()}`,
     "",

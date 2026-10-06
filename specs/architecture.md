@@ -5,8 +5,8 @@ provides. [`decisions/`](decisions/) holds the reasoning trail (the ADRs); this 
 destination those decisions arrived at, not the argument for them. For the product overview and
 integration guidance, see [README.md](../README.md) and [GUIDE.md](../GUIDE.md).
 
-**Status**: all six entry points (`core`, `runtime`, `helpers`, `build`, `evidence`,
-`eslint-plugin`) are implemented, tested, and shipped.
+**Status**: every entry point in `package.json` `exports` is implemented, tested, and shipped (listed in
+[The entry points](#the-entry-points)).
 
 - [Purpose](#purpose)
 - [Core invariants](#core-invariants)

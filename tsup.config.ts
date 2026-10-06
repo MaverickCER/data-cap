@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs"
-import { defineConfig } from "tsup"
+import { defineConfig, type Options } from "tsup"
 
 // Nothing here may minify: no `minify*` option, no esbuildOptions that sets one. Minified code is a
 // Socket.dev supply-chain alert and internal-package-contract's NoMinify check fails the contract
@@ -16,7 +16,7 @@ const packageVersion: string = (
 ).version
 const versionDefine = { __PACKAGE_VERSION__: JSON.stringify(packageVersion) }
 
-export default defineConfig([
+const bundles: Options[] = [
   {
     name: "core",
     entry: { index: "src/core/index.ts" },
@@ -92,7 +92,7 @@ export default defineConfig([
     // API, unlike every other entry above. It does NOT import `node:fs`: since
     // ADR 0058 the caller supplies a `BuildFileSystem` capability.
     platform: "node",
-    target: "node18",
+    target: "node22",
     dts: false,
     sourcemap: true,
     treeshake: true,
@@ -108,7 +108,7 @@ export default defineConfig([
     entry: { node: "src/node/index.ts" },
     format: ["esm", "cjs"],
     platform: "node",
-    target: "node18",
+    target: "node22",
     dts: false,
     sourcemap: true,
     treeshake: true,
@@ -133,15 +133,14 @@ export default defineConfig([
     format: ["esm", "cjs"],
     // An ESLint rule runs inside ESLint's own Node process, never a browser.
     platform: "node",
-    target: "node18",
+    target: "node22",
     dts: false,
     sourcemap: true,
     treeshake: true,
-    // `@typescript-eslint/utils` internally does a dynamic `require("eslint")`
-    // for its FlatESLint/ESLint wrapper types, which esbuild's ESM output
-    // can't satisfy for a bundled dependency -- external keeps both as real
-    // runtime imports instead (both are already peerDependencies).
-    external: ["eslint", "typescript"],
+    // `@typescript-eslint/utils` is an optional peer, NOT bundled (ADR 0068): a bundled copy is
+    // invisible to a consumer's `npm audit`/Dependabot/Socket and frozen at build time. Anyone
+    // linting TypeScript with ESLint already has it through `typescript-eslint`.
+    external: ["eslint", "typescript", "@typescript-eslint/utils"],
   },
   {
     name: "cli",
@@ -151,10 +150,22 @@ export default defineConfig([
     // consumer needs to `require()` a CLI entry point.
     format: ["esm"],
     platform: "node",
-    target: "node18",
+    target: "node22",
     dts: false,
     sourcemap: true,
     banner: { js: "#!/usr/bin/env node" },
     define: versionDefine,
   },
-])
+]
+
+// Maps keep pointing at `src/` lines but no longer embed the full source text of every file: that
+// text was about 60% of the unpacked package, and the sources are in the repository.
+export default defineConfig(
+  bundles.map((bundle) => ({
+    ...bundle,
+    esbuildOptions(options, context) {
+      options.sourcesContent = false
+      bundle.esbuildOptions?.(options, context)
+    },
+  })),
+)

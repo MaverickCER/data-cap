@@ -93,14 +93,12 @@ function sortCapabilityRefs(refs: readonly OwnershipCapabilityRef[]): OwnershipC
 
 function sortFieldRefs(refs: readonly OwnershipFieldRef[]): OwnershipFieldRef[] {
   const fieldKey = (ref: OwnershipFieldRef): string => ref.field.join(".")
-  return refs
-    .slice()
-    .sort(
-      (a, b) =>
-        a.capability.file.localeCompare(b.capability.file) ||
-        a.capability.exportName.localeCompare(b.capability.exportName) ||
-        fieldKey(a).localeCompare(fieldKey(b)),
-    )
+  return [...refs].sort(
+    (a, b) =>
+      a.capability.file.localeCompare(b.capability.file) ||
+      a.capability.exportName.localeCompare(b.capability.exportName) ||
+      fieldKey(a).localeCompare(fieldKey(b)),
+  )
 }
 
 /** Builds the owner -> {capabilities, fields} matrix. Every owner bucket is sorted deterministically; the `UNOWNED` bucket, if present, always sorts last. */

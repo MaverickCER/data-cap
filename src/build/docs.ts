@@ -12,7 +12,12 @@
  */
 
 import { displayPath } from "./display-path.js"
-import { evidenceDisclaimer, evidenceProjectionNote, generatedBanner } from "./generated-banner.js"
+import {
+  reportRegenerateHint,
+  evidenceDisclaimer,
+  evidenceProjectionNote,
+  generatedBanner,
+} from "./generated-banner.js"
 import type { DependencyEdge } from "./dependency-types.js"
 import type { CapabilityInventory, CapabilityNode, FieldNode, OperationNode } from "./inventory.js"
 import type { LifecycleModel } from "./lifecycle-model.js"
@@ -327,7 +332,7 @@ export function renderDocumentation(
   lifecycle?: LifecycleModel,
 ): string {
   return [
-    generatedBanner("markdown"),
+    generatedBanner("markdown", reportRegenerateHint()),
     "",
     `> ${evidenceDisclaimer()}`,
     "",

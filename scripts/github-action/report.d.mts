@@ -26,18 +26,9 @@ interface FindingLike {
   readonly source?: string
 }
 
-interface FlowFileLike {
-  readonly path: string
-  readonly content: string
-}
-
-interface ManifestSectionLike {
-  readonly location: string
-  readonly snapshot?: { readonly capabilities?: readonly unknown[] }
-}
-
-interface FlowSectionLike {
-  readonly files?: readonly FlowFileLike[]
+interface EvidenceLike {
+  readonly capability?: { readonly capabilities?: readonly unknown[] }
+  readonly dependency?: { readonly edges?: readonly unknown[] }
 }
 
 interface CheckResultLike {
@@ -56,8 +47,7 @@ export interface ReportResult {
   // `result?.ok === false`, which is safely false when absent.
   readonly ok?: boolean
   readonly findings?: readonly FindingLike[]
-  readonly manifest?: ManifestSectionLike
-  readonly flow?: FlowSectionLike
+  readonly evidence?: EvidenceLike
   readonly checkResult?: CheckResultLike
   readonly error?: ErrorSectionLike
 }

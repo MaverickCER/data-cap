@@ -117,7 +117,7 @@ jobs:
     # The `suites`/`install-dirs` inputs below exist only in internal-package-contract commits that
     # include the generalized benchmark kit: bump this SHA to such a commit together with the
     # internal-package-contract devDependency pin, in the same pull request.
-    uses: MaverickCER/internal-package-contract/.github/workflows/benchmark-pr.yml@8a0b0cfcc4eec8ca8ad8a58dd12da018ea3957c6 # main -- PR #22, "feat(benchmark): add shared benchmark engine"
+    uses: MaverickCER/internal-package-contract/.github/workflows/benchmark-pr.yml@c8b6147aef3592dd1941f8d22325abc9f279e7b7 # v0.9.0
     with:
       suites: |
         Runtime|benchmarks/performance-runtime|benchmarks/history/runtime.json
@@ -166,7 +166,7 @@ jobs:
       # change can't land without the report, and the PR diff, updated too.
       - run: npm run docs:api:report:check
 
-  # Matches package.json's own `engines.node` floor (`>=20.0.0`). Was
+  # Matches package.json's own `engines.node` floor (`>=22.0.0`). Was
   # `[18.x, 22.x, 24.x]` until the dev toolchain itself (Vitest 4.x, whose
   # own `engines.node` is `^20.0.0 || ^22.0.0 || >=24.0.0`) stopped running
   # on Node 18 at all -- `vitest run --coverage` can't even start there,
@@ -179,7 +179,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [20.x, 22.x, 24.x]
+        node-version: [22.x, 24.x]
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -229,6 +229,10 @@ jobs:
     # live: a real PR run where `verify`/`lint` both concluded "success" still skipped `contract`.
     if: always() && (needs.verify.result == 'success' || needs.verify.result == 'skipped') && (needs.lint.result == 'success' || needs.lint.result == 'skipped')
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # CodeScanning reads the repository's open alerts.
+      security-events: read
     steps:
       # fetch-depth: 0 -- the Commits check reads origin/main..HEAD.
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -271,6 +275,7 @@ jobs:
           # token at socket.dev (Settings > API Tokens, `packages:list`) and add it as the
           # repository or organization secret SOCKET_SECURITY_API_KEY.
           SOCKET_SECURITY_API_KEY: ${{ secrets.SOCKET_SECURITY_API_KEY }}
+          GH_TOKEN: ${{ github.token }}
 
       # Diagnostic aid, not part of the gate itself: `always()` so a failed
       # Mutation run's exact per-mutant detail (file, mutator, location,

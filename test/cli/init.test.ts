@@ -280,7 +280,7 @@ describe("runInitCommand", () => {
     expect(content).toContain('import { nodeBuildFileSystem } from "data-cap/node"')
     expect(content).toContain('location: "src/generated/data.manifest.ts"')
     expect(content).toContain('docs: "docs/DATA.md"')
-    expect(content).toContain('ownership: "docs/OWNERSHIP.md"')
+    expect(content).toContain('ownership: "docs/DATA-OWNERSHIP.md"')
     expect(content).toContain("Discovered ${active} active capability(ies).")
     expect(content).toContain("Wrote manifest: ${result.manifest.location}")
     expect(content).toContain("Wrote docs: ${result.documentation.location}")

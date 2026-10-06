@@ -3,7 +3,7 @@
 `data-cap` follows [Semantic Versioning](https://semver.org/). This document
 defines what that promise actually covers, since "semver" alone doesn't say
 which surface it applies to. Three tiers exist, following the same policy
-`@maverickcer/env-cap` established:
+`@maverickcer/env-cap` established (`data-cap` itself is published unscoped):
 
 ## Stable
 
@@ -25,6 +25,17 @@ major version bump (once the package reaches 1.0 — see
   `acquireSubscription`); `composeSignals`/`rejectOnAbort`.
 - **`./runtime/cache`**: `createDataCache` and the `DataCache` contract.
 - **`./runtime/retry`**: `withRetry`, `isStillDefault`.
+- **`./node`** (`nodeBuildFileSystem`): the only sanctioned way to give `./build` a filesystem, and
+  required by every generator script `init` scaffolds.
+- **`./evidence`** (`defineEvidenceProjection` and the `EvidenceModel` shape it projects over), and the
+  persisted evidence artifact.
+- **The composite GitHub Action** (`action.yml`): its input and output names and meanings, and the PR
+  comment's sections. The major tag it is used through (`uses: MaverickCER/data-cap@v0` while the
+  package is 0.x, `@v1` from 1.0.0) moves only within a major version.
+- **Supported toolchain**: Node.js `>=22`; the TypeScript versions named in the `typescript` peer range
+  (`^5 || ^6` -- the build-time scanner needs TypeScript's classic compiler API, so a TypeScript major
+  that removes it is unsupported until a release says otherwise, and the CLI says so instead of failing
+  with an import error); and `moduleResolution` `node16`/`nodenext`/`bundler` (not the legacy `node10`).
 - **`./helpers`**: the `processors`/`identity`/`canonicalize`/`shape`
   namespace shapes and every function they export.
 - **`./eslint-plugin`**: every rule's name and message IDs
@@ -85,6 +96,11 @@ available on npm. Per [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)/
 semver convention, **minor versions may include breaking changes to the
 Stable tier before 1.0** — this document defines _scope_ (what would
 eventually be covered), not a promise that it is already fully locked in at
-`0.x`. The Experimental and Private tiers behave the same before and after
-1.0: Experimental surfaces may change at any version; Private internals
-always may.
+`0.x`.
+
+How a `0.x` bump is chosen: the shared release tooling from `internal-package-contract` deflates one
+level below 1.0.0 -- a breaking change releases a minor, a feature a patch, and the API-contract gate
+requires only a minor for a breaking API diff -- so **nothing automated can publish `1.0.0`**. Crossing
+to 1.0.0 takes a human-authored `major` changeset, and that release pull request is not auto-merged.
+The Experimental and Private tiers behave the same before and after 1.0: Experimental surfaces may
+change at any version; Private internals always may.

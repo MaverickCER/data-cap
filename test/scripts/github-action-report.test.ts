@@ -133,17 +133,29 @@ describe("renderMarkdownSummary", () => {
     expect(summary).toContain("At least one of --location... is required.")
   })
 
-  it("renders the manifest section with its active-capability count", () => {
+  it("renders the inventory section from the evidence every run composes", () => {
     const summary = renderMarkdownSummary({
       findings: [],
-      manifest: {
-        location: "src/generated/data.manifest.ts",
-        snapshot: { capabilities: [{}, {}] },
+      evidence: {
+        capability: { capabilities: [{}, {}] },
+        dependency: { edges: [{}, {}, {}] },
       },
     })
-    expect(summary).toContain("## Manifest")
-    expect(summary).toContain("src/generated/data.manifest.ts")
-    expect(summary).toContain("2 active capability(ies)")
+    expect(summary).toContain("## Inventory")
+    expect(summary).toContain("2 capability(ies) discovered, 3 proven dependency edge(s).")
+  })
+
+  it("says nothing about dependencies when the run did not scan for them", () => {
+    const summary = renderMarkdownSummary({
+      findings: [],
+      evidence: { capability: { capabilities: [{}] } },
+    })
+    expect(summary).toContain("1 capability(ies) discovered.")
+    expect(summary).not.toContain("dependency edge")
+  })
+
+  it("omits the inventory section when there is no evidence", () => {
+    expect(renderMarkdownSummary({ findings: [] })).not.toContain("## Inventory")
   })
 
   it("renders the drift-check section, up-to-date and stale variants", () => {
@@ -158,29 +170,6 @@ describe("renderMarkdownSummary", () => {
       checkResult: { ok: false, stale: ["a.ts", "b.md"] },
     })
     expect(stale).toContain("2 artifact(s) are stale or missing.")
-  })
-
-  it("embeds the flow overview.md content (including its Mermaid diagram) directly, without re-deriving it", () => {
-    const summary = renderMarkdownSummary({
-      findings: [],
-      flow: {
-        files: [
-          { path: "/root/docs/flow/overview.mmd", content: "flowchart TB" },
-          {
-            path: "/root/docs/flow/overview.md",
-            content: "# Security Data-Flow Review\n\n```mermaid\nflowchart TB\n```\n",
-          },
-        ],
-      },
-    })
-    expect(summary).toContain("## Data Flow Diagram + Security Data-Flow Review")
-    expect(summary).toContain("```mermaid")
-    expect(summary).toContain("# Security Data-Flow Review")
-  })
-
-  it("omits the flow section entirely when --flow wasn't requested", () => {
-    const summary = renderMarkdownSummary({ findings: [] })
-    expect(summary).not.toContain("Data Flow Diagram")
   })
 })
 

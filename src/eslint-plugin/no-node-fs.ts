@@ -1,8 +1,8 @@
-// Deliberately narrow imports -- see `no-raw-external-io.ts`'s header for the
-// full rationale (`@typescript-eslint/utils`'s main entry does a runtime
-// `require("eslint")` that throws once bundled into dependency-free ESM).
+// `@typescript-eslint/utils` is an external optional peer (ADR 0068), resolved by the consumer's own
+// module loader, so its main entry is safe to import from; `RuleCreator` still comes from the
+// `eslint-utils` subpath to keep the loaded surface small.
 import { RuleCreator } from "@typescript-eslint/utils/eslint-utils"
-import { AST_NODE_TYPES } from "@typescript-eslint/types"
+import { AST_NODE_TYPES } from "@typescript-eslint/utils"
 import { globToRegExp } from "./glob.js"
 
 const createRule = RuleCreator(

@@ -96,7 +96,7 @@ const result = await generateDataArtifacts({
   root,
   location: "src/generated/data.manifest.ts",
   docs: "docs/DATA.md",
-  ownership: "docs/OWNERSHIP.md",
+  ownership: "docs/DATA-OWNERSHIP.md",
 })
 
 const active = result.manifest?.snapshot.capabilities.length ?? 0

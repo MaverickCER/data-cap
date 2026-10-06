@@ -217,7 +217,7 @@ export type DataCapability<TSchema extends DataSchema<FieldsShape>> = Capability
  * times for three incompatible generic instantiations.
  */
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- the ownership map is generic over arbitrary field types, so the element type genuinely is unknown to this alias
 type AnyOwnership = FieldOwnership<any> | true
 
 interface AnyGetterDef {

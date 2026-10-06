@@ -95,7 +95,7 @@ export function createDataCache<TFields>(options: DataCacheOptions = {}): DataCa
       // Stryker disable next-line ConditionalExpression, EqualityOperator, UpdateOperator
       for (let steps = 0; entries.size > maxEntries && steps <= evictionCeiling; steps++) {
         const oldestKey: string | undefined = entries.keys().next().value
-        // Stryker disable next-line ConditionalExpression
+        // Stryker disable next-line ConditionalExpression: backstop for a Map whose iterator is empty while size says otherwise, which cannot happen
         if (oldestKey === undefined) break
         entries.delete(oldestKey)
       }

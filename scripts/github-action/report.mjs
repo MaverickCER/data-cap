@@ -86,12 +86,17 @@ export function renderMarkdownSummary(result) {
     lines.push("")
   }
 
-  if (result?.manifest) {
-    const count = result.manifest.snapshot?.capabilities?.length ?? 0
+  // `result.evidence` is composed on every run, whether or not a file was requested for it
+  // (ADR 0050), so this section is never silently empty on a real run. The manifest and flow
+  // sections this script used to read left the CLI with ADR 0066.
+  if (result?.evidence) {
+    const capabilities = result.evidence.capability?.capabilities?.length ?? 0
+    const edges = result.evidence.dependency?.edges?.length
     lines.push(
-      "## Manifest",
+      "## Inventory",
       "",
-      `Wrote \`${result.manifest.location}\` -- ${count} active capability(ies).`,
+      `${capabilities} capability(ies) discovered` +
+        (edges === undefined ? "." : `, ${edges} proven dependency edge(s).`),
       "",
     )
   }
@@ -105,15 +110,6 @@ export function renderMarkdownSummary(result) {
         : `${result.checkResult.stale?.length ?? 0} artifact(s) are stale or missing.`,
       "",
     )
-  }
-
-  // GitHub renders fenced ```mermaid``` blocks natively in both PR comments
-  // and the job summary -- overview.md (already rendered by generateFlow)
-  // embeds the Data Flow Diagram in exactly that form, so it's reused
-  // directly rather than re-deriving a diagram from result.flow.files here.
-  const overview = result?.flow?.files?.find((f) => f.path?.endsWith("overview.md"))
-  if (overview) {
-    lines.push("## Data Flow Diagram + Security Data-Flow Review", "", overview.content, "")
   }
 
   return lines.join("\n")

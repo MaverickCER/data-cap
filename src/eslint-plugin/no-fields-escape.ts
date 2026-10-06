@@ -1,13 +1,9 @@
-// Deliberately narrow imports -- see `stable-operation-reference.ts`'s own
-// header for the full rationale: `@typescript-eslint/utils`'s main entry
-// re-exports FlatESLint/ESLint wrapper classes that do a runtime
-// `require("eslint")`, which throws once bundled into dependency-free ESM
-// output. `RuleCreator` alone lives at the `eslint-utils` subpath and
-// `AST_NODE_TYPES` in `@typescript-eslint/types`, neither of which touch
-// `eslint` at all.
+// `@typescript-eslint/utils` is an external optional peer (ADR 0068), resolved by the consumer's own
+// module loader, so its main entry is safe to import from; `RuleCreator` still comes from the
+// `eslint-utils` subpath to keep the loaded surface small.
 import { RuleCreator } from "@typescript-eslint/utils/eslint-utils"
-import { AST_NODE_TYPES } from "@typescript-eslint/types"
-import type { TSESTree } from "@typescript-eslint/types"
+import { AST_NODE_TYPES } from "@typescript-eslint/utils"
+import type { TSESTree } from "@typescript-eslint/utils"
 import { globToRegExp } from "./glob.js"
 
 const createRule = RuleCreator(
@@ -191,7 +187,7 @@ function isCallArgument(node: TSESTree.Node): boolean {
  * unchanged.
  */
 function isNamedJsxAttributeValue(node: TSESTree.Node): boolean {
-  // Stryker disable next-line OptionalChaining
+  // Stryker disable next-line OptionalChaining: both optional hops are for the compiler; ESLint traversal always populates them (see the note above)
   return node.parent?.parent?.type === AST_NODE_TYPES.JSXAttribute
 }
 
@@ -225,7 +221,7 @@ function isNamedJsxAttributeValue(node: TSESTree.Node): boolean {
  */
 function isExportedName(name: string, program: TSESTree.Program): boolean {
   return program.body.some((statement) => {
-    // Stryker disable next-line ConditionalExpression, BooleanLiteral
+    // Stryker disable next-line ConditionalExpression, BooleanLiteral: the first guard is subsumed by the check on the next line (see the note above)
     if (statement.type !== AST_NODE_TYPES.ExportNamedDeclaration) return false
     if (statement.source !== null) return false
     return statement.specifiers.some((specifier) => specifier.local.name === name)
@@ -272,7 +268,7 @@ function isExportedVariableInit(node: TSESTree.Node, program: TSESTree.Program):
   // node.parent is always populated for a MemberExpression/CallExpression
   // reached via a real ESLint traversal (never the Program root).
   const declarator = node.parent
-  // Stryker disable next-line OptionalChaining
+  // Stryker disable next-line OptionalChaining: node.parent is always populated in a real traversal; the optional chain is for the compiler
   if (declarator?.type !== AST_NODE_TYPES.VariableDeclarator) return false
   if (declarator.id.type !== AST_NODE_TYPES.Identifier) return false
   // A `VariableDeclarator` is only ever a child of a `VariableDeclaration`

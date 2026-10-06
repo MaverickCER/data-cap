@@ -1,3 +1,4 @@
+import path from "node:path"
 import { describe, expect, it } from "vitest"
 import { displayPath } from "../../src/build/display-path.js"
 
@@ -8,6 +9,12 @@ describe("displayPath", () => {
 
   it("renders root itself as a bare relative segment, not an empty string turned absolute", () => {
     expect(displayPath("/project/src", "/project/src/user.ts")).toBe("user.ts")
+  })
+
+  it("returns an already-relative path as given, never resolving it against the process cwd", () => {
+    // With the cwd below `root`, resolving "src/user.ts" against the cwd would yield "<cwd-name>/src/user.ts".
+    const root = path.dirname(process.cwd())
+    expect(displayPath(root, "src/user.ts")).toBe("src/user.ts")
   })
 
   it("falls back to the absolute path, unchanged, for a path outside root", () => {

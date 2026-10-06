@@ -19,7 +19,7 @@ import type { NullableMarker, OptionalMarker } from "./fields.js"
  * FieldsShape` still infers a precise, per-key literal type from the actual
  * object literal passed to `buildData`.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- an open field map: its value types are inferred where it is used
 export type FieldsShape = Record<string, any>
 
 /**
@@ -334,4 +334,4 @@ export interface DataSchema<TFields extends FieldsShape> extends BuildDataConfig
     SubscriptionDefinition<InferFields<TFields>, any, any, any>
   >
 }
-/* eslint-enable @typescript-eslint/no-explicit-any */
+/* eslint-enable @typescript-eslint/no-explicit-any -- end of the region where `any` is deliberate */
