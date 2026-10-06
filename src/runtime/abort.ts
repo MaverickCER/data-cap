@@ -43,7 +43,7 @@ export function rejectOnAbort<T>(promise: Promise<T>, signal: AbortSignal): Prom
     // commonly read `signal.reason` back directly -- force-wrapping a
     // non-Error reason here would silently obscure whatever the developer
     // actually passed.
-    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- rejects with the caller's own abort reason, which may be any value
     return Promise.reject(abortReason(signal))
   }
   return new Promise<T>((resolve, reject) => {
@@ -61,7 +61,7 @@ export function rejectOnAbort<T>(promise: Promise<T>, signal: AbortSignal): Prom
         signal.removeEventListener("abort", onAbort)
         // Re-propagates whatever `promise` itself rejected with, verbatim --
         // a promise may reject with any value, not only an Error.
-        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- a promise may reject with any value, and this re-propagates it verbatim
         reject(error)
       },
     )
