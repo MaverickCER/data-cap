@@ -21,6 +21,10 @@ updates:
       - dependencies
     ignore:
       - dependency-name: "internal-package-contract"
+      # TypeScript 7 removes the compiler API (createSourceFile, resolveModuleName, parseJsonConfigFileContent,
+      # ...) that data-cap's build step is written against; stay on 5.x/6.x until an adapter exists.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
     groups:
       dev-dependencies:
         dependency-type: development
