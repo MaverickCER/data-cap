@@ -186,7 +186,7 @@
   "devDependencies": {
     "@changesets/cli": "^2.31.1",
     "@eslint/js": "^10.0.1",
-    "@types/node": "^22.0.0",
+    "@types/node": "^25.9.9",
     "@typescript-eslint/utils": "^8.65.0",
     "@vitest/coverage-v8": "^4.1.11",
     "ajv": "^8.20.0",
@@ -200,8 +200,8 @@
     "ts-json-schema-generator": "^2.9.0",
     "tsup": "^8.0.0",
     "typedoc": "^0.28.20",
-    "typedoc-plugin-markdown": "4.13.0",
-    "typescript": "^5.0.0",
+    "typedoc-plugin-markdown": "4.13.1",
+    "typescript": "^6.0.3",
     "typescript-eslint": "^8.65.0",
     "vitest": "^4.1.11"
   },
