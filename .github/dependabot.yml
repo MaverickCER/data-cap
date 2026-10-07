@@ -25,6 +25,9 @@ updates:
       # ...) that data-cap's build step is written against; stay on 5.x/6.x until an adapter exists. Everything below 7 still updates.
       - dependency-name: "typescript"
         versions: [">= 7.0.0"]
+      # @types/node follows the oldest Node.js this package supports (>=22), not the newest release.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
       # changesets/action v1 (used by the release workflow) targets Changesets CLI v2; CLI v3 needs the
       # action's v2. Move both together, then remove this rule.
       - dependency-name: "@changesets/cli"
