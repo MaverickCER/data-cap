@@ -5,6 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest"
 import {
   createAliasResolutionCache,
   loadTsconfigPaths,
+  pathMappingOptions,
   resolveAliasImport,
 } from "../../../src/build/resolution/resolve-tsconfig-paths.js"
 import { nodeBuildFs } from "../../support/build-filesystem.js"
@@ -213,7 +214,8 @@ describe("loadTsconfigPaths", () => {
     )
     expect(warning).toBeUndefined()
     expect(resolution).toBeDefined()
-    expect(resolution?.compilerOptions.baseUrl).toBeDefined()
+    const options = resolution?.compilerOptions
+    expect(options && pathMappingOptions(options).baseUrl).toBeDefined()
   })
 
   it("resolves paths declared only through an extends chain", async () => {

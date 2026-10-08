@@ -22,6 +22,28 @@ import type { BuildFileSystem } from "../types.js"
  * caching resolutions, and enforcing the `node_modules` safety boundary below.
  */
 
+/**
+ * The `paths`/`baseUrl` view of parsed compiler options.
+ *
+ * TypeScript 6 marks `baseUrl` deprecated in its own typings. A project's tsconfig can still set it and
+ * TypeScript still honours it, so path resolution has to keep reading it to resolve the way the project's own
+ * compiler does. Reading it through this view, which does not carry that deprecation, states that on purpose.
+ * @internal
+ */
+export interface PathMappingOptions {
+  readonly paths?: ts.MapLike<string[]>
+  readonly baseUrl?: string
+}
+
+/**
+ * @param options - Parsed compiler options.
+ * @returns The same options, typed as the `paths`/`baseUrl` view.
+ * @internal
+ */
+export function pathMappingOptions(options: ts.CompilerOptions): PathMappingOptions {
+  return options
+}
+
 /** Parsed `tsconfig.json` `paths`/`baseUrl` configuration, immutable for the life of one generate*() run. See {@link loadTsconfigPaths}. */
 export interface TsconfigPathsResolution {
   /** The subset of `compilerOptions` `ts.resolveModuleName()` needs -- at minimum `paths` and/or `baseUrl`. */
@@ -149,7 +171,7 @@ export async function loadTsconfigPaths(
   }
 
   const parsed = ts.parseJsonConfigFileContent(readResult.config, ts.sys, path.dirname(configFile))
-  const { paths, baseUrl } = parsed.options
+  const { paths, baseUrl } = pathMappingOptions(parsed.options)
 
   const hasPaths = paths !== undefined && Object.keys(paths).length > 0
   if (!hasPaths && baseUrl === undefined) {

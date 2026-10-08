@@ -31,10 +31,17 @@ async function waitUntil(predicate: () => boolean, timeoutMs: number): Promise<v
 
 // -- A real local Socket.IO server, listening on an OS-assigned port -- --
 let serverSideDisconnectCount = 0
+// The server holds its one event back until the test says so. Releasing it on a timer instead made the
+// "connecting doesn't touch fields" assertion below race the event: on a busy machine the event could
+// arrive before the test noticed the connection.
+let releaseEvent!: () => void
+const eventReleased = new Promise<void>((resolve) => {
+  releaseEvent = resolve
+})
 const httpServer = createServer()
 const ioServer = new SocketIOServer(httpServer, { transports: ["websocket"] })
 ioServer.on("connection", (socket) => {
-  setTimeout(() => socket.emit("price-update", { price: 100 } satisfies PriceEvent), 5)
+  void eventReleased.then(() => socket.emit("price-update", { price: 100 } satisfies PriceEvent))
   socket.on("disconnect", () => {
     serverSideDisconnectCount += 1
   })
@@ -73,6 +80,7 @@ assert.equal(
   "connecting doesn't touch fields, only info.subscription",
 )
 
+releaseEvent()
 await waitUntil(() => store.getSnapshot().fields.price === 100, 2000)
 assert.equal(
   store.getSnapshot().fields.price,
