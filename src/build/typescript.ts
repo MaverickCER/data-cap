@@ -11,9 +11,19 @@ function hasClassicApi(candidate: unknown): candidate is TypeScript {
   )
 }
 
-function isModuleNotFound(error: unknown): boolean {
-  const code = (error as { code?: unknown } | null | undefined)?.code
-  return code === "MODULE_NOT_FOUND" || code === "ERR_MODULE_NOT_FOUND"
+/**
+ * Whether `error` says the module `id` itself is not installed. A `MODULE_NOT_FOUND` raised while an
+ * installed module loads one of its own dependencies is a broken install, not an absent module, and
+ * names a different module -- so the message has to name `id`.
+ */
+function isModuleNotFound(error: unknown, id: string): boolean {
+  const { code, message } = (error ?? {}) as { code?: unknown; message?: unknown }
+  if (code !== "MODULE_NOT_FOUND" && code !== "ERR_MODULE_NOT_FOUND") return false
+  return (
+    typeof message === "string" &&
+    (message.startsWith(`Cannot find module '${id}'`) ||
+      message.startsWith(`Cannot find package '${id}'`))
+  )
 }
 
 /**
@@ -24,7 +34,7 @@ function tryLoad(load: (id: string) => unknown, id: string): unknown {
   try {
     return load(id)
   } catch (error) {
-    if (isModuleNotFound(error)) return undefined
+    if (isModuleNotFound(error, id)) return undefined
     throw error
   }
 }

@@ -64,11 +64,88 @@ describe("pickCompiler", () => {
   it("treats ERR_MODULE_NOT_FOUND (an ESM-style miss) as not installed too", () => {
     const load = (id: string): unknown => {
       if (id === "typescript") {
-        throw Object.assign(new Error("not here"), { code: "ERR_MODULE_NOT_FOUND" })
+        throw Object.assign(new Error("Cannot find package 'typescript' imported from /app/x.js"), {
+          code: "ERR_MODULE_NOT_FOUND",
+        })
       }
       return bundled
     }
     expect(pickCompiler(load)).toBe(bundled)
+  })
+
+  it("does not take a nested missing dependency of an installed typescript for typescript being absent", () => {
+    const nested = Object.assign(new Error("Cannot find module 'some-inner-dependency'"), {
+      code: "MODULE_NOT_FOUND",
+    })
+    const load = (id: string): unknown => {
+      if (id === "typescript") throw nested
+      return bundled
+    }
+    expect(() => pickCompiler(load)).toThrow(nested)
+  })
+
+  it("does not take a different module whose name merely starts with the requested one", () => {
+    const other = Object.assign(new Error("Cannot find module 'typescript-extras'"), {
+      code: "MODULE_NOT_FOUND",
+    })
+    const load = (id: string): unknown => {
+      if (id === "typescript") throw other
+      return bundled
+    }
+    expect(() => pickCompiler(load)).toThrow(other)
+  })
+
+  it("rethrows a not-found code that carries no message to match, as that exact error", () => {
+    const bare = Object.assign(new Error("x"), { code: "MODULE_NOT_FOUND", message: undefined })
+    let caught: unknown = "nothing was thrown"
+    try {
+      pickCompiler(() => {
+        throw bare
+      })
+    } catch (error) {
+      caught = error
+    }
+    expect(caught).toBe(bare)
+  })
+
+  it("matches Node's real not-found message, which continues with the require stack", () => {
+    const load = (id: string): unknown => {
+      if (id === "typescript") {
+        throw Object.assign(
+          new Error(
+            "Cannot find module 'typescript'\nRequire stack:\n- /app/node_modules/x/index.js",
+          ),
+          { code: "MODULE_NOT_FOUND" },
+        )
+      }
+      return bundled
+    }
+    expect(pickCompiler(load)).toBe(bundled)
+  })
+
+  it("rethrows an error that has the right message but a different code", () => {
+    const denied = Object.assign(new Error("Cannot find module 'typescript'"), { code: "EACCES" })
+    let caught: unknown = "nothing was thrown"
+    try {
+      pickCompiler((id) => {
+        if (id === "typescript") throw denied
+        return bundled
+      })
+    } catch (error) {
+      caught = error
+    }
+    expect(caught).toBe(denied)
+  })
+
+  it("applies the same check to the bundled compiler", () => {
+    const nested = Object.assign(new Error("Cannot find module 'inner'"), {
+      code: "MODULE_NOT_FOUND",
+    })
+    const load = (id: string): unknown => {
+      if (id === "typescript") return typescript7
+      throw nested
+    }
+    expect(() => pickCompiler(load)).toThrow(nested)
   })
 
   it("rethrows a load failure that is not 'not installed' instead of masking it with the fallback", () => {
