@@ -588,12 +588,9 @@ export function createData<TSchema extends DataSchema<FieldsShape>>(
         setOperationState(name, key, { status: "error", error: dataError, settledAt: Date.now() })
         throw error
       } finally {
-        // No rollback code path -- removing the pending transition is the
-        // entire mechanism (ADR 0023); the visible value reverts on its own
-        // because project() no longer folds a transition that no longer
-        // exists. The `!== undefined` guard is a pure micro-optimization:
-        // `store.removePendingTransition(undefined)` is itself a no-op (no id
-        // ever equals `undefined`), so dropping the guard changes nothing.
+        // No rollback code path -- removing the pending transition is the entire mechanism (ADR 0023);
+        // the visible value reverts on its own because project() no longer folds a transition that no
+        // longer exists. An operation with no optimistic update never created one.
         if (transitionId !== undefined) store.removePendingTransition(transitionId)
       }
     }

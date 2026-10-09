@@ -373,7 +373,7 @@ The capability's current field values.
 
 ###### Inherited from
 
-[`DataState`](core.md#datastate).[`fields`](core.md#fields-3)
+[`DataState`](core.md#datastate).[`fields`](core.md#fields-4)
 
 ##### info
 

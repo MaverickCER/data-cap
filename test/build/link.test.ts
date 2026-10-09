@@ -93,6 +93,35 @@ describe("linkCapabilityFiles", () => {
     })
   })
 
+  it("resolves fields imported from an allow-listed package, and only when that package is allow-listed", async () => {
+    await writeJson("package.json", { name: "fixture-root", private: true })
+    await writeJson("node_modules/@fixtures/pkg-a/package.json", {
+      name: "@fixtures/pkg-a",
+      main: "./index.js",
+      dataCap: { schema: "./data.schema.ts" },
+    })
+    await writeFile("node_modules/@fixtures/pkg-a/index.js", "module.exports = {};\n")
+    await writeFile(
+      "node_modules/@fixtures/pkg-a/data.schema.ts",
+      `export const userFields = { id: "" };`,
+    )
+    const file = await writeFile(
+      "user.ts",
+      `import { userFields } from "@fixtures/pkg-a";\nexport const userCapability = createData({ fields: userFields });`,
+    )
+
+    const allowed = await linkCapabilityFiles([file], {
+      fs: nodeBuildFs,
+      root,
+      tsconfig: false,
+      packages: ["@fixtures/pkg-a"],
+    })
+    const notAllowed = await linkCapabilityFiles([file], { fs: nodeBuildFs, root, tsconfig: false })
+
+    expect(allowed.capabilities[0]?.fieldsShape).toEqual({ id: "" })
+    expect(notAllowed.capabilities[0]?.fieldsShape).toBeUndefined()
+  })
+
   it("resolves fields referenced via a same-file local const", async () => {
     const file = await writeFile(
       "user.ts",

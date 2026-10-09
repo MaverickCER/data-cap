@@ -246,6 +246,74 @@ Error.prepareStackTrace
 
 ***
 
+### fields
+
+Field-default authoring helpers, recognized only inside a `buildData`/`createData` schema.
+
+#### Constructors
+
+##### Constructor
+
+```ts
+new fields(): fields;
+```
+
+###### Returns
+
+[`fields`](#fields)
+
+#### Methods
+
+##### nullable()
+
+```ts
+static nullable<T>(defaultInner): NullableMarker<T>;
+```
+
+Infers the underlying type from `defaultInner`; the runtime default is always `null`.
+
+###### Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` |
+
+###### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `defaultInner` | `T` |
+
+###### Returns
+
+[`NullableMarker`](#nullablemarker)\<`T`\>
+
+##### optional()
+
+```ts
+static optional<T>(defaultInner): OptionalMarker<T>;
+```
+
+Infers the underlying type from `defaultInner`; the runtime default is always `undefined`.
+
+###### Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` |
+
+###### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `defaultInner` | `T` |
+
+###### Returns
+
+[`OptionalMarker`](#optionalmarker)\<`T`\>
+
+***
+
 ### InvalidFieldDefaultError
 
 Thrown synchronously by `buildData()`/`documentData()` when a declared
@@ -829,7 +897,7 @@ The default/example value for every field, declaring the capability's shape.
 
 ###### Inherited from
 
-[`BuildDataConfig`](#builddataconfig).[`fields`](#fields)
+[`BuildDataConfig`](#builddataconfig).[`fields`](#fields-1)
 
 ##### getters?
 
@@ -1966,69 +2034,6 @@ return value is never statically provable to match its declared type.
 | ------ |
 | `T` |
 | `TOwnership` |
-
-## Variables
-
-### fields
-
-```ts
-const fields: {
-  nullable: NullableMarker<T>;
-  optional: OptionalMarker<T>;
-};
-```
-
-Field-default authoring helpers, recognized only inside a `buildData`/`createData` schema.
-
-#### Type Declaration
-
-##### nullable()
-
-```ts
-nullable<T>(defaultInner): NullableMarker<T>;
-```
-
-Infers the underlying type from `defaultInner`; the runtime default is always `null`.
-
-###### Type Parameters
-
-| Type Parameter |
-| ------ |
-| `T` |
-
-###### Parameters
-
-| Parameter | Type |
-| ------ | ------ |
-| `defaultInner` | `T` |
-
-###### Returns
-
-[`NullableMarker`](#nullablemarker)\<`T`\>
-
-##### optional()
-
-```ts
-optional<T>(defaultInner): OptionalMarker<T>;
-```
-
-Infers the underlying type from `defaultInner`; the runtime default is always `undefined`.
-
-###### Type Parameters
-
-| Type Parameter |
-| ------ |
-| `T` |
-
-###### Parameters
-
-| Parameter | Type |
-| ------ | ------ |
-| `defaultInner` | `T` |
-
-###### Returns
-
-[`OptionalMarker`](#optionalmarker)\<`T`\>
 
 ## Functions
 

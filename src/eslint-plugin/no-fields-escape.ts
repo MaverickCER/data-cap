@@ -166,7 +166,8 @@ function isCallArgument(node: NonRootNode): boolean {
  * unchanged.
  */
 function isNamedJsxAttributeValue(node: NonRootNode): boolean {
-  return node.parent.parent?.type === AST_NODE_TYPES.JSXAttribute
+  // The grandparent exists for any read below a statement; `type` is only read, never assumed.
+  return (node.parent.parent as { type?: unknown }).type === AST_NODE_TYPES.JSXAttribute
 }
 
 /**
@@ -273,7 +274,8 @@ function enclosingFunction(node: NonRootNode): FunctionLike | undefined {
 }
 
 /** `node` and every ancestor above it, innermost first. Ends at the program root, whose parent is `null` at runtime (typed `undefined`), hence the loose check. */
-function ancestorChain(node: TSESTree.Node | null | undefined): TSESTree.Node[] {
+/** @internal Exported for direct unit coverage. */
+export function ancestorChain(node: TSESTree.Node | null | undefined): TSESTree.Node[] {
   return node == null ? [] : [node, ...ancestorChain(node.parent)]
 }
 

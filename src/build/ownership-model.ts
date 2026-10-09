@@ -21,17 +21,17 @@ import type { CapabilityInventory } from "./inventory.js"
 /** Bump only when a reader could misinterpret the shape -- same discipline every other model's schema-version constant already documents. Bumped 1 -> 2 by OUT-01: `OwnershipCapabilityRef.file` is now root-relative, not absolute. */
 export const OWNERSHIP_MODEL_SCHEMA_VERSION = 2
 
-/**
- * Sentinel bucket for a capability/field with no documented owner at any level --
- * surfaced explicitly rather than silently omitted, so "nobody owns this" is as
- * visible as any real owner.
- */
 // A function so the label is read when buckets are built, not once at module load (where a change to
 // it could not be attributed to a test).
 function unowned(): string {
   return "(unowned)"
 }
 
+/**
+ * Sentinel bucket for a capability/field with no documented owner at any level --
+ * surfaced explicitly rather than silently omitted, so "nobody owns this" is as
+ * visible as any real owner.
+ */
 export const UNOWNED: string = unowned()
 
 /** Identifies one capability by where it's declared. */

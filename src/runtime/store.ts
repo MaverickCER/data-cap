@@ -47,9 +47,8 @@ export function createDataStore<TFields>(
   initialState: DataState<TFields>,
 ): DataStoreController<TFields> {
   let authoritativeState = initialState
-  // provable no-op -- `project` folds every entry through `commitState`, which
-  // treats a value lacking `fieldsPatch`/`infoPatch` as an empty (identity) patch.
-  let pendingTransitions: readonly PendingTransition<TFields>[] = []
+  let pendingTransitions: readonly PendingTransition<TFields>[] =
+    Array.of<PendingTransition<TFields>>()
   let visibleState = initialState
   const listeners = new Set<() => void>()
 

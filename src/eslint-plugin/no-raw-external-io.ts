@@ -46,12 +46,14 @@ export interface RuleOptions {
 const DEFAULT_FUNCTIONS = ["fetch"]
 
 /** `scope` and every scope above it, innermost first. Ends at the global scope, whose `upper` is `null`. */
-function scopeChain(scope: Scope | null): Scope[] {
+/** @internal Exported for direct unit coverage. */
+export function scopeChain(scope: Scope | null): Scope[] {
   return scope === null ? [] : [scope, ...scopeChain(scope.upper)]
 }
 
 /** `node` and every ancestor above it, innermost first. Ends at the program root, whose parent is nullish. */
-function ancestorChain(node: TSESTree.Node | null | undefined): TSESTree.Node[] {
+/** @internal Exported for direct unit coverage. */
+export function ancestorChain(node: TSESTree.Node | null | undefined): TSESTree.Node[] {
   return node == null ? [] : [node, ...ancestorChain(node.parent)]
 }
 
