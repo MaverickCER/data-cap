@@ -80,11 +80,22 @@ const EXTRA_GOLDEN_SCRIPTS = {
   "enterprise-platform": ["reports"],
 }
 
+// A project whose dependencies are not installed cannot be regenerated, and skipping it would leave its
+// committed output at the previous version -- exactly what `npm run version` runs this to prevent (the
+// release workflow installs only the root's dependencies, so every project reaches here uninstalled).
+// Install it instead, and let a failed install stop the run.
+function ensureInstalled(name, projectDir) {
+  if (existsSync(path.join(projectDir, "node_modules"))) return
+  console.log(`[install] ${name}: node_modules not installed; running npm install...`)
+  execFileSync("npm", ["install", "--no-audit", "--no-fund"], {
+    cwd: projectDir,
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+  })
+}
+
 function updateGolden(name, projectDir, { writesOutputJson }) {
-  if (!existsSync(path.join(projectDir, "node_modules"))) {
-    console.log(`[skip] ${name}: node_modules not installed (run npm install in ${name} first)`)
-    return
-  }
+  ensureInstalled(name, projectDir)
 
   console.log(`[golden] ${name}: regenerating...`)
   execFileSync("npm", ["run", "--silent", "start"], {
