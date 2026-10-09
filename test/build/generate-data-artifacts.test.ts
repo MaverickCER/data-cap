@@ -1038,7 +1038,7 @@ describe("generateDataArtifacts", () => {
       }
     })
 
-    it("threads --evidence's path into the usage scan's own options only when provided", async () => {
+    it("threads --evidence's path into the usage scan's own options, and leaves it unset otherwise", async () => {
       await writeFile(
         "user.ts",
         `export const userCapability = createData({ fields: { email: "" } });`,
@@ -1065,13 +1065,13 @@ describe("generateDataArtifacts", () => {
           ownership: path.join(root, "OWNERSHIP2.md"),
         })
         const withoutEvidence = spy.mock.calls.at(-1)?.[0]
-        expect(Object.hasOwn(withoutEvidence ?? {}, "evidencePath")).toBe(false)
+        expect(withoutEvidence?.evidencePath).toBeUndefined()
       } finally {
         spy.mockRestore()
       }
     })
 
-    it("threads --evidence's path into the documentation generator's own options only when provided", async () => {
+    it("threads --evidence's path into the documentation generator's own options, and leaves it unset otherwise", async () => {
       await writeFile(
         "user.ts",
         `export const userCapability = createData({ fields: { email: "" } });`,
@@ -1098,13 +1098,13 @@ describe("generateDataArtifacts", () => {
           docs: path.join(root, "CAPABILITIES2.md"),
         })
         const withoutEvidence = spy.mock.calls.at(-1)?.[0]
-        expect(Object.hasOwn(withoutEvidence ?? {}, "evidencePath")).toBe(false)
+        expect(withoutEvidence?.evidencePath).toBeUndefined()
       } finally {
         spy.mockRestore()
       }
     })
 
-    it("threads --evidence's path into the flow generator's own options only when provided", async () => {
+    it("threads --evidence's path into the flow generator's own options, and leaves it unset otherwise", async () => {
       await writeFile(
         "user.ts",
         `export const userCapability = createData({ fields: { email: "" } });`,
@@ -1131,7 +1131,7 @@ describe("generateDataArtifacts", () => {
           flow: path.join(root, "flow2"),
         })
         const withoutEvidence = spy.mock.calls.at(-1)?.[0]
-        expect(Object.hasOwn(withoutEvidence ?? {}, "evidencePath")).toBe(false)
+        expect(withoutEvidence?.evidencePath).toBeUndefined()
       } finally {
         spy.mockRestore()
       }

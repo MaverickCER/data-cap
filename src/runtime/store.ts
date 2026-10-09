@@ -47,7 +47,6 @@ export function createDataStore<TFields>(
   initialState: DataState<TFields>,
 ): DataStoreController<TFields> {
   let authoritativeState = initialState
-  // Stryker disable next-line ArrayDeclaration: a phantom initial element is a
   // provable no-op -- `project` folds every entry through `commitState`, which
   // treats a value lacking `fieldsPatch`/`infoPatch` as an empty (identity) patch.
   let pendingTransitions: readonly PendingTransition<TFields>[] = []

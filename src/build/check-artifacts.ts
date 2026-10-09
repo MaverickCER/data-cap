@@ -17,7 +17,8 @@ export interface CheckArtifactsResult {
 }
 
 /** On-disk content of `filePath`, or `""` when it is missing/unreadable -- an empty string never matches a real artifact's content, so it always reads as stale. */
-async function readOnDisk(fs: BuildFileSystem, filePath: string): Promise<string> {
+/** @internal Exported for direct unit coverage. */
+export async function readOnDisk(fs: BuildFileSystem, filePath: string): Promise<string> {
   try {
     return await fs.readFile(filePath, "utf8")
   } catch {
@@ -25,7 +26,6 @@ async function readOnDisk(fs: BuildFileSystem, filePath: string): Promise<string
   }
   // Any value no real artifact's content can equal works here (a real artifact
   // is never empty), so the specific sentinel isn't behaviourally pinnable.
-  // Stryker disable next-line StringLiteral
   return ""
 }
 
@@ -58,7 +58,8 @@ async function readOnDisk(fs: BuildFileSystem, filePath: string): Promise<string
  * (`normalizeEvidenceSnapshotForComparison`). A real change anywhere else in
  * the model (including `capability` itself) is still caught.
  */
-function normalizeForComparison(content: string): string {
+/** @internal Exported for direct unit coverage. */
+export function normalizeForComparison(content: string): string {
   let parsed: unknown
   try {
     parsed = JSON.parse(content)
@@ -82,7 +83,6 @@ function normalizeForComparison(content: string): string {
   // freshly-generated `write.content` regardless of which branch masked its
   // (malformed-vs-absent) timestamp. Hand-verified: forcing every combination
   // of this guard's clauses and running the real suite passes unchanged.
-  // Stryker disable next-line ConditionalExpression, LogicalOperator
   if (typeof provenance !== "object" || provenance === null) return content
   const change: unknown = model["change"]
   // Same defensive shape as the provenance guard directly above, and for the
@@ -98,7 +98,6 @@ function normalizeForComparison(content: string): string {
   // ever reachable for a malformed `onDisk` -- which then correctly compares
   // unequal via the whole raw document, the same tradeoff the provenance
   // guard above already accepts.
-  // Stryker disable next-line ConditionalExpression, LogicalOperator
   if (typeof change !== "object" || change === null) return content
   return JSON.stringify(
     {
@@ -108,9 +107,7 @@ function normalizeForComparison(content: string): string {
       // are always masked with this SAME constant, so any value here keeps
       // them equal to each other when only the timestamp differs -- the
       // comparison never depends on which specific string is chosen.
-      // Stryker disable next-line StringLiteral
       provenance: { ...(provenance as Record<string, unknown>), generatedAt: "" },
-      // Stryker disable next-line StringLiteral: same masking as the line above: the compared value is masked identically on both sides, so it cannot differ
       change: null,
     },
     null,

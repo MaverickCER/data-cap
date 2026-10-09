@@ -309,3 +309,33 @@ function structuredCloneSafe<T>(value: T): T {
   }
   return result as T
 }
+
+describe("canonicalize -- cycle detection stops at the first repeat", () => {
+  it("reads a self-referencing object's property once, not down to the depth ceiling", () => {
+    let reads = 0
+    const cyclic: Record<string, unknown> = {}
+    Object.defineProperty(cyclic, "self", {
+      enumerable: true,
+      get() {
+        reads += 1
+        return cyclic
+      },
+    })
+    expect(canonicalize(cyclic)).toBeUndefined()
+    expect(reads).toBe(1)
+  })
+
+  it("reads a self-containing array's element once, not down to the depth ceiling", () => {
+    let reads = 0
+    const cyclic: unknown[] = []
+    Object.defineProperty(cyclic, 0, {
+      enumerable: true,
+      get() {
+        reads += 1
+        return cyclic
+      },
+    })
+    expect(canonicalize(cyclic)).toBeUndefined()
+    expect(reads).toBe(1)
+  })
+})

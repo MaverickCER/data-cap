@@ -2,7 +2,7 @@
 // module loader, so its main entry is safe to import from; `RuleCreator` still comes from the
 // `eslint-utils` subpath to keep the loaded surface small.
 import { RuleCreator } from "@typescript-eslint/utils/eslint-utils"
-import { AST_NODE_TYPES } from "@typescript-eslint/utils"
+import { AST_NODE_TYPES, type TSESTree } from "@typescript-eslint/utils"
 import { globToRegExp } from "./glob.js"
 
 const createRule = RuleCreator(
@@ -23,15 +23,8 @@ const FS_SPECIFIER = /^(node:)?fs(\/promises)?$/
 
 /** The specifier string if it names Node's filesystem module, else `undefined`. */
 function fsSpecifier(source: unknown): string | undefined {
-  // `source` is always an AST literal's `.value`. The `typeof` guard is a
-  // type-narrowing convenience, not a behavioral one: no non-string literal
-  // value stringifies to `fs`/`node:fs`/their `/promises` forms, so
-  // `FS_SPECIFIER.test()` already rejects every one -- the mutant dropping
-  // this guard is equivalent.
-  // Stryker disable next-line ConditionalExpression
-  if (typeof source !== "string") return undefined
-  if (!FS_SPECIFIER.test(source)) return undefined
-  return source
+  const text = String(source)
+  return FS_SPECIFIER.test(text) ? text : undefined
 }
 
 /**
@@ -70,10 +63,8 @@ export const noNodeFs = createRule<[RuleOptions], "noNodeFs">({
   defaultOptions: [{ allow: [] }],
   create(context, [options]) {
     const filename = context.filename
-    // `?? []` is unreachable through the public API -- `RuleCreator` always
-    // deep-merges `context.options` onto `defaultOptions` first.
-    // Stryker disable next-line ArrayDeclaration
-    const allowPatterns = options.allow ?? []
+    // `RuleCreator` merges `defaultOptions` onto the configured options, so `allow` is always set.
+    const allowPatterns = options.allow as readonly string[]
     if (allowPatterns.some((p) => globToRegExp(p).test(filename))) return {}
 
     return {
@@ -84,24 +75,16 @@ export const noNodeFs = createRule<[RuleOptions], "noNodeFs">({
         }
       },
       ImportExpression(node) {
-        // Narrowing guard so `.value` type-checks. Behaviorally equivalent to
-        // omitting it -- a non-`Literal` source has no `.value`, and
-        // `fsSpecifier(undefined)` is already `undefined`.
-        // Stryker disable next-line ConditionalExpression
-        if (node.source.type !== AST_NODE_TYPES.Literal) return
-        const specifier = fsSpecifier(node.source.value)
+        // A source that is not a literal (an identifier, a template) has no `value`, so it never matches.
+        const specifier = fsSpecifier((node.source as TSESTree.Literal).value)
         if (specifier !== undefined) {
           context.report({ node, messageId: "noNodeFs", data: { specifier } })
         }
       },
       CallExpression(node) {
+        // Only an `Identifier` callee has a `name`; any other callee reads `undefined` and is not `require`.
         if (
-          // Narrowing guard so `.name` type-checks; redundant at runtime with
-          // the `.name !== "require"` clause (only an `Identifier` carries a
-          // `.name`), so the mutant dropping it is equivalent.
-          // Stryker disable next-line ConditionalExpression
-          node.callee.type !== AST_NODE_TYPES.Identifier ||
-          node.callee.name !== "require" ||
+          (node.callee as TSESTree.Identifier).name !== "require" ||
           node.arguments[0]?.type !== AST_NODE_TYPES.Literal
         ) {
           return

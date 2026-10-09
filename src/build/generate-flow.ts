@@ -37,7 +37,7 @@ export interface GenerateFlowOptions {
   /** Findings from other passes (C2's static rules, C6's usage scan) to fold into the Security Data-Flow Review -- optional, so `--flow` alone still produces a meaningful review of just its own findings. */
   readonly additionalFindings?: readonly ReportFinding[]
   /** This same run's own `--evidence` output path, when requested -- named in the generated banner's Evidence Model note. */
-  readonly evidencePath?: string
+  readonly evidencePath?: string | undefined
 }
 
 /** One file within the generated flow artifact set. */

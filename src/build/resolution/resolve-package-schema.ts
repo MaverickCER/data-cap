@@ -71,7 +71,6 @@ export type PackageSchemaResolutionResult =
 // of gaps, but the same false-positive class manifesting with different
 // mutator granularity each time.
 export function isRecord(value: unknown): value is Record<string, unknown> {
-  // Stryker disable next-line ConditionalExpression, EqualityOperator, LogicalOperator: Stryker's perTest attribution reports this survived across runs although mutating it directly fails real tests (see the note above)
   return typeof value === "object" && value !== null
 }
 
@@ -134,13 +133,11 @@ export async function locatePackageManifest(
   // mutator granularity, from the whole loop body down to one sub-
   // expression) here as Survived -- the same false-positive class
   // manifesting differently each time, not a stable set of real gaps.
-  // Stryker disable BlockStatement, StringLiteral, ConditionalExpression, EqualityOperator, LogicalOperator
   for (let i = 0; i < PACKAGE_JSON_ANCESTOR_SEARCH_LIMIT; i++) {
     const candidate = path.join(dir, "package.json")
     try {
       const parsed: unknown = JSON.parse(await fs.readFile(candidate, "utf8"))
       if (isRecord(parsed) && parsed["name"] === packageName) {
-        // Stryker disable next-line ObjectLiteral: Stryker's perTest attribution reports this survived in some runs although applying the mutation by hand fails the direct classifyManifest/resolvePackageSchemaFile tests (see the note above); the set it flags changes from run to run
         return { packageJsonPath: candidate, packageDir: dir }
       }
     } catch {
@@ -148,7 +145,6 @@ export async function locatePackageManifest(
     }
     dir = path.dirname(dir)
   }
-  // Stryker restore BlockStatement, StringLiteral, ConditionalExpression, EqualityOperator, LogicalOperator
   return undefined
 }
 
@@ -177,7 +173,6 @@ function schemaRef(packageName: string, declaredField: string): string {
 // fresh Stryker runs have shown different ones as Survived each time --
 // not a stable set of real gaps, the same false-positive class
 // manifesting with different mutator granularity and location every run.
-// Stryker disable BlockStatement, StringLiteral, ConditionalExpression, EqualityOperator, LogicalOperator, BooleanLiteral
 /** @internal Sync failure builder -- see {@link classifyManifest}. */
 export function packageNotFoundFailure(
   packageName: string,
@@ -212,7 +207,6 @@ export function classifyManifest(
   packageDir: string,
 ): ManifestClassification {
   if (!isRecord(manifest)) {
-    // Stryker disable next-line ObjectLiteral: Stryker's perTest attribution reports this survived in some runs although applying the mutation by hand fails the direct classifyManifest/resolvePackageSchemaFile tests (see the note above); the set it flags changes from run to run
     return {
       found: false,
       failure: failure(
@@ -228,7 +222,6 @@ export function classifyManifest(
       ? dataCapField["schema"]
       : undefined
   if (declaredField === undefined) {
-    // Stryker disable next-line ObjectLiteral: Stryker's perTest attribution reports this survived in some runs although applying the mutation by hand fails the direct classifyManifest/resolvePackageSchemaFile tests (see the note above); the set it flags changes from run to run
     return {
       found: false,
       failure: failure(
@@ -240,7 +233,6 @@ export function classifyManifest(
 
   const lexicallyResolved = path.resolve(packageDir, declaredField)
   if (!isWithinDirectory(packageDir, lexicallyResolved)) {
-    // Stryker disable next-line ObjectLiteral: Stryker's perTest attribution reports this survived in some runs although applying the mutation by hand fails the direct classifyManifest/resolvePackageSchemaFile tests (see the note above); the set it flags changes from run to run
     return {
       found: false,
       failure: failure(
@@ -283,7 +275,6 @@ export function statFailedFailure(
 ): PackageSchemaResolutionResult {
   return failure("OUTSIDE_PACKAGE", `${schemaRef(packageName, declaredField)} could not be read.`)
 }
-// Stryker restore BlockStatement, StringLiteral, ConditionalExpression, EqualityOperator, LogicalOperator, BooleanLiteral
 
 /** The realpath + stat I/O outcome for a schema file that both succeeded on,
  *  reduced to plain data so {@link classifyResolvedFile} can decide the result
@@ -308,7 +299,6 @@ export interface ResolvedFileProbe {
 // by hand across multiple different specific mutants here surviving on
 // different fresh Stryker runs, never in a way a direct hand-applied
 // mutation+real-suite-run couldn't immediately catch.
-// Stryker disable BlockStatement, StringLiteral, ConditionalExpression, EqualityOperator, LogicalOperator
 export function classifyResolvedFile(
   probe: ResolvedFileProbe,
   packageName: string,
@@ -340,7 +330,6 @@ export function classifyResolvedFile(
     },
   }
 }
-// Stryker restore BlockStatement, StringLiteral, ConditionalExpression, EqualityOperator, LogicalOperator
 
 /**
  * @internal Exported for direct unit coverage -- reached in production only
@@ -361,9 +350,7 @@ export async function resolveUncached(
   try {
     // "utf8" is required by the BuildFileSystem contract; JSON.parse over the
     // decoded string is identical to the previous Buffer.toString("utf8").
-    // Stryker disable next-line StringLiteral
     manifest = JSON.parse(await fs.readFile(packageJsonPath, "utf8"))
-    // Stryker disable next-line BlockStatement: Stryker's perTest attribution reports this survived in some runs although applying the mutation by hand (an empty catch) fails the "reports MALFORMED_PACKAGE_JSON when the resolved package.json is not valid JSON" test; the set it flags changes from run to run
   } catch {
     return malformedJsonFailure(packageJsonPath)
   }
@@ -381,7 +368,6 @@ export async function resolveUncached(
   // allowed; only a real target outside it is rejected.
   let realFile: string
   let realPackageDir: string
-  // Stryker disable BlockStatement: Stryker's perTest attribution reports this survived in some runs although applying the mutation by hand fails the direct classifyManifest/resolvePackageSchemaFile tests (see the note above); the set it flags changes from run to run
   try {
     ;[realFile, realPackageDir] = await Promise.all([
       fs.realpath(lexicallyResolved),
@@ -390,12 +376,10 @@ export async function resolveUncached(
   } catch {
     return realpathFailedFailure(packageName, declaredField)
   }
-  // Stryker restore BlockStatement
 
   let stats
   try {
     stats = await fs.stat(realFile)
-    // Stryker disable next-line BlockStatement: Stryker's perTest attribution reports this survived in some runs although applying the mutation by hand (an empty catch) fails the "reports OUTSIDE_PACKAGE when fs.stat throws for the already-realpath'd file" test; the set it flags changes from run to run
   } catch {
     return statFailedFailure(packageName, declaredField)
   }
@@ -435,7 +419,6 @@ export function resolvePackageSchemaFile(
     // Hand-verified 2026-09-20: removing this call fails "a second call with the same cache
     // returns the very same in-flight promise" immediately, yet CI's own diagnostic mutation
     // report flagged this exact CallExpression mutant as Survived.
-    // Stryker disable next-line CallExpression
     cache.set(packageName, cached)
   }
   return cached
@@ -461,7 +444,7 @@ export interface ResolvePackagesResult {
  * every other static-analysis boundary in this codebase.
  */
 export async function resolveAllowlistedPackages(
-  packages: readonly string[],
+  packages: readonly string[] | undefined,
   root: string,
   cache: Map<string, Promise<PackageSchemaResolutionResult>>,
   fs: BuildFileSystem,
@@ -548,7 +531,6 @@ export async function mergeLocalAndPackageFiles(
 // Survived, never in a way a direct hand-applied mutation+real-suite-run
 // couldn't immediately catch (this file's own test suite exercises both
 // the exact-match and subpath-match branches explicitly).
-// Stryker disable ConditionalExpression, StringLiteral, MethodExpression, LogicalOperator, EqualityOperator
 export async function resolvePackageImport(
   specifier: string,
   allowedPackages: readonly string[],
@@ -563,4 +545,3 @@ export async function resolvePackageImport(
   const result = await resolvePackageSchemaFile(matched, root, cache, fs)
   return result.ok ? result.origin.resolvedFile : undefined
 }
-// Stryker restore ConditionalExpression, StringLiteral, MethodExpression, LogicalOperator, EqualityOperator

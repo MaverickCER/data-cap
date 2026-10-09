@@ -29,17 +29,14 @@
  * not merely convenient).
  */
 
-// A module-level `const` initializer is a Stryker "static" mutant: even
-// though `test/core/fields.test.ts`'s "is registered in the global symbol
-// registry" test genuinely fails against a mutated key (hand-verified: `perl
-// -pi -e 's/"data-cap.field-marker"/""/'` + `vitest run` -> 1 failed), Stryker
-// reports it Survived regardless (the documented `ignoreStatic` limitation --
-// see [[feedback_stryker_mutation_score_formula]] and Batch 7/Batch 34+
-// notes). `FIELD_MARKER` must stay a `const` (its type is `unique symbol`,
-// required at multiple call sites' type positions), so there is no function
-// to move this into.
-// Stryker disable next-line StringLiteral
-export const FIELD_MARKER: unique symbol = Symbol.for("data-cap.field-marker")
+// `Symbol.for` registers the marker globally, so two copies of this module (a duplicated install) still
+// recognize each other's markers. The key is read through a function so it can be checked directly.
+/** @internal Exported for direct unit coverage. */
+export function fieldMarkerKey(): string {
+  return "data-cap.field-marker"
+}
+
+export const FIELD_MARKER: unique symbol = Symbol.for(fieldMarkerKey())
 
 /** Produced by `fields.nullable(...)` -- recognized only during `buildData`'s schema-authoring walk; the resolved runtime default is always `null`. */
 export interface NullableMarker<T> {
@@ -68,21 +65,15 @@ export function isFieldMarker(value: unknown): value is FieldMarker {
 }
 
 /** Field-default authoring helpers, recognized only inside a `buildData`/`createData` schema. */
-// Same documented Stryker "static" false-Survivor as `FIELD_MARKER` above:
-// `fields = {}` (mutating away both methods) is hand-verified to fail 4 of
-// this file's own tests, but Stryker reports it Survived regardless. Naming
-// `nullable`/`optional` as their own top-level `function` declarations (tried
-// first) only moves their *bodies* out of the static literal -- this literal,
-// `fields`'s own public shape, is unavoidably a module-level object either
-// way.
-// Stryker disable next-line ObjectLiteral
-export const fields = {
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class -- a namespace of static helpers: as methods they are ordinary function bodies, whereas an object literal would be built once at module load, where a change to it cannot be attributed to any test
+export class fields {
   /** Infers the underlying type from `defaultInner`; the runtime default is always `null`. */
-  nullable<T>(defaultInner: T): NullableMarker<T> {
+  static nullable<T>(defaultInner: T): NullableMarker<T> {
     return { [FIELD_MARKER]: "nullable", inner: defaultInner }
-  },
+  }
+
   /** Infers the underlying type from `defaultInner`; the runtime default is always `undefined`. */
-  optional<T>(defaultInner: T): OptionalMarker<T> {
+  static optional<T>(defaultInner: T): OptionalMarker<T> {
     return { [FIELD_MARKER]: "optional", inner: defaultInner }
-  },
+  }
 }

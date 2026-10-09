@@ -26,11 +26,13 @@ export const OWNERSHIP_MODEL_SCHEMA_VERSION = 2
  * surfaced explicitly rather than silently omitted, so "nobody owns this" is as
  * visible as any real owner.
  */
-// A shared public sentinel evaluated at module load: `""` fails the tests that
-// assert the rendered `"(unowned)"` label, but Stryker perTest reports a false
-// Survived for this covered static mutant (see project-mutation-100-drive memory).
-// Stryker disable next-line StringLiteral
-export const UNOWNED = "(unowned)"
+// A function so the label is read when buckets are built, not once at module load (where a change to
+// it could not be attributed to a test).
+function unowned(): string {
+  return "(unowned)"
+}
+
+export const UNOWNED: string = unowned()
 
 /** Identifies one capability by where it's declared. */
 export interface OwnershipCapabilityRef {
@@ -76,19 +78,9 @@ function capabilityKey(ref: OwnershipCapabilityRef): string {
 }
 
 function sortCapabilityRefs(refs: readonly OwnershipCapabilityRef[]): OwnershipCapabilityRef[] {
-  // `.slice()` before `.sort()` (matching sortFieldRefs's identical
-  // defensive copy below, which IS load-bearing -- its own caller passes
-  // `bucket.fields` directly, not a fresh copy): this function's own sole
-  // current call site already spreads `bucket.capabilities.values()` into
-  // a fresh array first, so removing this specific `.slice()` wouldn't
-  // observably mutate anything a caller holds today. Kept for parity with
-  // sortFieldRefs and as a real guard against a future caller that doesn't
-  // copy first. Hand-verified: removing it and running the real suite
-  // passes unchanged.
-  // Stryker disable next-line MethodExpression
-  return refs
-    .slice()
-    .sort((a, b) => a.file.localeCompare(b.file) || a.exportName.localeCompare(b.exportName))
+  return [...refs].sort(
+    (a, b) => a.file.localeCompare(b.file) || a.exportName.localeCompare(b.exportName),
+  )
 }
 
 function sortFieldRefs(refs: readonly OwnershipFieldRef[]): OwnershipFieldRef[] {
@@ -117,10 +109,10 @@ export function buildOwnershipMatrix(
 
   for (const capability of inventory.capabilities) {
     const ref: OwnershipCapabilityRef = { file: capability.file, exportName: capability.exportName }
-    bucketFor(capability.docs?.owner ?? UNOWNED).capabilities.set(capabilityKey(ref), ref)
+    bucketFor(capability.docs?.owner ?? unowned()).capabilities.set(capabilityKey(ref), ref)
 
     for (const field of capability.fields) {
-      bucketFor(field.owner.value ?? UNOWNED).fields.push({ capability: ref, field: field.path })
+      bucketFor(field.owner.value ?? unowned()).fields.push({ capability: ref, field: field.path })
     }
   }
 
@@ -133,7 +125,7 @@ export function buildOwnershipMatrix(
     .sort((a, b) => {
       // The UNOWNED bucket always sorts last (rank 1); named owners (rank 0)
       // sort alphabetically among themselves.
-      const rank = (owner: string): number => (owner === UNOWNED ? 1 : 0)
+      const rank = (owner: string): number => (owner === unowned() ? 1 : 0)
       return rank(a.owner) - rank(b.owner) || a.owner.localeCompare(b.owner)
     })
 }

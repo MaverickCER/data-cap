@@ -22,17 +22,19 @@ export interface DiscoverOptions {
   /** Directory to walk. */
   readonly root: string
   /** Glob patterns (relative to `root`) a file must match at least one of to be included. Defaults to every `.ts`/`.tsx` file. */
-  readonly include?: readonly string[]
+  readonly include?: readonly string[] | undefined
   /** Glob patterns (relative to `root`) that prune a file or directory regardless of `include`. */
-  readonly exclude?: readonly string[]
+  readonly exclude?: readonly string[] | undefined
+}
+
+// A function so the globs are read when discovery runs, not once at module load (where a change to them
+// could not be attributed to a test).
+function defaultInclude(): string[] {
+  return ["**/*.ts", "**/*.tsx"]
 }
 
 /** The default `include` glob when none is supplied: every `.ts`/`.tsx` file. */
-// A shared public constant evaluated at module load: mutating it fails 7 discover
-// tests, but Stryker perTest reports a false Survived for this covered static
-// mutant (see project-mutation-100-drive memory).
-// Stryker disable next-line ArrayDeclaration, StringLiteral
-export const DEFAULT_INCLUDE = ["**/*.ts", "**/*.tsx"]
+export const DEFAULT_INCLUDE: readonly string[] = defaultInclude()
 
 /** Directory names discovery never descends into, regardless of `include`/`exclude`. */
 function isAlwaysExcludedDir(name: string): boolean {
@@ -86,18 +88,10 @@ async function walk(
  * Discovers every file matching `include`/`exclude` under `root`, alphabetically sorted, as absolute paths.
  */
 export async function discoverCapabilityFiles(options: DiscoverOptions): Promise<string[]> {
-  const include = options.include ?? DEFAULT_INCLUDE
+  const include = options.include ?? defaultInclude()
   // No test can distinguish this default from a non-empty placeholder array:
-  // `matchesAnyPattern` (above) only ever excludes a file whose relative path
-  // the pattern actually matches via `globToRegExp`, so a fallback element
-  // only changes behavior if some real fixture path happens to match its
-  // exact (glob-special-character-free) text -- impossible to construct
-  // without hard-coding the mutation tool's own arbitrary placeholder string
-  // into a test, which would validate against Stryker's own output, not this
-  // function's contract. Hand-verified: replacing `[]` with a nonsense
-  // placeholder and running the real suite passes unchanged.
-  // Stryker disable next-line ArrayDeclaration
-  const exclude = options.exclude ?? []
+  // `new Set(undefined)` is empty, so an omitted `exclude` excludes nothing.
+  const exclude = [...new Set(options.exclude)]
   const root = path.resolve(options.root)
 
   const results: string[] = []

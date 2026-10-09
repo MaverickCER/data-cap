@@ -44,15 +44,8 @@ export interface IdentityWarning {
 // consumer of `data-cap/helpers` to pay for canonicalize.ts even
 // when they only import `processors`/`shape` (see test/helpers/tree-shaking.test.ts).
 function missingComponentToken(): string {
-  const token = canonicalize(undefined)
-  // `canonicalize(undefined)` is `canonicalizeScalar(undefined, "undefined")` ->
-  // `atom("u", "")`, never `undefined` -- this only narrows `string | undefined`.
-  // Stryker disable ConditionalExpression, BlockStatement, StringLiteral, CallExpression
-  if (token === undefined) {
-    throw new Error("unreachable: canonicalize(undefined) is always defined")
-  }
-  // Stryker restore ConditionalExpression, BlockStatement, StringLiteral, CallExpression
-  return token
+  // `canonicalize(undefined)` is always a string (`atom("u", "")`); `String()` only narrows the type.
+  return String(canonicalize(undefined))
 }
 
 /**
