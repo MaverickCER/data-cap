@@ -33,15 +33,12 @@ interface ParsedCitation {
   readonly column: number
 }
 
-/** Parses a `"<relative-path>:<line>:<column>"` citation -- assumes the format-check `parse.ts` already applied; never re-validates format, just structure. Returns `undefined` for a citation that somehow doesn't match despite that (defensive only). */
+/** Parses a `"<relative-path>:<line>:<column>"` citation. Returns `undefined` for a citation that does not match that shape (`parse.ts` already rejects those, so this is defensive only). */
 function parseCitation(citation: string): ParsedCitation | undefined {
   const match = /^(.+):(\d+):(\d+)$/.exec(citation)
-  const relativePath = match?.[1]
-  const line = match?.[2]
-  const column = match?.[3]
-  // Stryker disable next-line ConditionalExpression,LogicalOperator: once the regex matches, groups 1-3 are always present; this line only narrows `string | undefined` (noUncheckedIndexedAccess), and no citation can make one group present but not another.
-  if (relativePath === undefined || line === undefined || column === undefined) return undefined
-  return { relativePath, line: Number(line), column: Number(column) }
+  if (match === null) return undefined
+  // All three groups are mandatory in the pattern, so each is always captured when it matched.
+  return { relativePath: String(match[1]), line: Number(match[2]), column: Number(match[3]) }
 }
 
 interface DeclaredCitations {
@@ -67,12 +64,8 @@ function collectDeclaredCitations(inventory: CapabilityInventory): readonly Decl
 }
 
 async function hashFile(fs: BuildFileSystem, absolutePath: string): Promise<string | undefined> {
-  // A missing/unreadable file (or a race with deletion) reads back as `null`
-  // rather than throwing, so "no hash" is a real, checkable value below.
-  // "utf8" -> "" is an equivalent mutant: with "" the adapter returns a
-  // Buffer, and `createHash().update()` over that Buffer hashes the exact
-  // same bytes as over the decoded string -- byte-identical digest either way.
-  // Stryker disable next-line StringLiteral
+  // A missing/unreadable file (or a race with deletion) reads back as `null` rather than throwing,
+  // so "no hash" is a real, checkable value below.
   const content = await fs.readFile(absolutePath, "utf8").then(
     (text): string | null => text,
     (): null => null,

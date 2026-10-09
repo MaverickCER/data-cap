@@ -9,7 +9,25 @@ import { nodeBuildFileSystem } from "../../src/node/index.js"
  * real disk behavior use this; importing it here also gives the published
  * `./node` entry real test coverage.
  */
-export const nodeBuildFs: BuildFileSystem = nodeBuildFileSystem
+export const nodeBuildFs: BuildFileSystem = {
+  ...nodeBuildFileSystem,
+  readFile: (p, encoding) => nodeBuildFileSystem.readFile(p, assertUtf8(encoding)),
+  writeFile: (p, data, encoding) => nodeBuildFileSystem.writeFile(p, data, assertUtf8(encoding)),
+}
+
+/**
+ * The capability reads and writes UTF-8 text only. Node would quietly accept an empty or unknown
+ * encoding (a raw buffer read, a default write), so the test doubles reject anything else: a call
+ * site that passes the wrong encoding fails here instead of passing unnoticed.
+ * @param encoding - the encoding a call site passed.
+ * @returns the encoding, once it is known to be `"utf8"`.
+ */
+function assertUtf8(encoding: string): "utf8" {
+  if (encoding !== "utf8") {
+    throw new TypeError(`expected the "utf8" encoding, got ${JSON.stringify(encoding)}`)
+  }
+  return "utf8"
+}
 
 /**
  * A minimal in-memory {@link BuildFileSystem} -- a `Map<absolutePath,
@@ -55,12 +73,14 @@ export function createInMemoryBuildFs(seed: Record<string, string> = {}): InMemo
     paths() {
       return [...files.keys()]
     },
-    readFile: async (p) => {
+    readFile: async (p, encoding) => {
+      assertUtf8(encoding)
       const content = files.get(path.normalize(p))
       if (content === undefined) throw new MissingError("open", p)
       return content
     },
-    writeFile: async (p, data) => {
+    writeFile: async (p, data, encoding) => {
+      assertUtf8(encoding)
       files.set(path.normalize(p), data)
     },
     mkdir: async () => {

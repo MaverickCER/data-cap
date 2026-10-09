@@ -64,19 +64,12 @@ export function patchInto<T>(prev: T, patch: DeepPartial<T> | undefined): T {
   const keys = new Set([...Object.keys(prevRecord), ...Object.keys(patchRecord)])
   for (const key of keys) {
     const prevHasKey = Object.hasOwn(prevRecord, key)
-    // Stryker disable next-line ConditionalExpression: `patchInto(x, undefined)`
-    // is `x`, so routing a prev-only key through the merge branch (mutant: `true`)
-    // is behaviourally identical to the `else` here. The `false` direction (a
-    // patch that adds/updates a key silently doing nothing) is covered by the
-    // "merges a partial patch" cases.
-    if (Object.hasOwn(patchRecord, key)) {
-      const nextValue = patchInto(prevHasKey ? prevRecord[key] : undefined, patchRecord[key])
-      result[key] = nextValue
-      if (!prevHasKey || nextValue !== prevRecord[key]) {
-        changed = true
-      }
-    } else {
-      result[key] = prevRecord[key]
+    // A key the patch does not carry patches to `undefined`, which leaves `prev`'s value in place and
+    // counts as unchanged, so one merge covers keys present in either side.
+    const nextValue = patchInto(prevHasKey ? prevRecord[key] : undefined, patchRecord[key])
+    result[key] = nextValue
+    if (!prevHasKey || nextValue !== prevRecord[key]) {
+      changed = true
     }
   }
 

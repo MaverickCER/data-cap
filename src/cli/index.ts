@@ -25,9 +25,9 @@ export interface ParsedArgs {
   include: string[]
   exclude: string[]
   packages: string[]
-  tsconfig?: string | false
-  evidence?: string
-  expiringWithinDays?: number
+  tsconfig?: string | false | undefined
+  evidence?: string | undefined
+  expiringWithinDays?: number | undefined
   strict: boolean
   strictDocs: boolean
   strictOwnership: boolean
@@ -81,39 +81,15 @@ export function parseArgs(argv: string[]): ParsedArgs {
     "-h": (a) => (a.help = true),
   }
 
-  // `steps`, not `i`, bounds the loop: `i` is manually advanced (`++i`
-  // below, to consume a value-flag's argument) and a mutation flipping its
-  // `i++` to `i--` would otherwise walk it away from `argv.length` forever,
-  // looping until Stryker's own timeout instead of producing an observably
-  // wrong result a normal test could catch. `steps` always moves forward by
-  // exactly one per iteration regardless, so it still reaches its own
-  // generous ceiling fast under that same mutation. `steps`'s own
-  // advancement being mutated in isolation (`steps--` instead of `steps++`)
-  // is itself harmless -- `i` still advances normally, so the loop still
-  // terminates correctly via `i < argv.length`, unaffected by `steps` going
-  // negative. Hand-verified: mutating this in isolation and running the
-  // real suite passes unchanged.
-  // Stryker disable next-line UpdateOperator
-  for (let i = 0, steps = 0; i < argv.length; i++, steps++) {
-    // This guard exists only to fail a mutated `i++` fast instead of
-    // hanging -- under real argv input it can never trip (`steps` and `i`
-    // always advance together), so no test can observably distinguish this
-    // condition (or its `+ 1` margin) from anything else without itself
-    // mutating `i`'s own advancement. Hand-verified: gutting/neutralizing
-    // each piece individually and running the real suite passes unchanged
-    // (or, for `i`'s own advancement, throws this fast instead of hanging).
-    // Stryker disable ArithmeticOperator, ConditionalExpression, EqualityOperator, BlockStatement, StringLiteral, CallExpression
-    if (steps > argv.length + 1) {
-      throw new Error("parseArgs: argument index stopped advancing toward argv.length.")
-    }
-    // Stryker restore ArithmeticOperator, ConditionalExpression, EqualityOperator, BlockStatement, StringLiteral, CallExpression
-    // `i < argv.length` guarantees `argv[i]` is a real string; the `?? ""` only
-    // exists to satisfy `noUncheckedIndexedAccess` and is never taken.
-    // Stryker disable next-line StringLiteral
-    const arg = argv[i] ?? ""
+  // First index the loop still has to handle: a value flag consumes the argument after it. The loop
+  // walks a finite list, so it cannot run unbounded.
+  let resume = 0
+  for (const [i, arg] of argv.entries()) {
+    if (i < resume) continue
     const valueFlag = valueFlags[arg]
     if (valueFlag) {
-      valueFlag(args, nonEmpty(argv[++i], arg))
+      valueFlag(args, nonEmpty(argv[i + 1], arg))
+      resume = i + 2
       continue
     }
     const boolFlag = boolFlags[arg]
@@ -253,7 +229,7 @@ export function writeGenerationSummary(
 /** @internal Exported for direct unit coverage. */
 export function writeCheckSummary(
   options: {
-    readonly evidence?: string
+    readonly evidence?: string | undefined
   },
   checkResult: CheckArtifactsResult,
 ): void {
@@ -314,14 +290,7 @@ export function resolveOptions(args: ParsedArgs) {
     ...(args.include.length > 0 ? { include: args.include } : {}),
     ...(args.exclude.length > 0 ? { exclude: args.exclude } : {}),
     ...(args.packages.length > 0 ? { packages: args.packages } : {}),
-    // computeDataArtifacts forwards this straight through to
-    // linkCapabilityFiles, which reads `options.tsconfig` via plain
-    // property access -- present-but-undefined and absent are
-    // indistinguishable there, so "spread only when defined" and "always
-    // spread" are behaviorally identical. Hand-verified: forcing this guard
-    // to `true` and running the real suite passes unchanged.
-    // Stryker disable next-line ConditionalExpression
-    ...(args.tsconfig !== undefined ? { tsconfig: args.tsconfig } : {}),
+    tsconfig: args.tsconfig,
     // Inlined path.resolve() rather than the resolve() helper above: that
     // helper's own return type is `string | undefined` regardless of its
     // argument (it's shared with call sites that do want that), which would
@@ -332,15 +301,7 @@ export function resolveOptions(args: ParsedArgs) {
     // generate-docs/run.ts`), but this CLI itself can never produce a value
     // for any of them.
     ...(args.evidence !== undefined ? { evidence: path.resolve(root, args.evidence) } : {}),
-    // generateDataArtifacts itself does `options.expiringWithinDays ??
-    // DEFAULT_EXPIRING_WITHIN_DAYS` -- passing `expiringWithinDays: undefined`
-    // explicitly (what always-spreading here would do) is behaviorally
-    // identical to omitting the key. Hand-verified: forcing this guard to
-    // `true` and running the real suite passes unchanged.
-    // Stryker disable next-line ConditionalExpression
-    ...(args.expiringWithinDays !== undefined
-      ? { expiringWithinDays: args.expiringWithinDays }
-      : {}),
+    expiringWithinDays: args.expiringWithinDays,
     strict: args.strict,
     strictDocs: args.strictDocs,
     strictOwnership: args.strictOwnership,

@@ -19,6 +19,7 @@
  */
 
 import { defineEvidenceProjection } from "../evidence/index.js"
+import type { EvidenceProjectionResult } from "../evidence/index.js"
 import type { EvidenceModel } from "./evidence-model.js"
 import { evidenceDisclaimer } from "./generated-banner.js"
 import type { EvidenceProvenance } from "./evidence-model.js"
@@ -28,6 +29,11 @@ import { UNOWNED } from "./ownership-model.js"
 // Projectors are named function declarations, not object-literal arrows, so
 // each has its own body a covering test can be attributed to.
 /** The shared "presence of declared metadata is evidence, not a compliance claim" note. */
+/** The output a projection schema produces: each key holds what its projector returns. */
+type OutputOf<S extends Record<string, (evidence: EvidenceModel) => unknown>> = {
+  [K in keyof S]: ReturnType<S[K]>
+}
+
 function disclaimer(): string {
   return evidenceDisclaimer()
 }
@@ -80,13 +86,29 @@ function classificationEntries(evidence: EvidenceModel): readonly Classification
 }
 
 /** Data Classification Evidence: every capability/field with a declared `sensitivity`. */
-export const projectClassificationEvidence = defineEvidenceProjection<{
-  disclaimer: string
-  entries: readonly ClassificationEntry[]
-}>(
-  // Stryker disable next-line ObjectLiteral: covered by tests (verified: `{}` here fails them), but Stryker perTest reports a false Survived for this schema object because it is evaluated once at module load -- `ignoreStatic` does not ignore a static mutant that has test coverage.
-  { disclaimer, entries: classificationEntries },
-)
+export function projectClassificationEvidence(
+  evidence: EvidenceModel,
+): ProjectClassificationEvidenceOutput {
+  return projectClassificationEvidenceWithSources(evidence).value
+}
+/** Same computation as calling `projectClassificationEvidence` directly, plus which `EvidenceModel` field paths fed each output key. */
+projectClassificationEvidence.project = projectClassificationEvidenceWithSources
+
+function projectClassificationEvidenceSchema() {
+  return { disclaimer, entries: classificationEntries }
+}
+
+type ProjectClassificationEvidenceOutput = OutputOf<
+  ReturnType<typeof projectClassificationEvidenceSchema>
+>
+
+function projectClassificationEvidenceWithSources(
+  evidence: EvidenceModel,
+): EvidenceProjectionResult<ProjectClassificationEvidenceOutput> {
+  return defineEvidenceProjection<ProjectClassificationEvidenceOutput>(
+    projectClassificationEvidenceSchema(),
+  ).project(evidence)
+}
 
 /** One capability or field's declared privacy-relevant facts. */
 export interface PrivacyEntry {
@@ -104,13 +126,25 @@ function privacyEntries(evidence: EvidenceModel): readonly PrivacyEntry[] {
 }
 
 /** Data Privacy Evidence: sensitivity plus whether protections are documented (presence only, never an adequacy claim). */
-export const projectPrivacyEvidence = defineEvidenceProjection<{
-  disclaimer: string
-  entries: readonly PrivacyEntry[]
-}>(
-  // Stryker disable next-line ObjectLiteral: covered by tests (verified: `{}` here fails them), but Stryker perTest reports a false Survived for this schema object because it is evaluated once at module load -- `ignoreStatic` does not ignore a static mutant that has test coverage.
-  { disclaimer, entries: privacyEntries },
-)
+export function projectPrivacyEvidence(evidence: EvidenceModel): ProjectPrivacyEvidenceOutput {
+  return projectPrivacyEvidenceWithSources(evidence).value
+}
+/** Same computation as calling `projectPrivacyEvidence` directly, plus which `EvidenceModel` field paths fed each output key. */
+projectPrivacyEvidence.project = projectPrivacyEvidenceWithSources
+
+function projectPrivacyEvidenceSchema() {
+  return { disclaimer, entries: privacyEntries }
+}
+
+type ProjectPrivacyEvidenceOutput = OutputOf<ReturnType<typeof projectPrivacyEvidenceSchema>>
+
+function projectPrivacyEvidenceWithSources(
+  evidence: EvidenceModel,
+): EvidenceProjectionResult<ProjectPrivacyEvidenceOutput> {
+  return defineEvidenceProjection<ProjectPrivacyEvidenceOutput>(
+    projectPrivacyEvidenceSchema(),
+  ).project(evidence)
+}
 
 /** One capability or field's declared retention policy. */
 export interface RetentionEntry {
@@ -143,13 +177,25 @@ function retentionEntries(evidence: EvidenceModel): readonly RetentionEntry[] {
 }
 
 /** Data Retention Evidence: every capability/field with a declared `retention` policy (presence only, never an enforcement claim). */
-export const projectRetentionEvidence = defineEvidenceProjection<{
-  disclaimer: string
-  entries: readonly RetentionEntry[]
-}>(
-  // Stryker disable next-line ObjectLiteral: covered by tests (verified: `{}` here fails them), but Stryker perTest reports a false Survived for this schema object because it is evaluated once at module load -- `ignoreStatic` does not ignore a static mutant that has test coverage.
-  { disclaimer, entries: retentionEntries },
-)
+export function projectRetentionEvidence(evidence: EvidenceModel): ProjectRetentionEvidenceOutput {
+  return projectRetentionEvidenceWithSources(evidence).value
+}
+/** Same computation as calling `projectRetentionEvidence` directly, plus which `EvidenceModel` field paths fed each output key. */
+projectRetentionEvidence.project = projectRetentionEvidenceWithSources
+
+function projectRetentionEvidenceSchema() {
+  return { disclaimer, entries: retentionEntries }
+}
+
+type ProjectRetentionEvidenceOutput = OutputOf<ReturnType<typeof projectRetentionEvidenceSchema>>
+
+function projectRetentionEvidenceWithSources(
+  evidence: EvidenceModel,
+): EvidenceProjectionResult<ProjectRetentionEvidenceOutput> {
+  return defineEvidenceProjection<ProjectRetentionEvidenceOutput>(
+    projectRetentionEvidenceSchema(),
+  ).project(evidence)
+}
 
 /** One capability's declared regulatory-classification metadata bag (ADR 0049's/0051's open `metadata` convention). */
 export interface ComplianceEntry {
@@ -170,13 +216,27 @@ function complianceEntries(evidence: EvidenceModel): readonly ComplianceEntry[] 
 }
 
 /** Data Compliance Evidence: every capability's declared `metadata` bag, unvalidated -- `data-cap` asserts no regime applies. */
-export const projectComplianceEvidence = defineEvidenceProjection<{
-  disclaimer: string
-  entries: readonly ComplianceEntry[]
-}>(
-  // Stryker disable next-line ObjectLiteral: covered by tests (verified: `{}` here fails them), but Stryker perTest reports a false Survived for this schema object because it is evaluated once at module load -- `ignoreStatic` does not ignore a static mutant that has test coverage.
-  { disclaimer, entries: complianceEntries },
-)
+export function projectComplianceEvidence(
+  evidence: EvidenceModel,
+): ProjectComplianceEvidenceOutput {
+  return projectComplianceEvidenceWithSources(evidence).value
+}
+/** Same computation as calling `projectComplianceEvidence` directly, plus which `EvidenceModel` field paths fed each output key. */
+projectComplianceEvidence.project = projectComplianceEvidenceWithSources
+
+function projectComplianceEvidenceSchema() {
+  return { disclaimer, entries: complianceEntries }
+}
+
+type ProjectComplianceEvidenceOutput = OutputOf<ReturnType<typeof projectComplianceEvidenceSchema>>
+
+function projectComplianceEvidenceWithSources(
+  evidence: EvidenceModel,
+): EvidenceProjectionResult<ProjectComplianceEvidenceOutput> {
+  return defineEvidenceProjection<ProjectComplianceEvidenceOutput>(
+    projectComplianceEvidenceSchema(),
+  ).project(evidence)
+}
 
 function auditProvenance(evidence: EvidenceModel): EvidenceProvenance {
   return evidence.provenance
@@ -210,21 +270,29 @@ function auditFindingsBySeverity(evidence: EvidenceModel): Record<string, number
  * and `provenance` from neither. `.project()` reports exactly that, per
  * output field.
  */
-export const projectAuditEvidence = defineEvidenceProjection<{
-  disclaimer: string
-  provenance: EvidenceProvenance
-  capabilityCount: number
-  ownedCapabilities: number | undefined
-  unownedCapabilities: number | undefined
-  findingsBySeverity: Record<string, number> | undefined
-}>(
-  // Stryker disable next-line ObjectLiteral: covered by tests (verified: `{}` here fails them), but Stryker perTest reports a false Survived for this schema object because it is evaluated once at module load -- `ignoreStatic` does not ignore a static mutant that has test coverage.
-  {
+export function projectAuditEvidence(evidence: EvidenceModel): ProjectAuditEvidenceOutput {
+  return projectAuditEvidenceWithSources(evidence).value
+}
+/** Same computation as calling `projectAuditEvidence` directly, plus which `EvidenceModel` field paths fed each output key. */
+projectAuditEvidence.project = projectAuditEvidenceWithSources
+
+function projectAuditEvidenceSchema() {
+  return {
     disclaimer,
     provenance: auditProvenance,
     capabilityCount: auditCapabilityCount,
     ownedCapabilities: auditOwnedCapabilities,
     unownedCapabilities: auditUnownedCapabilities,
     findingsBySeverity: auditFindingsBySeverity,
-  },
-)
+  }
+}
+
+type ProjectAuditEvidenceOutput = OutputOf<ReturnType<typeof projectAuditEvidenceSchema>>
+
+function projectAuditEvidenceWithSources(
+  evidence: EvidenceModel,
+): EvidenceProjectionResult<ProjectAuditEvidenceOutput> {
+  return defineEvidenceProjection<ProjectAuditEvidenceOutput>(projectAuditEvidenceSchema()).project(
+    evidence,
+  )
+}

@@ -7,7 +7,7 @@
 ```ts
 const default: {
   rules: {
-     no-fields-escape: RuleModuleWithName<"prop" | "argument" | "exported" | "spread", [RuleOptions], unknown, RuleListener>;
+     no-fields-escape: RuleModuleWithName<"prop" | "spread" | "argument" | "exported", [RuleOptions], unknown, RuleListener>;
      no-node-fs: RuleModuleWithName<"noNodeFs", [RuleOptions], unknown, RuleListener>;
      no-raw-external-io: RuleModuleWithName<"noRawExternalIo", [RuleOptions], unknown, RuleListener>;
      stable-operation-reference: RuleModuleWithName<"inlineFunctionLiteral" | "recreatedPerCall", [], unknown, RuleListener>;
@@ -30,7 +30,7 @@ A 6th public entry point alongside `.`, `./runtime`, `./build`,
 
 ```ts
 rules: {
-  no-fields-escape: RuleModuleWithName<"prop" | "argument" | "exported" | "spread", [RuleOptions], unknown, RuleListener>;
+  no-fields-escape: RuleModuleWithName<"prop" | "spread" | "argument" | "exported", [RuleOptions], unknown, RuleListener>;
   no-node-fs: RuleModuleWithName<"noNodeFs", [RuleOptions], unknown, RuleListener>;
   no-raw-external-io: RuleModuleWithName<"noRawExternalIo", [RuleOptions], unknown, RuleListener>;
   stable-operation-reference: RuleModuleWithName<"inlineFunctionLiteral" | "recreatedPerCall", [], unknown, RuleListener>;
@@ -42,7 +42,7 @@ Every rule this plugin ships, keyed by its flat-config rule name.
 ###### rules.no-fields-escape
 
 ```ts
-no-fields-escape: RuleModuleWithName<"prop" | "argument" | "exported" | "spread", [RuleOptions], unknown, RuleListener> = noFieldsEscape;
+no-fields-escape: RuleModuleWithName<"prop" | "spread" | "argument" | "exported", [RuleOptions], unknown, RuleListener> = noFieldsEscape;
 ```
 
 See [noFieldsEscape](#nofieldsescape).
@@ -76,7 +76,7 @@ See [stableOperationReference](#stableoperationreference).
 ### noFieldsEscape
 
 ```ts
-const noFieldsEscape: RuleModuleWithName<"prop" | "argument" | "exported" | "spread", [RuleOptions], unknown, RuleListener>;
+const noFieldsEscape: RuleModuleWithName<"prop" | "spread" | "argument" | "exported", [RuleOptions], unknown, RuleListener>;
 ```
 
 Flags a capability's whole `.fields` (or a bare `getSnapshot()` result)

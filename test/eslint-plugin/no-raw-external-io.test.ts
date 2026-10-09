@@ -1,7 +1,11 @@
 import { RuleTester } from "eslint"
 import type { Rule } from "eslint"
-import { describe, it } from "vitest"
-import { noRawExternalIo } from "../../src/eslint-plugin/no-raw-external-io.js"
+import { describe, expect, it } from "vitest"
+import {
+  ancestorChain,
+  noRawExternalIo,
+  scopeChain,
+} from "../../src/eslint-plugin/no-raw-external-io.js"
 
 // RuleTester's own `run()` registers cases via Mocha-style global
 // `describe`/`it` by default -- vitest doesn't inject those as true globals,
@@ -235,4 +239,22 @@ ruleTester.run("no-raw-external-io", noRawExternalIo as unknown as Rule.RuleModu
       errors: [{ messageId: "noRawExternalIo", data: { name: "fetch" } }],
     },
   ],
+})
+
+describe("ancestorChain / scopeChain", () => {
+  it("ancestorChain is empty for a missing node, and otherwise lists the node then each ancestor", () => {
+    expect(ancestorChain(null)).toEqual([])
+    expect(ancestorChain(undefined)).toEqual([])
+    const leaf = { type: "Leaf", parent: { type: "Mid", parent: { type: "Root", parent: null } } }
+    expect(ancestorChain(leaf as never).map((n) => n.type)).toEqual(["Leaf", "Mid", "Root"])
+  })
+
+  it("scopeChain is empty for no scope, and otherwise lists the scope then each upper scope", () => {
+    expect(scopeChain(null)).toEqual([])
+    const inner = { name: "inner", upper: { name: "outer", upper: null } }
+    expect(scopeChain(inner as never).map((s) => (s as unknown as { name: string }).name)).toEqual([
+      "inner",
+      "outer",
+    ])
+  })
 })

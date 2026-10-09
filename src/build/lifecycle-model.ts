@@ -168,17 +168,13 @@ function expiringEntryFor(
   expiringWithinDays: number,
   now: Date,
 ): ExpiringEntry | undefined {
-  // Stryker disable next-line ConditionalExpression: a type guard only.
-  // `parseIsoDate(undefined)` and `parseIsoDate("not a date")` both yield
-  // `undefined` (`new Date(x)` -> Invalid Date -> NaN), so the next line's
-  // `date === undefined` return already covers the `undefined` case identically
-  // -- there is no test that can distinguish the two.
-  if (expiresAt === undefined) return undefined
-  const date = parseIsoDate(expiresAt)
+  // A missing `expiresAt` reads as the text "undefined", which does not parse, so it is skipped like any invalid value.
+  const raw = String(expiresAt)
+  const date = parseIsoDate(raw)
   if (date === undefined) return undefined
   const daysRemaining = daysRemainingFrom(date, now)
   if (daysRemaining > expiringWithinDays) return undefined
-  return { ...subject, expiresAt, daysRemaining }
+  return { ...subject, expiresAt: raw, daysRemaining }
 }
 
 /**

@@ -29,7 +29,7 @@ export interface GenerateUsageOptions {
   /** Passed through to `scanDependencies` -- root/tsconfig/packages for import-specifier resolution. `scan.root` also doubles as the discovery root every rendered path in the report displays relative to. */
   readonly scan: ScanDependenciesOptions
   /** This same run's own `--evidence` output path, when requested -- named in the generated banner's Evidence Model note. */
-  readonly evidencePath?: string
+  readonly evidencePath?: string | undefined
 }
 
 /** The rendered Dependency & Ownership report plus the proven `DependencyEdge`s and findings it's built from. */

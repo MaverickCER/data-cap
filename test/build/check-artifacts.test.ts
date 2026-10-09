@@ -2,7 +2,11 @@ import fs from "node:fs/promises"
 import os from "node:os"
 import path from "node:path"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
-import { checkArtifacts } from "../../src/build/check-artifacts.js"
+import {
+  checkArtifacts,
+  normalizeForComparison,
+  readOnDisk,
+} from "../../src/build/check-artifacts.js"
 import { generateDataArtifacts } from "../../src/build/generate-data-artifacts.js"
 import { nodeBuildFs } from "../support/build-filesystem.js"
 
@@ -257,5 +261,64 @@ describe("checkArtifacts", () => {
     )
     const { result } = await checkArtifacts({ fs: nodeBuildFs, root, tsconfig: false })
     expect(result.findings.some((f) => f.code === "CAPABILITY_MISSING_OWNER")).toBe(true)
+  })
+})
+
+describe("normalizeForComparison", () => {
+  const evidence = (extra: Record<string, unknown>) =>
+    JSON.stringify({
+      capability: "x",
+      provenance: { generatedAt: "2026-01-01", tool: "t" },
+      ...extra,
+    })
+
+  it("masks the generation timestamp and the change report, and nothing else", () => {
+    const normalized = JSON.parse(
+      normalizeForComparison(evidence({ change: { added: ["a"] } })),
+    ) as {
+      provenance: Record<string, unknown>
+      change: unknown
+      capability: string
+    }
+    expect(normalized.provenance).toStrictEqual({ generatedAt: "", tool: "t" })
+    expect(normalized.change).toBeNull()
+    expect(normalized.capability).toBe("x")
+  })
+
+  it("returns text that is not JSON unchanged", () => {
+    expect(normalizeForComparison("# not json")).toBe("# not json")
+  })
+
+  it("returns JSON that is not an object unchanged", () => {
+    expect(normalizeForComparison("42")).toBe("42")
+    expect(normalizeForComparison("null")).toBe("null")
+  })
+
+  it("returns an object with no provenance unchanged, not re-serialized", () => {
+    expect(normalizeForComparison('{"a":1}')).toBe('{"a":1}')
+  })
+
+  it.each([
+    ['{"provenance":null,"change":{}}', "a null provenance"],
+    ['{"provenance":"text","change":{}}', "a non-object provenance"],
+    ['{"provenance":{"generatedAt":"t"}}', "no change"],
+    ['{"provenance":{"generatedAt":"t"},"change":null}', "a null change"],
+    ['{"provenance":{"generatedAt":"t"},"change":"text"}', "a non-object change"],
+  ])("returns %s unchanged (%s)", (content) => {
+    expect(normalizeForComparison(content)).toBe(content)
+  })
+})
+
+describe("readOnDisk", () => {
+  it("reads a file that exists, and gives exactly the empty string for one that does not", async () => {
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), "data-cap-read-on-disk-"))
+    try {
+      const file = path.join(dir, "present.txt")
+      await fs.writeFile(file, "content", "utf8")
+      expect(await readOnDisk(nodeBuildFs, file)).toBe("content")
+      expect(await readOnDisk(nodeBuildFs, path.join(dir, "absent.txt"))).toBe("")
+    } finally {
+      await fs.rm(dir, { recursive: true, force: true })
+    }
   })
 })

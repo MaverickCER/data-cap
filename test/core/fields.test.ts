@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { FIELD_MARKER, fields, isFieldMarker } from "../../src/core/fields.js"
+import { FIELD_MARKER, fieldMarkerKey, fields, isFieldMarker } from "../../src/core/fields.js"
 
 describe("fields.nullable", () => {
   it("wraps the default with a nullable marker, preserving the inner value", () => {
@@ -31,6 +31,11 @@ describe("FIELD_MARKER", () => {
   it("is registered in the global symbol registry (Symbol.for), not a bare Symbol() -- load-bearing for cross-bundle identity (see test/runtime/cross-bundle-field-marker.test.ts)", () => {
     expect(Symbol.for("data-cap.field-marker")).toBe(FIELD_MARKER)
     expect(Symbol.keyFor(FIELD_MARKER)).toBe("data-cap.field-marker")
+  })
+
+  it("is registered under exactly the key fieldMarkerKey() names", () => {
+    expect(fieldMarkerKey()).toBe("data-cap.field-marker")
+    expect(Symbol.keyFor(FIELD_MARKER)).toBe(fieldMarkerKey())
   })
 })
 
