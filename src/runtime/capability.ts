@@ -373,9 +373,11 @@ export function createData<TSchema extends DataSchema<FieldsShape>>(
     paramsMap.set(key, next)
     // Evict the least-recently-used entries down to the cap. Map iteration is insertion order, so the
     // keys are listed oldest-first; a non-positive cap evicts everything.
-    const excess = paramsMap.size - maxOperationHistory
-    for (const oldestKey of [...paramsMap.keys()].slice(0, Math.max(0, excess))) {
+    let excess = paramsMap.size - maxOperationHistory
+    for (const oldestKey of paramsMap.keys()) {
+      if (excess <= 0) break
       paramsMap.delete(oldestKey)
+      excess -= 1
     }
     operationsSnapshotCache = undefined
     notifyCapabilityListeners()

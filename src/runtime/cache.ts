@@ -67,9 +67,11 @@ export function createDataCache<TFields>(options: DataCacheOptions = {}): DataCa
       touch(key, state)
       // Evict the oldest entries until the cache is back within `maxEntries`: the keys are listed
       // oldest-first (Map iteration order is insertion order, and `touch` re-inserts on use).
-      const excess = entries.size - maxEntries
-      for (const oldestKey of [...entries.keys()].slice(0, Math.max(0, excess))) {
+      let excess = entries.size - maxEntries
+      for (const oldestKey of entries.keys()) {
+        if (excess <= 0) break
         entries.delete(oldestKey)
+        excess -= 1
       }
     },
     delete(key) {
