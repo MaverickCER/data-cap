@@ -85,7 +85,9 @@ const EXTRA_GOLDEN_SCRIPTS = {
 // release workflow installs only the root's dependencies, so every project reaches here uninstalled).
 // Install it instead, and let a failed install stop the run.
 function ensureInstalled(name, projectDir) {
-  if (existsSync(path.join(projectDir, "node_modules"))) return
+  // npm writes this hidden lockfile as the last step of a successful install, so a `node_modules`
+  // left behind by an install that failed part-way does not count as installed.
+  if (existsSync(path.join(projectDir, "node_modules", ".package-lock.json"))) return
   console.log(`[install] ${name}: node_modules not installed; running npm install...`)
   execFileSync("npm", ["install", "--no-audit", "--no-fund"], {
     cwd: projectDir,
