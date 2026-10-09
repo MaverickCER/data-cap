@@ -29,7 +29,8 @@ TypeScript 6 (`typescript@^6`, installed under the alias `@typescript/old`) as a
   `node_modules/`. It is the first runtime dependency of this package.
 - It belongs to the build entry alone. `scripts/verify-compiler-isolation.mjs` walks the static import
   graph of every built entry point and fails the build if the runtime, helpers, evidence, node or ESLint
-  plugin entry can reach the bundled compiler, the loader's `node:module`, or `typescript` itself -- and
+  plugin entry can reach the bundled compiler or the loader's `node:module`, or any entry except the
+  ESLint plugin (which runs inside the consumer's own ESLint process) can reach `typescript` itself -- and
   fails if the build entry cannot, so the check cannot pass vacuously. A bundler following a client import
   never reaches the compiler's bytes.
 - `src/build/typescript.ts` resolves the compiler synchronously, once, **by capability, never by
