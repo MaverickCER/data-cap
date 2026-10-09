@@ -51,18 +51,11 @@ function realpath(path: string): Promise<string> {
  * The Node-backed `BuildFileSystem`: the filesystem capability the build-time generators require.
  * @public
  */
-// The `{}` mutant here is a module-load-time (static) mutant: once this
-// module is imported and the const is bound, Stryker's per-mutant switch
-// can't re-run the binding, so the mutant can never actually activate --
-// Stryker itself flags it `static: true`. It is plainly non-equivalent (an
-// empty adapter breaks every consumer), just unkillable by the tool. Each
-// delegating function above is individually mutation-covered.
-// Stryker disable next-line ObjectLiteral
-export const nodeBuildFileSystem: BuildFileSystem = {
-  readFile,
-  writeFile,
-  mkdir,
-  readdir,
-  stat,
-  realpath,
-}
+export const nodeBuildFileSystem: BuildFileSystem = new (class implements BuildFileSystem {
+  readonly readFile = readFile
+  readonly writeFile = writeFile
+  readonly mkdir = mkdir
+  readonly readdir = readdir
+  readonly stat = stat
+  readonly realpath = realpath
+})()

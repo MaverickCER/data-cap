@@ -884,7 +884,7 @@ The filesystem capability -- `./build` never imports `node:fs` (ADR 0058).
 readonly optional include?: readonly string[];
 ```
 
-Discovery globs. Defaults to `DEFAULT_INCLUDE`, matching `discoverCapabilityFiles`.
+Discovery globs. Defaults to the same globs as `discoverCapabilityFiles`.
 
 ##### packages?
 
@@ -4780,7 +4780,7 @@ How many days out counts as "expiring soon" when a caller doesn't say -- 30, mat
 ### DEFAULT\_INCLUDE
 
 ```ts
-const DEFAULT_INCLUDE: string[];
+const DEFAULT_INCLUDE: readonly string[];
 ```
 
 The default `include` glob when none is supplied: every `.ts`/`.tsx` file.
@@ -4852,83 +4852,6 @@ Bump only when a reader could misinterpret the shape -- same discipline every ot
 
 ***
 
-### projectAuditEvidence
-
-```ts
-const projectAuditEvidence: EvidenceProjection<{
-  capabilityCount: number;
-  disclaimer: string;
-  findingsBySeverity: Record<string, number> | undefined;
-  ownedCapabilities: number | undefined;
-  provenance: EvidenceProvenance;
-  unownedCapabilities: number | undefined;
-}>;
-```
-
-Data Audit Evidence / Data Assurance Report / Data Governance Report
-(reframed): a rollup of ownership and finding counts plus provenance --
-never a governance verdict or a risk score, only the counted facts a
-consumer's own policy can be evaluated against.
-
-The clearest case for the per-field schema: `ownedCapabilities` is derived
-from Ownership Model alone, `findingsBySeverity` from Finding Model alone,
-and `provenance` from neither. `.project()` reports exactly that, per
-output field.
-
-***
-
-### projectClassificationEvidence
-
-```ts
-const projectClassificationEvidence: EvidenceProjection<{
-  disclaimer: string;
-  entries: readonly ClassificationEntry[];
-}>;
-```
-
-Data Classification Evidence: every capability/field with a declared `sensitivity`.
-
-***
-
-### projectComplianceEvidence
-
-```ts
-const projectComplianceEvidence: EvidenceProjection<{
-  disclaimer: string;
-  entries: readonly ComplianceEntry[];
-}>;
-```
-
-Data Compliance Evidence: every capability's declared `metadata` bag, unvalidated -- `data-cap` asserts no regime applies.
-
-***
-
-### projectPrivacyEvidence
-
-```ts
-const projectPrivacyEvidence: EvidenceProjection<{
-  disclaimer: string;
-  entries: readonly PrivacyEntry[];
-}>;
-```
-
-Data Privacy Evidence: sensitivity plus whether protections are documented (presence only, never an adequacy claim).
-
-***
-
-### projectRetentionEvidence
-
-```ts
-const projectRetentionEvidence: EvidenceProjection<{
-  disclaimer: string;
-  entries: readonly RetentionEntry[];
-}>;
-```
-
-Data Retention Evidence: every capability/field with a declared `retention` policy (presence only, never an enforcement claim).
-
-***
-
 ### RUNTIME\_CONTRACT\_MODEL\_SCHEMA\_VERSION
 
 ```ts
@@ -4942,7 +4865,7 @@ Bump only when a reader could misinterpret the shape -- same discipline every ot
 ### UNOWNED
 
 ```ts
-const UNOWNED: "(unowned)" = "(unowned)";
+const UNOWNED: string;
 ```
 
 Sentinel bucket for a capability/field with no documented owner at any level --
@@ -5946,6 +5869,74 @@ The one place a `SourcePosition` is ever computed from a raw AST node -- every c
 
 ***
 
+### projectAuditEvidence()
+
+```ts
+function projectAuditEvidence(evidence): ProjectAuditEvidenceOutput;
+```
+
+Data Audit Evidence / Data Assurance Report / Data Governance Report
+(reframed): a rollup of ownership and finding counts plus provenance --
+never a governance verdict or a risk score, only the counted facts a
+consumer's own policy can be evaluated against.
+
+The clearest case for the per-field schema: `ownedCapabilities` is derived
+from Ownership Model alone, `findingsBySeverity` from Finding Model alone,
+and `provenance` from neither. `.project()` reports exactly that, per
+output field.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `evidence` | [`EvidenceModel`](evidence.md#evidencemodel) |
+
+#### Returns
+
+`ProjectAuditEvidenceOutput`
+
+***
+
+### projectClassificationEvidence()
+
+```ts
+function projectClassificationEvidence(evidence): ProjectClassificationEvidenceOutput;
+```
+
+Data Classification Evidence: every capability/field with a declared `sensitivity`.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `evidence` | [`EvidenceModel`](evidence.md#evidencemodel) |
+
+#### Returns
+
+`ProjectClassificationEvidenceOutput`
+
+***
+
+### projectComplianceEvidence()
+
+```ts
+function projectComplianceEvidence(evidence): ProjectComplianceEvidenceOutput;
+```
+
+Data Compliance Evidence: every capability's declared `metadata` bag, unvalidated -- `data-cap` asserts no regime applies.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `evidence` | [`EvidenceModel`](evidence.md#evidencemodel) |
+
+#### Returns
+
+`ProjectComplianceEvidenceOutput`
+
+***
+
 ### projectFields()
 
 ```ts
@@ -6023,6 +6014,46 @@ Every getter, mutator, and subscription across every capability -- the Operation
 #### Returns
 
 readonly [`WithCapability`](#withcapability)\<[`OperationNode`](#operationnode)\>[]
+
+***
+
+### projectPrivacyEvidence()
+
+```ts
+function projectPrivacyEvidence(evidence): ProjectPrivacyEvidenceOutput;
+```
+
+Data Privacy Evidence: sensitivity plus whether protections are documented (presence only, never an adequacy claim).
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `evidence` | [`EvidenceModel`](evidence.md#evidencemodel) |
+
+#### Returns
+
+`ProjectPrivacyEvidenceOutput`
+
+***
+
+### projectRetentionEvidence()
+
+```ts
+function projectRetentionEvidence(evidence): ProjectRetentionEvidenceOutput;
+```
+
+Data Retention Evidence: every capability/field with a declared `retention` policy (presence only, never an enforcement claim).
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `evidence` | [`EvidenceModel`](evidence.md#evidencemodel) |
+
+#### Returns
+
+`ProjectRetentionEvidenceOutput`
 
 ***
 

@@ -98,10 +98,6 @@ function canonicalizeObject(
     if (UNSAFE_KEYS.has(key)) return undefined
   }
   const nextSeen = new Set(seen)
-  // Neutralizing this add is behaviorally harmless: MAX_DEPTH above still
-  // catches a genuine cycle fast (see its own comment) regardless of
-  // whether this object-side `seen` tracking works. Hand-verified.
-  // Stryker disable next-line CallExpression
   nextSeen.add(value)
   let payload = ""
   // Sorted for property-order independence.
@@ -132,17 +128,10 @@ function canonicalizeInner(
   const builtin = canonicalizeBuiltin(value)
   if (builtin !== NOT_A_BUILTIN) return builtin
 
-  // Neutralizing this check is behaviorally harmless: MAX_DEPTH above still
-  // catches a genuine cycle fast (see its own comment) regardless of
-  // whether this check itself works. Hand-verified.
-  // Stryker disable next-line ConditionalExpression
   if (seen.has(value)) return undefined // cyclic reference -- non-canonicalizable
 
   if (Array.isArray(value)) {
     const nextSeen = new Set(seen)
-    // Same reasoning as the object branch's identical add, just above
-    // canonicalizeObject -- MAX_DEPTH backstops this regardless. Hand-verified.
-    // Stryker disable next-line CallExpression
     nextSeen.add(value)
     let payload = ""
     for (const item of value) {

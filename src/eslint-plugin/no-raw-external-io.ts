@@ -45,61 +45,29 @@ export interface RuleOptions {
 
 const DEFAULT_FUNCTIONS = ["fetch"]
 
-/**
- * Whether `name` at `node` refers to an ambient global rather than something
- * the file itself declared or imported.
- *
- * Without this, a project's own `import { fetch } from "./http.js"` or a
- * local `function fetch()` helper would be flagged as raw external I/O
- * purely because of its name -- the rule's own option is documented as
- * naming *global* identifiers, so it has to actually mean that. An
- * identifier that resolves nowhere is treated as a global: that's exactly
- * what an ambient `fetch` looks like to scope analysis.
- */
-// A hard, generous fail-safe wholly independent of `scope = scope.upper`
-// below -- no real scope chain nests anywhere close to this deep -- but a
-// mutation neutralizing that advancement (e.g. the BlockStatement mutator
-// gutting the loop body) would otherwise spin on the same scope forever,
-// reading as a hang rather than an observably wrong result.
-const MAX_SCOPE_CHAIN_STEPS = 500
+/** `scope` and every scope above it, innermost first. Ends at the global scope, whose `upper` is `null`. */
+/** @internal Exported for direct unit coverage. */
+export function scopeChain(scope: Scope | null): Scope[] {
+  return scope === null ? [] : [scope, ...scopeChain(scope.upper)]
+}
+
+/** `node` and every ancestor above it, innermost first. Ends at the program root, whose parent is nullish. */
+/** @internal Exported for direct unit coverage. */
+export function ancestorChain(node: TSESTree.Node | null | undefined): TSESTree.Node[] {
+  return node == null ? [] : [node, ...ancestorChain(node.parent)]
+}
 
 function isBareGlobal(
   sourceCode: Readonly<{ getScope(node: TSESTree.Node): Scope }>,
   node: TSESTree.Identifier,
 ): boolean {
-  let scope: Scope | null = sourceCode.getScope(node)
-  // `steps`, checked in the loop's own condition (not inside the body a
-  // BlockStatement mutation would gut alongside `scope = scope.upper`
-  // below), so a mutation neutralizing that advancement still exits this
-  // loop fast via the steps ceiling instead of spinning forever.
-  let steps = 0
-  // No real scope chain reaches anywhere near MAX_SCOPE_CHAIN_STEPS, so no
-  // fixture can distinguish `<=` from `<`/`true`, or `steps++` from
-  // `steps--`, here -- this is a backstop against `scope.upper`'s own
-  // advancement breaking, not a boundary this codebase's real inputs ever
-  // approach. Hand-verified: applying each of these mutations individually
-  // and running the real suite passes unchanged.
-  // Stryker disable next-line ConditionalExpression, EqualityOperator, UpdateOperator
-  for (; scope !== null && steps <= MAX_SCOPE_CHAIN_STEPS; steps++) {
-    const variable = scope.variables.find((candidate) => candidate.name === node.name)
-    // A real global (`fetch`, `XMLHttpRequest`) appears in the global scope's
-    // variable list with zero definitions -- nothing in this program declared
-    // it. Anything with a definition was declared or imported here.
-    if (variable !== undefined) return variable.defs.length === 0
-    scope = scope.upper
-  }
-  // Only reachable, under real (unmutated) code, once the walk has climbed
-  // past the real global scope (`scope === null`) -- no fixture can make
-  // `scope` still non-null here without itself mutating `scope.upper`'s
-  // advancement, so this can't be exercised by a normal test. Hand-verified:
-  // gutting the loop body above and running the real suite throws this
-  // (fast) instead of hanging, confirming the backstop actually works.
-  // Stryker disable ConditionalExpression, BlockStatement, StringLiteral, CallExpression
-  if (scope !== null) {
-    throw new Error("isBareGlobal: scope chain walk stopped advancing toward the global scope.")
-  }
-  // Stryker restore ConditionalExpression, BlockStatement, StringLiteral, CallExpression
-  return true
+  // The innermost scope declaring the name decides. A real global (`fetch`, `XMLHttpRequest`) appears in
+  // the global scope's variable list with zero definitions -- nothing in this program declared it.
+  // Anything with a definition was declared or imported here. A name no scope lists is a bare global too.
+  const variable = scopeChain(sourceCode.getScope(node))
+    .flatMap((scope) => scope.variables)
+    .find((candidate) => candidate.name === node.name)
+  return variable === undefined || variable.defs.length === 0
 }
 
 /**
@@ -126,23 +94,7 @@ function isBareGlobal(
 function isInsideOperationBody(node: TSESTree.Node): boolean {
   let sawOperationBody = false
   let sawOperationSection = false
-  // `Program.parent` is `null` at runtime even though the TSESTree types
-  // declare it as `Node | undefined` -- a nullish check covers both without
-  // asserting a `null` the types claim can't happen.
-  let current: TSESTree.Node | undefined = node.parent
-  // `steps`, checked in the loop's own condition (not inside the body a
-  // BlockStatement mutation would gut alongside `current = current.parent`
-  // below), so a mutation neutralizing that advancement still exits this
-  // loop fast via the steps ceiling instead of spinning forever. No real
-  // AST nests anywhere close to this deep.
-  let steps = 0
-
-  // Same rationale as isBareGlobal's identical loop-cap guard above -- no
-  // real AST nests anywhere near MAX_SCOPE_CHAIN_STEPS deep. Hand-verified:
-  // applying each of these mutations individually and running the real
-  // suite passes unchanged.
-  // Stryker disable next-line ConditionalExpression, EqualityOperator, UpdateOperator
-  for (; current != null && steps <= MAX_SCOPE_CHAIN_STEPS; steps++) {
+  for (const current of ancestorChain(node.parent)) {
     if (
       !sawOperationBody &&
       current.type === AST_NODE_TYPES.Property &&
@@ -155,19 +107,7 @@ function isInsideOperationBody(node: TSESTree.Node): boolean {
       if (isOperationSectionKey(getStaticKeyName(current.key))) sawOperationSection = true
     }
     if (sawOperationSection && isCapabilityCall(current, CAPABILITY_CALL_NAMES)) return true
-    current = current.parent
   }
-  // Only reachable, under real (unmutated) code, once the walk has climbed
-  // past the AST root (`current == null`) -- no fixture can make `current`
-  // still non-null here without itself mutating `current.parent`'s
-  // advancement, so this can't be exercised by a normal test. Hand-verified:
-  // gutting the loop body above and running the real suite throws this
-  // (fast) instead of hanging, confirming the backstop actually works.
-  // Stryker disable ConditionalExpression, BlockStatement, StringLiteral, CallExpression
-  if (current != null) {
-    throw new Error("isInsideOperationBody: AST walk stopped advancing toward the program root.")
-  }
-  // Stryker restore ConditionalExpression, BlockStatement, StringLiteral, CallExpression
   return false
 }
 
@@ -229,10 +169,8 @@ export const noRawExternalIo = createRule<[RuleOptions], "noRawExternalIo">({
   },
   defaultOptions: [{ allow: [], functions: DEFAULT_FUNCTIONS }],
   create(context, [options]) {
-    // `defaultOptions` (the RuleCreator merge) always supplies `allow`, so this
-    // is never nullish -- but the option type keeps it optional for a caller.
-    // Stryker disable next-line ArrayDeclaration
-    const allowPatterns = options.allow ?? []
+    // `RuleCreator` merges `defaultOptions` onto the configured options, so `allow` is always set.
+    const allowPatterns = options.allow as readonly string[]
     if (allowPatterns.some((pattern) => globToRegExp(pattern).test(context.filename))) return {}
 
     const flagged = new Set(options.functions ?? DEFAULT_FUNCTIONS)

@@ -35,9 +35,9 @@ export interface ScanDependenciesOptions {
   /** Directory import specifiers resolve against. */
   readonly root: string
   /** Explicit `tsconfig.json` path override, or `false` to disable alias resolution -- same meaning as `LinkOptions.tsconfig`. */
-  readonly tsconfig?: string | false
+  readonly tsconfig?: string | false | undefined
   /** Explicit cross-package schema discovery allowlist -- see `resolve-package-schema.ts`. */
-  readonly packages?: readonly string[]
+  readonly packages?: readonly string[] | undefined
 }
 
 /** Every proven consumer edge the scan found, plus any resolution warnings. */
@@ -257,15 +257,6 @@ export async function scanDependencies(
       .map((target) => ({ localName: target.exportName, target, resolution: "resolved" }))
 
     const allMatches = [...matches, ...selfMatches]
-    // Pure fast-path: with no matches, `scanFileForUsage` walks the AST to find
-    // nothing and the imports-synthesis loop below iterates an empty `matches`,
-    // so skipping is unobservable in the output -- only in the time spent. Two
-    // restructurings (an internal guard in `scanFileForUsage`; deferring the
-    // walk) just relocate an identical equivalent mutant, so this one line is
-    // disabled rather than chased.
-    // Stryker disable next-line ConditionalExpression
-    if (allMatches.length === 0) continue
-
     const fileEdges = scanFileForUsage(sourceFile, file, allMatches)
     const targetsWithEdges = new Set(
       fileEdges.map((edge) => targetKey(edge.to.capability.file, edge.to.capability.exportName)),

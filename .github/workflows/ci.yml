@@ -103,21 +103,17 @@ jobs:
     # instead of ever starting. One declaration of a given concurrency group
     # per call chain is what's actually required, and the reusable workflow
     # is the one that owns the write this guard protects.
-    # A caller job's own `permissions:` is what actually grants the token the
-    # reusable workflow's internal job runs with -- the reusable workflow's
-    # own job-level `permissions:` block (contents: write, pull-requests:
-    # write, statuses: write) cannot itself grant anything past what this
-    # caller job allows, so this has to mirror it exactly (the workflow-level
-    # `contents: read` default above would otherwise cap the called job down
-    # to read-only, silently breaking the commit/comment steps).
+    # A caller job's own `permissions:` caps the token the reusable workflow's job runs with, so it
+    # must grant at least what that job declares. The pinned benchmark-pr.yml only reads the
+    # repository and posts or updates the PR comment (`contents: read`, `pull-requests: write`);
+    # it never commits or pushes to the PR branch.
     permissions:
-      contents: write
+      contents: read
       pull-requests: write
-      statuses: write
     # The `suites`/`install-dirs` inputs below exist only in internal-package-contract commits that
     # include the generalized benchmark kit: bump this SHA to such a commit together with the
     # internal-package-contract devDependency pin, in the same pull request.
-    uses: MaverickCER/internal-package-contract/.github/workflows/benchmark-pr.yml@c8b6147aef3592dd1941f8d22325abc9f279e7b7 # v0.9.0
+    uses: MaverickCER/internal-package-contract/.github/workflows/benchmark-pr.yml@694640989815f36dc474a1149849a0f41904a8a6 # v0.9.0
     with:
       suites: |
         Runtime|benchmarks/performance-runtime|benchmarks/history/runtime.json

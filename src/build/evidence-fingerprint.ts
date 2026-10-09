@@ -17,7 +17,7 @@
 
 import { createHash } from "node:crypto"
 import path from "node:path"
-import { DEFAULT_INCLUDE, discoverCapabilityFiles } from "./discover.js"
+import { discoverCapabilityFiles } from "./discover.js"
 import { PACKAGE_VERSION } from "./package-version.js"
 import {
   mergeLocalAndPackageFiles,
@@ -32,12 +32,12 @@ export interface ComputeSourceFingerprintOptions {
   readonly fs: BuildFileSystem
   /** Directory discovery resolves against -- same meaning as `GenerateDataArtifactsOptions.root`. */
   readonly root: string
-  /** Discovery globs. Defaults to `DEFAULT_INCLUDE`, matching `discoverCapabilityFiles`. */
-  readonly include?: readonly string[]
+  /** Discovery globs. Defaults to the same globs as `discoverCapabilityFiles`. */
+  readonly include?: readonly string[] | undefined
   /** Discovery exclusion globs. */
-  readonly exclude?: readonly string[]
+  readonly exclude?: readonly string[] | undefined
   /** Allow-listed package names whose own resolved schema files also feed the fingerprint. */
-  readonly packages?: readonly string[]
+  readonly packages?: readonly string[] | undefined
 }
 
 /**
@@ -55,24 +55,13 @@ export interface ComputeSourceFingerprintOptions {
 export async function computeSourceFingerprint(
   options: ComputeSourceFingerprintOptions,
 ): Promise<string> {
-  // `packages = []`: an unresolvable allow-listed package name contributes zero
-  // files (`resolveAllowlistedPackages` drops it), so `[]` and any non-empty
-  // default are behaviourally identical here -- the default-vs-explicit-`[]`
-  // equivalence is asserted by a test, but the mutant on this literal cannot be.
-  // Stryker disable next-line ArrayDeclaration
-  const { fs, root, include = DEFAULT_INCLUDE, exclude, packages = [] } = options
+  const { fs, root, include, exclude, packages } = options
 
   const localFiles = await discoverCapabilityFiles({
     fs,
     root,
     include,
-    // discoverCapabilityFiles itself does `options.exclude ?? []` --
-    // passing `exclude: undefined` explicitly (what always-spreading here
-    // would do) is behaviorally identical to omitting the key. Hand-verified:
-    // forcing this guard to `true` and running the real suite passes
-    // unchanged.
-    // Stryker disable next-line ConditionalExpression
-    ...(exclude !== undefined ? { exclude } : {}),
+    exclude,
   })
   const packageCache = new Map<string, Promise<PackageSchemaResolutionResult>>()
   const { files: packageFiles } = await resolveAllowlistedPackages(packages, root, packageCache, fs)
@@ -97,7 +86,6 @@ export async function computeSourceFingerprint(
     try {
       // "utf8" -> "" is equivalent: the adapter then returns a Buffer, and
       // `hash.update()` over that Buffer hashes the exact same bytes.
-      // Stryker disable next-line StringLiteral
       hash.update(await fs.readFile(file, "utf8"))
     } catch {
       // Found by the glob walk but unreadable by the time we hash it (deleted
@@ -129,6 +117,5 @@ export async function writeEvidenceFingerprint(
   // The payload is always a sha256 hex digest plus a newline -- pure ASCII,
   // so "utf8" here is a required argument of the BuildFileSystem contract but
   // behaviourally the only possible encoding.
-  // Stryker disable next-line StringLiteral
   await fs.writeFile(fingerprintPathFor(evidencePath), `${fingerprint}\n`, "utf8")
 }

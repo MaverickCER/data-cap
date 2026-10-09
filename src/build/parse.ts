@@ -352,12 +352,10 @@ export interface OperationWritesByKind {
   readonly subscriptions: readonly RawOperationWrites[]
 }
 
-type WritesExtraction =
-  | { readonly kind: "absent" }
-  | { readonly kind: "resolved"; readonly value: unknown }
-  | { readonly kind: "unresolvable" }
+/** An operation entry's declared `writes`: `undefined` when it never declared one, otherwise the value it resolved to (itself `undefined` when it is not a static literal). */
+type WritesExtraction = { readonly value: unknown } | undefined
 
-/** Extracts one operation entry's `writes` property, distinguishing "never declared" from "declared but not statically resolvable" -- callers must not conflate the two (ADR 0011's implicit-full-ownership default applies only to a genuinely absent `writes`, never to one that's merely unresolvable). */
+/** Extracts one operation entry's `writes` property, distinguishing "never declared" (`undefined`) from "declared but not statically resolvable" (`{ value: undefined }`) -- callers must not conflate the two (ADR 0011's implicit-full-ownership default applies only to a genuinely absent `writes`, never to one that's merely unresolvable). */
 function extractOperationWrites(
   operationEntry: ts.ObjectLiteralExpression,
   operationLabel: string,
@@ -365,25 +363,16 @@ function extractOperationWrites(
   warnings: ParseWarning[],
 ): WritesExtraction {
   const prop = findProp(operationEntry, "writes")
-  if (prop === undefined) return { kind: "absent" }
+  if (prop === undefined) return undefined
   const evaluated = evaluateLiteral(prop.initializer)
   if (!evaluated.ok) {
     warnings.push({
       file,
       message: `"writes" for "${operationLabel}" is not a statically-resolvable literal; treating it as unresolved, never guessed at.`,
     })
-    // `extractSectionWrites` (below) only ever branches on `"resolved"` and
-    // `"absent"` today, folding every other kind -- including this one --
-    // into the same `undefined` default; the "unresolvable" discriminant
-    // exists purely for API clarity/future-proofing (see this function's own
-    // doc comment: "callers must not conflate the two"), with no current
-    // caller that reads it. Genuinely unobservable as things stand -- there
-    // is no consumer to add an assertion against without inventing one
-    // purely to defeat this mutant.
-    // Stryker disable next-line ObjectLiteral, StringLiteral
-    return { kind: "unresolvable" }
   }
-  return { kind: "resolved", value: evaluated.value }
+  // A failed evaluation has no `value`, which reads as `undefined`.
+  return { value: (evaluated as { value?: unknown }).value }
 }
 
 function extractSectionWrites(
@@ -412,11 +401,11 @@ function extractSectionWrites(
       warnings,
     )
     const writes =
-      extraction.kind === "resolved"
-        ? extraction.value
-        : extraction.kind === "absent" && sectionName === "mutators"
+      extraction === undefined
+        ? sectionName === "mutators"
           ? true // ADR 0011: an absent `writes` on a mutator defaults to full-capability-tree ownership
-          : undefined // unresolvable, or absent on a getter/subscription (writes is required there) -- never guessed
+          : undefined // absent on a getter/subscription (writes is required there) -- never guessed
+        : extraction.value // `undefined` when it was declared but is not statically resolvable
     entries.push({ name, writes })
   }
   return entries
@@ -1112,11 +1101,9 @@ export function parseCapabilityFile(filePath: string, sourceText: string): Parse
     filePath,
     sourceText,
     ts.ScriptTarget.Latest,
-    // `setParentNodes` -- nothing in this module reads `node.parent` (position
-    // lookups pass `sourceFile` explicitly), so `true`/`false` is behaviourally
-    // identical here; kept `true` only as the conventional default.
-    // Stryker disable next-line BooleanLiteral
-    true,
+    // `setParentNodes` is left at its default: nothing in this module reads `node.parent` (position
+    // lookups pass `sourceFile` explicitly).
+    undefined,
     ts.ScriptKind.TSX,
   )
 

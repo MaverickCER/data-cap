@@ -22,17 +22,17 @@ export interface GenerateDocumentationOptions {
   /** Output path for the rendered documentation catalog. */
   readonly location: string
   /** Manifest changes since the last report, rendered as a "changes since last report" section when present. */
-  readonly changes?: ManifestChangeReport
+  readonly changes?: ManifestChangeReport | undefined
   /** Proven usage edges, when the caller already ran the usage scan (`--ownership`/`--flow`) -- renders exact `file:line:column` consumption sites per field when supplied. Omit when no usage scan ran; the catalog still renders, just without that column populated. */
   readonly edges?: readonly DependencyEdge[]
   /** This same run's own `--evidence` output path, when requested -- named in the generated banner's Evidence Model note. */
-  readonly evidencePath?: string
+  readonly evidencePath?: string | undefined
   /**
    * How many days out counts as "expiring soon" in the rendered Lifecycle
    * section. Defaults to `DEFAULT_EXPIRING_WITHIN_DAYS` (30), matching
    * env-cap's own default.
    */
-  readonly expiringWithinDays?: number
+  readonly expiringWithinDays?: number | undefined
   /**
    * The instant `daysRemaining` is measured from. Defaults to the wall clock
    * at call time; `generateDataArtifacts` passes its own single run-wide

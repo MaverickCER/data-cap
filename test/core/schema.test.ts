@@ -29,6 +29,22 @@ describe("resolveFieldDefaults", () => {
     )
   })
 
+  it("detects a cycle at the first repeat instead of walking down to the depth ceiling", () => {
+    let reads = 0
+    const cyclic: Record<string, unknown> = {}
+    Object.defineProperty(cyclic, "self", {
+      enumerable: true,
+      get() {
+        reads += 1
+        return cyclic
+      },
+    })
+    expect(() => resolveFieldDefaults(cyclic, [], new Set())).toThrow(
+      "cyclic field defaults are not supported",
+    )
+    expect(reads).toBe(1)
+  })
+
   it("throws InvalidFieldDefaultError, with its exact message, for a cyclic reference", () => {
     const cyclic: Record<string, unknown> = {}
     cyclic["self"] = cyclic

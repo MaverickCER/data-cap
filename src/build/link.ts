@@ -46,9 +46,9 @@ export interface LinkOptions {
   /** Directory import specifiers/tsconfig auto-detection resolve against. */
   readonly root: string
   /** Explicit `tsconfig.json` path override, or `false` to disable alias resolution. Defaults to auto-detecting `root/tsconfig.json`. */
-  readonly tsconfig?: string | false
+  readonly tsconfig?: string | false | undefined
   /** Explicit cross-package schema discovery allowlist -- see `resolve-package-schema.ts`. */
-  readonly packages?: readonly string[]
+  readonly packages?: readonly string[] | undefined
 }
 
 /** One `buildData`/`createData` capability, linked with its correlated `documentData()` call (if any). */
@@ -456,13 +456,8 @@ export async function linkCapabilityFiles(
   const context = new LinkContext({
     fs: options.fs,
     root: options.root,
-    // An allow-list entry is only ever compared against real bare import
-    // specifiers (`resolvePackageImport`); linking never eagerly resolves the
-    // list, so a phantom extra entry here matches no specifier and is
-    // unobservable. Threading `undefined` through instead only relocates this
-    // same `?? []` into `resolve-import.ts` / `resolve-package-schema.ts`.
-    // Stryker disable next-line ArrayDeclaration
-    packages: options.packages ?? [],
+    // `new Set(undefined)` is empty, so an omitted allow-list becomes an empty one.
+    packages: [...new Set(options.packages)],
     cache: new Map(),
     tsconfigPaths,
     aliasCache: createAliasResolutionCache(),

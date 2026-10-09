@@ -54,13 +54,13 @@ export interface GenerateDataArtifactsOptions {
   /** Directory discovery/linking resolves against. */
   readonly root: string
   /** Glob patterns (relative to `root`) a file must match at least one of to be discovered. Defaults to every `.ts`/`.tsx` file. */
-  readonly include?: readonly string[]
+  readonly include?: readonly string[] | undefined
   /** Glob patterns (relative to `root`) that prune a file or directory regardless of `include`. */
-  readonly exclude?: readonly string[]
+  readonly exclude?: readonly string[] | undefined
   /** Explicit `tsconfig.json` path override, or `false` to disable alias resolution -- see `LinkOptions.tsconfig`. */
-  readonly tsconfig?: string | false
+  readonly tsconfig?: string | false | undefined
   /** Explicit cross-package schema discovery allowlist -- see `resolve-package-schema.ts`. */
-  readonly packages?: readonly string[]
+  readonly packages?: readonly string[] | undefined
   /** Output path for the generated manifest `.ts` file. Omit to skip manifest generation (the inventory is still built and static rules still run). */
   readonly location?: string
   /** Output path for the Markdown documentation catalog. */
@@ -70,7 +70,7 @@ export interface GenerateDataArtifactsOptions {
   /** Output directory for the Data Flow Diagram + Security Data-Flow Review set. */
   readonly flow?: string
   /** Output path for the composed Evidence Model (ADR 0050), as JSON -- see `ReportResult.evidence`, which is always computed regardless of this option; this only controls whether it's additionally written to disk. */
-  readonly evidence?: string
+  readonly evidence?: string | undefined
   /** Escalate every pass's `warning` findings to `error` (never `info`). */
   readonly strict?: boolean
   /** Escalate static (ownership/sensitivity/duplication) findings to `error`. */
@@ -84,7 +84,7 @@ export interface GenerateDataArtifactsOptions {
   /** The single instant every time-sensitive computation in this run shares (`EvidenceModel.provenance.generatedAt`, Lifecycle Model's `daysRemaining`), so none of them can disagree about "now". Defaults to the wall clock at the moment this function is called. */
   readonly generatedAt?: Date
   /** How many days out counts as "expiring soon" for the Lifecycle Model and the documentation catalog's own expiring section. Defaults to `DEFAULT_EXPIRING_WITHIN_DAYS`. */
-  readonly expiringWithinDays?: number
+  readonly expiringWithinDays?: number | undefined
 }
 
 /** Everything one `generateDataArtifacts`/`checkArtifacts` run produced or would produce. */
@@ -162,7 +162,6 @@ async function readManifestSnapshot(
   try {
     // "utf8" -> "" is equivalent: `JSON.parse` coerces the resulting Buffer
     // via its own `.toString()` for any valid-UTF-8 JSON text.
-    // Stryker disable next-line StringLiteral
     const raw = await fs.readFile(snapshotPath, "utf8")
     return JSON.parse(raw) as ManifestSnapshot
   } catch {
@@ -210,16 +209,8 @@ export async function computeDataArtifacts(
   const localFiles = await discoverCapabilityFiles({
     fs: options.fs,
     root: options.root,
-    // discoverCapabilityFiles itself does `options.include ?? DEFAULT_INCLUDE`
-    // / `options.exclude ?? []` -- passing `include: undefined` explicitly
-    // (what always-spreading here would do) is behaviorally identical to
-    // omitting the key, so no test can distinguish "spread only when
-    // defined" from "always spread." Hand-verified: forcing these guards to
-    // `true` and running the real suite passes unchanged.
-    // Stryker disable next-line ConditionalExpression
-    ...(options.include !== undefined ? { include: options.include } : {}),
-    // Stryker disable next-line ConditionalExpression: spreading `exclude: undefined` is identical to omitting the key (see the note above)
-    ...(options.exclude !== undefined ? { exclude: options.exclude } : {}),
+    include: options.include,
+    exclude: options.exclude,
   })
   const packageCache = new Map<string, Promise<PackageSchemaResolutionResult>>()
   const { files: packageFiles, warnings: packageWarnings } = await resolveAllowlistedPackages(
@@ -236,14 +227,7 @@ export async function computeDataArtifacts(
   const linkResult = await linkCapabilityFiles(files, {
     fs: options.fs,
     root: options.root,
-    // linkCapabilityFiles reads `options.tsconfig` directly off its own
-    // options object -- a plain property access sees `undefined` whether
-    // the key is present-but-undefined or absent entirely, so "spread only
-    // when defined" and "always spread" are behaviorally identical here.
-    // Hand-verified: forcing this guard to `true` and running the real
-    // suite passes unchanged.
-    // Stryker disable next-line ConditionalExpression
-    ...(options.tsconfig !== undefined ? { tsconfig: options.tsconfig } : {}),
+    tsconfig: options.tsconfig,
     packages,
   })
   const inventory: CapabilityInventory = buildInventory(linkResult)
@@ -357,7 +341,7 @@ export async function computeDataArtifacts(
       ...(options.tsconfig !== undefined ? { tsconfig: options.tsconfig } : {}),
       packages,
     },
-    ...(options.evidence !== undefined ? { evidencePath: options.evidence } : {}),
+    evidencePath: options.evidence,
   })
   if (options.ownership !== undefined) {
     writes.push({ path: options.ownership, content: usage.content })
@@ -376,19 +360,9 @@ export async function computeDataArtifacts(
       // `manifestChanges` (not `manifest?.changes`) -- F2 decoupled
       // change-detection from `--location`, so `--docs`+`--evidence` (no
       // `--location`) already has a real diff to render too, the same way
-      // `edges` below is no longer gated on a scan that only used to run
-      // for `--ownership`/`--flow`. "spread only when defined" vs "always
-      // spread" is unobservable here, the same established class as
-      // `include`/`exclude`/`tsconfig`/`packages` elsewhere in this file:
-      // `generateDocumentation` reads `options.changes` via plain property
-      // access (`docs.ts`'s `renderChangesSinceLastReport` only ever checks
-      // `changes === undefined`), so `{ changes: undefined }` and omitting
-      // the key entirely read back identically. Hand-verified: forcing this
-      // guard to `true` and running the real suite passes unchanged.
-      // Stryker disable next-line ConditionalExpression
-      ...(manifestChanges !== undefined ? { changes: manifestChanges } : {}),
+      changes: manifestChanges,
       edges: usage.edges,
-      ...(options.evidence !== undefined ? { evidencePath: options.evidence } : {}),
+      evidencePath: options.evidence,
       expiringWithinDays,
       generatedAt,
     })
@@ -403,7 +377,7 @@ export async function computeDataArtifacts(
       location: options.flow,
       edges: usage.edges,
       additionalFindings: [...staticFindings, ...usageFindings],
-      ...(options.evidence !== undefined ? { evidencePath: options.evidence } : {}),
+      evidencePath: options.evidence,
     })
     for (const file of flow.files) writes.push(file)
   }
@@ -511,7 +485,6 @@ export async function generateDataArtifacts(
     await options.fs.mkdir(path.dirname(write.path), { recursive: true })
     // "utf8" is required by the BuildFileSystem contract; `write.content` is
     // always a string, so this is the only meaningful encoding.
-    // Stryker disable next-line StringLiteral
     await options.fs.writeFile(write.path, write.content, "utf8")
   }
 

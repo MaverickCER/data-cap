@@ -1,7 +1,7 @@
 import { RuleTester } from "eslint"
 import type { Rule } from "eslint"
-import { describe, it } from "vitest"
-import { noFieldsEscape } from "../../src/eslint-plugin/no-fields-escape.js"
+import { describe, expect, it } from "vitest"
+import { ancestorChain, noFieldsEscape } from "../../src/eslint-plugin/no-fields-escape.js"
 
 // RuleTester's own `run()` registers cases via Mocha-style global
 // `describe`/`it` by default -- vitest doesn't inject those as true globals,
@@ -24,6 +24,16 @@ const ruleTester = new RuleTester({
 // the sibling rule test files use, for the same reason.
 ruleTester.run("no-fields-escape", noFieldsEscape as unknown as Rule.RuleModule, {
   valid: [
+    // -- Inside an exported function, a read that is not returned is not an export. --
+    { code: `export function load() { const local = userData.fields; return 1; }` },
+    // -- A top-level `return` (CommonJS) has no enclosing function, so nothing is exported. --
+    {
+      code: `return userData.fields;`,
+      languageOptions: {
+        sourceType: "commonjs",
+        parserOptions: { ecmaFeatures: { globalReturn: true } },
+      },
+    },
     // -- A named single-field read, however it's spelled, is never flagged. --
     { code: `const x = userData.fields.email;` },
     { code: `const x = userData.getSnapshot().fields.email;` },
@@ -326,4 +336,13 @@ ruleTester.run("no-fields-escape", noFieldsEscape as unknown as Rule.RuleModule,
       errors: [{ messageId: "spread" }, { messageId: "spread" }, { messageId: "argument" }],
     },
   ],
+})
+
+describe("ancestorChain", () => {
+  it("is empty for a missing node, and otherwise lists the node then each ancestor", () => {
+    expect(ancestorChain(null)).toEqual([])
+    expect(ancestorChain(undefined)).toEqual([])
+    const leaf = { type: "Leaf", parent: { type: "Mid", parent: { type: "Root", parent: null } } }
+    expect(ancestorChain(leaf as never).map((n) => n.type)).toEqual(["Leaf", "Mid", "Root"])
+  })
 })

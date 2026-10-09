@@ -85,7 +85,6 @@ async function fileExists(filePath: string, fs: BuildFileSystem): Promise<boolea
   // (a fileExists() continuation after an await, same class as loadTsconfigPaths below).
   // Hand-verified 2026-09-20: forcing this to `true` fails "is silent when no tsconfig.json
   // exists and no explicit path was given" immediately.
-  // Stryker disable next-line BooleanLiteral
   return false
 }
 
@@ -126,7 +125,6 @@ export async function loadTsconfigPaths(
   // misattribution isn't limited to strictly-post-await code in this async function. Hand-verified
   // 2026-09-19: forcing this to `{} as LoadTsconfigPathsResult` fails "disables alias resolution
   // entirely when tsconfig: false" (toStrictEqual) immediately.
-  // Stryker disable next-line ObjectLiteral
   if (tsconfigOption === false) return { resolution: undefined, warning: undefined }
 
   // Everything below this point runs only after `await fileExists(...)` --
@@ -142,7 +140,6 @@ export async function loadTsconfigPaths(
   // Re-confirmed 2026-09-19 against CI's own diagnostic mutation report, which flagged a
   // `BlockStatement` mutant on the `if (readResult.error) { ... }` block below as Survived --
   // same class, wider mutator set than previously listed here.
-  // Stryker disable ConditionalExpression, EqualityOperator, LogicalOperator, ObjectLiteral, StringLiteral, BlockStatement
   const isExplicit = tsconfigOption !== undefined
   const configFile = path.resolve(root, tsconfigOption ?? "tsconfig.json")
 
@@ -159,11 +156,7 @@ export async function loadTsconfigPaths(
 
   const readResult = ts.readConfigFile(configFile, (p) => ts.sys.readFile(p))
   if (readResult.error) {
-    // `readConfigFile`'s error (a JSON-scanner diagnostic) always carries a plain
-    // string `messageText`, never a `DiagnosticMessageChain`, so the chain
-    // separator here is never reached -- kept only for the API's declared type.
-    // Stryker disable next-line StringLiteral
-    const detail = ts.flattenDiagnosticMessageText(readResult.error.messageText, "\n")
+    const detail = ts.flattenDiagnosticMessageText(readResult.error.messageText, ts.sys.newLine)
     return {
       resolution: undefined,
       warning: { file: configFile, message: `Could not parse "${configFile}": ${detail}` },
@@ -179,7 +172,6 @@ export async function loadTsconfigPaths(
   }
 
   return { resolution: { compilerOptions: parsed.options, configFile }, warning: undefined }
-  // Stryker restore ConditionalExpression, EqualityOperator, LogicalOperator, ObjectLiteral, StringLiteral, BlockStatement
 }
 
 /**
@@ -229,7 +221,6 @@ export function resolveAliasImport(
     // "discards a resolution whose path merely contains, but does not end in, `.ts`/`.tsx`"
     // immediately -- the test's own fixture path contains a `libs.tsx/` directory segment
     // specifically to distinguish an anchored match from an unanchored one.
-    // Stryker disable next-line Regex
     const isTsSource = /\.tsx?$/.test(normalized)
     if (!isInNodeModules && isTsSource) resolved = normalized
   }

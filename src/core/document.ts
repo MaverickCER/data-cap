@@ -431,26 +431,13 @@ export interface CapabilityDocs<TSchema extends DataSchema<FieldsShape>> {
  * evidence that an executable capability exists -- static analysis (`build`)
  * inspects only real `buildData`/`createData` calls.
  */
-// Deliberately a true no-op (see the doc comment above): `documentData` has
-// no runtime behavior at all, only a compile-time `keyof`-checked shape and a
-// static-analysis-visible call site -- its body being empty is observably
-// identical to explicitly discarding both arguments, so there is nothing a
-// test could assert to distinguish the two. (A `next-line` disable placed
-// inside the parameter list, right before the closing paren, does not
-// reliably attach as the block's own leading comment -- hence this
-// unscoped disable/restore pair instead.)
-// Stryker disable BlockStatement
 export function documentData<TSchema extends DataSchema<FieldsShape>>(
   config: TSchema,
   docs: CapabilityDocs<TSchema>,
-): void {
-  // `noUnusedParameters` needs these referenced; a bare `config`/`docs`
-  // expression statement trips `no-unused-expressions` instead, and renaming
-  // these public parameters to `_config`/`_docs` would leak into every
-  // consumer's editor hover.
-  // eslint-disable-next-line @typescript-eslint/no-meaningless-void-operator -- marks the parameter used without renaming a public parameter (see the note above)
-  void config
-  // eslint-disable-next-line @typescript-eslint/no-meaningless-void-operator -- documentData is an intentional runtime no-op marker read by static analysis; voiding the argument keeps it referenced
-  void docs
+): void
+// Deliberately a true no-op (see the doc comment above): `documentData` has no runtime behavior at all,
+// only a compile-time `keyof`-checked shape and a static-analysis-visible call site. The overload above
+// carries the public parameters; this implementation takes none, so nothing is left unused.
+export function documentData(): void {
+  // Intentionally inert: anything done here would run in every process that imports a schema file.
 }
-// Stryker restore BlockStatement

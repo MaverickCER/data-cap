@@ -87,14 +87,7 @@ function isGetSnapshotCall(node: TSESTree.CallExpression): boolean {
  * `MemberExpression`/`CallExpression` visitors below, never the `Program`
  * root, so it is always populated in practice.
  */
-function isSpread(node: TSESTree.Node): boolean {
-  // `node.parent` is always populated for a MemberExpression/CallExpression
-  // reached via a real ESLint traversal (never the Program root).
-  // Hand-verified: mutating this guard to `if (false)` (or the `return
-  // false` it guards to `return true`) and running the real suite passes
-  // unchanged -- the branch's body is never reached by any real input.
-  // Stryker disable next-line ConditionalExpression, BooleanLiteral
-  if (node.parent === undefined) return false
+function isSpread(node: NonRootNode): boolean {
   const parent = node.parent
   if (parent.type === AST_NODE_TYPES.JSXSpreadAttribute) return true
   if (parent.type === AST_NODE_TYPES.SpreadElement) {
@@ -117,14 +110,7 @@ function isSpread(node: TSESTree.Node): boolean {
  * this function is ever called with -- so `node` being `parent`'s child at
  * all already proves it is `init`, not `id`.
  */
-function isDestructuredWithRest(node: TSESTree.Node): boolean {
-  // Same reasoning as `isSpread`'s identical guard: `node.parent` is always
-  // populated for a MemberExpression/CallExpression reached via a real
-  // ESLint traversal. Hand-verified: mutating this guard to `if (false)`
-  // (or the `return false` it guards to `return true`) and running the
-  // real suite passes unchanged -- the branch's body is never reached.
-  // Stryker disable next-line ConditionalExpression, BooleanLiteral
-  if (node.parent === undefined) return false
+function isDestructuredWithRest(node: NonRootNode): boolean {
   const parent = node.parent
   if (parent.type !== AST_NODE_TYPES.VariableDeclarator) return false
   const id = parent.id
@@ -144,14 +130,7 @@ function isDestructuredWithRest(node: TSESTree.Node): boolean {
  * happens to it next" ambiguity `isSpread` already covers, just via a
  * function boundary instead of an object/JSX boundary.
  */
-function isCallArgument(node: TSESTree.Node): boolean {
-  // node.parent is always populated for a MemberExpression/CallExpression
-  // reached via a real ESLint traversal (never the Program root).
-  // Hand-verified: mutating this guard to `if (false)` (or the `return
-  // false` it guards to `return true`) and running the real suite passes
-  // unchanged -- the branch's body is never reached by any real input.
-  // Stryker disable next-line ConditionalExpression, BooleanLiteral
-  if (node.parent === undefined) return false
+function isCallArgument(node: NonRootNode): boolean {
   const parent = node.parent
   if (
     parent.type !== AST_NODE_TYPES.CallExpression &&
@@ -186,9 +165,9 @@ function isCallArgument(node: TSESTree.Node): boolean {
  * either optional-chain operator away and running the real suite passes
  * unchanged.
  */
-function isNamedJsxAttributeValue(node: TSESTree.Node): boolean {
-  // Stryker disable next-line OptionalChaining: both optional hops are for the compiler; ESLint traversal always populates them (see the note above)
-  return node.parent?.parent?.type === AST_NODE_TYPES.JSXAttribute
+function isNamedJsxAttributeValue(node: NonRootNode): boolean {
+  // The grandparent exists for any read below a statement; `type` is only read, never assumed.
+  return (node.parent.parent as { type?: unknown }).type === AST_NODE_TYPES.JSXAttribute
 }
 
 /**
@@ -221,10 +200,11 @@ function isNamedJsxAttributeValue(node: TSESTree.Node): boolean {
  */
 function isExportedName(name: string, program: TSESTree.Program): boolean {
   return program.body.some((statement) => {
-    // Stryker disable next-line ConditionalExpression, BooleanLiteral: the first guard is subsumed by the check on the next line (see the note above)
-    if (statement.type !== AST_NODE_TYPES.ExportNamedDeclaration) return false
-    if (statement.source !== null) return false
-    return statement.specifiers.some((specifier) => specifier.local.name === name)
+    // Only an `ExportNamedDeclaration` can have a null `source`; every other statement reads a non-null
+    // or missing one and is skipped here.
+    const exported = statement as TSESTree.ExportNamedDeclaration
+    if (exported.source !== null) return false
+    return exported.specifiers.some((specifier) => specifier.local.name === name)
   })
 }
 
@@ -264,12 +244,9 @@ function isDeclarationExported(
  * at all already proves it is `init`, the same reasoning
  * `isDestructuredWithRest` already applies to this exact parent type.
  */
-function isExportedVariableInit(node: TSESTree.Node, program: TSESTree.Program): boolean {
-  // node.parent is always populated for a MemberExpression/CallExpression
-  // reached via a real ESLint traversal (never the Program root).
+function isExportedVariableInit(node: NonRootNode, program: TSESTree.Program): boolean {
   const declarator = node.parent
-  // Stryker disable next-line OptionalChaining: node.parent is always populated in a real traversal; the optional chain is for the compiler
-  if (declarator?.type !== AST_NODE_TYPES.VariableDeclarator) return false
+  if (declarator.type !== AST_NODE_TYPES.VariableDeclarator) return false
   if (declarator.id.type !== AST_NODE_TYPES.Identifier) return false
   // A `VariableDeclarator` is only ever a child of a `VariableDeclaration`
   // (`for (const x of y)` included) -- TSESTree types `.parent` here as
@@ -277,31 +254,29 @@ function isExportedVariableInit(node: TSESTree.Node, program: TSESTree.Program):
   return isDeclarationExported(declarator.parent, declarator.id.name, program)
 }
 
+/** Any AST node except the `Program` root, so `.parent` is always populated. */
+type NonRootNode = Exclude<TSESTree.Node, TSESTree.Program>
+
 type FunctionLike =
   TSESTree.FunctionDeclaration | TSESTree.FunctionExpression | TSESTree.ArrowFunctionExpression
 
 /**
  * The nearest enclosing function (of any kind) walking up from `node`, or
  * `undefined` at module top level.
- *
- * A `for` loop, not a `while` loop with the advance step in its body: the
- * advance (`current = current.parent`) lives in the loop's own header, not
- * inside the block a mutation-testing tool could empty out wholesale --
- * emptying only the `if` leaves the walk still terminating (just never
- * matching early), rather than spinning forever over a `current` that never
- * changes.
  */
-function enclosingFunction(node: TSESTree.Node): FunctionLike | undefined {
-  for (let current = node.parent; current !== undefined; current = current.parent) {
-    if (
-      current.type === AST_NODE_TYPES.FunctionDeclaration ||
-      current.type === AST_NODE_TYPES.FunctionExpression ||
-      current.type === AST_NODE_TYPES.ArrowFunctionExpression
-    ) {
-      return current
-    }
-  }
-  return undefined
+function enclosingFunction(node: NonRootNode): FunctionLike | undefined {
+  return ancestorChain(node.parent).find(
+    (ancestor): ancestor is FunctionLike =>
+      ancestor.type === AST_NODE_TYPES.FunctionDeclaration ||
+      ancestor.type === AST_NODE_TYPES.FunctionExpression ||
+      ancestor.type === AST_NODE_TYPES.ArrowFunctionExpression,
+  )
+}
+
+/** `node` and every ancestor above it, innermost first. Ends at the program root, whose parent is `null` at runtime (typed `undefined`), hence the loose check. */
+/** @internal Exported for direct unit coverage. */
+export function ancestorChain(node: TSESTree.Node | null | undefined): TSESTree.Node[] {
+  return node == null ? [] : [node, ...ancestorChain(node.parent)]
 }
 
 /**
@@ -339,11 +314,7 @@ function isFunctionExported(fn: FunctionLike, program: TSESTree.Program): boolea
  * "only possible slot" reasoning `isDestructuredWithRest`/
  * `isExportedVariableInit` already apply to their own parent types.
  */
-function isReturnedFromExportedFunction(node: TSESTree.Node, program: TSESTree.Program): boolean {
-  // node.parent is always populated for a MemberExpression/CallExpression
-  // reached via a real ESLint traversal (never the Program root).
-  // Stryker disable next-line ConditionalExpression, BooleanLiteral
-  if (node.parent === undefined) return false
+function isReturnedFromExportedFunction(node: NonRootNode, program: TSESTree.Program): boolean {
   const parent = node.parent
   const isExplicitReturn = parent.type === AST_NODE_TYPES.ReturnStatement
   const isImplicitArrowReturn = parent.type === AST_NODE_TYPES.ArrowFunctionExpression
@@ -355,7 +326,6 @@ function isReturnedFromExportedFunction(node: TSESTree.Node, program: TSESTree.P
   // first step for the implicit-return case) -- `fn` is never actually
   // `undefined` reached from here, but `enclosingFunction`'s own return
   // type stays `| undefined` since it's a general-purpose upward walk.
-  // Stryker disable next-line ConditionalExpression, BooleanLiteral
   return fn !== undefined && isFunctionExported(fn, program)
 }
 
@@ -372,7 +342,7 @@ type EscapeKind = "spread" | "argument" | "prop" | "exported"
  * the most consequential shape), then `"spread"`/rest (erases per-field
  * granularity entirely), then the narrower `"argument"`/`"prop"` shapes.
  */
-function classifyEscape(node: TSESTree.Node, program: TSESTree.Program): EscapeKind | undefined {
+function classifyEscape(node: NonRootNode, program: TSESTree.Program): EscapeKind | undefined {
   if (isExportedVariableInit(node, program) || isReturnedFromExportedFunction(node, program)) {
     return "exported"
   }
@@ -450,10 +420,8 @@ export const noFieldsEscape = createRule<
   },
   defaultOptions: [{ allow: [] }],
   create(context, [options]) {
-    // `defaultOptions` (the RuleCreator merge) always supplies `allow`, so this
-    // is never nullish -- but the option type keeps it optional for a caller.
-    // Stryker disable next-line ArrayDeclaration
-    const allowPatterns = options.allow ?? []
+    // `RuleCreator` merges `defaultOptions` onto the configured options, so `allow` is always set.
+    const allowPatterns = options.allow as readonly string[]
     if (allowPatterns.some((pattern) => globToRegExp(pattern).test(context.filename))) return {}
 
     function check(node: TSESTree.MemberExpression | TSESTree.CallExpression): void {

@@ -13,6 +13,7 @@ import type { OperationOutcome } from "../../src/runtime/capability.js"
 import type { DataError } from "../../src/core/types.js"
 import type { SubscriptionHandlers } from "../../src/runtime/coordinator.js"
 import { UnknownGetterError } from "../../src/runtime/errors.js"
+import * as storeModule from "../../src/runtime/store.js"
 
 function deferred<T>(): {
   promise: Promise<T>
@@ -1506,5 +1507,50 @@ describe("mutation-hardening: stale-settle only touches operations", () => {
     await capability.g({ id: "2" })
     const entries = capability.getSnapshot().operations["g"] ?? {}
     expect(Object.keys(entries)).toEqual([canonicalize({ id: "2" }) ?? ""])
+  })
+})
+
+describe("pending transitions", () => {
+  it("removes a pending transition only for a mutator that created one", async () => {
+    const removed: unknown[] = []
+    const realCreate = storeModule.createDataStore
+    const spy = vi.spyOn(storeModule, "createDataStore").mockImplementation((initial) => {
+      const store = realCreate(initial)
+      const original = store.removePendingTransition.bind(store)
+      store.removePendingTransition = (id) => {
+        removed.push(id)
+        original(id)
+      }
+      return store
+    })
+    try {
+      const capability = createData({
+        fields: { user: { email: "a@example.com" } },
+        mutators: {
+          plain: {
+            params: {},
+            execute: () => Promise.resolve({ email: "b@example.com" }),
+            processor: (raw: { email: string }) => ({ user: raw }),
+            writes: { user: true },
+          },
+          optimistic: {
+            params: {},
+            execute: () => Promise.resolve({ email: "c@example.com" }),
+            processor: (raw: { email: string }) => ({ user: raw }),
+            writes: { user: true },
+            optimistic: () => ({ user: { email: "pending@example.com" } }),
+          },
+        },
+      })
+
+      await capability.plain({})
+      expect(removed).toHaveLength(0)
+
+      await capability.optimistic({})
+      expect(removed).toHaveLength(1)
+      expect(typeof removed[0]).toBe("symbol")
+    } finally {
+      spy.mockRestore()
+    }
   })
 })
