@@ -129,11 +129,6 @@ export async function loadTsconfigPaths(
   // entirely when tsconfig: false" (toStrictEqual) immediately.
   if (tsconfigOption === false) return { resolution: undefined, warning: undefined }
 
-  // The first use of the compiler on the scan path: `ts.readConfigFile()` below would otherwise die
-  // with a raw "is not a function" when no usable compiler resolved (the bundled TypeScript 6
-  // stripped from an install), before any later guard could explain it.
-  assertCompilerApi(ts)
-
   // Everything below this point runs only after `await fileExists(...)` --
   // Stryker's perTest coverage cannot attribute a mutant that only runs in
   // a continuation after an await (same defect class
@@ -161,6 +156,11 @@ export async function loadTsconfigPaths(
     }
   }
 
+  // The first use of the compiler on the scan path, so only reached once a config file exists: with
+  // none (or a missing explicit path) the compiler is never touched and the early returns above
+  // stand. Without this, `ts.readConfigFile()` below would die with a raw "is not a function" when no
+  // usable compiler resolved (the bundled TypeScript 6 stripped from an install).
+  assertCompilerApi(ts)
   const readResult = ts.readConfigFile(configFile, (p) => ts.sys.readFile(p))
   if (readResult.error) {
     const detail = ts.flattenDiagnosticMessageText(readResult.error.messageText, ts.sys.newLine)

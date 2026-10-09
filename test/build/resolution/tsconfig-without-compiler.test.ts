@@ -14,6 +14,28 @@ describe("loadTsconfigPaths with no usable compiler", () => {
     )
   })
 
+  it("explains itself before reading an explicitly named tsconfig too", async () => {
+    const fs = createInMemoryBuildFs({ "/repo/custom.json": "{}" })
+    await expect(loadTsconfigPaths("/repo", "custom.json", fs)).rejects.toThrow(
+      /classic compiler API/,
+    )
+  })
+
+  it("does not need the compiler when there is no tsconfig.json to read", async () => {
+    const fs = createInMemoryBuildFs()
+    await expect(loadTsconfigPaths("/repo", undefined, fs)).resolves.toEqual({
+      resolution: undefined,
+      warning: undefined,
+    })
+  })
+
+  it("still reports a missing explicit tsconfig as a warning, not a compiler error", async () => {
+    const fs = createInMemoryBuildFs()
+    const result = await loadTsconfigPaths("/repo", "nope.json", fs)
+    expect(result.resolution).toBeUndefined()
+    expect(result.warning?.message).toMatch(/no file exists at/)
+  })
+
   it("leaves tsconfig: false alone, since it never touches the compiler", async () => {
     const fs = createInMemoryBuildFs({ "/repo/tsconfig.json": "{}" })
     await expect(loadTsconfigPaths("/repo", false, fs)).resolves.toEqual({
