@@ -1,5 +1,7 @@
 import path from "node:path"
-import ts from "typescript"
+import { ts } from "../typescript.js"
+import type TS from "typescript"
+import { assertCompilerApi } from "../compiler-api.js"
 import type { ParseWarning } from "../parse.js"
 import type { BuildFileSystem } from "../types.js"
 
@@ -31,7 +33,7 @@ import type { BuildFileSystem } from "../types.js"
  * @internal
  */
 export interface PathMappingOptions {
-  readonly paths?: ts.MapLike<string[]>
+  readonly paths?: TS.MapLike<string[]>
   readonly baseUrl?: string
 }
 
@@ -40,14 +42,14 @@ export interface PathMappingOptions {
  * @returns The same options, typed as the `paths`/`baseUrl` view.
  * @internal
  */
-export function pathMappingOptions(options: ts.CompilerOptions): PathMappingOptions {
+export function pathMappingOptions(options: TS.CompilerOptions): PathMappingOptions {
   return options
 }
 
 /** Parsed `tsconfig.json` `paths`/`baseUrl` configuration, immutable for the life of one generate*() run. See {@link loadTsconfigPaths}. */
 export interface TsconfigPathsResolution {
   /** The subset of `compilerOptions` `ts.resolveModuleName()` needs -- at minimum `paths` and/or `baseUrl`. */
-  readonly compilerOptions: ts.CompilerOptions
+  readonly compilerOptions: TS.CompilerOptions
   /** Absolute path of the tsconfig.json this was loaded from, for diagnostics. */
   readonly configFile: string
 }
@@ -154,6 +156,11 @@ export async function loadTsconfigPaths(
     }
   }
 
+  // The first use of the compiler on the scan path, so only reached once a config file exists: with
+  // none (or a missing explicit path) the compiler is never touched and the early returns above
+  // stand. Without this, `ts.readConfigFile()` below would die with a raw "is not a function" when no
+  // usable compiler resolved (the bundled TypeScript 6 stripped from an install).
+  assertCompilerApi(ts)
   const readResult = ts.readConfigFile(configFile, (p) => ts.sys.readFile(p))
   if (readResult.error) {
     const detail = ts.flattenDiagnosticMessageText(readResult.error.messageText, ts.sys.newLine)

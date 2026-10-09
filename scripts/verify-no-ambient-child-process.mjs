@@ -86,8 +86,18 @@ function main() {
     // runtime acquisition).
     const CODE_EXT = new Set([".js", ".cjs", ".mjs"])
 
+    // The bundled TypeScript compiler (`bundleDependencies`, ADR 0069) is third-party code that
+    // legitimately reads files and spawns processes. It is exempt, and only it: the roots come from
+    // `package.json#bundleDependencies`, never a glob, so any other `node_modules/` file in the tarball
+    // is still a violation. `scripts/verify-compiler-isolation.mjs` proves no library entry can reach it.
+    const pkgJson = JSON.parse(readFileSync(path.join(packageRoot, "package.json"), "utf8"))
+    const bundledRoots = (pkgJson.bundleDependencies ?? []).map((name) =>
+      path.join(packageRoot, "node_modules", name, path.sep),
+    )
+
     const violations = []
     for (const file of walk(packageRoot)) {
+      if (bundledRoots.some((root) => file.startsWith(root))) continue
       if (!CODE_EXT.has(path.extname(file))) continue
       if (statSync(file).size > 8 * 1024 * 1024) continue // a huge asset -- source bundles are never this big
       const text = readFileSync(file, "utf8")
@@ -104,7 +114,7 @@ function main() {
         for (const hit of hits) console.error(`    contains: ${JSON.stringify(hit)}`)
       }
       console.error(
-        "\ndata-cap never spawns a process itself -- no exemption applies here, unlike node:fs.",
+        "\ndata-cap never spawns a process itself -- the only exemption is the bundled TypeScript compiler (bundleDependencies), unlike node:fs.",
       )
       process.exit(1)
     }

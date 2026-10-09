@@ -8,7 +8,8 @@
  * so a `fields` reference and a consumer's import are resolved identically.
  */
 
-import ts from "typescript"
+import { ts } from "./typescript.js"
+import type TS from "typescript"
 import { assertCompilerApi } from "./compiler-api.js"
 import { collectImportBindings } from "./parse.js"
 import type { ImportBinding, ParseWarning } from "./parse.js"
@@ -81,7 +82,7 @@ function targetKey(file: string, exportName: string): string {
   return `${file}#${exportName}`
 }
 
-function collectFileImports(sourceFile: ts.SourceFile): readonly ImportBinding[] {
+function collectFileImports(sourceFile: TS.SourceFile): readonly ImportBinding[] {
   const imports: ImportBinding[] = []
   for (const statement of sourceFile.statements) {
     if (ts.isImportDeclaration(statement)) collectImportBindings(statement, imports)

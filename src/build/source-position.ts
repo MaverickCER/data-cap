@@ -9,7 +9,8 @@
  * position from scratch. See ADR 0052.
  */
 
-import ts from "typescript"
+import { ts } from "./typescript.js"
+import type TS from "typescript"
 
 /** A 1-based line/column within a file already known from context (e.g. `DependencyEdge.from`). */
 export interface SourcePosition {
@@ -23,7 +24,7 @@ export interface SourceLocation extends SourcePosition {
 }
 
 /** The one place a `SourcePosition` is ever computed from a raw AST node -- every caller reuses this instead of hand-rolling `getLineAndCharacterOfPosition` arithmetic. */
-export function positionOf(sourceFile: ts.SourceFile, node: ts.Node): SourcePosition {
+export function positionOf(sourceFile: TS.SourceFile, node: TS.Node): SourcePosition {
   const { line, character } = ts.getLineAndCharacterOfPosition(
     sourceFile,
     node.getStart(sourceFile),

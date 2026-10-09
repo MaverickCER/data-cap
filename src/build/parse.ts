@@ -17,7 +17,8 @@
  * `optimistic` function bodies (ADR 0002's never-eval rule).
  */
 
-import ts from "typescript"
+import { ts } from "./typescript.js"
+import type TS from "typescript"
 import { assertCompilerApi } from "./compiler-api.js"
 import type {
   CapabilityDocs,
@@ -119,7 +120,7 @@ export type SchemaRef =
       /** Always `"literal"` for this variant. */
       readonly kind: "literal"
       /** The object literal AST node itself. */
-      readonly node: ts.ObjectLiteralExpression
+      readonly node: TS.ObjectLiteralExpression
     }
   /** `fields` is a bare identifier -- resolved against `ParseResult.localConsts`/cross-file imports by `link.ts`. */
   | {
@@ -161,7 +162,7 @@ export interface RawCreateDataCall {
   /** Static `processor`/`optimistic` key-presence facts, keyed the same way as `operationNames`. `undefined` for a `buildData()` call, which has no operations section. */
   readonly operationPresence: OperationPresenceByKind | undefined
   /** The full call expression AST node, for later structural inspection. */
-  readonly node: ts.CallExpression
+  readonly node: TS.CallExpression
   /** Position of this call's own declaration site -- always available, since `node` always resolves to a real AST location regardless of how `fields` itself resolves. */
   readonly declarationPosition: SourcePosition
   /** Position of each top-level field's own key, keyed by field name -- only when `fieldsRef.kind === "literal"` (an identifier-resolved `fields` crosses a file boundary this pass doesn't retain AST access to; `undefined` there, never guessed at). */
@@ -173,9 +174,9 @@ export interface RawDocumentDataCall {
   /** How this call's first (`fields` reference) argument resolves within this one file. */
   readonly fieldsRef: SchemaRef
   /** The second (`docs`) argument, for later structural inspection -- not evaluated here. */
-  readonly docsNode: ts.Expression | undefined
+  readonly docsNode: TS.Expression | undefined
   /** The full call expression AST node, for later structural inspection. */
-  readonly node: ts.CallExpression
+  readonly node: TS.CallExpression
 }
 
 /** One `import { X as Y } from "..."` (or namespace/default) binding found in a file's top-level statements. */
@@ -197,7 +198,7 @@ export interface ParseResult {
   /** Every `documentData(...)` call found in this file. */
   readonly documentDataCalls: readonly RawDocumentDataCall[]
   /** Top-level `const X = <expr>` bindings, keyed by name -- for resolving an `identifier`-kind `SchemaRef` within the same file. */
-  readonly localConsts: ReadonlyMap<string, ts.Expression>
+  readonly localConsts: ReadonlyMap<string, TS.Expression>
   /** Every top-level import binding found in this file. */
   readonly imports: readonly ImportBinding[]
   /** Extraction problems encountered while parsing this file -- never thrown, always collected. */
@@ -205,7 +206,7 @@ export interface ParseResult {
 }
 
 /** @internal Exported for direct unit coverage (reached only through the recursive parse walk in production). */
-export function isCallToName(call: ts.CallExpression, name: string): boolean {
+export function isCallToName(call: TS.CallExpression, name: string): boolean {
   const expr = call.expression
   if (ts.isIdentifier(expr)) return expr.text === name
   if (ts.isPropertyAccessExpression(expr)) return expr.name.text === name
@@ -213,7 +214,7 @@ export function isCallToName(call: ts.CallExpression, name: string): boolean {
 }
 
 /** @internal Exported for direct unit coverage (reached only through the recursive parse walk in production). */
-export function hasExportModifier(statement: ts.VariableStatement): boolean {
+export function hasExportModifier(statement: TS.VariableStatement): boolean {
   return statement.modifiers?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword) ?? false
 }
 
@@ -232,9 +233,9 @@ export function hasExportModifier(statement: ts.VariableStatement): boolean {
  * guessed at; it resolves to `undefined` instead.
  */
 function resolveConfigObjectLiteral(
-  call: ts.CallExpression,
-  localConsts: ReadonlyMap<string, ts.Expression>,
-): ts.ObjectLiteralExpression | undefined {
+  call: TS.CallExpression,
+  localConsts: ReadonlyMap<string, TS.Expression>,
+): TS.ObjectLiteralExpression | undefined {
   const configArg = call.arguments[0]
   if (configArg === undefined) return undefined
   if (ts.isObjectLiteralExpression(configArg)) return configArg
@@ -247,8 +248,8 @@ function resolveConfigObjectLiteral(
 
 /** @internal Exported for direct unit coverage (reached only through the recursive parse walk in production). */
 export function extractFieldsRef(
-  call: ts.CallExpression,
-  localConsts: ReadonlyMap<string, ts.Expression>,
+  call: TS.CallExpression,
+  localConsts: ReadonlyMap<string, TS.Expression>,
 ): SchemaRef {
   if (call.arguments[0] === undefined) {
     return { kind: "unresolvable", reason: "call has no arguments" }
@@ -286,7 +287,7 @@ export function extractFieldsRef(
  */
 function extractFieldPositions(
   fieldsRef: SchemaRef,
-  sourceFile: ts.SourceFile,
+  sourceFile: TS.SourceFile,
 ): Readonly<Record<string, SourcePosition>> | undefined {
   if (fieldsRef.kind !== "literal") return undefined
   const positions: Record<string, SourcePosition> = {}
@@ -302,7 +303,7 @@ function extractFieldPositions(
 /** Property key names of an object-literal-valued section (`getters`/`mutators`/`subscriptions`) -- never the values themselves. `undefined` when the section is absent or not an inline object literal (a spread, a factory call, an identifier reference -- none of these are guessed at). */
 /** @internal Exported for direct unit coverage (reached only through the recursive parse walk in production). */
 export function extractSectionNames(
-  configArg: ts.ObjectLiteralExpression,
+  configArg: TS.ObjectLiteralExpression,
   sectionName: string,
 ): readonly string[] | undefined {
   const sectionProp = configArg.properties.find(
@@ -322,8 +323,8 @@ export function extractSectionNames(
 /** Static operation names on a `createData(...)` call's config object -- names (AST object keys) only, never `execute`/`processor`/`subscribe`/`optimistic` function bodies (ADR 0002). `undefined` when the call has no inline object-literal first argument at all. */
 /** @internal Exported for direct unit coverage (reached only through the recursive parse walk in production). */
 export function extractOperationNames(
-  call: ts.CallExpression,
-  localConsts: ReadonlyMap<string, ts.Expression>,
+  call: TS.CallExpression,
+  localConsts: ReadonlyMap<string, TS.Expression>,
 ): OperationNames | undefined {
   const configArg = resolveConfigObjectLiteral(call, localConsts)
   if (configArg === undefined) return undefined
@@ -357,7 +358,7 @@ type WritesExtraction = { readonly value: unknown } | undefined
 
 /** Extracts one operation entry's `writes` property, distinguishing "never declared" (`undefined`) from "declared but not statically resolvable" (`{ value: undefined }`) -- callers must not conflate the two (ADR 0011's implicit-full-ownership default applies only to a genuinely absent `writes`, never to one that's merely unresolvable). */
 function extractOperationWrites(
-  operationEntry: ts.ObjectLiteralExpression,
+  operationEntry: TS.ObjectLiteralExpression,
   operationLabel: string,
   file: string,
   warnings: ParseWarning[],
@@ -376,7 +377,7 @@ function extractOperationWrites(
 }
 
 function extractSectionWrites(
-  configArg: ts.ObjectLiteralExpression,
+  configArg: TS.ObjectLiteralExpression,
   sectionName: "getters" | "mutators" | "subscriptions",
   file: string,
   warnings: ParseWarning[],
@@ -413,10 +414,10 @@ function extractSectionWrites(
 
 /** Static `writes` field-ownership shapes for every getter/mutator/subscription on a `createData(...)` call's config object. `undefined` when the call has no inline object-literal first argument at all (same condition `extractOperationNames` returns `undefined` for). */
 function extractOperationWritesByKind(
-  call: ts.CallExpression,
+  call: TS.CallExpression,
   file: string,
   warnings: ParseWarning[],
-  localConsts: ReadonlyMap<string, ts.Expression>,
+  localConsts: ReadonlyMap<string, TS.Expression>,
 ): OperationWritesByKind | undefined {
   const configArg = resolveConfigObjectLiteral(call, localConsts)
   if (configArg === undefined) return undefined
@@ -455,7 +456,7 @@ export interface OperationPresenceByKind {
 }
 
 function extractSectionPresence(
-  configArg: ts.ObjectLiteralExpression,
+  configArg: TS.ObjectLiteralExpression,
   sectionName: "getters" | "mutators" | "subscriptions",
 ): readonly RawOperationPresence[] {
   const entries: RawOperationPresence[] = []
@@ -479,8 +480,8 @@ function extractSectionPresence(
 
 /** Static `processor`/`optimistic` key-presence facts for every getter/mutator/subscription on a `createData(...)` call's config object. `undefined` when the call has no inline object-literal first argument at all (same condition `extractOperationNames`/`extractOperationWritesByKind` return `undefined` for). */
 function extractOperationPresenceByKind(
-  call: ts.CallExpression,
-  localConsts: ReadonlyMap<string, ts.Expression>,
+  call: TS.CallExpression,
+  localConsts: ReadonlyMap<string, TS.Expression>,
 ): OperationPresenceByKind | undefined {
   const configArg = resolveConfigObjectLiteral(call, localConsts)
   if (configArg === undefined) return undefined
@@ -543,15 +544,15 @@ export function isDataFlowHandlingValue(
 }
 
 function findProp(
-  obj: ts.ObjectLiteralExpression,
+  obj: TS.ObjectLiteralExpression,
   name: string,
-): ts.PropertyAssignment | undefined {
+): TS.PropertyAssignment | undefined {
   // A real type predicate on the `.find()` callback itself (rather than a
   // plain boolean-returning arrow) lets `.find()`'s own overload narrow the
   // result to `PropertyAssignment | undefined` directly -- no redundant
   // re-check of the same fact `.find()` already established is needed.
   return obj.properties.find(
-    (p): p is ts.PropertyAssignment =>
+    (p): p is TS.PropertyAssignment =>
       ts.isPropertyAssignment(p) && getStaticPropertyName(p.name) === name,
   )
 }
@@ -564,9 +565,9 @@ function findProp(
  * per-caller early return.
  */
 function* namedSectionProps(
-  configArg: ts.ObjectLiteralExpression,
+  configArg: TS.ObjectLiteralExpression,
   sectionName: string,
-): Generator<{ readonly name: string; readonly prop: ts.PropertyAssignment }> {
+): Generator<{ readonly name: string; readonly prop: TS.PropertyAssignment }> {
   const sectionProp = findProp(configArg, sectionName)
   if (sectionProp === undefined || !ts.isObjectLiteralExpression(sectionProp.initializer)) return
   for (const prop of sectionProp.initializer.properties) {
@@ -584,12 +585,12 @@ function* namedSectionProps(
  * `undefined` when `sectionNode` itself isn't an object literal.
  */
 function extractDocsSection<T>(
-  sectionNode: ts.Expression,
+  sectionNode: TS.Expression,
   what: string,
   contextLabel: string,
   file: string,
   warnings: ParseWarning[],
-  extract: (initializer: ts.ObjectLiteralExpression, key: string) => T,
+  extract: (initializer: TS.ObjectLiteralExpression, key: string) => T,
 ): Record<string, T> | undefined {
   if (!ts.isObjectLiteralExpression(sectionNode)) return undefined
   const out: Record<string, T> = {}
@@ -611,7 +612,7 @@ function extractDocsSection<T>(
 
 /** @internal Exported for direct unit coverage (reached only through the recursive parse walk in production). */
 export function readStringProp(
-  obj: ts.ObjectLiteralExpression,
+  obj: TS.ObjectLiteralExpression,
   name: string,
   contextLabel: string,
   file: string,
@@ -630,7 +631,7 @@ export function readStringProp(
 
 /** @internal Exported for direct unit coverage (reached only through the recursive parse walk in production). */
 export function readBooleanProp(
-  obj: ts.ObjectLiteralExpression,
+  obj: TS.ObjectLiteralExpression,
   name: string,
   contextLabel: string,
   file: string,
@@ -650,7 +651,7 @@ export function readBooleanProp(
 /** Widened to `unknown` values (unlike `readStringProp`'s siblings): `metadata` is data-cap's one deliberately-opaque extension bag, never validated beyond "is this an object literal at all." */
 /** @internal Exported for direct unit coverage (reached only through the recursive parse walk in production). */
 export function readMetadataProp(
-  obj: ts.ObjectLiteralExpression,
+  obj: TS.ObjectLiteralExpression,
   contextLabel: string,
   file: string,
   warnings: ParseWarning[],
@@ -676,7 +677,7 @@ export function readMetadataProp(
 /** `dataResidency` accepts either a single jurisdiction string or a list of them. */
 /** @internal Exported for direct unit coverage (reached only through the recursive parse walk in production). */
 export function readDataResidencyProp(
-  obj: ts.ObjectLiteralExpression,
+  obj: TS.ObjectLiteralExpression,
   contextLabel: string,
   file: string,
   warnings: ParseWarning[],
@@ -709,7 +710,7 @@ export function readDataResidencyProp(
  */
 /** @internal Exported for direct unit coverage (reached only through the recursive parse walk in production). */
 export function readStringArrayProp(
-  obj: ts.ObjectLiteralExpression,
+  obj: TS.ObjectLiteralExpression,
   name: string,
   contextLabel: string,
   file: string,
@@ -736,7 +737,7 @@ export function readStringArrayProp(
 /** @internal Exported for direct unit coverage -- in production it is only
  *  reached through `readEndpointsProp` → `extractOperationDocsMap`. */
 export function readDataFlowEndpoint(
-  node: ts.Expression,
+  node: TS.Expression,
   contextLabel: string,
   file: string,
   warnings: ParseWarning[],
@@ -792,7 +793,7 @@ export function readDataFlowEndpoint(
 
 /** @internal Exported for direct unit coverage (reached only through the recursive parse walk in production). */
 export function readEndpointsProp(
-  obj: ts.ObjectLiteralExpression,
+  obj: TS.ObjectLiteralExpression,
   contextLabel: string,
   file: string,
   warnings: ParseWarning[],
@@ -822,7 +823,7 @@ export function readEndpointsProp(
 }
 
 function extractFieldDocsMap(
-  sectionNode: ts.Expression,
+  sectionNode: TS.Expression,
   contextLabel: string,
   file: string,
   warnings: ParseWarning[],
@@ -864,7 +865,7 @@ function extractFieldDocsMap(
 }
 
 function extractOperationDocsMap(
-  sectionNode: ts.Expression,
+  sectionNode: TS.Expression,
   sectionLabel: string,
   contextLabel: string,
   file: string,
@@ -902,7 +903,7 @@ export function isDynamicAccessCitation(value: string): boolean {
 /** Extracts and format-validates one field's `dynamicAccess` citation list -- a malformed entry is dropped individually, with its own warning, never rejecting the rest of the array (same discipline `readEndpointsProp` already established for `endpoints`). */
 /** @internal Exported for direct unit coverage (reached only through the recursive parse walk in production). */
 export function readDynamicAccessCitations(
-  node: ts.Expression,
+  node: TS.Expression,
   contextLabel: string,
   file: string,
   warnings: ParseWarning[],
@@ -930,7 +931,7 @@ export function readDynamicAccessCitations(
 }
 
 function extractEvidenceFieldsMap(
-  sectionNode: ts.Expression,
+  sectionNode: TS.Expression,
   contextLabel: string,
   file: string,
   warnings: ParseWarning[],
@@ -961,7 +962,7 @@ function extractEvidenceFieldsMap(
 
 /** Extracts `documentData()`'s `evidence.fields` section -- see `EvidenceFieldDocs`' own doc comment for why this lives structurally apart from the rest of `CapabilityDocs`. */
 function extractEvidenceDocs(
-  docsNode: ts.ObjectLiteralExpression,
+  docsNode: TS.ObjectLiteralExpression,
   contextLabel: string,
   file: string,
   warnings: ParseWarning[],
@@ -990,7 +991,7 @@ function extractEvidenceDocs(
  * absent or not an inline object literal at all (nothing to extract).
  */
 export function extractCapabilityDocs(
-  docsNode: ts.Expression | undefined,
+  docsNode: TS.Expression | undefined,
   contextLabel: string,
   file: string,
   warnings: ParseWarning[],
@@ -1057,7 +1058,7 @@ export function extractCapabilityDocs(
 }
 
 /** Exported for reuse by `dependency-graph.ts` (both live in `build/`, so this is ordinary reuse, not the deliberate cross-folder duplication `glob.ts` uses between `build/` and `eslint-plugin/`). */
-export function collectImportBindings(node: ts.ImportDeclaration, imports: ImportBinding[]): void {
+export function collectImportBindings(node: TS.ImportDeclaration, imports: ImportBinding[]): void {
   if (!ts.isStringLiteral(node.moduleSpecifier)) return
   const moduleSpecifier = node.moduleSpecifier.text
   const clause = node.importClause
@@ -1109,11 +1110,11 @@ export function parseCapabilityFile(filePath: string, sourceText: string): Parse
 
   const warnings: ParseWarning[] = []
   const imports: ImportBinding[] = []
-  const localConsts = new Map<string, ts.Expression>()
+  const localConsts = new Map<string, TS.Expression>()
   const createDataCalls: RawCreateDataCall[] = []
   const documentDataCalls: RawDocumentDataCall[] = []
 
-  function recordDocumentDataCall(call: ts.CallExpression): void {
+  function recordDocumentDataCall(call: TS.CallExpression): void {
     documentDataCalls.push({
       fieldsRef: extractFieldsRef(call, localConsts),
       docsNode: call.arguments[1],

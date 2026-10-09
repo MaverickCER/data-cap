@@ -9,11 +9,11 @@ describe("assertCompilerApi", () => {
     }).not.toThrow()
   })
 
-  it("names the installed version and the supported range when createSourceFile is missing", () => {
+  it("names the installed version, the bundled fallback and the alias recipe when createSourceFile is missing", () => {
     expect(() => {
       assertCompilerApi({ version: "7.0.2" })
     }).toThrow(
-      /typescript 7\.0\.2 does not expose it.*typescript@6.*VERSIONING\.md, 'Supported toolchain'/s,
+      /typescript 7\.0\.2 does not expose it and the bundled @typescript\/typescript6 could not be loaded\. Reinstall data-cap with its dependencies, or provide a TypeScript 6 compiler: npm install --save-dev typescript@npm:@typescript\/typescript6.*@typescript\/native@npm:typescript@\^7.*VERSIONING\.md, 'Supported toolchain'/s,
     )
   })
 

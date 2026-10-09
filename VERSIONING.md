@@ -33,9 +33,12 @@ major version bump (once the package reaches 1.0 — see
   comment's sections. The major tag it is used through (`uses: MaverickCER/data-cap@v0` while the
   package is 0.x, `@v1` from 1.0.0) moves only within a major version.
 - **Supported toolchain**: Node.js `>=22`; the TypeScript versions named in the `typescript` peer range
-  (`^5 || ^6` -- the build-time scanner needs TypeScript's classic compiler API, so a TypeScript major
-  that removes it is unsupported until a release says otherwise, and the CLI says so instead of failing
-  with an import error); and `moduleResolution` `node16`/`nodenext`/`bundler` (not the legacy `node10`).
+  (`^5 || ^6 || ^7`). The build-time scanner needs TypeScript's classic compiler API, which TypeScript 7
+  does not ship, so it uses the consumer's `typescript` when that has the API and otherwise the bundled
+  `@typescript/typescript6` (inside the package, build entry only) -- no configuration, and `tsc` stays TypeScript 7
+  ([ADR 0069](specs/decisions/0069-typescript-7-scanner-uses-a-bundled-typescript-6.md)). Under
+  TypeScript 7 the `./build` and `./evidence` declarations need `skipLibCheck`; the runtime, helpers
+  and node entry points type-check strictly; and `moduleResolution` `node16`/`nodenext`/`bundler` (not the legacy `node10`).
 - **`./helpers`**: the `processors`/`identity`/`canonicalize`/`shape`
   namespace shapes and every function they export.
 - **`./eslint-plugin`**: every rule's name and message IDs

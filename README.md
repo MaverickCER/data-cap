@@ -234,7 +234,7 @@ Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) before openin
 
 ## Requirements
 
-Node.js `>=22`. TypeScript 5 or 6 is only required for build-time manifest generation; the runtime works in plain JavaScript. TypeScript consumers need `moduleResolution` set to `node16`, `nodenext` or `bundler` to resolve the subpath exports (`data-cap/build`, `data-cap/helpers`, ...); the legacy `node10` resolver is not supported. `data-cap/eslint-plugin` also needs `@typescript-eslint/utils` installed (an optional peer).
+Node.js `>=22`. TypeScript 5, 6 or 7 is only required for build-time manifest generation (a bundled TypeScript 6 parses the sources when yours is 7, bundled inside the package and used only by the build entry; it adds about 26 MB to the install); the runtime works in plain JavaScript. TypeScript consumers need `moduleResolution` set to `node16`, `nodenext` or `bundler` to resolve the subpath exports (`data-cap/build`, `data-cap/helpers`, ...); the legacy `node10` resolver is not supported. `data-cap/eslint-plugin` also needs `@typescript-eslint/utils` installed (an optional peer).
 
 ## License
 

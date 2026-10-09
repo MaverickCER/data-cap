@@ -96,6 +96,9 @@ const bundles: Options[] = [
     dts: false,
     sourcemap: true,
     treeshake: true,
+    // `src/build/typescript.ts` resolves the compiler with `createRequire(import.meta.url)`; the
+    // CJS output has no `import.meta`, so tsup's shim supplies the equivalent file URL there.
+    shims: true,
     define: versionDefine,
   },
   {
