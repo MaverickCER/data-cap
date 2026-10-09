@@ -195,6 +195,7 @@ jobs:
       - run: npm run size
       - run: npm run verify:no-ambient-fs
       - run: npm run verify:no-ambient-child-process
+      - run: npm run verify:compiler-isolation
 
   verify-current:
     runs-on: ubuntu-latest
@@ -308,7 +309,7 @@ jobs:
             exit 1
           fi
 
-  # The package declares `typescript: ^5 || ^6` as a peer and the development toolchain is on 6, so the
+  # The package declares `typescript: ^5 || ^6 || ^7` as a peer and the development toolchain is on 6, so the
   # type-check and the tests also run against the newest TypeScript 5. The oldest declared floor is not
   # covered here.
   typescript-5:
@@ -327,6 +328,24 @@ jobs:
       - run: npm run build
       - run: npm run typecheck
       - run: npm test
+
+  # Packs the package and installs it next to a root `typescript` of 5, 6 and 7: the scanner has to run
+  # from both its ESM and CJS entry points (under 7 through the bundled TypeScript 6, ADR 0069) and the
+  # shipped declarations have to type-check in a consumer. See scripts/typescript-compat.mjs.
+  typescript-compat:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22.x
+
+      - run: npm ci
+      - run: npm run build
+      - run: npm run typescript-compat
 
   cross-runtime:
     runs-on: ubuntu-latest

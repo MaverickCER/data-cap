@@ -23,7 +23,10 @@
   // another npm package, so it can no longer see the reference. Exempted here instead
   // of pointing "typedoc.config" at a node_modules path, which would be fragile across
   // package managers' differing node_modules layouts.
-  "ignoreDependencies": ["data-cap", "typedoc-plugin-markdown"],
+  // @typescript/typescript6: genuinely used, but only by name -- src/build/typescript.ts loads it
+  // with createRequire (a string id, ADR 0069), which knip cannot follow. It is a bundled dependency
+  // on purpose (package.json#bundleDependencies), reachable from the build entry alone.
+  "ignoreDependencies": ["data-cap", "typedoc-plugin-markdown", "@typescript/typescript6"],
   "typedoc": {
     "config": ["typedoc.json", "typedoc.markdown.json"]
   }

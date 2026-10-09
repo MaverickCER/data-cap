@@ -23,7 +23,8 @@
  *    being evaluated (e.g. `[] as CaseTask[]`).
  */
 
-import ts from "typescript"
+import { ts } from "./typescript.js"
+import type TS from "typescript"
 import { FIELD_MARKER } from "../core/fields.js"
 
 /** The result of statically evaluating one AST expression -- `ok: false` when the expression falls outside the allow-listed literal grammar, never guessed at. */
@@ -57,7 +58,7 @@ function isMarkerCallName(name: string): boolean {
  * reached in production only via {@link evaluateLiteral}'s recursion, which
  * per-test mutation coverage does not attribute.
  */
-export function evaluateArgs(args: readonly ts.Expression[]): unknown[] | undefined {
+export function evaluateArgs(args: readonly TS.Expression[]): unknown[] | undefined {
   const values: unknown[] = []
   for (const arg of args) {
     const result = evaluateLiteral(arg)
@@ -70,7 +71,7 @@ export function evaluateArgs(args: readonly ts.Expression[]): unknown[] | undefi
 /** @internal Evaluates a `new Date/URL/RegExp/Map/Set(...)` call. Exported for direct unit coverage -- see {@link evaluateArgs}. */
 export function evaluateAllowedConstructor(
   name: AllowedConstructorName,
-  args: readonly ts.Expression[],
+  args: readonly TS.Expression[],
 ): LiteralEvalResult {
   const values = evaluateArgs(args)
   if (values === undefined) return { ok: false }
@@ -113,7 +114,7 @@ export function evaluateAllowedConstructor(
 /** @internal Evaluates an `X.nullable(...)` / `X.optional(...)` marker call. Exported for direct unit coverage -- see {@link evaluateArgs}. */
 export function evaluateMarkerCall(
   propertyName: string,
-  args: readonly ts.Expression[],
+  args: readonly TS.Expression[],
 ): LiteralEvalResult {
   const onlyArg = args.length === 1 ? args[0] : undefined
   if (onlyArg === undefined) return { ok: false }
@@ -131,7 +132,7 @@ export function evaluateMarkerCall(
 /**
  * Statically evaluates one AST expression against the allow-listed literal grammar -- never `eval`/`import`/`require`s anything (ADR 0002).
  */
-export function evaluateLiteral(node: ts.Expression): LiteralEvalResult {
+export function evaluateLiteral(node: TS.Expression): LiteralEvalResult {
   if (ts.isStringLiteralLike(node)) return { ok: true, value: node.text }
   if (ts.isNumericLiteral(node)) return { ok: true, value: Number(node.text) }
   if (node.kind === ts.SyntaxKind.TrueKeyword) return { ok: true, value: true }
@@ -201,7 +202,7 @@ export function evaluateLiteral(node: ts.Expression): LiteralEvalResult {
 }
 
 /** Reads a property name statically (identifier, string literal, or numeric literal) -- a computed key (e.g. `[expr]`) resolves to `undefined` rather than being guessed at. */
-export function getStaticPropertyName(name: ts.PropertyName): string | undefined {
+export function getStaticPropertyName(name: TS.PropertyName): string | undefined {
   if (ts.isIdentifier(name)) return name.text
   if (ts.isStringLiteralLike(name)) return name.text
   if (ts.isNumericLiteral(name)) return name.text

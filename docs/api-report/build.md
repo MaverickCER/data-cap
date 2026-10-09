@@ -4631,7 +4631,7 @@ How strongly a finding should be treated: `info` never blocks, `warning` blocks 
 type SchemaRef = 
   | {
   kind: "literal";
-  node: ts.ObjectLiteralExpression;
+  node: TS.ObjectLiteralExpression;
 }
   | {
   kind: "identifier";
@@ -4654,7 +4654,7 @@ job -- this module only ever looks at one file's own AST).
 ```ts
 {
   kind: "literal";
-  node: ts.ObjectLiteralExpression;
+  node: TS.ObjectLiteralExpression;
 }
 ```
 
@@ -4671,7 +4671,7 @@ Always `"literal"` for this variant.
 ###### node
 
 ```ts
-readonly node: ts.ObjectLiteralExpression;
+readonly node: TS.ObjectLiteralExpression;
 ```
 
 The object literal AST node itself.

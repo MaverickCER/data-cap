@@ -16,7 +16,8 @@
  * instead.
  */
 
-import ts from "typescript"
+import { ts } from "./typescript.js"
+import type TS from "typescript"
 import { evaluateLiteral } from "./literal-eval.js"
 import { extractCapabilityDocs, parseCapabilityFile } from "./parse.js"
 import type {
@@ -235,7 +236,7 @@ export class LinkContext {
   }
 
   private async resolveExpression(
-    expression: ts.Expression,
+    expression: TS.Expression,
     file: string,
     parsed: ParseResult,
     depth: number,
@@ -264,7 +265,7 @@ export class LinkContext {
  * Mirrors parse.ts's own `fields`-property classification, one level down.
  */
 export function schemaRefFromExpression(
-  expression: ts.Expression,
+  expression: TS.Expression,
 ): Extract<SchemaRef, { kind: "literal" | "identifier" }> | undefined {
   if (ts.isObjectLiteralExpression(expression)) return { kind: "literal", node: expression }
   if (ts.isIdentifier(expression)) return { kind: "identifier", name: expression.text }
@@ -350,7 +351,7 @@ function correlate(
  */
 export function checkDocFieldsAgainstShape(
   file: string,
-  docsNode: ts.Expression | undefined,
+  docsNode: TS.Expression | undefined,
   fieldsShape: Record<string, unknown> | undefined,
   warnings: ParseWarning[],
 ): void {
@@ -394,7 +395,7 @@ export function checkDocFieldsAgainstShape(
  */
 export function checkDocOperationsAgainstShape(
   file: string,
-  docsNode: ts.Expression | undefined,
+  docsNode: TS.Expression | undefined,
   operationNames: OperationNames | undefined,
   warnings: ParseWarning[],
 ): void {

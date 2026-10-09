@@ -22,7 +22,8 @@
  * `isElementAccessIndex`).
  */
 
-import ts from "typescript"
+import { ts } from "./typescript.js"
+import type TS from "typescript"
 import type { DependencyEdge, DependencyRelationship } from "./dependency-types.js"
 import type { SourcePosition } from "./source-position.js"
 import { positionOf } from "./source-position.js"
@@ -74,7 +75,7 @@ function makeEdge(
 }
 
 /** The top-level field name immediately following a `.fields` access, or `undefined` when `.fields` is referenced bare (spread, passed whole) rather than indexed into a specific field. */
-function readFieldNameAfter(fieldsAccess: ts.PropertyAccessExpression): string | undefined {
+function readFieldNameAfter(fieldsAccess: TS.PropertyAccessExpression): string | undefined {
   const next = fieldsAccess.parent
   // `fieldsAccess` (itself a `.fields` access, never an `Identifier`) can only
   // be the object-expression of a wrapping member access, never its `.name` --
@@ -95,7 +96,7 @@ function readFieldNameAfter(fieldsAccess: ts.PropertyAccessExpression): string |
  * inert with respect to what this scan tracks, so it is neither a proven
  * access nor an escape (ADR 0060).
  */
-function isElementAccessIndex(node: ts.Node): boolean {
+function isElementAccessIndex(node: TS.Node): boolean {
   const parent = node.parent
   return ts.isElementAccessExpression(parent) && parent.argumentExpression === node
 }
@@ -110,7 +111,7 @@ function isElementAccessIndex(node: ts.Node): boolean {
  * self-declared-capability shape `scan-dependencies.ts`'s `selfMatches`
  * introduces.
  */
-function isDeclarationOrExportPosition(id: ts.Identifier, parent: ts.Node): boolean {
+function isDeclarationOrExportPosition(id: TS.Identifier, parent: TS.Node): boolean {
   if (ts.isImportSpecifier(parent) || ts.isImportClause(parent) || ts.isNamespaceImport(parent)) {
     return true
   }
@@ -145,7 +146,7 @@ function isDeclarationOrExportPosition(id: ts.Identifier, parent: ts.Node): bool
  * `id.parent`. So whenever `parent` IS one of those kinds at all, `id`
  * being its child already proves `id` is `.name`.
  */
-function isNamePosition(id: ts.Identifier, parent: ts.Node): boolean {
+function isNamePosition(id: TS.Identifier, parent: TS.Node): boolean {
   if (ts.isPropertyAccessExpression(parent) && parent.name === id) return true
   if (ts.isPropertyAssignment(parent) && parent.name === id) return true
   if (ts.isPropertySignature(parent)) return true
@@ -168,7 +169,7 @@ type FieldsAccessOutcome =
   { readonly kind: "field"; readonly field: string } | { readonly kind: "indeterminate" }
 
 function classifyFieldsAccess(
-  fieldsAccess: ts.PropertyAccessExpression,
+  fieldsAccess: TS.PropertyAccessExpression,
 ): FieldsAccessOutcome | undefined {
   const fieldName = readFieldNameAfter(fieldsAccess)
   if (fieldName !== undefined) return { kind: "field", field: fieldName }
@@ -177,10 +178,10 @@ function classifyFieldsAccess(
 }
 
 function classifyUsage(
-  id: ts.Identifier,
+  id: TS.Identifier,
   match: ImportBindingMatch,
   fromFile: string,
-  sourceFile: ts.SourceFile,
+  sourceFile: TS.SourceFile,
   edges: DependencyEdge[],
 ): void {
   const parent = id.parent
@@ -283,14 +284,14 @@ function classifyUsage(
  * no edge -- an import-position identifier is never in an access expression.
  */
 export function scanFileForUsage(
-  sourceFile: ts.SourceFile,
+  sourceFile: TS.SourceFile,
   fromFile: string,
   matches: readonly ImportBindingMatch[],
 ): readonly DependencyEdge[] {
   const edges: DependencyEdge[] = []
   const byLocalName = new Map(matches.map((m) => [m.localName, m]))
 
-  function visit(node: ts.Node): void {
+  function visit(node: TS.Node): void {
     if (ts.isIdentifier(node)) {
       const match = byLocalName.get(node.text)
       // An identifier inside the import declaration itself sits in an
