@@ -25,4 +25,4 @@ jobs:
       # which needs `actions: write`. A caller granting less than the called workflow declares makes
       # GitHub refuse to start the run at all (`startup_failure`), so no release ever runs.
       actions: write
-    uses: MaverickCER/internal-package-contract/.github/workflows/release-npm-changesets.yml@14ebe836b588c458bae3ad1a6baf7da2a23a09ae # v0.10.0
+    uses: MaverickCER/internal-package-contract/.github/workflows/release-npm-changesets.yml@e13b3de4871e7509cb1969c4067a190e72a8c485 # v0.10.0
