@@ -29,13 +29,13 @@ The loop:
    there are no pending changesets, so `changesets/action` runs its
    `publish` step: `npm run release` (`changeset publish`), which runs
    `prepublishOnly` (`npm run verify`) and then publishes to npm over OIDC.
-4. On a successful publish, the workflow force-updates the floating `v1` git
-   tag to the release commit, so the `uses: maverickcer/data-cap@v1` GitHub
-   Action reference in the README and [`action.yml`](action.yml) keeps
-   pointing at the latest compatible build. `v1` tracks the _composite
-   Action's_ interface (`action.yml` inputs/outputs), which is versioned
-   independently of the npm package's pre-1.0 semver — every successful
-   publish rolls it forward until `action.yml` itself has a breaking change.
+4. On a successful publish, the workflow force-updates the floating major
+   git tag (`v0` while the package is 0.x, `v1` from 1.0.0) to the release
+   commit, so the `uses: maverickcer/data-cap@v0` GitHub Action reference
+   keeps pointing at the latest compatible build. The floating tag tracks the
+   _composite Action's_ interface (`action.yml` inputs/outputs) within one
+   major version — every successful publish rolls it forward until
+   `action.yml` itself has a breaking change.
 
 `CHANGELOG.md` is generated — never hand-edit it. Fix a wrong entry by
 correcting the offending changeset before the "Version Packages" PR is
