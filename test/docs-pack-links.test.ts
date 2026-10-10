@@ -20,7 +20,8 @@ function publishedFiles(): string[] {
     cwd: root,
     encoding: "utf8",
     shell: process.platform === "win32",
-    stdio: ["ignore", "pipe", "ignore"],
+    // stderr stays visible so a failing `npm pack` explains itself.
+    stdio: ["ignore", "pipe", "inherit"],
     // npm colours its JSON when the runner forces colour on, which is not parseable.
     env: {
       ...process.env,
@@ -36,6 +37,15 @@ function publishedFiles(): string[] {
   return (result?.files ?? []).map((file) => file.path)
 }
 
+/** The link target with percent-encoding decoded, or `undefined` when the encoding is malformed. */
+function decodeTarget(target: string): string | undefined {
+  try {
+    return decodeURI(target)
+  } catch {
+    return undefined
+  }
+}
+
 const LINK = /\]\(([^)\s]+)(?:\s+"[^"]*")?\)|^ {0,3}\[[^\]]+\]:\s*(\S+)/g
 
 /** Relative link targets (anchor stripped) with the 1-based line they appear on; code fences are skipped. */
@@ -45,18 +55,18 @@ function relativeLinks(markdown: string): { line: number; target: string }[] {
   // character, at least as many of them, and nothing else on the line.
   let fence: { char: string; length: number } | undefined
   markdown.split("\n").forEach((text, index) => {
-    const marker = /^\s{0,3}(`{3,}|~{3,})(.*)$/.exec(text)
+    const [, opener = "", info = ""] = /^\s{0,3}(`{3,}|~{3,})(.*)$/.exec(text) ?? []
     if (fence !== undefined) {
       const closes =
-        marker !== null &&
-        marker[1]?.[0] === fence.char &&
-        (marker[1]?.length ?? 0) >= fence.length &&
-        (marker[2] ?? "").trim() === ""
+        opener !== "" &&
+        opener.startsWith(fence.char) &&
+        opener.length >= fence.length &&
+        info.trim() === ""
       if (closes) fence = undefined
       return
     }
-    if (marker !== null) {
-      fence = { char: marker[1]?.[0] ?? "`", length: marker[1]?.length ?? 3 }
+    if (opener !== "") {
+      fence = { char: opener.slice(0, 1), length: opener.length }
       return
     }
     for (const match of text.matchAll(LINK)) {
@@ -67,6 +77,13 @@ function relativeLinks(markdown: string): { line: number; target: string }[] {
   })
   return links
 }
+
+describe("decodeTarget", () => {
+  it("decodes valid percent-encoding and refuses a malformed sequence", () => {
+    expect(decodeTarget("./a%20b.md")).toBe("./a b.md")
+    expect(decodeTarget("./%E0%A4%A.md")).toBeUndefined()
+  })
+})
 
 describe("relativeLinks", () => {
   it("skips links inside backtick and tilde fences, honouring the opening length", () => {
@@ -125,8 +142,13 @@ describe("published documentation links", () => {
     const offenders: string[] = []
     for (const file of documents) {
       for (const { line, target } of relativeLinks(readFileSync(path.join(root, file), "utf8"))) {
+        const decoded = decodeTarget(target)
+        if (decoded === undefined) {
+          offenders.push(`${file}:${String(line)}: ${target} (malformed percent-encoding)`)
+          continue
+        }
         const resolved = path.posix
-          .normalize(path.posix.join(path.posix.dirname(file), decodeURI(target)))
+          .normalize(path.posix.join(path.posix.dirname(file), decoded))
           .replace(/\/$/, "")
         const found =
           published.includes(resolved) ||
