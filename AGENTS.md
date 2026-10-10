@@ -2,8 +2,8 @@
 
 Guidance for AI coding agents (Codex, Cursor, Copilot, Continue, and others reading this
 convention) working in `data-cap`'s own source, or in an application that consumes
-`data-cap`. Claude Code reads the fuller, more detailed version of this same
-guidance from [`skills/data-cap/SKILL.md`](skills/data-cap/SKILL.md) — read that file
+`data-cap`. Agents whose tooling loads skill files get the fuller, more detailed version of
+this same guidance from [`skills/data-cap/SKILL.md`](skills/data-cap/SKILL.md) — read that file
 instead if your tooling supports it; this file is a self-contained distillation for
 agents that don't.
 
