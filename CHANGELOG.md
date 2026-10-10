@@ -1,5 +1,37 @@
 # Changelog
 
+## 0.7.0
+
+### Minor Changes
+
+- 40f9bbf: TypeScript 7 is supported. `npm i typescript@7 data-cap` no longer fails with `ERESOLVE` (the optional `typescript` peer is now `^5 || ^6 || ^7`), and the `data-cap/build` scanner works under a TypeScript 7 root with no configuration: TypeScript 7 ships no programmatic compiler API, so the scanner uses your `typescript` when it has one (5 and 6, unchanged) and otherwise a bundled `@typescript/typescript6` (ADR 0069). Your `tsc` stays TypeScript 7.
+
+  - The compiler is bundled inside the package (`bundleDependencies`, about 5 MB packed / 26 MB installed) and used only by the build entry; the runtime, helpers, evidence and node entry points can never reach it (checked in CI by `verify:compiler-isolation`). Bundling also keeps your own `tsc` yours: installing the package does not change `node_modules/.bin/tsc`.
+  - With TypeScript 7, the `data-cap/build` and `data-cap/evidence` declarations name AST types TypeScript 7 does not export, so those two entry points need `skipLibCheck`; the runtime, helpers and node entry points type-check strictly. TypeScript 5 and 6 are unaffected.
+  - If the bundled compiler is stripped from an install, the scanner fails before writing anything, with a message that shows the alias to install.
+  - CI now installs the packed tarball beside TypeScript 5, 6 and 7 and runs the scanner from both the ESM and CJS entry points.
+
+- 6e038a7: Audit fixes ahead of 1.0.
+
+  - Breaking (pre-1.0 minor): Node.js `>=22` (Node 20 is end-of-life) and an optional `typescript` peer of `^5 || ^6`, so `npm i typescript@6 data-cap` no longer fails with `ERESOLVE`. With TypeScript 7 the build step now says so instead of failing with `ts.createSourceFile is not a function`.
+  - Breaking (pre-1.0 minor): `data-cap/eslint-plugin` no longer vendors `@typescript-eslint/*`; `@typescript-eslint/utils` is an optional peer (ADR 0068). The entry shrinks from ~413 KB to a few KB per format.
+  - Breaking (pre-1.0 minor): `init` scaffolds `docs/DATA-OWNERSHIP.md` so it can no longer collide with env-cap's `docs/OWNERSHIP.md`.
+  - The GitHub Action's PR comment no longer has silently empty Manifest and Flow sections: it reads the evidence every run composes (an "Inventory" section). It also passes every input through environment variables, uses the project's own install, and requires `version` otherwise instead of running an unpinned `latest`.
+  - Generated Markdown reports tell the reader how they are really produced and regenerated (the script that calls the `./build` generators), not `npx data-cap`; internal ADR numbers are gone from them.
+  - Source maps no longer embed `sourcesContent` (about 60% of the unpacked package).
+  - `./node` and `./evidence` are listed as Stable and added to the API reference; `--help` links are absolute URLs; entry-point counts in the docs and agent skill no longer drift.
+  - Landing page: keyboard-focusable code blocks, a high-contrast theme toggle, forced-colors support.
+
+### Patch Changes
+
+- perf(runtime): stop eviction at the entries to remove instead of copying every key
+- fix(build): support TypeScript 6 and test both TypeScript lines (#54)
+- fix: run the compiler guard only when a tsconfig file exists
+- fix(release): treat only a completed install as installed
+- fix: explain an unusable compiler before reading tsconfig.json
+- fix: do not mistake a broken typescript install for an absent one
+- fix(release): install an example's dependencies before regenerating its goldens
+
 ## 0.6.2
 
 ### Patch Changes
