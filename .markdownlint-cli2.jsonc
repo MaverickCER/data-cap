@@ -20,7 +20,21 @@
   // 2. `config` reproduces the bundled baseline rule set so hand-authored
   //    Markdown (root *.md files) keeps exactly the same rules as before --
   //    this file only changes what's in scope, not how it's linted.
-  "ignores": ["docs/api-report/**", "benchmarks/performance-runtime/BENCHMARKS.md"],
+  "ignores": [
+    "**/node_modules/**",
+    "docs/api-report/**",
+    "benchmarks/performance-runtime/BENCHMARKS.md",
+  ],
+  // Hand-authored Markdown the DocsMarkdown check would otherwise never see: the ADRs, specs and
+  // migration guides, the agent skill, and the example and benchmark READMEs. The generated outputs
+  // inside examples/ and test/ (their docs/ folders) are golden files, not prose, so they stay out.
+  "globs": [
+    "specs/**/*.md",
+    "skills/**/*.md",
+    "examples/README.md",
+    "examples/*/README.md",
+    "benchmarks/*.md",
+  ],
   "config": {
     "default": true,
     "MD013": false, // line length

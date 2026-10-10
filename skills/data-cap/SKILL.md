@@ -236,7 +236,7 @@ capability.test.ts` and `test/runtime/cross-bundle-field-marker.test.ts` (the la
 
 ## Mental model
 
-```
+```text
                     buildData(schema)
                            │
                     BuiltData { fields, info }

@@ -59,7 +59,7 @@ schema migration story, and no opinion about your database -- it sits
 **above** whatever you already use to move data, describing the contract
 your application code actually depends on:
 
-```
+```text
         ┌─────────────────────────────────────────┐
         │   fields / getters / mutators /          │
         │   subscriptions  +  documentData()        │   <- what data-cap is
