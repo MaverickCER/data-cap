@@ -502,9 +502,25 @@ passes they escalate always run alongside `--evidence`. `--strict-flow` is
 accepted but has no effect on the CLI by itself: it applies only to a
 caller that also builds a Data Flow Diagram directly.
 `--expiring-within-days <n>` sets how many days out counts as "expiring
-soon" in the Evidence Model's Lifecycle Model (default: 30). See `--help`
-for the complete flag reference, including `--include`/`--exclude` globs and
-the `--package`/`--tsconfig` cross-package/path-alias options.
+soon" in the Evidence Model's Lifecycle Model (default: 30).
+
+| Flag                         | Meaning                                                                                                                                                        |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--evidence <path>`          | Required. Write the composed Evidence Model (ADR 0050) as JSON at this path.                                                                                   |
+| `--root <path>`              | Directory that globs resolve from (default: the current directory).                                                                                            |
+| `--include <glob>`           | Discovery glob. Repeatable. Default: every `.ts` and `.tsx` file.                                                                                              |
+| `--exclude <glob>`           | Glob to exclude from discovery. Repeatable.                                                                                                                    |
+| `--package <name>`           | Installed package to also discover a capability from, through its `dataCap.schema` `package.json` field. Repeatable.                                           |
+| `--tsconfig <path>`          | `tsconfig.json` (relative to root) whose `paths` and `baseUrl` resolve aliased imports during static analysis. Default: the `tsconfig.json` found at the root. |
+| `--no-tsconfig`              | Turn path-alias resolution off entirely.                                                                                                                       |
+| `--expiring-within-days <n>` | How many days out counts as "expiring soon" in the Lifecycle Model (default: 30).                                                                              |
+| `--strict`                   | Escalate every warning-severity finding to a hard error. Info findings never escalate.                                                                         |
+| `--strict-docs`              | Escalate only static findings (ownership, sensitivity, duplication).                                                                                           |
+| `--strict-ownership`         | Escalate only proven usage findings (abandoned capabilities, unconsumed owned fields); unresolved-consumer and indeterminate findings never escalate.          |
+| `--strict-flow`              | Accepted, but has no effect on the CLI by itself; it applies only to a caller that also builds a Data Flow Diagram directly.                                   |
+| `--json`                     | Emit a machine-readable report instead of formatted text.                                                                                                      |
+| `--check`                    | Verify the evidence artifact is up to date without writing anything. Exits `1` if it is stale or missing.                                                      |
+| `--help`, `-h`               | Show the help text.                                                                                                                                            |
 
 ### Programmatic orchestration
 
