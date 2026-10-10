@@ -56,6 +56,18 @@ describe("published documentation links", () => {
     expect(documents.length).toBeGreaterThan(20)
   })
 
+  it("publishes Markdown only from the folders meant to ship documentation", () => {
+    const unexpected = documents.filter(
+      (file) =>
+        !file.startsWith("node_modules/") &&
+        !/^(?:[^/]+\.md|(?:specs|skills|benchmarks|examples|docs\/api-report)\/.+\.md)$/.test(file),
+    )
+    expect(
+      unexpected,
+      "Markdown outside the documentation folders, such as a generated file",
+    ).toEqual([])
+  })
+
   it("only links, by relative path, to files that are published", () => {
     const offenders: string[] = []
     for (const file of documents) {

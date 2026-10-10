@@ -131,7 +131,7 @@
     "dist",
     "schemas",
     "LICENSE",
-    "*.md",
+    "/*.md",
     "specs/**/*.md",
     "skills/**/*.md",
     "benchmarks/**/*.md",
