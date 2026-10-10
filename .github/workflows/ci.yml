@@ -411,6 +411,11 @@ jobs:
           npm install
           npm run typecheck
 
+      # With the example's dependencies installed, so the README's "See it run" block is compared with a
+      # real run here; without them the script skips (the `contract` job has none installed).
+      - name: README example is still real
+        run: npm run verify:readme-example
+
       - name: team-service
         working-directory: examples/team-service
         run: |

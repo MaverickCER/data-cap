@@ -50,7 +50,10 @@ function normalize(text) {
     .map((line) => line.trim())
     .filter((line) => line !== "")
     .map((line) =>
-      line.replace(/^(Wrote evidence model:) .*?(docs\/data\.evidence\.json)$/, "$1 $2"),
+      line.replace(
+        /^(Wrote evidence model:) .*?docs[\\/]data\.evidence\.json$/,
+        "$1 docs/data.evidence.json",
+      ),
     )
 }
 
