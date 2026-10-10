@@ -99,12 +99,13 @@ publish --access public`), then confirm the next push to `main` produces
 
 ### C. Published to npm, but a later workflow step failed
 
-e.g. the publish succeeded but the `v1` tag roll failed. The release itself
+e.g. the publish succeeded but the floating major tag (`v0` or `v1`) roll failed. The release itself
 is done and correct. Just fix the trailing step manually:
 
 ```bash
 git checkout main && git pull
-git tag -f v1 && git push origin v1 --force
+git tag -f v0 && git push origin v0 --force   # while the package is 0.x
+git tag -f v1 && git push origin v1 --force   # from 1.0.0
 ```
 
 Do **not** re-run the whole workflow — `changeset publish` is idempotent and
