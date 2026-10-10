@@ -130,8 +130,12 @@
   "files": [
     "dist",
     "schemas",
-    "README.md",
-    "LICENSE"
+    "LICENSE",
+    "*.md",
+    "specs/**/*.md",
+    "skills/**/*.md",
+    "benchmarks/**/*.md",
+    "examples/README.md"
   ],
   "scripts": {
     "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",

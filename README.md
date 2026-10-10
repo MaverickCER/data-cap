@@ -4,8 +4,8 @@
 [![npm version](https://img.shields.io/npm/v/data-cap)](https://www.npmjs.com/package/data-cap)
 [![Socket Badge](https://badge.socket.dev/npm/package/data-cap/latest)](https://socket.dev/npm/package/data-cap)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Coverage](https://img.shields.io/endpoint?url=https://maverickcer.github.io/data-cap/coverage-badge.json)](vitest.config.ts)
-[![Bundle size](https://img.shields.io/endpoint?url=https://maverickcer.github.io/data-cap/size-badge.json)](scripts/check-size.mjs)
+[![Coverage](https://img.shields.io/endpoint?url=https://maverickcer.github.io/data-cap/coverage-badge.json)](https://github.com/MaverickCER/data-cap/blob/main/vitest.config.ts)
+[![Bundle size](https://img.shields.io/endpoint?url=https://maverickcer.github.io/data-cap/size-badge.json)](https://github.com/MaverickCER/data-cap/blob/main/scripts/check-size.mjs)
 [![TypeScript](https://img.shields.io/badge/TypeScript-ready-3178c6)](#quick-start)
 
 **Your application's data should have an owner.**
@@ -51,7 +51,7 @@ const user = createData({
 
 Then inspect the application as a whole. The declaration above is deliberately minimal; the output
 below comes from a different, larger program --
-[`examples/application`](examples/application), whose `taskData` capability declares the two fields
+[`examples/application`](https://github.com/MaverickCER/data-cap/tree/main/examples/application), whose `taskData` capability declares the two fields
 named in the warnings. Generate everything with one script, `node scripts/generate-data.mjs`
 (`npx data-cap init` scaffolds it). `data-cap`'s CLI surface is
 deliberately narrow (ADR 0066) -- `--evidence` is the only flag it still
@@ -60,7 +60,7 @@ exposes, since it's the one output with a real, versioned contract (ADR
 and data flow diagram have no runtime consumer, so a project that wants them
 requests them from application code instead, via `generateDataArtifacts()`'s
 `location`/`docs`/`ownership`/`flow` options (see
-[`examples/application/scripts/generate-docs`](examples/application/scripts/generate-docs)):
+[`examples/application/scripts/generate-docs`](https://github.com/MaverickCER/data-cap/tree/main/examples/application/scripts/generate-docs)):
 
 ```text
 $ npm run docs
@@ -73,7 +73,7 @@ Wrote evidence model: docs/data.evidence.json
   - [warning] [SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY] [taskData] Field "selectedTask" on "taskData" is sensitivity "internal" and has a declared endpoint crossing an external-service/api/queue boundary -- verify this is intentional and adequately protected.
 ```
 
-This is real output from [`examples/application`](examples/application)'s own `npm run docs` (a `data-cap --evidence` CLI step chained with the `generate-docs` script above), not a mockup — including the two warnings. Nobody had declared `tasks`/`selectedTask` as crossing an external boundary on purpose; the tool found it because the field's own declared `sensitivity` and its getter's own declared network endpoint disagreed, not because anyone remembered to ask.
+This is real output from [`examples/application`](https://github.com/MaverickCER/data-cap/tree/main/examples/application)'s own `npm run docs` (a `data-cap --evidence` CLI step chained with the `generate-docs` script above), not a mockup — including the two warnings. Nobody had declared `tasks`/`selectedTask` as crossing an external boundary on purpose; the tool found it because the field's own declared `sensitivity` and its getter's own declared network endpoint disagreed, not because anyone remembered to ask.
 
 The generated artifacts make the contract visible to developers, reviewers, and automated contributors.
 
@@ -164,7 +164,7 @@ documentData(
 )
 ```
 
-That is the kind of declaration the Dependency & Ownership report ([`examples/application`](examples/application) writes one to `docs/OWNERSHIP.md`) is generated from — not a separate governance system, the same `documentData` call your fields already need to correlate with the capability. (The `email` declaration above is an illustration; it does not appear in the example's output.) The same build pass cross-references every declared field against actual reads and writes in your source, so `owner`/`sensitivity`/`retention` stay attached to what the code actually does, not a document someone forgot to update. The [Guide](GUIDE.md#documented-example) has the full field-governance vocabulary.
+That is the kind of declaration the Dependency & Ownership report ([`examples/application`](https://github.com/MaverickCER/data-cap/tree/main/examples/application) writes one to `docs/OWNERSHIP.md`) is generated from — not a separate governance system, the same `documentData` call your fields already need to correlate with the capability. (The `email` declaration above is an illustration; it does not appear in the example's output.) The same build pass cross-references every declared field against actual reads and writes in your source, so `owner`/`sensitivity`/`retention` stay attached to what the code actually does, not a document someone forgot to update. The [Guide](GUIDE.md#documented-example) has the full field-governance vocabulary.
 
 ## Why not just use your existing data library?
 

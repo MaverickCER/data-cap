@@ -469,7 +469,7 @@ a CLI flag (ADR 0066) -- request them from application code via the options
 above, either through `generateDataArtifacts()`/`checkArtifacts()` or the
 individual `generateManifest`/`generateDocumentation`/`generateUsage`/
 `generateFlow` generators (see
-[`examples/nextjs-app/scripts/generate-docs`](examples/nextjs-app/scripts/generate-docs)
+[`examples/nextjs-app/scripts/generate-docs`](https://github.com/MaverickCER/data-cap/tree/main/examples/nextjs-app/scripts/generate-docs)
 for a worked example). Every one of these draws a hard line between
 **declared** facts (author metadata — `owner`, `sensitivity`, `protections`,
 `endpoints` — presence is checked, correctness never is) and **proven**

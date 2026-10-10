@@ -8,7 +8,7 @@ For what semver actually covers, see [`VERSIONING.md`](VERSIONING.md).
 
 Releases are fully automated by [Changesets](https://github.com/changesets/changesets)
 and npm's [OIDC trusted publishing](https://docs.npmjs.com/trusted-publishers)
-via [`.github/workflows/release.yml`](.github/workflows/release.yml). **No
+via [`.github/workflows/release.yml`](https://github.com/MaverickCER/data-cap/blob/main/.github/workflows/release.yml). **No
 `NPM_TOKEN` secret exists in this repository** and none is needed — npm
 verifies the workflow's OIDC identity against a one-time trusted-publisher
 registration on npmjs.com (see [First-time setup](#first-time-setup)).
