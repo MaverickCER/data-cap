@@ -13,6 +13,20 @@
       "residualRisk": "A finding the App never raised is not seen; the same is true of any reviewer.",
       "revisitWhen": "CodeRabbit ships a CI mode for the CLI, or the App is uninstalled.",
       "expires": ""
+    },
+    {
+      "id": "environment:DocsLinks:https://maverickcer.github.io/data-cap/brief.html",
+      "version": 2,
+      "justification": "The one-page brief is added by this change and is published by the Pages deploy that follows the merge to main, so https://maverickcer.github.io/data-cap/brief.html returns 404 until then.",
+      "check": "DocsLinks",
+      "code": "https://maverickcer.github.io/data-cap/brief.html",
+      "ruleBroken": "Documentation links must resolve.",
+      "attempted": "Checked that docs/brief.html exists on this branch and is linked from docs/index.html; the live URL cannot resolve before the deploy.",
+      "constraint": "GitHub Pages serves only what the deploy job publishes from main, and the deploy runs after the merge.",
+      "whyPreferable": "The alternative is to omit the link to the page from the landing page for the one deploy that precedes it.",
+      "residualRisk": "If the page is never published, the link stays broken; the next DocsLinks run after the deploy would report it.",
+      "revisitWhen": "The deploy that follows the merge has run; remove this record then.",
+      "expires": "2026-12-01"
     }
   ]
 }
