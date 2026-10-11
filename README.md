@@ -3,6 +3,8 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/maverickcer/data-cap/ci.yml?branch=main&label=CI)](https://github.com/maverickcer/data-cap/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/data-cap)](https://www.npmjs.com/package/data-cap)
 [![Coverage](https://img.shields.io/endpoint?url=https://maverickcer.github.io/data-cap/coverage-badge.json)](https://github.com/MaverickCER/data-cap/blob/main/vitest.config.ts)
+[![Mutation](https://img.shields.io/endpoint?url=https://maverickcer.github.io/data-cap/mutation-badge.json)](https://github.com/MaverickCER/data-cap/blob/main/stryker.config.mjs)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/MaverickCER/data-cap/badge)](https://scorecard.dev/viewer/?uri=github.com/MaverickCER/data-cap)
 [![Bundle size](https://img.shields.io/endpoint?url=https://maverickcer.github.io/data-cap/size-badge.json)](https://github.com/MaverickCER/data-cap/blob/main/scripts/check-size.mjs)
 [![Socket Badge](https://badge.socket.dev/npm/package/data-cap/latest)](https://socket.dev/npm/package/data-cap)
 [![Node](https://img.shields.io/node/v/data-cap)](https://www.npmjs.com/package/data-cap)

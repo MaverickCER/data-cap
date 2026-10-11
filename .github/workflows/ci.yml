@@ -562,7 +562,7 @@ jobs:
       - run: npx vitest run test/integration/
 
   badges:
-    needs: [verify, lint, cross-runtime]
+    needs: [verify, lint, cross-runtime, contract]
     # Same transitive-skip reasoning as `contract`'s own identical-shaped condition above --
     # `verify`/`lint` depend on `benchmark-pr`, which is always skipped on a push-to-main event
     # (it only ever runs for `pull_request`), so without this, GitHub's default `success()` here
@@ -572,7 +572,8 @@ jobs:
       github.event_name == 'push' && github.ref == 'refs/heads/main' && always() &&
       (needs.verify.result == 'success' || needs.verify.result == 'skipped') &&
       (needs.lint.result == 'success' || needs.lint.result == 'skipped') &&
-      needs.cross-runtime.result == 'success'
+      needs.cross-runtime.result == 'success' &&
+      needs.contract.result == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -585,6 +586,14 @@ jobs:
       - run: npm run build
       - run: npm run test:coverage
       - run: npm run size -- --json coverage/size-summary.json
+      # The mutation score comes from the report the `contract` job already paid for, not a second
+      # mutation run. The badge writer is internal-package-contract's shared one.
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: mutation-report
+          path: reports/mutation
+      - name: Generate mutation badge data
+        run: node node_modules/internal-package-contract/scripts/run-mutation-badge.mjs
       - name: Generate badge data
         run: node scripts/generate-badges.mjs
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -592,6 +601,7 @@ jobs:
           name: docs-badges
           path: |
             docs/coverage-badge.json
+            docs/mutation-badge.json
             docs/size-badge.json
           retention-days: 14
 
