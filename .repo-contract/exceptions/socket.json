@@ -30,7 +30,8 @@
       "constraint": "The binary package is selected by TypeScript 7 itself and reached only through this package's optional peer range.",
       "whyPreferable": "The publisher is the TypeScript team's own release account set, so the alert reflects a first release of a new package name, not a change of control.",
       "residualRisk": "Low; the package is not installed by this repository and is not shipped in its tarball.",
-      "revisitWhen": "The maintainers listed on npm for the TypeScript 7 binaries change."
+      "revisitWhen": "The maintainers listed on npm for the TypeScript 7 binaries change.",
+      "expires": ""
     },
     {
       "id": "socket:ajv@6.15.0:urlStrings",
@@ -88,7 +89,8 @@
       "constraint": "TypeScript 7 ships no programmatic API, so the build-time scanner needs a TypeScript 6 compiler. The compiler is shipped whole and unmodified because `bundleDependencies` bundles a package as published (ADR 0069).",
       "whyPreferable": "Bundling the compiler lets a TypeScript 7 project run the scanner at all. The alternative is a scanner that refuses to run until the project reworks its own dependencies.",
       "residualRisk": "The capability exists inside a compiler that is only loaded by the build entry; scripts/verify-compiler-isolation.mjs fails the build if the runtime, helpers, evidence, node or ESLint-plugin entry can reach it.",
-      "revisitWhen": "TypeScript 7.1 ships a stable programmatic API and the scanner can use it, or the bundled compiler is dropped."
+      "revisitWhen": "TypeScript 7.1 ships a stable programmatic API and the scanner can use it, or the bundled compiler is dropped.",
+      "expires": ""
     },
     {
       "id": "socket:data-cap@self:envVars",
@@ -107,7 +109,8 @@
       "constraint": "TypeScript 7 ships no programmatic API, so the build-time scanner needs a TypeScript 6 compiler. The compiler is shipped whole and unmodified because `bundleDependencies` bundles a package as published (ADR 0069).",
       "whyPreferable": "Bundling the compiler lets a TypeScript 7 project run the scanner at all. The alternative is a scanner that refuses to run until the project reworks its own dependencies.",
       "residualRisk": "The capability exists inside a compiler that is only loaded by the build entry; scripts/verify-compiler-isolation.mjs fails the build if the runtime, helpers, evidence, node or ESLint-plugin entry can reach it.",
-      "revisitWhen": "TypeScript 7.1 ships a stable programmatic API and the scanner can use it, or the bundled compiler is dropped."
+      "revisitWhen": "TypeScript 7.1 ships a stable programmatic API and the scanner can use it, or the bundled compiler is dropped.",
+      "expires": ""
     },
     {
       "id": "socket:data-cap@self:filesystemAccess",
@@ -126,7 +129,8 @@
       "constraint": "TypeScript 7 ships no programmatic API, so the build-time scanner needs a TypeScript 6 compiler. The compiler is shipped whole and unmodified because `bundleDependencies` bundles a package as published (ADR 0069).",
       "whyPreferable": "Bundling the compiler lets a TypeScript 7 project run the scanner at all. The alternative is a scanner that refuses to run until the project reworks its own dependencies.",
       "residualRisk": "The capability exists inside a compiler that is only loaded by the build entry; scripts/verify-compiler-isolation.mjs fails the build if the runtime, helpers, evidence, node or ESLint-plugin entry can reach it.",
-      "revisitWhen": "TypeScript 7.1 ships a stable programmatic API and the scanner can use it, or the bundled compiler is dropped."
+      "revisitWhen": "TypeScript 7.1 ships a stable programmatic API and the scanner can use it, or the bundled compiler is dropped.",
+      "expires": ""
     },
     {
       "id": "socket:data-cap@self:gptAnomaly",
@@ -158,7 +162,8 @@
       "constraint": "TypeScript 7 ships no programmatic API, so the build-time scanner needs a TypeScript 6 compiler. The compiler is shipped whole and unmodified because `bundleDependencies` bundles a package as published (ADR 0069).",
       "whyPreferable": "Bundling the compiler lets a TypeScript 7 project run the scanner at all. The alternative is a scanner that refuses to run until the project reworks its own dependencies.",
       "residualRisk": "The capability exists inside a compiler that is only loaded by the build entry; scripts/verify-compiler-isolation.mjs fails the build if the runtime, helpers, evidence, node or ESLint-plugin entry can reach it.",
-      "revisitWhen": "TypeScript 7.1 ships a stable programmatic API and the scanner can use it, or the bundled compiler is dropped."
+      "revisitWhen": "TypeScript 7.1 ships a stable programmatic API and the scanner can use it, or the bundled compiler is dropped.",
+      "expires": ""
     },
     {
       "id": "socket:data-cap@self:nonpermissiveLicense",
@@ -177,7 +182,8 @@
       "constraint": "The bundled package's own license files cannot be changed; they ship as Microsoft published them.",
       "whyPreferable": "The shipped license is permissive and unchanged; removing the notices would drop required attribution.",
       "residualRisk": "A third-party notice with a copyleft-style license inside the bundled notices file would matter to a downstream redistributor; none was seen.",
-      "revisitWhen": "The bundled compiler is dropped or its license files change."
+      "revisitWhen": "The bundled compiler is dropped or its license files change.",
+      "expires": ""
     },
     {
       "id": "socket:data-cap@self:shellAccess",
@@ -196,7 +202,8 @@
       "constraint": "TypeScript 7 ships no programmatic API, so the build-time scanner needs a TypeScript 6 compiler. The compiler is shipped whole and unmodified because `bundleDependencies` bundles a package as published (ADR 0069).",
       "whyPreferable": "Bundling the compiler lets a TypeScript 7 project run the scanner at all. The alternative is a scanner that refuses to run until the project reworks its own dependencies.",
       "residualRisk": "The capability exists inside a compiler that is only loaded by the build entry; scripts/verify-compiler-isolation.mjs fails the build if the runtime, helpers, evidence, node or ESLint-plugin entry can reach it.",
-      "revisitWhen": "TypeScript 7.1 ships a stable programmatic API and the scanner can use it, or the bundled compiler is dropped."
+      "revisitWhen": "TypeScript 7.1 ships a stable programmatic API and the scanner can use it, or the bundled compiler is dropped.",
+      "expires": ""
     },
     {
       "id": "socket:data-cap@self:unpopularPackage",
@@ -293,7 +300,8 @@
       "constraint": "The license belongs to a package this project does not publish.",
       "whyPreferable": "The license is permissive, so the alert is not a real license problem.",
       "residualRisk": "None identified beyond the notice text discussed in the self record for this package.",
-      "revisitWhen": "`typescript` changes license, or Socket's alert starts to name a specific text."
+      "revisitWhen": "`typescript` changes license, or Socket's alert starts to name a specific text.",
+      "expires": ""
     },
     {
       "id": "socket:which@2.0.2:envVars",
