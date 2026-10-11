@@ -14,10 +14,7 @@
   },
   "install": {
     "label": "Quick start",
-    "commands": [
-      "npm install data-cap",
-      "npx data-cap init"
-    ],
+    "commands": ["npm install data-cap", "npx data-cap init"],
     "note": "data-cap sits under or next to TanStack Query, Redux, Zustand or plain `fetch` and `useState`. No database, transport or state-library change is needed."
   },
   "cta": {
@@ -98,11 +95,7 @@
     "heading": "You keep all of them.",
     "lede": "data-cap doesn't replace your transport or your store. It adds the layer none of them cover: one capability-owned contract that every consumer reads the same synchronous snapshot from, plus a static-analysis pass that turns it into ownership and dependency evidence.",
     "caption": "Where common approaches stop and data-cap begins",
-    "columns": [
-      "Tool",
-      "What it solves",
-      "What it doesn't"
-    ],
+    "columns": ["Tool", "What it solves", "What it doesn't"],
     "rows": [
       [
         "Manual fetch + `useState`",
