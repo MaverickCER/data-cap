@@ -243,6 +243,10 @@ otherwise. See `test/integration/coordinator/coordinator-dedup/` and
 
 Bun/Deno rows for `core`/`runtime`/`helpers` are verified directly against real Bun and Deno engines in CI (`test/cross-runtime/`), not just claimed by analogy to Node. See the further reading below for the full architectural model, and [the docs site's comparison and FAQ sections](https://maverickcer.github.io/data-cap/#comparison) for more on how this compares to conventional fetch-and-`useState`/global-store patterns.
 
+### Requirements
+
+Node.js `>=22`. TypeScript 5, 6 or 7 is only required for build-time manifest generation: a bundled TypeScript 6 parses the sources when yours is 7, is bundled inside the package and used only by the build entry, and adds about 26 MB to the install. The runtime works in plain JavaScript. TypeScript consumers need `moduleResolution` set to `node16`, `nodenext` or `bundler` to resolve the subpath exports (`data-cap/build`, `data-cap/helpers`, ...); the legacy `node10` resolver is not supported. `data-cap/eslint-plugin` also needs `@typescript-eslint/utils` installed (an optional peer).
+
 ## The low-level path: full manual control
 
 For applications that want to own execution, retry, and caching policy
