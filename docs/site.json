@@ -50,7 +50,7 @@
     "flow": [
       "Capability schema",
       "→ Manual path (Stable): `buildData` · `createDataStore` · `coordinator`, with full control over execution, retry and caching",
-      "→ Batteries-included path (Experimental): `createData`, with dedup, per-operation status and an optimistic mutation lifecycle",
+      "→ Batteries-included path (Stable): `createData`, with dedup, per-operation status and an optimistic mutation lifecycle",
       "→ A synchronously readable snapshot"
     ],
     "flowDescription": "The same Stable primitives can be composed manually for full control, or used through createData for a batteries-included dedup, status, and optimistic-mutation lifecycle.",
