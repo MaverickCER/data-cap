@@ -113,8 +113,7 @@ instead — one unambiguous spelling.
 
 ## Optimistic mutations
 
-`createData`'s own `optimistic()` (shown in the [Quick start](README.md#quick-start))
-handles this for you. The same mechanism, by hand, via
+`createData`'s own `optimistic()` handles this for you. The same mechanism, by hand, via
 `addPendingTransition`/`removePendingTransition` — makes a mutation's
 not-yet-confirmed value visible immediately, with no automatic rollback and
 no invented conflict-resolution policy:
