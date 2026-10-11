@@ -113,7 +113,7 @@ jobs:
     # The `suites`/`install-dirs` inputs below exist only in internal-package-contract commits that
     # include the generalized benchmark kit: bump this SHA to such a commit together with the
     # internal-package-contract devDependency pin, in the same pull request.
-    uses: MaverickCER/internal-package-contract/.github/workflows/benchmark-pr.yml@14ebe836b588c458bae3ad1a6baf7da2a23a09ae # v0.10.0
+    uses: MaverickCER/internal-package-contract/.github/workflows/benchmark-pr.yml@e13b3de4871e7509cb1969c4067a190e72a8c485 # v0.10.0
     with:
       suites: |
         Runtime|benchmarks/performance-runtime|benchmarks/history/runtime.json
@@ -410,6 +410,11 @@ jobs:
         run: |
           npm install
           npm run typecheck
+
+      # With the example's dependencies installed, so the README's "See it run" block is compared with a
+      # real run here; without them the script skips (the `contract` job has none installed).
+      - name: README example is still real
+        run: npm run verify:readme-example
 
       - name: team-service
         working-directory: examples/team-service

@@ -469,7 +469,7 @@ a CLI flag (ADR 0066) -- request them from application code via the options
 above, either through `generateDataArtifacts()`/`checkArtifacts()` or the
 individual `generateManifest`/`generateDocumentation`/`generateUsage`/
 `generateFlow` generators (see
-[`examples/nextjs-app/scripts/generate-docs`](examples/nextjs-app/scripts/generate-docs)
+[`examples/nextjs-app/scripts/generate-docs`](https://github.com/MaverickCER/data-cap/tree/main/examples/nextjs-app/scripts/generate-docs)
 for a worked example). Every one of these draws a hard line between
 **declared** facts (author metadata — `owner`, `sensitivity`, `protections`,
 `endpoints` — presence is checked, correctness never is) and **proven**
@@ -496,13 +496,31 @@ npx data-cap --help
 `--check` verifies the evidence artifact is up to date without writing
 anything (exit `1` if stale — a CI freshness gate); `--json` emits the full
 machine-readable `ReportResult` instead of formatted text;
-`--strict`/`--strict-docs`/`--strict-ownership`/`--strict-flow` escalate
-that pass's `warning` findings to hard errors (never `info`) -- these
-remain meaningful even without `--docs`/`--ownership`/`--flow` flags to
-pair them with, since the static/usage passes they escalate run
-unconditionally alongside `--evidence` (F1/F2). See `--help` for the
-complete flag reference, including `--include`/`--exclude` globs and the
-`--package`/`--tsconfig` cross-package/path-alias options.
+`--strict`/`--strict-docs`/`--strict-ownership` escalate that pass's
+`warning` findings to hard errors (never `info`); the static and usage
+passes they escalate always run alongside `--evidence`. `--strict-flow` is
+accepted but has no effect on the CLI by itself: it applies only to a
+caller that also builds a Data Flow Diagram directly.
+`--expiring-within-days <n>` sets how many days out counts as "expiring
+soon" in the Evidence Model's Lifecycle Model (default: 30).
+
+| Flag                         | Meaning                                                                                                                                                        |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--evidence <path>`          | Required. Write the composed Evidence Model (ADR 0050) as JSON at this path.                                                                                   |
+| `--root <path>`              | Directory that globs resolve from (default: the current directory).                                                                                            |
+| `--include <glob>`           | Discovery glob. Repeatable. Default: every `.ts` and `.tsx` file.                                                                                              |
+| `--exclude <glob>`           | Glob to exclude from discovery. Repeatable.                                                                                                                    |
+| `--package <name>`           | Installed package to also discover a capability from, through its `dataCap.schema` `package.json` field. Repeatable.                                           |
+| `--tsconfig <path>`          | `tsconfig.json` (relative to root) whose `paths` and `baseUrl` resolve aliased imports during static analysis. Default: the `tsconfig.json` found at the root. |
+| `--no-tsconfig`              | Turn path-alias resolution off entirely.                                                                                                                       |
+| `--expiring-within-days <n>` | How many days out counts as "expiring soon" in the Lifecycle Model (default: 30).                                                                              |
+| `--strict`                   | Escalate every warning-severity finding to a hard error. Info findings never escalate.                                                                         |
+| `--strict-docs`              | Escalate only static findings (ownership, sensitivity, duplication).                                                                                           |
+| `--strict-ownership`         | Escalate only proven usage findings (abandoned capabilities, unconsumed owned fields); unresolved-consumer and indeterminate findings never escalate.          |
+| `--strict-flow`              | Accepted, but has no effect on the CLI by itself; it applies only to a caller that also builds a Data Flow Diagram directly.                                   |
+| `--json`                     | Emit a machine-readable report instead of formatted text.                                                                                                      |
+| `--check`                    | Verify the evidence artifact is up to date without writing anything. Exits `1` if it is stale or missing.                                                      |
+| `--help`, `-h`               | Show the help text.                                                                                                                                            |
 
 ### Programmatic orchestration
 
@@ -662,7 +680,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: maverickcer/data-cap@v1
+      - uses: maverickcer/data-cap@v0
         with:
           args: "--evidence docs/data.evidence.json --strict-docs --strict-ownership"
 ```
@@ -676,19 +694,9 @@ jobs:
 | `annotations`       | `true`                | Emits GitHub workflow annotations for detected findings                           |
 | `report-key`        | _(working-directory)_ | Identifies this report when multiple workflows run against the same pull request  |
 
-**Known gap (ADR 0066):** `scripts/github-action/report.mjs` still reads
-`result.manifest`/`result.flow` from the `--json` payload -- for the
-manifest-written summary line and the rendered Data Flow Diagram (GitHub
-renders fenced ` ```mermaid ` blocks natively) respectively -- but the CLI
-can no longer populate either field (`--location`/`--flow` are gone). Those
-two report sections are silently empty until `report.mjs` is migrated to
-read `result.evidence` instead; that migration is intentionally not bundled
-into ADR 0066. Everything else the Action reports (findings, annotations,
-the evidence-check summary) is unaffected.
-
 The Action does not create its own policy layer. Pass/fail behavior always
 follows the CLI exit code and configured flags such as `--strict`,
-`--strict-docs`, `--strict-ownership`, and `--strict-flow`.
+`--strict-docs`, and `--strict-ownership`.
 
 ### Monorepos
 
@@ -705,7 +713,7 @@ dependency direction between them, and every cross-cutting guarantee
 (tree-shaking, gzip budgets, the dual-package-hazard risk class,
 cross-runtime conformance) checked in CI.
 
-The 55 Architecture Decision Records in
+The Architecture Decision Records in
 [`specs/decisions/`](specs/decisions/) document the reasoning — including
 rejected alternatives — behind every significant design choice, and
 [`specs/decisions/0047-negative-guarantees-checklist.md`](specs/decisions/0047-negative-guarantees-checklist.md)
