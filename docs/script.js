@@ -40,24 +40,33 @@
         return
       }
 
-      navigator.clipboard.writeText(text).then(function () {
-        button.textContent = "Copied"
-        // The button's own text change is silent to screen readers -- this
-        // is the announcement assistive tech actually hears.
-        if (copyStatus) {
-          copyStatus.textContent = "Copied to clipboard."
-        }
-        window.setTimeout(function () {
-          button.textContent = defaultLabel
-        }, 2000)
-      })
+      navigator.clipboard.writeText(text).then(
+        function () {
+          button.textContent = "Copied"
+          // The button's own text change is silent to screen readers -- this
+          // is the announcement assistive tech actually hears.
+          if (copyStatus) {
+            copyStatus.textContent = "Copied to clipboard."
+          }
+          window.setTimeout(function () {
+            button.textContent = defaultLabel
+          }, 2000)
+        },
+        function () {
+          // Permission denied or the write rejected -- announce the failure
+          // rather than leaving an unhandled rejection and a silent button.
+          if (copyStatus) {
+            copyStatus.textContent = "Couldn't copy to clipboard."
+          }
+        },
+      )
     })
   })
 
   // Theme toggle -- persists an explicit choice in localStorage as
   // [data-theme] on <html>; absent that, styles.css's
   // `@media (prefers-color-scheme: dark)` block governs.
-  var THEME_STORAGE_KEY = "env-cap-theme"
+  var THEME_STORAGE_KEY = document.documentElement.getAttribute("data-theme-key") || "theme"
   var root = document.documentElement
   var themeToggle = document.getElementById("theme-toggle")
   var themeToggleIcon = themeToggle ? themeToggle.querySelector(".theme-toggle-icon") : null

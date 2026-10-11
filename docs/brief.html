@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>data-cap: a one-page brief</title>
+    <meta
+      name="description"
+      content="data-cap gives every piece of application data one owner and one shared status, so every part of the application agrees on what the data is doing."
+    />
+    <link rel="canonical" href="https://maverickcer.github.io/data-cap/brief.html" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="brief-page">
+    <a class="skip-link" href="#main">Skip to content</a>
+    <main id="main" class="brief">
+      <p class="brief-back"><a href="index.html">&larr; data-cap</a></p>
+      <h1>data-cap: a one-page brief</h1>
+      <p class="brief-oneline">
+        data-cap gives every piece of application data one owner and one shared status, so every
+        part of the application agrees on what the data is doing.
+      </p>
+      <section class="brief-block">
+        <h2>The problem</h2>
+        <p>
+          Different parts of an application each work out their own idea of whether data is loading,
+          stale or changed. They disagree, and nobody owns the answer.
+        </p>
+      </section>
+      <section class="brief-block">
+        <h2>What it does</h2>
+        <p>
+          Each piece of data is declared once, with the fields and operations that touch it. Every
+          consumer then reads the same up-to-date snapshot, whichever fetching or state library sits
+          underneath.
+        </p>
+      </section>
+      <section class="brief-block">
+        <h2>Why it matters</h2>
+        <ul>
+          <li>
+            Components stop disagreeing about what &quot;loading&quot; or &quot;stale&quot; means.
+          </li>
+          <li>It works alongside the fetching and state libraries a team already uses.</li>
+          <li>A generated report shows who owns each piece of data and what depends on it.</li>
+        </ul>
+      </section>
+      <section class="brief-block">
+        <h2>What it costs</h2>
+        <p>
+          Adopting it means adding the package and declaring one piece of data at a time. It is
+          free, open source software under the MIT licence, and it replaces no existing library.
+        </p>
+      </section>
+      <section class="brief-block">
+        <h2>What could go wrong</h2>
+        <ul>
+          <li>
+            data-cap is pre-1.0. Per
+            <a href="https://github.com/maverickcer/data-cap/blob/main/VERSIONING.md"
+              >VERSIONING.md</a
+            >, a minor release may still change a Stable API before 1.0, so pin accordingly and read
+            the changelog on every minor upgrade.
+          </li>
+          <li>
+            Security fixes target the latest 0.x release only, and there is no long-term-support
+            branch before 1.0.
+          </li>
+          <li>
+            Ownership is enforced by warning, not by blocking, so a mistake is reported rather than
+            prevented.
+          </li>
+        </ul>
+      </section>
+      <section class="brief-block">
+        <h2>What we are asking for</h2>
+        <p>
+          Agree that one feature trials it for a few weeks, then judge from its ownership report
+          whether to extend it.
+        </p>
+      </section>
+      <p class="brief-next">
+        To judge it yourself:
+        <a href="https://github.com/maverickcer/data-cap#readme">Read the README</a> ·
+        <a href="https://github.com/maverickcer/data-cap/tree/main/examples">Run the examples</a>
+      </p>
+      <p class="brief-print">Print this page or save it as a PDF to share.</p>
+    </main>
+  </body>
+</html>

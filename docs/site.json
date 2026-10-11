@@ -1,0 +1,242 @@
+{
+  "siteUrl": "https://maverickcer.github.io/data-cap/",
+  "repoUrl": "https://github.com/maverickcer/data-cap",
+  "title": "data-cap — capability-owned data contracts",
+  "description": "Your application's data should have an owner. data-cap treats a piece of application data as one capability-owned contract, independent of whatever database, transport, framework, or state-management library is on the other end — and sits next to TanStack Query, Redux, or plain fetch, not instead of them.",
+  "ogImage": "assets/og-image.png",
+  "maturity": "data-cap is pre-1.0. Per [VERSIONING.md](https://github.com/maverickcer/data-cap/blob/main/VERSIONING.md), a minor release may still change a Stable API before 1.0, so pin accordingly and read the changelog on every minor upgrade.",
+  "hero": {
+    "eyebrow": "Data, owned",
+    "heading": "Your application's data should have an owner.",
+    "lede": "Fetching libraries dedupe requests. State libraries give you a store. Neither says which part of your application owns a piece of data, or what its status means to every consumer.",
+    "support": "data-cap treats a piece of data, with the getters, mutators and subscriptions that touch it, as one capability-owned contract that every consumer reads the same synchronous snapshot from.",
+    "outcome": "Give every piece of application data one owner and one shared status vocabulary, without replacing your database, transport or state library."
+  },
+  "install": {
+    "label": "Quick start",
+    "commands": [
+      "npm install data-cap",
+      "npx data-cap init"
+    ],
+    "note": "data-cap sits under or next to TanStack Query, Redux, Zustand or plain `fetch` and `useState`. No database, transport or state-library change is needed."
+  },
+  "cta": {
+    "primary": {
+      "label": "Read the README",
+      "url": "https://github.com/maverickcer/data-cap#readme"
+    },
+    "secondary": {
+      "label": "Run the examples",
+      "url": "https://github.com/maverickcer/data-cap/tree/main/examples"
+    }
+  },
+  "problem": {
+    "eyebrow": "Why it exists",
+    "heading": "Fetching and state libraries answer different questions.",
+    "lede": "A fetching library dedupes requests. A state-management library gives you a store. Neither answers which piece of data a component owns versus merely consumes, whether an optimistic value will disagree with what other components expect, or which capability a subscription's transport is shared with.",
+    "listLabel": "Where the agreement lives today",
+    "items": [
+      "each component's own idea of \"loading\"",
+      "each component's own idea of \"stale\"",
+      "each team's optimistic-update logic"
+    ],
+    "conclusion": "no single source of truth for what the data's status means",
+    "closing": "data-cap makes the agreement itself the artifact: a capability declares its fields and the operations that touch them, and every consumer reads the same synchronously available snapshot."
+  },
+  "model": {
+    "eyebrow": "How it works",
+    "heading": "Full manual control, or batteries included: same primitives.",
+    "lede": "`buildData`, `createDataStore` and `coordinator` are the same Stable primitives `createData` composes. Start wherever matches how much control the capability needs.",
+    "flow": [
+      "Capability schema",
+      "→ Manual path (Stable): `buildData` · `createDataStore` · `coordinator`, with full control over execution, retry and caching",
+      "→ Batteries-included path (Experimental): `createData`, with dedup, per-operation status and an optimistic mutation lifecycle",
+      "→ A synchronously readable snapshot"
+    ],
+    "flowDescription": "The same Stable primitives can be composed manually for full control, or used through createData for a batteries-included dedup, status, and optimistic-mutation lifecycle.",
+    "note": "Neither path is the one way: pick per capability. Fields are readable synchronously from the moment `buildData()` or `createData()` returns, with no throw-until-ready gate, and `info` is mandatory on every `DataState`, so consumers never special-case whether metadata exists yet."
+  },
+  "demo": {
+    "eyebrow": "See it",
+    "heading": "Not a mockup: real output from this repository.",
+    "intro": "Run against [examples/application](https://github.com/maverickcer/data-cap/tree/main/examples/application) in this repo:",
+    "command": "npm run docs",
+    "output": "Wrote evidence model: docs/data.evidence.json\n[generate-docs] wrote src/generated/data.manifest.ts (1 active capability(ies)), docs/DATA.md, docs/OWNERSHIP.md, 4 flow file(s), and docs/data.evidence.json.",
+    "source": {
+      "label": "examples/application",
+      "url": "https://github.com/maverickcer/data-cap/tree/main/examples/application"
+    },
+    "explanation": "A manifest of every active capability, a documentation catalog, and a dependency and ownership report, statically derived from real code, not hand-maintained."
+  },
+  "guarantees": {
+    "eyebrow": "Guarantees",
+    "heading": "What is guaranteed, and where it stops.",
+    "lede": "Each claim states its scope and links to the document that defines it, so you can check the boundary before you rely on it.",
+    "items": [
+      {
+        "claim": "Ownership is enforced by warning, not by throwing.",
+        "scope": "An unowned write is dropped and reported instead of crashing the application. data-cap is not an authorization, encryption or compliance system.",
+        "linkLabel": "Read the security model",
+        "url": "https://github.com/maverickcer/data-cap/blob/main/SECURITY.md"
+      },
+      {
+        "claim": "The build tool never executes your code.",
+        "scope": "Discovered files are analyzed statically and never imported or evaluated. This covers the build tooling only, not your application at runtime.",
+        "linkLabel": "Read the security model",
+        "url": "https://github.com/maverickcer/data-cap/blob/main/SECURITY.md"
+      },
+      {
+        "claim": "The two-module-system hazard is checked and documented.",
+        "scope": "It applies when a dependency tree resolves the package through both ESM and CommonJS, which creates two coordinator instances. The documented behaviour is graceful degradation, not silent corruption.",
+        "linkLabel": "Read the security model",
+        "url": "https://github.com/maverickcer/data-cap/blob/main/SECURITY.md"
+      }
+    ]
+  },
+  "comparison": {
+    "eyebrow": "Why not just TanStack Query, Redux, or manual fetch-and-state?",
+    "heading": "You keep all of them.",
+    "lede": "data-cap doesn't replace your transport or your store. It adds the layer none of them cover: one capability-owned contract that every consumer reads the same synchronous snapshot from, plus a static-analysis pass that turns it into ownership and dependency evidence.",
+    "caption": "Where common approaches stop and data-cap begins",
+    "columns": [
+      "Tool",
+      "What it solves",
+      "What it doesn't"
+    ],
+    "rows": [
+      [
+        "Manual fetch + `useState`",
+        "Gets data on screen",
+        "No shared status vocabulary, no dedup, no optimistic-update contract; every component re-derives its own version"
+      ],
+      [
+        "TanStack Query",
+        "Fetching, caching, request dedup",
+        "Says nothing about mutation-driven data your app owns outside a query, or how two consumers agree on ownership"
+      ],
+      [
+        "Redux / Zustand / a global store",
+        "One shared place to put state",
+        "Doesn't distinguish declared ownership from incidental access; anything can write anywhere"
+      ]
+    ]
+  },
+  "adoption": {
+    "eyebrow": "Adoption",
+    "heading": "From manual control to batteries-included.",
+    "lede": "Most applications start with whichever primitive matches how much control a capability needs: full manual control (`buildData`, `createDataStore`, `coordinator`) or the batteries-included `createData`. Neither is the one way.",
+    "calloutTitle": "One capability at a time",
+    "steps": [
+      "Pick the primitive that fits one capability.",
+      "Migrate the next capability when it needs more control or less boilerplate. Each is independent."
+    ],
+    "notFor": {
+      "title": "You probably don't need it when",
+      "text": "Your application is small, one team owns the entire data layer, and there's little reason to separate business capabilities from their storage or fetching implementation. A conventional fetch-and-`useState` pattern, or your existing state-management library alone, may be simpler."
+    }
+  },
+  "brief": {
+    "heading": "A one-page brief for your manager",
+    "oneLine": "data-cap gives every piece of application data one owner and one shared status, so every part of the application agrees on what the data is doing.",
+    "problem": "Different parts of an application each work out their own idea of whether data is loading, stale or changed. They disagree, and nobody owns the answer.",
+    "whatItDoes": "Each piece of data is declared once, with the fields and operations that touch it. Every consumer then reads the same up-to-date snapshot, whichever fetching or state library sits underneath.",
+    "whyItMatters": [
+      "Components stop disagreeing about what \"loading\" or \"stale\" means.",
+      "It works alongside the fetching and state libraries a team already uses.",
+      "A generated report shows who owns each piece of data and what depends on it."
+    ],
+    "whatItCosts": "Adopting it means adding the package and declaring one piece of data at a time. It is free, open source software under the MIT licence, and it replaces no existing library.",
+    "whatCouldGoWrong": [
+      "Security fixes target the latest 0.x release only, and there is no long-term-support branch before 1.0.",
+      "Ownership is enforced by warning, not by blocking, so a mistake is reported rather than prevented."
+    ],
+    "whatWeAsk": "Agree that one feature trials it for a few weeks, then judge from its ownership report whether to extend it."
+  },
+  "resources": {
+    "eyebrow": "Proof, not promises",
+    "heading": "data-cap uses data-cap.",
+    "lede": "The project is self-hosted and covered by end-to-end examples and independently installed regression fixtures. The implementation, tests, architecture documentation and decision records are the evidence behind everything on this page.",
+    "items": [
+      {
+        "title": "Guide",
+        "description": "Fields & info, optimistic mutations, array identity, subscriptions, the coordinator, cache & retry, build tooling, and the CLI.",
+        "label": "Read the Guide",
+        "url": "https://github.com/maverickcer/data-cap/blob/main/GUIDE.md"
+      },
+      {
+        "title": "Architecture",
+        "description": "The core invariants — one atomic snapshot per commit, one subscriber notification only if changed, and why the build tool never executes discovered code.",
+        "label": "Read architecture.md",
+        "url": "https://github.com/maverickcer/data-cap/blob/main/specs/architecture.md"
+      },
+      {
+        "title": "Security model",
+        "description": "Warn-not-throw ownership enforcement, static-analysis-only build tooling, and the dual-package hazard.",
+        "label": "Read the security model",
+        "url": "https://github.com/maverickcer/data-cap/blob/main/SECURITY.md"
+      },
+      {
+        "title": "Adoption guide",
+        "description": "A decision-maker summary: security posture, bundle size, and versioning/LTS stance.",
+        "label": "Read ADOPTION.md",
+        "url": "https://github.com/maverickcer/data-cap/blob/main/ADOPTION.md"
+      },
+      {
+        "title": "API reference",
+        "description": "Every exported symbol, generated from source so it cannot drift.",
+        "label": "Read the API reference",
+        "url": "api/"
+      },
+      {
+        "title": "Benchmarks",
+        "description": "Runtime and build-time performance history, generated from committed measurements so it cannot drift.",
+        "label": "View the benchmarks",
+        "url": "benchmarks/"
+      }
+    ]
+  },
+  "fit": {
+    "eyebrow": "Try it",
+    "heading": "Trial it on one feature.",
+    "lede": "Read the README for a first capability, or run an example to see the ownership report it produces.",
+    "links": [
+      {
+        "label": "API reference",
+        "url": "api/"
+      },
+      {
+        "label": "Benchmarks",
+        "url": "benchmarks/"
+      },
+      {
+        "label": "View on GitHub",
+        "url": "https://github.com/maverickcer/data-cap"
+      }
+    ]
+  },
+  "footer": {
+    "links": [
+      {
+        "label": "API reference",
+        "url": "api/"
+      },
+      {
+        "label": "Benchmarks",
+        "url": "benchmarks/"
+      },
+      {
+        "label": "GitHub ↗",
+        "url": "https://github.com/maverickcer/data-cap"
+      },
+      {
+        "label": "Issues ↗",
+        "url": "https://github.com/maverickcer/data-cap/issues"
+      }
+    ],
+    "license": {
+      "label": "MIT License",
+      "url": "https://github.com/maverickcer/data-cap/blob/main/LICENSE"
+    },
+    "copyright": "data-cap contributors"
+  }
+}
