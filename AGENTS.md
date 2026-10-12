@@ -2,8 +2,8 @@
 
 Guidance for AI coding agents (Codex, Cursor, Copilot, Continue, and others reading this
 convention) working in `data-cap`'s own source, or in an application that consumes
-`data-cap`. Claude Code reads the fuller, more detailed version of this same
-guidance from [`skills/data-cap/SKILL.md`](skills/data-cap/SKILL.md) — read that file
+`data-cap`. Agents whose tooling loads skill files get the fuller, more detailed version of
+this same guidance from [`skills/data-cap/SKILL.md`](skills/data-cap/SKILL.md) — read that file
 instead if your tooling supports it; this file is a self-contained distillation for
 agents that don't.
 
@@ -42,7 +42,7 @@ userData.getSnapshot().fields.user.name
 `runGetters` concurrency for you — see ADR 0048 for the full behavioral contract
 (getter/mutator rejection semantics, `optimistic()` receiving authoritative-not-projected
 state, dedup identity scoping, getter-vs-mutator stale-discard asymmetry). It's
-**Experimental tier** (see `VERSIONING.md`) and composed entirely out of the Stable
+**Stable tier** (see `VERSIONING.md` and ADR 0065) and composed entirely out of the Stable
 primitives below — nothing about it changes their own behavior.
 
 For full manual control over execution, retry, and caching policy, the low-level
@@ -181,7 +181,7 @@ Before making any changes:
    pattern rather than inventing a new one.
 3. Decide `buildData` + hand-wiring vs. `createData` per capability, based
    on how much control that specific capability's execution needs (see
-   "The low-level path" in `README.md`) — this is a per-capability choice,
+   "The low-level path: full manual control" in `GUIDE.md`) — this is a per-capability choice,
    not an app-wide one.
 4. Prefer small, reviewable PRs — one capability migrated per PR is the
    default; do not bundle an unrelated refactor into the same change.
@@ -196,7 +196,7 @@ for them.
 | Export                   | Source                 | Environment           | Purpose                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | ------------------------ | ---------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `data-cap`               | `src/core/`            | isomorphic, zero deps | `buildData`, `documentData`, `fields.nullable`/`fields.optional`, `DataState`/`DataInfo`/`FieldInfo` types, error types                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| `data-cap/runtime`       | `src/runtime/`         | isomorphic, zero deps | `createData` (Experimental), `createDataStore`, `defaultCoordinator`/`createCoordinator`, `composeSignals`/`rejectOnAbort`                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `data-cap/runtime`       | `src/runtime/`         | isomorphic, zero deps | `createData`, `createDataStore`, `defaultCoordinator`/`createCoordinator`, `composeSignals`/`rejectOnAbort`                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | `data-cap/runtime/cache` | `src/runtime/cache.ts` | isomorphic            | `createDataCache` (optional, separately tree-shaken)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | `data-cap/runtime/retry` | `src/runtime/retry.ts` | isomorphic            | `withRetry`, `isStillDefault` (optional, separately tree-shaken)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | `data-cap/helpers`       | `src/helpers/`         | isomorphic            | `processors`, `identity`, `canonicalize`, `shape` namespaces                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |

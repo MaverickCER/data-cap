@@ -20,7 +20,7 @@ used to be, and why it no longer is:
 - **`examples/`** (here) -- a human deciding whether/how to adopt data-cap.
   Three examples, telling one story that grows, rather than three unrelated
   demos or a feature checklist.
-- **[`test/integration/`](../test/integration/README.md)** -- "does data-cap
+- **[`test/integration/`](https://github.com/MaverickCER/data-cap/blob/main/test/integration/README.md)** -- "does data-cap
   actually work?" The 16 focused regression fixtures that used to live here,
   each proving one specific mechanism (dedup, cache, retry, subscription
   sharing, path-alias resolution, and so on) against the real, built
@@ -37,9 +37,9 @@ the order an organization actually grows into them:
 
 | Tier | Directory | Scale | The question it answers |
 | --- | --- | --- | --- |
-| 1 | [`application/`](application) -- Task Manager | One developer | Is *my* data access correct? Loading/error/success, optimistic updates, retry, dedup, caching -- the individual-developer feature surface, on one capability. |
-| 2 | [`team-service/`](team-service) -- Project Management Service | One team | Do *our* data capabilities compose without silently duplicating work? Capability-per-file ownership, real cross-capability composition that stays analyzable, a real duplicate-network-fetch finding. |
-| 3 | [`enterprise-platform/`](enterprise-platform) -- Atlas | An organization | Can we *prove*, to someone who wasn't in the room, what data exists, how it's handled, and where the governance gaps actually are? Three independently-owned capabilities, a real running service, and generated litigation-evidence/audit-prep reports. |
+| 1 | [`application/`](https://github.com/MaverickCER/data-cap/tree/main/examples/application) -- Task Manager | One developer | Is *my* data access correct? Loading/error/success, optimistic updates, retry, dedup, caching -- the individual-developer feature surface, on one capability. |
+| 2 | [`team-service/`](https://github.com/MaverickCER/data-cap/tree/main/examples/team-service) -- Project Management Service | One team | Do *our* data capabilities compose without silently duplicating work? Capability-per-file ownership, real cross-capability composition that stays analyzable, a real duplicate-network-fetch finding. |
+| 3 | [`enterprise-platform/`](https://github.com/MaverickCER/data-cap/tree/main/examples/enterprise-platform) -- Atlas | An organization | Can we *prove*, to someone who wasn't in the room, what data exists, how it's handled, and where the governance gaps actually are? Three independently-owned capabilities, a real running service, and generated litigation-evidence/audit-prep reports. |
 
 Tier 2 is what Tier 1 becomes once a second developer, and a second
 capability, join the picture. Tier 3 is what Tier 2 becomes once that one
@@ -59,7 +59,7 @@ schema migration story, and no opinion about your database -- it sits
 **above** whatever you already use to move data, describing the contract
 your application code actually depends on:
 
-```
+```text
         ┌─────────────────────────────────────────┐
         │   fields / getters / mutators /          │
         │   subscriptions  +  documentData()        │   <- what data-cap is
@@ -75,7 +75,7 @@ your application code actually depends on:
 ```
 
 Swap Tier 3's MongoDB for Postgres, or its native SSE for Socket.IO (see
-[`test/integration/subscriptions/socket-io-subscription/`](../test/integration/subscriptions/socket-io-subscription)),
+[`test/integration/subscriptions/socket-io-subscription/`](https://github.com/MaverickCER/data-cap/tree/main/test/integration/subscriptions/socket-io-subscription)),
 and not one line of any `*.capability.ts` file changes -- every example's
 own `src/server/`/backend module is deliberately isolated for exactly this
 reason (see each example's own README). Reading these examples as "how do I
@@ -141,17 +141,17 @@ another simulated fetch.
 
 | Example | Side | Demonstrates |
 | --- | --- | --- |
-| [`application`](application) | Client | The batteries-included `createData` (`data-cap/runtime`) -- fields/getters/mutators/subscriptions declared together via a shared, type-checked schema; dedup, optimistic mutation + `withRetry`, request cancellation, caching |
-| [`team-service`](team-service) | Client | Capability-per-file ownership; `projectData` composing `memberData` directly for a real, proven cross-capability dependency; `assignmentsData` independently duplicating the same endpoint, caught by `DUPLICATE_ENDPOINT_ACROSS_CAPABILITIES`; identity-stable array reconciliation via `createDataStore` |
-| [`enterprise-platform`](enterprise-platform) | Server | Atlas -- a real TanStack Start + MongoDB/Mongoose service with three independently-owned capabilities (`identityData`/`projectsData`/`billingData`), declared per-endpoint `handling` (plaintext/masked/redacted/hashed/encrypted) feeding a real field-lifecycle table, and two generated reports (`litigation-evidence`, `audit-prep`) plus a real `--strict-docs`/`--strict-flow` CI guard proven against a synthetic gap |
+| [`application`](https://github.com/MaverickCER/data-cap/tree/main/examples/application) | Client | The batteries-included `createData` (`data-cap/runtime`) -- fields/getters/mutators/subscriptions declared together via a shared, type-checked schema; dedup, optimistic mutation + `withRetry`, request cancellation, caching |
+| [`team-service`](https://github.com/MaverickCER/data-cap/tree/main/examples/team-service) | Client | Capability-per-file ownership; `projectData` composing `memberData` directly for a real, proven cross-capability dependency; `assignmentsData` independently duplicating the same endpoint, caught by `DUPLICATE_ENDPOINT_ACROSS_CAPABILITIES`; identity-stable array reconciliation via `createDataStore` |
+| [`enterprise-platform`](https://github.com/MaverickCER/data-cap/tree/main/examples/enterprise-platform) | Server | Atlas -- a real TanStack Start + MongoDB/Mongoose service with three independently-owned capabilities (`identityData`/`projectsData`/`billingData`), declared per-endpoint `handling` (plaintext/masked/redacted/hashed/encrypted) feeding a real field-lifecycle table, and two generated reports (`litigation-evidence`, `audit-prep`) plus a real `--strict-docs`/`--strict-flow` CI guard proven against a synthetic gap |
 
-See [`test/integration/README.md`](../test/integration/README.md) for the
+See [`test/integration/README.md`](https://github.com/MaverickCER/data-cap/blob/main/test/integration/README.md) for the
 16 mechanism-level fixtures, and each example's own README for its full
 walkthrough.
 
 ## Framework integration
 
-[**nextjs-app**](nextjs-app/) — a deliberately minimal Next.js todo app, not a fourth tier in the
+[**nextjs-app**](https://github.com/MaverickCER/data-cap/tree/main/examples/nextjs-app) — a deliberately minimal Next.js todo app, not a fourth tier in the
 table above. Where the three tiers grow one work-management system from an individual developer's
 project to an organization's, this one proves `data-cap`'s client-side `createData()` capability
 works correctly inside a real Next.js app, wired to a real server-side user/admin authorization

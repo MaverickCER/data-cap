@@ -18,7 +18,7 @@ refetches.
 `DataStatus = "idle" | "loading" | "success" | "error" | "retrying"`, with
 an explicit, defined transition set:
 
-```
+```text
 idle → loading → success
 success → loading → success                       (refetch / re-run)
 loading | success → error                          (operation fails)

@@ -12,7 +12,7 @@ capability works correctly inside a real Next.js app, wired to a real
 server-side authorization boundary — and documenting what that actually took,
 including a real bug found while building it.
 
-```
+```text
 src/
   features/todos/
     data.schema.ts       <- createData + documentData, one schema for both

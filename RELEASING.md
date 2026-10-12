@@ -8,7 +8,7 @@ For what semver actually covers, see [`VERSIONING.md`](VERSIONING.md).
 
 Releases are fully automated by [Changesets](https://github.com/changesets/changesets)
 and npm's [OIDC trusted publishing](https://docs.npmjs.com/trusted-publishers)
-via [`.github/workflows/release.yml`](.github/workflows/release.yml). **No
+via [`.github/workflows/release.yml`](https://github.com/MaverickCER/data-cap/blob/main/.github/workflows/release.yml). **No
 `NPM_TOKEN` secret exists in this repository** and none is needed — npm
 verifies the workflow's OIDC identity against a one-time trusted-publisher
 registration on npmjs.com (see [First-time setup](#first-time-setup)).
@@ -29,13 +29,13 @@ The loop:
    there are no pending changesets, so `changesets/action` runs its
    `publish` step: `npm run release` (`changeset publish`), which runs
    `prepublishOnly` (`npm run verify`) and then publishes to npm over OIDC.
-4. On a successful publish, the workflow force-updates the floating `v1` git
-   tag to the release commit, so the `uses: maverickcer/data-cap@v1` GitHub
-   Action reference in the README and [`action.yml`](action.yml) keeps
-   pointing at the latest compatible build. `v1` tracks the _composite
-   Action's_ interface (`action.yml` inputs/outputs), which is versioned
-   independently of the npm package's pre-1.0 semver — every successful
-   publish rolls it forward until `action.yml` itself has a breaking change.
+4. On a successful publish, the workflow force-updates the floating major
+   git tag (`v0` while the package is 0.x, `v1` from 1.0.0) to the release
+   commit, so the `uses: maverickcer/data-cap@v0` GitHub Action reference
+   keeps pointing at the latest compatible build. The floating tag tracks the
+   _composite Action's_ interface (`action.yml` inputs/outputs) within one
+   major version — every successful publish rolls it forward until
+   `action.yml` itself has a breaking change.
 
 `CHANGELOG.md` is generated — never hand-edit it. Fix a wrong entry by
 correcting the offending changeset before the "Version Packages" PR is
@@ -99,12 +99,13 @@ publish --access public`), then confirm the next push to `main` produces
 
 ### C. Published to npm, but a later workflow step failed
 
-e.g. the publish succeeded but the `v1` tag roll failed. The release itself
+e.g. the publish succeeded but the floating major tag (`v0` or `v1`) roll failed. The release itself
 is done and correct. Just fix the trailing step manually:
 
 ```bash
 git checkout main && git pull
-git tag -f v1 && git push origin v1 --force
+git tag -f v0 && git push origin v0 --force   # while the package is 0.x
+git tag -f v1 && git push origin v1 --force   # from 1.0.0
 ```
 
 Do **not** re-run the whole workflow — `changeset publish` is idempotent and

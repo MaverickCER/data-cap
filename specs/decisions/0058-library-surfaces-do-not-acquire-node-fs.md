@@ -47,7 +47,7 @@ Audit of data-cap:
 
 ### The invariant
 
-```
+```text
 Library entrypoints (., ./runtime, ./runtime/*, ./helpers, ./build, ./evidence)
     → MUST NOT acquire node:fs -- the capability is always supplied by the caller
 

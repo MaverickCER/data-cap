@@ -161,7 +161,7 @@ No first-party integration/adapter packages (TanStack Query, Socket.IO, a
 particular database driver, ...) ship from this repository — see
 [ADR 0037](decisions/0037-no-first-party-integration-packages.md).
 Integration patterns are demonstrated end-to-end in
-[`test/integration/`](../test/integration/) instead
+[`test/integration/`](https://github.com/MaverickCER/data-cap/tree/main/test/integration) instead
 (`adoption-patterns/tanstack-query-integration/`,
 `subscriptions/socket-io-subscription/`), so application authors copy and
 adapt code directly rather than depending on an opinionated adapter layer
@@ -472,7 +472,7 @@ output).
   npm projects, each proving one specific mechanism against the actual
   built package — relocated out of `examples/` when it narrowed to the 3
   flagships above, with zero coverage lost. See
-  [`test/integration/README.md`](../test/integration/README.md).
+  [`test/integration/README.md`](https://github.com/MaverickCER/data-cap/blob/main/test/integration/README.md).
 
 ## Architectural decisions
 

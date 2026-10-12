@@ -28,8 +28,8 @@ rather than replacing any of them — see
 for two of them wired in directly.
 
 It is not a fetching library, a state manager, or a database abstraction —
-see the README's "Framework independence"/"State-management independence"
-framing. It composes with your existing ones.
+see the README's "Why not just use your existing data library?"
+section. It composes with your existing ones.
 
 ## Security & threat model
 
