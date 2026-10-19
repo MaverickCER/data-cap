@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.8.0
+
+### Minor Changes
+
+- 58599e5: `data-cap/build` exports the return types of the five reference projections (`ProjectAuditEvidenceOutput`, `ProjectClassificationEvidenceOutput`, `ProjectComplianceEvidenceOutput`, `ProjectPrivacyEvidenceOutput`, `ProjectRetentionEvidenceOutput`), so a caller can name what `projectAuditEvidence()` and the others return, and `UNOWNED` is typed as its literal `"(unowned)"`, so an owner can be narrowed against it.
+
+### Patch Changes
+
+- 58599e5: fix(eslint-plugin): an `allow` pattern written relative to the working directory, such as `src/lib/**`, now matches the absolute path ESLint passes a rule (on Windows too), in `no-fields-escape`, `no-raw-external-io` and `no-node-fs`; a `**/`-prefixed pattern matched before and still does. `no-node-fs` also reports `node:fs` reached through a re-export or TypeScript's `import x = require()`. Each rule's documentation link now opens the guide's ESLint plugin section; the README anchor it pointed at did not exist.
+- fix(security): commit the Socket registry in the form the check writes it
+- fix(security): record the Socket alerts that only appear once a version is published
+- fix(security): give every v2 Socket record an explicit expires
+- fix(site): readable inline code in the hero; record the brief link that goes live on deploy
+- feat(ci): publish the mutation badge and the OpenSSF Scorecard result
+- 58599e5: `data-cap --help` is shorter and shows examples, with the options grouped by what they are for and no decision-record numbers. Shared build-tooling code (glob, path display, tsconfig path resolution, the generated-file banner, the no-node-fs rule) is now carried as managed copies of the standard's, so a fix lands once. The `/build` types change only in compatible ways: optional options also accept `undefined`, `DEFAULT_INCLUDE` is typed `readonly`, `generatedBanner()` takes an optional `regenerate` argument, and the five `project*Evidence` functions also expose the `project` step they are built from.
+
 ## 0.7.0
 
 ### Minor Changes
