@@ -42,33 +42,54 @@ export function shapeSignature(value: unknown, depth = 0): string {
   return typeof value
 }
 
-/** The fields of `a` that share both name and structural shape with some field of `b`. */
-function findDuplicatesBetween(a: CapabilityNode, b: CapabilityNode): readonly FieldNode[] {
-  const matches: FieldNode[] = []
-  for (const fieldA of a.fields) {
-    for (const fieldB of b.fields) {
-      if (fieldA.path[0] !== fieldB.path[0]) continue
-      if (shapeSignature(fieldA.shape) !== shapeSignature(fieldB.shape)) continue
-      matches.push(fieldA)
-      break
-    }
+/**
+ * The most pair findings either rule lists. Every pair of similar capabilities is a finding, so N alike capabilities
+ * are N(N-1)/2 of them -- millions at a few thousand -- and a report that size cannot even be serialized. Past this
+ * many, the rest are counted in one closing finding instead of listed.
+ */
+export const MAX_LISTED_PAIR_FINDINGS = 1000
+
+/** One closing finding standing in for the pair findings that were counted but not listed. */
+function omittedFinding(code: ReportFinding["code"], what: string, omitted: number): ReportFinding {
+  return {
+    code,
+    family: "structural",
+    severity: "info",
+    message: `${String(omitted)} more ${what} pair(s) are not listed: only the first ${String(MAX_LISTED_PAIR_FINDINGS)} are, because every pair of alike capabilities is a finding and the number grows with the square of how many there are.`,
   }
-  return matches
+}
+
+/** A field of one capability, with the name-and-shape key two capabilities share when they declare it alike. */
+interface KeyedField {
+  readonly field: FieldNode
+  readonly key: string
+}
+
+/** Each capability's top-level fields keyed by name and structural shape, worked out once rather than once per pair. */
+function keyedFields(capability: CapabilityNode): readonly KeyedField[] {
+  return capability.fields.map((field) => ({
+    field,
+    key: JSON.stringify([field.path[0], shapeSignature(field.shape)]),
+  }))
 }
 
 /**
  * Every unordered pair of *active* capabilities that are not in the same
  * `exclusiveGroup` -- the pairwise scan both structural rules in this module
- * share (see the module doc comment).
+ * share (see the module doc comment). What a rule needs to know about a
+ * capability is worked out once for it by `derive`, not once per pair.
  */
-function* activeCapabilityPairs(
+function* activeCapabilityPairs<T>(
   inventory: CapabilityInventory,
-): Generator<readonly [CapabilityNode, CapabilityNode]> {
-  const active = inventory.capabilities.filter((capability) => capability.active)
+  derive: (capability: CapabilityNode) => T,
+): Generator<readonly [readonly [CapabilityNode, T], readonly [CapabilityNode, T]]> {
+  const active = inventory.capabilities
+    .filter((capability) => capability.active)
+    .map((capability) => [capability, derive(capability)] as const)
   for (const [i, a] of active.entries()) {
     for (const b of active.slice(i + 1)) {
       // A shared exclusive group is exclusive-group.ts's concern, not these rules'.
-      if (a.exclusiveGroup !== undefined && a.exclusiveGroup === b.exclusiveGroup) continue
+      if (a[0].exclusiveGroup !== undefined && a[0].exclusiveGroup === b[0].exclusiveGroup) continue
       yield [a, b]
     }
   }
@@ -79,8 +100,18 @@ export function checkStructuralDuplication(
   inventory: CapabilityInventory,
 ): readonly ReportFinding[] {
   const findings: ReportFinding[] = []
-  for (const [a, b] of activeCapabilityPairs(inventory)) {
-    for (const field of findDuplicatesBetween(a, b)) {
+  let omitted = 0
+  const derive = (capability: CapabilityNode) => {
+    const keyed = keyedFields(capability)
+    return { keyed, keys: new Set(keyed.map(({ key }) => key)) }
+  }
+  for (const [[a, ofA], [b, ofB]] of activeCapabilityPairs(inventory, derive)) {
+    for (const { field, key } of ofA.keyed) {
+      if (!ofB.keys.has(key)) continue
+      if (findings.length >= MAX_LISTED_PAIR_FINDINGS) {
+        omitted += 1
+        continue
+      }
       findings.push({
         code: "DUPLICATE_FIELD_SHAPE_ACROSS_CAPABILITIES",
         family: "structural",
@@ -91,38 +122,37 @@ export function checkStructuralDuplication(
       })
     }
   }
-  return findings
+  return omitted === 0
+    ? findings
+    : [...findings, omittedFinding("DUPLICATE_FIELD_SHAPE_ACROSS_CAPABILITIES", "field", omitted)]
 }
 
 /** One capability's operation, paired with one of its own declared endpoints that has a `url`. */
 interface OperationEndpointRef {
   readonly operation: { readonly kind: OperationNode["kind"]; readonly name: string }
   readonly endpoint: DataFlowEndpoint
+  readonly url: string
 }
 
 function endpointsWithUrl(capability: CapabilityNode): readonly OperationEndpointRef[] {
   const operations = [...capability.getters, ...capability.mutators, ...capability.subscriptions]
   return operations.flatMap((op) =>
-    op.endpoints
-      .filter((endpoint) => endpoint.url !== undefined)
-      .map((endpoint) => ({ operation: { kind: op.kind, name: op.name }, endpoint })),
+    op.endpoints.flatMap((endpoint) =>
+      endpoint.url === undefined
+        ? []
+        : [{ operation: { kind: op.kind, name: op.name }, endpoint, url: endpoint.url }],
+    ),
   )
 }
 
-/** Every pair of (one of `a`'s endpoints, one of `b`'s endpoints) that declare the identical `url`. */
-function findDuplicateEndpointsBetween(
-  a: CapabilityNode,
-  b: CapabilityNode,
-): readonly { readonly a: OperationEndpointRef; readonly b: OperationEndpointRef }[] {
-  const endpointsA = endpointsWithUrl(a)
-  const endpointsB = endpointsWithUrl(b)
-  const matches: { readonly a: OperationEndpointRef; readonly b: OperationEndpointRef }[] = []
-  for (const refA of endpointsA) {
-    for (const refB of endpointsB) {
-      if (refA.endpoint.url === refB.endpoint.url) matches.push({ a: refA, b: refB })
-    }
+/** Endpoints grouped by their url, in declaration order within each. */
+type UrlIndex = ReadonlyMap<string, readonly OperationEndpointRef[]>
+function groupedByUrl(refs: readonly OperationEndpointRef[]): UrlIndex {
+  const byUrl = new Map<string, OperationEndpointRef[]>()
+  for (const ref of refs) {
+    byUrl.set(ref.url, [...(byUrl.get(ref.url) ?? []), ref])
   }
-  return matches
+  return byUrl
 }
 
 /**
@@ -136,17 +166,30 @@ function findDuplicateEndpointsBetween(
  */
 export function checkDuplicateEndpoints(inventory: CapabilityInventory): readonly ReportFinding[] {
   const findings: ReportFinding[] = []
-  for (const [a, b] of activeCapabilityPairs(inventory)) {
-    for (const { a: refA, b: refB } of findDuplicateEndpointsBetween(a, b)) {
-      findings.push({
-        code: "DUPLICATE_ENDPOINT_ACROSS_CAPABILITIES",
-        family: "structural",
-        severity: "info",
-        message: `Endpoint "${refA.endpoint.url}" is declared by both "${a.exportName}"'s ${refA.operation.kind} "${refA.operation.name}" and "${b.exportName}"'s ${refB.operation.kind} "${refB.operation.name}" -- possibly a duplicate network fetch across independently-declared capabilities; worth a look if that wasn't intentional.`,
-        capability: { file: a.file, exportName: a.exportName },
-        operation: refA.operation.name,
-      })
+  let omitted = 0
+  const derive = (capability: CapabilityNode) => {
+    const refs = endpointsWithUrl(capability)
+    return { refs, byUrl: groupedByUrl(refs) }
+  }
+  for (const [[a, ofA], [b, ofB]] of activeCapabilityPairs(inventory, derive)) {
+    for (const refA of ofA.refs) {
+      for (const refB of ofB.byUrl.get(refA.url) ?? []) {
+        if (findings.length >= MAX_LISTED_PAIR_FINDINGS) {
+          omitted += 1
+          continue
+        }
+        findings.push({
+          code: "DUPLICATE_ENDPOINT_ACROSS_CAPABILITIES",
+          family: "structural",
+          severity: "info",
+          message: `Endpoint "${refA.endpoint.url}" is declared by both "${a.exportName}"'s ${refA.operation.kind} "${refA.operation.name}" and "${b.exportName}"'s ${refB.operation.kind} "${refB.operation.name}" -- possibly a duplicate network fetch across independently-declared capabilities; worth a look if that wasn't intentional.`,
+          capability: { file: a.file, exportName: a.exportName },
+          operation: refA.operation.name,
+        })
+      }
     }
   }
-  return findings
+  return omitted === 0
+    ? findings
+    : [...findings, omittedFinding("DUPLICATE_ENDPOINT_ACROSS_CAPABILITIES", "endpoint", omitted)]
 }

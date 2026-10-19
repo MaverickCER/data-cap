@@ -1,99 +1,18 @@
-// `@typescript-eslint/utils` is an external optional peer (ADR 0068), resolved by the consumer's own
-// module loader, so its main entry is safe to import from; `RuleCreator` still comes from the
-// `eslint-utils` subpath to keep the loaded surface small.
-import { RuleCreator } from "@typescript-eslint/utils/eslint-utils"
-import { AST_NODE_TYPES, type TSESTree } from "@typescript-eslint/utils"
-import { globToRegExp } from "./glob.js"
-
-const createRule = RuleCreator(
-  (name) => `https://github.com/maverickcer/data-cap#eslint-plugin-${name}`,
-)
-
-export interface RuleOptions {
-  /** Glob-array of files this rule doesn't apply to -- a project's own
-   *  executable entry points (a CLI, a script) that legitimately construct
-   *  the concrete filesystem adapter. Empty by default -- populate it
-   *  explicitly; the rule never guesses at what counts as an executable
-   *  capability boundary. */
-  allow?: string[]
-}
-
-/** `"node:fs"`, `"fs"`, and their `/promises` subpaths -- every specifier that resolves to Node's filesystem module. */
-const FS_SPECIFIER = /^(node:)?fs(\/promises)?$/
-
-/** The specifier string if it names Node's filesystem module, else `undefined`. */
-function fsSpecifier(source: unknown): string | undefined {
-  const text = String(source)
-  return FS_SPECIFIER.test(text) ? text : undefined
-}
+import { createNoNodeFs } from "../_ipc/no-node-fs.js"
 
 /**
- * Flags any `import`/`require`/dynamic `import()` of `node:fs` in library
- * code, so a library surface acquires its filesystem capability from the
- * caller instead of reaching for `node:fs` itself (the same discipline
- * `repo-contract`'s ADR-0011 established for `child_process`/`process.env`).
- * See ADR 0058.
+ * Flags any `import`/`require`/dynamic `import()` of `node:fs` in library code, so a library surface acquires
+ * its filesystem capability from the caller instead of reaching for `node:fs` itself.
  *
  * @remarks
- * Nothing is exempt by default. data-cap's own config allows `src/cli/**`
- * (the executable capability boundary that builds the `node:fs/promises`
- * adapter); a consuming project sets its own `allow` for its own entry
- * points.
+ * Nothing is exempt by default. A package's own config allows its CLI folder (for example `src/cli/**`),
+ * which builds the `node:fs/promises` adapter, and a consuming project sets the `allow` option for its own CLI
+ * or script entry points. The rule itself lives in `../_ipc/no-node-fs.ts`, a managed copy of
+ * internal-package-contract's `runtime/no-node-fs.ts`; this supplies data-cap's documentation link and the decision
+ * record the message cites.
  */
-export const noNodeFs = createRule<[RuleOptions], "noNodeFs">({
-  name: "no-node-fs",
-  meta: {
-    type: "problem",
-    docs: {
-      description:
-        "Disallow importing node:fs in library code; accept a filesystem capability from the caller instead.",
-    },
-    schema: [
-      {
-        type: "object",
-        properties: { allow: { type: "array", items: { type: "string" } } },
-        additionalProperties: false,
-      },
-    ],
-    messages: {
-      noNodeFs:
-        "Importing '{{specifier}}' makes this a filesystem-acquiring surface. Accept a filesystem capability as an argument instead, and let an executable entry point construct the node:fs adapter (see ADR 0058 / GUIDE.md's ESLint plugin section for the allow-list escape hatch).",
-    },
-  },
-  defaultOptions: [{ allow: [] }],
-  create(context, [options]) {
-    const filename = context.filename
-    // `RuleCreator` merges `defaultOptions` onto the configured options, so `allow` is always set.
-    const allowPatterns = options.allow as readonly string[]
-    if (allowPatterns.some((p) => globToRegExp(p).test(filename))) return {}
-
-    return {
-      ImportDeclaration(node) {
-        const specifier = fsSpecifier(node.source.value)
-        if (specifier !== undefined) {
-          context.report({ node, messageId: "noNodeFs", data: { specifier } })
-        }
-      },
-      ImportExpression(node) {
-        // A source that is not a literal (an identifier, a template) has no `value`, so it never matches.
-        const specifier = fsSpecifier((node.source as TSESTree.Literal).value)
-        if (specifier !== undefined) {
-          context.report({ node, messageId: "noNodeFs", data: { specifier } })
-        }
-      },
-      CallExpression(node) {
-        // Only an `Identifier` callee has a `name`; any other callee reads `undefined` and is not `require`.
-        if (
-          (node.callee as TSESTree.Identifier).name !== "require" ||
-          node.arguments[0]?.type !== AST_NODE_TYPES.Literal
-        ) {
-          return
-        }
-        const specifier = fsSpecifier(node.arguments[0].value)
-        if (specifier !== undefined) {
-          context.report({ node, messageId: "noNodeFs", data: { specifier } })
-        }
-      },
-    }
-  },
+export const noNodeFs = createNoNodeFs({
+  docsUrl: () => "https://github.com/MaverickCER/data-cap/blob/main/GUIDE.md#eslint-plugin",
+  adr: "ADR 0058",
+  guide: "GUIDE.md's ESLint plugin section",
 })

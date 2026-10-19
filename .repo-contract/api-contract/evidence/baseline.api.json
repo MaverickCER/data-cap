@@ -1,7 +1,7 @@
 {
   "metadata": {
     "toolPackage": "@microsoft/api-extractor",
-    "toolVersion": "7.59.2",
+    "toolVersion": "7.59.4",
     "schemaVersion": 1011,
     "oldestForwardsCompatibleVersion": 1001,
     "tsdocConfig": {
@@ -191,7 +191,7 @@
         {
           "kind": "Function",
           "canonicalReference": "data-cap!defineEvidenceProjection:function(1)",
-          "docComment": "/**\n * Declares a projection: a pure transform from the `EvidenceModel` to any\n * consumer-defined output shape, built entirely from `schema`'s independent\n * per-field projector functions.\n *\n * `data-cap`'s own reference projections (`reference-projections.ts`'s\n * Classification/Privacy/Retention/Compliance/Audit Evidence) are built\n * through this exact function, with no privileged internal path -- a\n * consumer's own projection is a first-class citizen, not a lesser one.\n *\n * @remarks\n *\n * A per-field schema, rather than one monolithic `(evidence) => T` function,\n * is what makes automatic provenance possible at all: each projector runs\n * against its own read-tracking membrane, so `.project()` can say which\n * evidence a *specific output field* was derived from, not merely which\n * evidence the whole report touched. That is the difference between \"this\n * report read the Capability Model\" and \"this row's `sensitivity` came from`capability.capabilities.0.docs.sensitivity`\" -- the second is reviewable\n * evidence, the first is trivia.\n *\n * Superseded ADR 0050's earlier `(name, project)` signature, whose `name`\n * existed only to label a thrown error. That named-wrapper design predates\n * this mechanism and bought strictly less: the membrane below both enforces\n * the purity the old wrapper only documented, and produces provenance the\n * old wrapper had no way to compute.\n */\n",
+          "docComment": "/**\n * Declares a projection: a pure transform from the `EvidenceModel` to any\n * consumer-defined output shape, built entirely from `schema`'s independent\n * per-field projector functions.\n *\n * `data-cap`'s own reference projections (`reference-projections.ts`'s\n * Classification/Privacy/Retention/Compliance/Audit Evidence) are built\n * through this exact function, with no privileged internal path -- a\n * consumer's own projection is a first-class citizen, not a lesser one.\n *\n * @remarks\n *\n * A per-field schema, rather than one monolithic `(evidence) => T` function,\n * is what makes automatic provenance possible at all: each projector runs\n * against its own read-tracking membrane, so `.project()` can say which\n * evidence a *specific output field* was derived from, not merely which\n * evidence the whole report touched. That is the difference between \"this\n * report read the Capability Model\" and \"this row's `sensitivity` came from\n * `capability.capabilities.0.docs.sensitivity`\" -- the second is reviewable\n * evidence, the first is trivia.\n *\n * Superseded ADR 0050's earlier `(name, project)` signature, whose `name`\n * existed only to label a thrown error. That named-wrapper design predates\n * this mechanism and bought strictly less: the membrane below both enforces\n * the purity the old wrapper only documented, and produces provenance the\n * old wrapper had no way to compute.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -315,7 +315,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!EvidenceModel#change:member",
-              "docComment": "/**\n * Change Model, or `undefined` when no manifest diff was available -- see`computed.change` before reading absence as \"nothing changed.\" Not a\n * diffable input across two `EvidenceModel`s the way the other five\n * project-varying fields conceptually are -- it already IS a diff.\n */\n",
+              "docComment": "/**\n * Change Model, or `undefined` when no manifest diff was available -- see\n * `computed.change` before reading absence as \"nothing changed.\" Not a\n * diffable input across two `EvidenceModel`s the way the other five\n * project-varying fields conceptually are -- it already IS a diff.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -896,7 +896,7 @@
         {
           "kind": "TypeAlias",
           "canonicalReference": "data-cap!EvidenceProjector:type",
-          "docComment": "/**\n * A pure function from the full Evidence Model to one field of a\n * projection's output shape. Must not mutate `evidence` -- the membrane`defineEvidenceProjection()` wraps it in enforces that at runtime, see`createTrackingProxy()` below -- and must not perform I/O; `data-cap` can\n * enforce the read-only half of purity but not the \"no side effects\" half.\n */\n",
+          "docComment": "/**\n * A pure function from the full Evidence Model to one field of a\n * projection's output shape. Must not mutate `evidence` -- the membrane\n * `defineEvidenceProjection()` wraps it in enforces that at runtime, see\n * `createTrackingProxy()` below -- and must not perform I/O; `data-cap` can\n * enforce the read-only half of purity but not the \"no side effects\" half.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -944,7 +944,7 @@
         {
           "kind": "Interface",
           "canonicalReference": "data-cap!EvidenceProvenance:interface",
-          "docComment": "/**\n * Who/when/what produced a given `EvidenceModel` instance -- matching\n * env-cap's own `EvidenceProvenance` shape exactly, so a consumer reading\n * both packages' evidence artifacts reads one vocabulary, not two.\n *\n * `generatedAt`/`toolVersion` are required: every real caller can supply\n * both (the tool version is `data-cap`'s own installed version, read from\n * its `package.json` -- see `package-version.ts`), and a provenance stamp\n * that might be missing either one is a provenance stamp no consumer can\n * rely on. `commit` stays caller-supplied and explicitly `string |\n * undefined` (never omitted from the shape): `data-cap` never shells out to`git` itself, so an absent commit is a stated absence, never a guess --\n * ADR 0050's \"provenance is caller-supplied, never ambient-detected\"\n * convention, kept exactly where it still applies.\n */\n",
+          "docComment": "/**\n * Who/when/what produced a given `EvidenceModel` instance -- matching\n * env-cap's own `EvidenceProvenance` shape exactly, so a consumer reading\n * both packages' evidence artifacts reads one vocabulary, not two.\n *\n * `generatedAt`/`toolVersion` are required: every real caller can supply\n * both (the tool version is `data-cap`'s own installed version, read from\n * its `package.json` -- see `package-version.ts`), and a provenance stamp\n * that might be missing either one is a provenance stamp no consumer can\n * rely on. `commit` stays caller-supplied and explicitly `string |\n * undefined` (never omitted from the shape): `data-cap` never shells out to\n * `git` itself, so an absent commit is a stated absence, never a guess --\n * ADR 0050's \"provenance is caller-supplied, never ambient-detected\"\n * convention, kept exactly where it still applies.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",

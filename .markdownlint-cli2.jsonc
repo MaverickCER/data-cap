@@ -5,7 +5,7 @@
   // 1. `ignores` excludes docs/api-report/ -- the committed Markdown API
   //    report produced verbatim by `typedoc --options typedoc.markdown.json`
   //    (typedoc-plugin-markdown), drift-checked against that exact output by
-  //    scripts/check-api-report.mjs. Its MD049 (emphasis style) violations
+  //    internal-package-contract tool api-report. Its MD049 (emphasis style) violations
   //    come from the plugin's own generated syntax (e.g. the `*extends*`
   //    constraint marker in type-parameter tables) and from asterisk-style
   //    emphasis in our own JSDoc prose that TypeDoc passes through verbatim;

@@ -5,7 +5,7 @@ coverage
 api-docs
 # The rendered HTML API reference is generated fresh in CI's Pages deploy
 # job (never committed). The Markdown API report (docs/api-report/) IS
-# committed and drift-checked -- see scripts/check-api-report.mjs.
+# committed and drift-checked -- see internal-package-contract tool api-report.
 docs/api
 # Same "generated fresh in CI's Pages deploy job, never committed" treatment
 # as docs/api above -- built by internal-package-contract's shared
@@ -59,3 +59,12 @@ GEMINI.md
 
 # CodeScanning's exception registry lists weaknesses in the code, so it is never committed.
 .repo-contract/exceptions/code-scanning.json
+
+# A benchmark run outside CI is a gate, not a figure: only CI's results are committed.
+/.benchmark-local
+
+# Published figures, and the files beside them that say what each figure is: generated in CI, never committed.
+/docs/coverage.json
+/docs/mutation.json
+/docs/size.json
+/docs/*-badge.json

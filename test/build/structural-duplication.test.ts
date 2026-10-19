@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 import {
   checkDuplicateEndpoints,
   checkStructuralDuplication,
+  MAX_LISTED_PAIR_FINDINGS,
   shapeSignature,
 } from "../../src/build/structural-duplication.js"
 import type {
@@ -247,6 +248,101 @@ describe("checkStructuralDuplication", () => {
     )
     // a-b, a-c, b-c
     expect(findings).toHaveLength(3)
+  })
+})
+
+describe("how many pair findings are listed", () => {
+  // N alike capabilities are N(N-1)/2 pairs: 46 of them are 1035, five more than the cap.
+  const alike = (build: (index: number) => Partial<CapabilityNode>) =>
+    inventory(
+      Array.from({ length: 46 }, (_, index) =>
+        capability({ exportName: `c${String(index)}`, ...build(index) }),
+      ),
+    )
+  const pairs = (46 * 45) / 2
+
+  it("lists the first 1000 field pairs and counts the rest in one closing finding", () => {
+    const findings = checkStructuralDuplication(
+      alike(() => ({ fields: [field({ path: ["id"] })] })),
+    )
+    expect(MAX_LISTED_PAIR_FINDINGS).toBe(1000)
+    expect(findings).toHaveLength(MAX_LISTED_PAIR_FINDINGS + 1)
+    const closing = findings[MAX_LISTED_PAIR_FINDINGS]!
+    expect(closing.code).toBe("DUPLICATE_FIELD_SHAPE_ACROSS_CAPABILITIES")
+    expect(closing.family).toBe("structural")
+    expect(closing.severity).toBe("info")
+    expect(closing.message).toBe(
+      `${String(pairs - 1000)} more field pair(s) are not listed: only the first 1000 are, because every pair of alike capabilities is a finding and the number grows with the square of how many there are.`,
+    )
+    expect(closing.capability).toBeUndefined()
+    expect(findings[0]!.message).toContain('"c0" and "c1"')
+  })
+
+  it("lists every pair, with no closing finding, when there are exactly 1000", () => {
+    // 45 alike capabilities are 990 pairs; five of them also share a second field, which is ten more.
+    const some = Array.from({ length: 45 }, (_, index) =>
+      capability({
+        exportName: `c${String(index)}`,
+        fields:
+          index >= 1 && index <= 5
+            ? [field({ path: ["id"] }), field({ path: ["k"] })]
+            : [field({ path: ["id"] })],
+      }),
+    )
+    const findings = checkStructuralDuplication(inventory(some))
+    expect(findings).toHaveLength(MAX_LISTED_PAIR_FINDINGS)
+    expect(
+      findings.every((finding) => finding.message.includes("declared with the same shape")),
+    ).toBe(true)
+  })
+
+  it("lists the first 1000 endpoint pairs and counts the rest in one closing finding", () => {
+    const endpoint = {
+      direction: "input",
+      kind: "api",
+      name: "svc",
+      url: "https://x.test/u",
+    } as const
+    const findings = checkDuplicateEndpoints(
+      alike(() => ({ getters: [operation({ name: "get", endpoints: [endpoint] })] })),
+    )
+    expect(findings).toHaveLength(MAX_LISTED_PAIR_FINDINGS + 1)
+    const closing = findings[MAX_LISTED_PAIR_FINDINGS]!
+    expect(closing.code).toBe("DUPLICATE_ENDPOINT_ACROSS_CAPABILITIES")
+    expect(closing.message).toBe(
+      `${String(pairs - 1000)} more endpoint pair(s) are not listed: only the first 1000 are, because every pair of alike capabilities is a finding and the number grows with the square of how many there are.`,
+    )
+  })
+
+  it("lists every endpoint pair, in declaration order, when a capability repeats a url between others", () => {
+    const at = (url: string) => ({ direction: "input", kind: "api", name: "svc", url }) as const
+    const findings = checkDuplicateEndpoints(
+      inventory([
+        capability({
+          exportName: "a",
+          getters: [
+            operation({ name: "one", endpoints: [at("u1")] }),
+            operation({ name: "two", endpoints: [at("u2")] }),
+            operation({ name: "three", endpoints: [at("u1")] }),
+          ],
+        }),
+        capability({
+          exportName: "b",
+          getters: [
+            operation({ name: "x", endpoints: [at("u1")] }),
+            operation({ name: "y", endpoints: [at("u2")] }),
+            operation({ name: "z", endpoints: [at("u1")] }),
+          ],
+        }),
+      ]),
+    )
+    expect(findings.map((finding) => finding.message.replace(/ -- .*/, ""))).toEqual([
+      `Endpoint "u1" is declared by both "a"'s getter "one" and "b"'s getter "x"`,
+      `Endpoint "u1" is declared by both "a"'s getter "one" and "b"'s getter "z"`,
+      `Endpoint "u2" is declared by both "a"'s getter "two" and "b"'s getter "y"`,
+      `Endpoint "u1" is declared by both "a"'s getter "three" and "b"'s getter "x"`,
+      `Endpoint "u1" is declared by both "a"'s getter "three" and "b"'s getter "z"`,
+    ])
   })
 })
 

@@ -110,22 +110,40 @@ What the numbers **are** good for:
   after a change shows whether the change made the package slower. Look for movement larger than the
   run-to-run noise.
 - **Shape, not just level.** A change in growth class (O(n) becoming O(n²)) is a much bigger signal
-  than a 15% shift in a timing, and it survives machine differences, because it is a ratio between
-  sizes on the same run.
-- **Relative cost between functions.** Which function dominates the overhead is true on any machine,
-  even when the absolute times are not.
+  than a 15% shift in a timing, and it is far less sensitive to the machine than a time is, because it
+  is a ratio between sizes on the same run. It still assumes the same sizes, workload and runtime.
+- **Relative cost between functions.** Which function dominates the overhead is usually the same on
+  any machine, even when the absolute times are not.
 - **Order of magnitude.** Microseconds, milliseconds or seconds per operation: that distinction is
   stable enough to plan with.
+
+## What the numbers do not prove
+
+- **A complexity class is empirical.** It describes how measured cost grew across the sizes that were
+  tested. It is not a proof of asymptotic complexity, and it can be wrong when the tested range is
+  narrow or a fixed cost dominates.
+- **R² is fit quality, not confidence.** It says how closely the measurements follow the fitted
+  power law. A high R² does not show the class is right, and a low one means no class is reported.
+- **The overhead is a difference.** `end-to-end:overhead` is not measured; it is the with-package
+  time minus the baseline time at each size, never below zero. A difference of two noisy medians is
+  noisier than either, so the history page shows it for reading only and gives it no complexity class,
+  and the pull-request summary does not report a class shift for it. Read the baseline and with-package
+  groups, and the "What the package adds" table, instead.
+- **A relative cost is still a measurement.** Dividing by the baseline removes much of the machine,
+  not all of it: compilation, garbage collection and contention on the runner still move it. Below the
+  timer-noise floor the percentage is not shown.
+- **One run per commit is not a repeat.** The history holds one measurement for each recorded commit.
+  A trend is more convincing than a point; a single point moving is ordinary noise.
 
 ## Noise
 
 Even on a quiet machine, repeated runs differ. Very fast operations (microseconds and below) are the
 noisiest in relative terms; the engine batches them and reports the per-operation value, but a 30-40%
 swing between runs on those is ordinary. Slow operations are steadier. Read the median and p95
-together, and trust a trend over a single run. The pull-request summary highlights movements beyond a
-per-benchmark threshold; those raw comparisons are prompts to look, never automatic failures (they
-compare two runs on different machines). What can fail a pull request is limited to things measured
-within one run: see "History, pull requests and the history page".
+together, and trust a trend over a single run. The pull-request summary shows the change against the last
+run, but never judges it: a raw comparison is between two runs on different machines. What can fail a pull request is limited to growth classes and
+baseline-relative ratios, which are far less sensitive to the machine than a raw time: see "History, pull
+requests and the history page".
 
 ## How the documentation is done
 
@@ -147,22 +165,32 @@ If a section reads as vague, that is a documentation bug: open an issue or fix i
 
 When a pull request touches benchmarked code, CI re-runs the suite and posts a summary: the end-to-end
 change first, then any function whose growth class shifted, then ordinary timing movements beyond
-their thresholds. Two gates can fail the run, because only they are properties of a single run and
-so survive a change of machine: a function whose measured growth class **differs** from its
-documented big-O, and the package's overhead _relative to its own baseline_ growing past an allowance
-(50% for millisecond-scale work, 70% for microsecond-scale work, which is noisier) against both the
-last run on main and the last release. Raw time against another run is a highlight only.
+their thresholds. Three gates can fail the run. None of them compares a raw time with another run's, because
+two runs are on different machines. Two compare growth classes, which describe the shape of the curve and
+not the speed of the machine: the measured class against the documented big-O (a function whose class
+**differs** fails), and against the class at the last release (a function whose class has gotten **worse**
+fails, unless `.repo-contract/exceptions/benchmark-complexity.json` records a person's acceptance of it).
+The third is a ratio: the package's overhead _relative to its own baseline_, measured in the same run,
+growing past an allowance (50% for millisecond-scale work, 70% for microsecond-scale work, which is
+noisier) against both the last run on main and the last release. A function whose big-O could not be
+determined (too few sizes, or no difference between them) is a **warning**: nothing is known to be wrong, but
+nothing is checked. Raw time against another run is shown, never judged.
 
 After a merge, a job measures the merge commit and records it -- the results file and a history entry
-naming the commit, pull request and version -- through its own small pull request. A generated history
-page charts every function across runs, with every figure also available as a table.
+naming the commit, pull request and version -- through its own small pull request. Each entry also keeps
+how noisy that run was (standard deviation, p95 and iteration count for every size) and the processor it
+ran on, so a reader can judge later whether a change is larger than the run's own spread. A generated
+history page opens with why the benchmarks exist and what they do and do not show, then charts every
+function across runs, with every figure also available as a table, and shows the baseline, the
+with-package time and the difference side by side.
 
 ## Glossary
 
 - **Operation** -- one unit of the work the package performs, as defined by the suite.
 - **Size / `n`** -- how much that operation processes (records, calls, files).
 - **Baseline** -- the same operation with no package, using an empty or minimal function.
-- **Overhead / added** -- with-package time minus baseline time: the package's own cost.
+- **Overhead / added** -- with-package time minus baseline time: the package's own cost. Derived from the
+  two measured groups, never below zero, and not itself classified.
 - **Median / p95** -- the middle sample, and the value 95% of samples beat.
 - **Heap Δ** -- memory the operation left allocated.
 - **Batch** -- the number of back-to-back repetitions inside one sample for very fast operations.

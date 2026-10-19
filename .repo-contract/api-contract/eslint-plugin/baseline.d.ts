@@ -1,5 +1,6 @@
 import { RuleListener } from '@typescript-eslint/utils/ts-eslint';
 import { RuleModule } from '@typescript-eslint/utils/ts-eslint';
+import { TSESLint } from '@typescript-eslint/utils';
 
 /**
  * Flags a capability's whole `.fields` (or a bare `getSnapshot()` result)
@@ -39,22 +40,20 @@ import { RuleModule } from '@typescript-eslint/utils/ts-eslint';
  * `no-raw-external-io`'s own doc comment draws for its own structural
  * check. `options.allow` exempts whole files by glob.
  */
-export declare const noFieldsEscape: RuleModule<"prop" | "argument" | "exported" | "spread", [RuleOptions], unknown, RuleListener> & {
+export declare const noFieldsEscape: RuleModule<"prop" | "spread" | "argument" | "exported", [RuleOptions], unknown, RuleListener> & {
     name: string;
 };
 
 /**
- * Flags any `import`/`require`/dynamic `import()` of `node:fs` in library
- * code, so a library surface acquires its filesystem capability from the
- * caller instead of reaching for `node:fs` itself (the same discipline
- * `repo-contract`'s ADR-0011 established for `child_process`/`process.env`).
- * See ADR 0058.
+ * Flags any `import`/`require`/dynamic `import()` of `node:fs` in library code, so a library surface acquires
+ * its filesystem capability from the caller instead of reaching for `node:fs` itself.
  *
  * @remarks
- * Nothing is exempt by default. data-cap's own config allows `src/cli/**`
- * (the executable capability boundary that builds the `node:fs/promises`
- * adapter); a consuming project sets its own `allow` for its own entry
- * points.
+ * Nothing is exempt by default. A package's own config allows its CLI folder (for example `src/cli/**`),
+ * which builds the `node:fs/promises` adapter, and a consuming project sets the `allow` option for its own CLI
+ * or script entry points. The rule itself lives in `../_ipc/no-node-fs.ts`, a managed copy of
+ * internal-package-contract's `runtime/no-node-fs.ts`; this supplies data-cap's documentation link and the decision
+ * record the message cites.
  */
 export declare const noNodeFs: RuleModule<"noNodeFs", [RuleOptions_2], unknown, RuleListener> & {
     name: string;
@@ -85,7 +84,7 @@ export declare const noNodeFs: RuleModule<"noNodeFs", [RuleOptions_2], unknown, 
  * about a specific HTTP client library; `options.allow` exempts whole files
  * by glob, for a project's own transport layer or scripts.
  */
-export declare const noRawExternalIo: RuleModule<"noRawExternalIo", [RuleOptions_3], unknown, RuleListener> & {
+export declare const noRawExternalIo: TSESLint.RuleModule<"noRawExternalIo", [RuleOptions_3], unknown, TSESLint.RuleListener> & {
     name: string;
 };
 
@@ -103,7 +102,7 @@ declare const plugin: {
     /** Every rule this plugin ships, keyed by its flat-config rule name. */
     rules: {
         /** See {@link noFieldsEscape}. */
-        "no-fields-escape": RuleModule<"prop" | "argument" | "exported" | "spread", [RuleOptions], unknown, RuleListener> & {
+        "no-fields-escape": RuleModule<"prop" | "spread" | "argument" | "exported", [RuleOptions], unknown, RuleListener> & {
             name: string;
         };
         /** See {@link noNodeFs}. */
@@ -192,7 +191,7 @@ declare interface RuleOptions_3 {
  * Those are outside what static analysis can reliably decide; the runtime
  * coordinator's own behavior must stay correct independent of this rule.
  */
-export declare const stableOperationReference: RuleModule<"inlineFunctionLiteral" | "recreatedPerCall", [], unknown, RuleListener> & {
+export declare const stableOperationReference: TSESLint.RuleModule<"inlineFunctionLiteral" | "recreatedPerCall", [], unknown, TSESLint.RuleListener> & {
     name: string;
 };
 

@@ -13,7 +13,7 @@
 // one phase, not two.
 
 import { pathToFileURL } from "node:url"
-import { snapshotMemory } from "../../benchmark-fixtures/measure.mjs"
+import { snapshotMemory } from "internal-package-contract/benchmark"
 
 const [, , indexPath] = process.argv
 

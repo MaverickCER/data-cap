@@ -71,7 +71,7 @@ into a consumer's repo is theirs and unaffected.
   and a generator, and expands from there.
 - `src/cli/init.ts` uses `node:fs` directly — consistent with ADR 0058's
   carve-out (`src/cli/**` is executable-context source); the file is
-  bundled into the `bin` target, so `verify-no-ambient-fs`'s tarball scan
+  bundled into the `bin` target, so the `AmbientCapabilities` check's tarball scan
   exempts it exactly as it does `src/cli/index.ts`.
 - The scaffolded templates are plain string constants. If the public
   `buildData`/`documentData`/`generateDataArtifacts` API changes shape, the

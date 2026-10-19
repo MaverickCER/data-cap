@@ -822,11 +822,12 @@ is deep-frozen at a cost proportional to what actually changed, not to
 total state size (see
 [ADR 0044](specs/decisions/0044-snapshots-deep-frozen-amortized.md)).
 Every consumer-facing entry point carries a hard gzip budget, enforced in
-CI (`scripts/check-size.mjs`) — see [`PERFORMANCE.md`](PERFORMANCE.md) for
+CI (`ci/size-budgets.mjs`) — see [`PERFORMANCE.md`](PERFORMANCE.md) for
 current numbers and methodology. `benchmarks/performance-runtime` and
 `benchmarks/performance-buildtime` (run via `npm run benchmark`, and on
-every PR via `.github/workflows/ci.yml (benchmark-pr job)`) produce highlighting-only
-micro-benchmark numbers — never a merge gate.
+every PR via `.github/workflows/ci.yml (benchmark-pr job)`) report raw times without
+judging them; a run fails only when a function's growth class or the package's relative
+overhead regresses (see [`PERFORMANCE.md`](PERFORMANCE.md)).
 
 | Operation                                     | Cost                                                       | Contrast with a naive full-state-replace pattern                                                                                                                     |
 | --------------------------------------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

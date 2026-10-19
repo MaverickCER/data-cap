@@ -1,7 +1,7 @@
 {
   "metadata": {
     "toolPackage": "@microsoft/api-extractor",
-    "toolVersion": "7.59.3",
+    "toolVersion": "7.59.4",
     "schemaVersion": 1011,
     "oldestForwardsCompatibleVersion": 1001,
     "tsdocConfig": {
@@ -208,7 +208,7 @@
             },
             {
               "kind": "Content",
-              "text": "<\"prop\" | \"argument\" | \"exported\" | \"spread\", ["
+              "text": "<\"prop\" | \"spread\" | \"argument\" | \"exported\", ["
             },
             {
               "kind": "Reference",
@@ -241,7 +241,7 @@
         {
           "kind": "Variable",
           "canonicalReference": "data-cap!noNodeFs:var",
-          "docComment": "/**\n * Flags any `import`/`require`/dynamic `import()` of `node:fs` in library\n * code, so a library surface acquires its filesystem capability from the\n * caller instead of reaching for `node:fs` itself (the same discipline\n * `repo-contract`'s ADR-0011 established for `child_process`/`process.env`).\n * See ADR 0058.\n *\n * @remarks\n *\n * Nothing is exempt by default. data-cap's own config allows `src/cli/**`\n * (the executable capability boundary that builds the `node:fs/promises`\n * adapter); a consuming project sets its own `allow` for its own entry\n * points.\n */\n",
+          "docComment": "/**\n * Flags any `import`/`require`/dynamic `import()` of `node:fs` in library code, so a library surface acquires\n * its filesystem capability from the caller instead of reaching for `node:fs` itself.\n *\n * @remarks\n *\n * Nothing is exempt by default. A package's own config allows its CLI folder (for example `src/cli/**`),\n * which builds the `node:fs/promises` adapter, and a consuming project sets the `allow` option for its own CLI\n * or script entry points. The rule itself lives in `../_ipc/no-node-fs.ts`, a managed copy of\n * internal-package-contract's `runtime/no-node-fs.ts`; this supplies data-cap's documentation link and the decision\n * record the message cites.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -258,7 +258,7 @@
             },
             {
               "kind": "Content",
-              "text": "<\"noNodeFs\", ["
+              "text": "<\"noNodeFs\", [import(\"../_ipc/no-node-fs.js\")."
             },
             {
               "kind": "Reference",
@@ -298,12 +298,8 @@
               "text": "noRawExternalIo: "
             },
             {
-              "kind": "Content",
-              "text": "import(\"@typescript-eslint/utils/ts-eslint\")."
-            },
-            {
               "kind": "Reference",
-              "text": "RuleModule",
+              "text": "TSESLint.RuleModule",
               "canonicalReference": "@typescript-eslint/utils!RuleModule:interface"
             },
             {
@@ -317,11 +313,11 @@
             },
             {
               "kind": "Content",
-              "text": "], unknown, import(\"@typescript-eslint/utils/ts-eslint\")."
+              "text": "], unknown, "
             },
             {
               "kind": "Reference",
-              "text": "RuleListener",
+              "text": "TSESLint.RuleListener",
               "canonicalReference": "@typescript-eslint/utils!RuleListener:type"
             },
             {
@@ -335,7 +331,7 @@
           "name": "noRawExternalIo",
           "variableTypeTokenRange": {
             "startIndex": 1,
-            "endIndex": 8
+            "endIndex": 7
           }
         },
         {
@@ -358,7 +354,7 @@
             },
             {
               "kind": "Content",
-              "text": "<\"prop\" | \"argument\" | \"exported\" | \"spread\", [import(\"./no-fields-escape.js\")."
+              "text": "<\"prop\" | \"spread\" | \"argument\" | \"exported\", [import(\"./no-fields-escape.js\")."
             },
             {
               "kind": "Reference",
@@ -385,7 +381,7 @@
             },
             {
               "kind": "Content",
-              "text": "<\"noNodeFs\", [import(\"./no-node-fs.js\")."
+              "text": "<\"noNodeFs\", [import(\"../_ipc/no-node-fs.js\")."
             },
             {
               "kind": "Reference",
@@ -470,21 +466,17 @@
               "text": "stableOperationReference: "
             },
             {
-              "kind": "Content",
-              "text": "import(\"@typescript-eslint/utils/ts-eslint\")."
-            },
-            {
               "kind": "Reference",
-              "text": "RuleModule",
+              "text": "TSESLint.RuleModule",
               "canonicalReference": "@typescript-eslint/utils!RuleModule:interface"
             },
             {
               "kind": "Content",
-              "text": "<\"inlineFunctionLiteral\" | \"recreatedPerCall\", [], unknown, import(\"@typescript-eslint/utils/ts-eslint\")."
+              "text": "<\"inlineFunctionLiteral\" | \"recreatedPerCall\", [], unknown, "
             },
             {
               "kind": "Reference",
-              "text": "RuleListener",
+              "text": "TSESLint.RuleListener",
               "canonicalReference": "@typescript-eslint/utils!RuleListener:type"
             },
             {
@@ -498,7 +490,7 @@
           "name": "stableOperationReference",
           "variableTypeTokenRange": {
             "startIndex": 1,
-            "endIndex": 6
+            "endIndex": 5
           }
         }
       ]

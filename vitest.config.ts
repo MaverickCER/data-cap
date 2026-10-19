@@ -40,6 +40,7 @@ export default defineConfig({
         "src/build/findings.ts",
         "src/build/dependency-types.ts",
         "src/build/types.ts",
+        "src/_ipc/**",
       ],
       // "json" (not just "json-summary") is load-bearing: it's what actually
       // writes coverage/coverage-final.json, the per-file raw coverage data

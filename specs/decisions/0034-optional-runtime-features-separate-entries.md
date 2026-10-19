@@ -35,7 +35,7 @@ namespaces sharing one file.
   of one, e.g. a plain `<script type="module">` import).
 - Each entry point can independently evolve its own dependency footprint
   (should either ever need one) without affecting the other's size budget
-  (ADR-adjacent — see `scripts/check-size.mjs`'s per-entry budgets).
+  (ADR-adjacent — see `ci/size-budgets.mjs`'s per-entry budgets).
 - The regression test for their independence is cheap and direct (file
   content inspection) rather than needing a real bundler invocation, since
   the guarantee is structural rather than something a bundler has to earn.

@@ -137,7 +137,7 @@ starting position differs:
   consumer would use.
 - **Evidence Model composition ships inside the existing `./build` entry
   point, not a new `./evidence` entry**, for this initial build-out. A new
-  tsup entry point carries a checked gzip budget (`scripts/check-size.mjs`);
+  tsup entry point carries a checked gzip budget (`ci/size-budgets.mjs`);
   Evidence Model isn't meaningfully separable from `./build`'s own
   dependency graph, and no concrete need for independent tree-shaking has
   emerged yet. Revisited only if a real bundle-size constraint does.

@@ -10,6 +10,16 @@ build`'s public export surface, verified via `npm run verify` and a
 git-stash export-list diff before/after; implemented in data-cap by
 copying that folder verbatim as the seed for `src/build/resolution/`.
 
+**Amended (internal-package-contract managed copies).** The decision to avoid a shared _runtime
+dependency_ stands: neither package imports a shared package at runtime. What changed is that code known to
+be identical is no longer maintained twice. internal-package-contract owns the canonical source of the
+path-alias resolver (`resolve-tsconfig-paths`), the build filesystem types, the TypeScript loader and its
+error, `glob`, `displayPath` and the generated-file banner, and each package carries a byte-identical copy in
+`src/_ipc/`, kept current by `internal-package-contract sync` and checked by the `ManagedFiles` check. The
+package's own `src/build/**` files are thin wrappers that bind the package's name. The other resolution
+modules (`resolve-import`, `resolve-within-root`, `resolve-package-schema`) stay independent, because their
+result shapes differ between the two packages.
+
 ## Context
 
 data-cap's build tooling needs exactly the same specifier-resolution

@@ -11,7 +11,7 @@ document covers the judgement calls CI can't make.
 A change is ready to merge when all of the following hold:
 
 - CI is green — `npm run verify` (typecheck, lint, format, build, schema
-  generation, coverage thresholds, `npm run size`, `verify:no-ambient-fs`,
+  generation, coverage thresholds, `npm run size`, the `AmbientCapabilities` check,
   the API-report drift check) plus the Bun/Deno cross-runtime conformance
   suite.
 - Every invariant in §2 that the change touches is still true, and the
@@ -137,7 +137,7 @@ data-cap commits `schemas/*.json`, example `expected/` golden trees, and
   runs against untrusted repo content. Anything that could execute that
   content, or read/traverse outside the declared discovery roots, is a
   vulnerability, not a bug.
-- `verify:no-ambient-fs` enforces that library surfaces acquire no ambient
+- the `AmbientCapabilities` check enforces that library surfaces acquire no ambient
   filesystem capability; `src/build` receives its filesystem explicitly
   ([ADR 0058](specs/decisions/0058-library-surfaces-do-not-acquire-node-fs.md)).
   A library surface reaching for `node:fs` directly breaks this.

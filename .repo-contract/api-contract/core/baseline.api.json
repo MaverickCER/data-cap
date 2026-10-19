@@ -1,7 +1,7 @@
 {
   "metadata": {
     "toolPackage": "@microsoft/api-extractor",
-    "toolVersion": "7.59.3",
+    "toolVersion": "7.59.4",
     "schemaVersion": 1011,
     "oldestForwardsCompatibleVersion": 1001,
     "tsdocConfig": {
@@ -3038,45 +3038,155 @@
           }
         },
         {
-          "kind": "Variable",
-          "canonicalReference": "data-cap!fields:var",
+          "kind": "Class",
+          "canonicalReference": "data-cap!fields:class",
           "docComment": "/**\n * Field-default authoring helpers, recognized only inside a `buildData`/`createData` schema.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
-              "text": "fields: "
-            },
-            {
-              "kind": "Content",
-              "text": "{\n    nullable<T>(defaultInner: T): "
-            },
-            {
-              "kind": "Reference",
-              "text": "NullableMarker",
-              "canonicalReference": "data-cap!NullableMarker:interface"
-            },
-            {
-              "kind": "Content",
-              "text": "<T>;\n    optional<T>(defaultInner: T): "
-            },
-            {
-              "kind": "Reference",
-              "text": "OptionalMarker",
-              "canonicalReference": "data-cap!OptionalMarker:interface"
-            },
-            {
-              "kind": "Content",
-              "text": "<T>;\n}"
+              "text": "export declare class fields "
             }
           ],
           "fileUrlPath": "src/core/fields.ts",
-          "isReadonly": true,
           "releaseTag": "Public",
+          "isAbstract": false,
           "name": "fields",
-          "variableTypeTokenRange": {
-            "startIndex": 1,
-            "endIndex": 6
-          }
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "Method",
+              "canonicalReference": "data-cap!fields.nullable:member(1)",
+              "docComment": "/**\n * Infers the underlying type from `defaultInner`; the runtime default is always `null`.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "static nullable<T>(defaultInner: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "T"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "NullableMarker",
+                  "canonicalReference": "data-cap!NullableMarker:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<T>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "typeParameters": [
+                {
+                  "typeParameterName": "T",
+                  "constraintTokenRange": {
+                    "startIndex": 0,
+                    "endIndex": 0
+                  },
+                  "defaultTypeTokenRange": {
+                    "startIndex": 0,
+                    "endIndex": 0
+                  }
+                }
+              ],
+              "isStatic": true,
+              "returnTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 5
+              },
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "defaultInner",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                }
+              ],
+              "isOptional": false,
+              "isAbstract": false,
+              "name": "nullable"
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "data-cap!fields.optional:member(1)",
+              "docComment": "/**\n * Infers the underlying type from `defaultInner`; the runtime default is always `undefined`.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "static optional<T>(defaultInner: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "T"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "OptionalMarker",
+                  "canonicalReference": "data-cap!OptionalMarker:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<T>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "typeParameters": [
+                {
+                  "typeParameterName": "T",
+                  "constraintTokenRange": {
+                    "startIndex": 0,
+                    "endIndex": 0
+                  },
+                  "defaultTypeTokenRange": {
+                    "startIndex": 0,
+                    "endIndex": 0
+                  }
+                }
+              ],
+              "isStatic": true,
+              "returnTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 5
+              },
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "defaultInner",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                }
+              ],
+              "isOptional": false,
+              "isAbstract": false,
+              "name": "optional"
+            }
+          ],
+          "implementsTokenRanges": []
         },
         {
           "kind": "TypeAlias",

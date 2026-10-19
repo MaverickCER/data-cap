@@ -173,6 +173,12 @@ ruleTester.run("no-fields-escape", noFieldsEscape as unknown as Rule.RuleModule,
       filename: "/project/src/dev-tools/debug-panel.tsx",
       options: [{ allow: ["**/dev-tools/**"] }],
     },
+    // ESLint passes an absolute path; a pattern written relative to the working directory still matches it.
+    {
+      code: `const el = <Child {...userData.fields} />;`,
+      filename: `${process.cwd()}/src/dev-tools/debug-panel.tsx`,
+      options: [{ allow: ["src/dev-tools/**"] }],
+    },
   ],
   invalid: [
     // -- JSX spread attribute, the motivating case: a component receiving a

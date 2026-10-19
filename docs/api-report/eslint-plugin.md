@@ -125,18 +125,16 @@ check. `options.allow` exempts whole files by glob.
 const noNodeFs: RuleModuleWithName<"noNodeFs", [RuleOptions], unknown, RuleListener>;
 ```
 
-Flags any `import`/`require`/dynamic `import()` of `node:fs` in library
-code, so a library surface acquires its filesystem capability from the
-caller instead of reaching for `node:fs` itself (the same discipline
-`repo-contract`'s ADR-0011 established for `child_process`/`process.env`).
-See ADR 0058.
+Flags any `import`/`require`/dynamic `import()` of `node:fs` in library code, so a library surface acquires
+its filesystem capability from the caller instead of reaching for `node:fs` itself.
 
 #### Remarks
 
-Nothing is exempt by default. data-cap's own config allows `src/cli/**`
-(the executable capability boundary that builds the `node:fs/promises`
-adapter); a consuming project sets its own `allow` for its own entry
-points.
+Nothing is exempt by default. A package's own config allows its CLI folder (for example `src/cli/**`),
+which builds the `node:fs/promises` adapter, and a consuming project sets the `allow` option for its own CLI
+or script entry points. The rule itself lives in `../_ipc/no-node-fs.ts`, a managed copy of
+internal-package-contract's `runtime/no-node-fs.ts`; this supplies data-cap's documentation link and the decision
+record the message cites.
 
 ***
 

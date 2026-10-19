@@ -2,9 +2,9 @@
   <rect width="1200" height="630" fill="#0B1220"/>
   <rect x="0" y="0" width="14" height="630" fill="#2563EB"/>
 
-  <text x="90" y="240" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace" font-size="64" font-weight="700" fill="#F8FAFC">env-cap</text>
+  <text x="90" y="240" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace" font-size="64" font-weight="700" fill="#F8FAFC">data-cap</text>
 
-  <text x="90" y="300" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="30" font-weight="400" fill="#94A3B8">Capability-owned environment contracts</text>
+  <text x="90" y="300" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="30" font-weight="400" fill="#94A3B8">Capability-owned data contracts</text>
   <text x="90" y="342" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="30" font-weight="400" fill="#94A3B8">for scalable applications.</text>
 
   <rect x="90" y="400" width="46" height="46" rx="6" fill="none" stroke="#2563EB" stroke-width="2"/>
@@ -18,5 +18,5 @@
 
   <text x="280" y="430" font-family="ui-sans-serif, system-ui, sans-serif" font-size="20" fill="#64748B">local ownership, global visibility</text>
 
-  <text x="90" y="560" font-family="ui-monospace, monospace" font-size="20" fill="#475569">github.com/maverickcer/env-cap</text>
+  <text x="90" y="560" font-family="ui-monospace, monospace" font-size="20" fill="#475569">github.com/maverickcer/data-cap</text>
 </svg>

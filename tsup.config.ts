@@ -107,7 +107,7 @@ const bundles: Options[] = [
     // `BuildFileSystem` adapter (`src/cli/filesystem.ts`, re-exported through
     // `src/node/index.ts`). An executable-context entry like `bin` /
     // `./eslint-plugin`: it legitimately bundles `node:fs/promises`, and
-    // `scripts/verify-no-ambient-fs.mjs` exempts its resolved target. See ADR 0058.
+    // the `AmbientCapabilities` check exempts its resolved target. See ADR 0058.
     entry: { node: "src/node/index.ts" },
     format: ["esm", "cjs"],
     platform: "node",

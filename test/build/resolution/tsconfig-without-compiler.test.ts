@@ -4,13 +4,13 @@ import { createInMemoryBuildFs } from "../../support/build-filesystem.js"
 
 // No usable compiler (the bundled TypeScript 6 stripped from an install): the loader hands back a
 // module with no classic API.
-vi.mock("../../../src/build/typescript.js", () => ({ ts: { version: "7.0.2" } }))
+vi.mock("../../../src/_ipc/typescript.js", () => ({ ts: { version: "7.0.2" } }))
 
 describe("loadTsconfigPaths with no usable compiler", () => {
   it("explains itself before reading a tsconfig.json, instead of failing with a raw TypeError", async () => {
     const fs = createInMemoryBuildFs({ "/repo/tsconfig.json": '{ "compilerOptions": {} }' })
     await expect(loadTsconfigPaths("/repo", undefined, fs)).rejects.toThrow(
-      /classic compiler API.*typescript 7\.0\.2/s,
+      /^data-cap's build-time scanner needs.*typescript 7\.0\.2.*Reinstall data-cap with/s,
     )
   })
 

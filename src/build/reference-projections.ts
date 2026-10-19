@@ -98,7 +98,8 @@ function projectClassificationEvidenceSchema() {
   return { disclaimer, entries: classificationEntries }
 }
 
-type ProjectClassificationEvidenceOutput = OutputOf<
+/** What {@link projectClassificationEvidence} returns, so a caller can name it. */
+export type ProjectClassificationEvidenceOutput = OutputOf<
   ReturnType<typeof projectClassificationEvidenceSchema>
 >
 
@@ -136,7 +137,8 @@ function projectPrivacyEvidenceSchema() {
   return { disclaimer, entries: privacyEntries }
 }
 
-type ProjectPrivacyEvidenceOutput = OutputOf<ReturnType<typeof projectPrivacyEvidenceSchema>>
+/** What {@link projectPrivacyEvidence} returns, so a caller can name it. */
+export type ProjectPrivacyEvidenceOutput = OutputOf<ReturnType<typeof projectPrivacyEvidenceSchema>>
 
 function projectPrivacyEvidenceWithSources(
   evidence: EvidenceModel,
@@ -187,7 +189,10 @@ function projectRetentionEvidenceSchema() {
   return { disclaimer, entries: retentionEntries }
 }
 
-type ProjectRetentionEvidenceOutput = OutputOf<ReturnType<typeof projectRetentionEvidenceSchema>>
+/** What {@link projectRetentionEvidence} returns, so a caller can name it. */
+export type ProjectRetentionEvidenceOutput = OutputOf<
+  ReturnType<typeof projectRetentionEvidenceSchema>
+>
 
 function projectRetentionEvidenceWithSources(
   evidence: EvidenceModel,
@@ -228,7 +233,10 @@ function projectComplianceEvidenceSchema() {
   return { disclaimer, entries: complianceEntries }
 }
 
-type ProjectComplianceEvidenceOutput = OutputOf<ReturnType<typeof projectComplianceEvidenceSchema>>
+/** What {@link projectComplianceEvidence} returns, so a caller can name it. */
+export type ProjectComplianceEvidenceOutput = OutputOf<
+  ReturnType<typeof projectComplianceEvidenceSchema>
+>
 
 function projectComplianceEvidenceWithSources(
   evidence: EvidenceModel,
@@ -287,7 +295,8 @@ function projectAuditEvidenceSchema() {
   }
 }
 
-type ProjectAuditEvidenceOutput = OutputOf<ReturnType<typeof projectAuditEvidenceSchema>>
+/** What {@link projectAuditEvidence} returns, so a caller can name it. */
+export type ProjectAuditEvidenceOutput = OutputOf<ReturnType<typeof projectAuditEvidenceSchema>>
 
 function projectAuditEvidenceWithSources(
   evidence: EvidenceModel,

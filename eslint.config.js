@@ -157,7 +157,7 @@ export default tseslint.config(
     // published `data-cap/eslint-plugin` ships `no-node-fs` for
     // a consumer to enforce the same discipline; this `no-restricted-imports`
     // block is data-cap's own, needing no plugin build.
-    // `scripts/verify-no-ambient-fs.mjs` is the release-blocking backstop
+    // the `AmbientCapabilities` check is the release-blocking backstop
     // that checks the actual tarball.
     files: ["src/**/*.ts"],
     ignores: ["src/cli/**"],

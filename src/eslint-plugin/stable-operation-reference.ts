@@ -13,7 +13,7 @@ type Scope = TSESLint.Scope.Scope
 type ScopeVariable = TSESLint.Scope.Variable
 
 const createRule = RuleCreator(
-  (name) => `https://github.com/maverickcer/data-cap#eslint-plugin-${name}`,
+  () => "https://github.com/MaverickCER/data-cap/blob/main/GUIDE.md#eslint-plugin",
 )
 
 /** The two `createData` operation-value keys this rule governs. */

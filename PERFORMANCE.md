@@ -7,29 +7,32 @@ doesn't, and why — not a marketing claim about speed.
 
 Two independent guarantees, checked separately: **bundle size** (a hard,
 CI-enforced budget per entry point) and **runtime behavior**
-(highlighting-only micro-benchmarks, never a merge gate). The first is a
-real commitment; the second is informational, since micro-benchmark
-numbers vary meaningfully by machine/Node version and don't reliably
-predict a specific application's real workload.
+(micro-benchmarks whose raw times are shown, never judged). The first is a
+byte-level commitment; the second gates only on properties of one run --
+a function's growth class against its documented big-O and against the
+last release, and the package's overhead relative to its own baseline --
+since raw micro-benchmark numbers vary meaningfully by machine/Node version
+and don't reliably predict a specific application's real workload.
 
 ## Bundle size budgets
 
-Enforced in `scripts/check-size.mjs`, run as a required step in CI's
-`verify` job (`npm run size`). Current budgets (gzip, minified via tsup's
-`minifyWhitespace` — identifiers are never mangled, so stack traces stay
-readable):
+Enforced in `ci/size-budgets.mjs`, run as a required step in CI's
+`verify` job (`npm run size`). Current budgets (gzip of the unminified
+build — the published code is never minified, so stack traces and
+reviews read the source as written):
 
-| Entry point       | Budget    | Current (approx.)        |
-| ----------------- | --------- | ------------------------ |
-| `.` (core)        | 2 KB      | ~1 KB                    |
-| `./runtime`       | 6 KB      | ~5.5 KB                  |
-| `./runtime/cache` | 1 KB      | ~0.4 KB                  |
-| `./runtime/retry` | 2 KB      | ~1.2 KB                  |
-| `./helpers`       | 3 KB      | ~1.8 KB                  |
-| `./build`         | unbounded | Node-only, dev-time-only |
-| `./eslint-plugin` | unbounded | Node-only, dev-time-only |
+| Entry point       | Budget | Current (approx.)        |
+| ----------------- | ------ | ------------------------ |
+| `.` (core)        | 2 KB   | ~1.1 KB                  |
+| `./runtime`       | 8 KB   | ~6.6 KB                  |
+| `./runtime/cache` | 1 KB   | ~0.5 KB                  |
+| `./runtime/retry` | 2 KB   | ~1.6 KB                  |
+| `./helpers`       | 3 KB   | ~2.5 KB                  |
+| `./build`         | 999 KB | Node-only, dev-time-only |
+| `./eslint-plugin` | 999 KB | Node-only, dev-time-only |
 
-`./runtime`'s budget was raised from 4 KB alongside
+`./runtime`'s budget was raised to 8 KB when minification was dropped, and
+before that from 4 KB alongside
 [ADR 0048](specs/decisions/0048-builddata-createdata-split-and-optional-operations-layer.md)'s
 `createData` — a deliberate, measured increase for genuinely new primary-API
 functionality (getter/mutator/subscription execution, dedup identity,
@@ -42,15 +45,16 @@ an edge-case extra — an application that only ever uses `createDataStore`/
 `coordinator` directly still pays for `createData`'s code as a result; that
 tradeoff is the point of this decision, not an oversight.
 
-`build` and `eslint-plugin` carry no budget deliberately — both are
-Node-only, dev/CI-only tooling that never ships to a browser bundle; their
-size is isolated from the runtime/helpers bundles by the tree-shaking test
-suite instead (`test/*/tree-shaking.test.ts`), not by a byte ceiling.
+`build` and `eslint-plugin` carry only a 999 KB ceiling, deliberately —
+both are Node-only, dev/CI-only tooling that never ships to a browser
+bundle; their size is isolated from the runtime/helpers bundles by the
+tree-shaking test suite instead (`test/*/tree-shaking.test.ts`), not by a
+tight byte budget.
 
 Run `npm run size` locally for exact, current numbers — the table above is
-a snapshot, not a live-updating source of truth. Budgets are ratcheted
-down (never up) as real measurements allow; see `scripts/check-size.mjs`'s
-own `BUDGETS` array for the authoritative current values.
+a snapshot, not a live-updating source of truth. A budget is raised only
+for a recorded reason (new primary functionality, or the unminified build);
+`ci/size-budgets.mjs` holds the authoritative current values.
 
 ## What's measured, and why
 
@@ -89,27 +93,23 @@ npm run build
 npm run benchmark
 ```
 
-`.github/workflows/ci.yml (benchmark-pr job)` runs this on every pull request and posts the results as a PR comment
-(marker-tagged, updated in place rather than duplicated on each push), diffed against the currently-committed
-`results.json` for each example — **highlighting-only, never a merge gate**. A run that regresses past its
-benchmark's own threshold in [`benchmarks/budgets.mjs`](https://github.com/MaverickCER/data-cap/blob/main/benchmarks/budgets.mjs)
-(15% for most; wider for the near-zero-cost `commitAuthoritative-leaf` check) is flagged with a ⚠️ in the
-rendered table, but no step in that workflow ever fails the job because of a performance number.
-
-When a PR's own diff touches benchmarked code (`src/` or the `benchmarks/` harness itself, not just the
-results/history files these runs produce), the same job goes further and commits the refreshed
-`results.json`/`RESULTS.md` straight onto the PR's own branch, appending one entry to each of
-`benchmarks/history/runtime.json` and `benchmarks/history/buildtime.json` — so main already carries fresh
-numbers the moment the PR merges, with no separate follow-up PR. A PR that doesn't touch benchmarked code
-still gets the comparison comment above, just without that commit. This is
+`.github/workflows/ci.yml (benchmark-pr job)` runs this on every pull request that touches benchmarked code and
+posts the results as a PR comment (marker-tagged, updated in place rather than duplicated on each push); it never
+commits to the PR's branch. No gate compares a raw time with another run's, because two runs are on different
+machines: a run fails when a function's measured growth class differs from its documented big-O, when it has
+gotten worse since the last release (unless `.repo-contract/exceptions/benchmark-complexity.json` records a
+person's acceptance), or when the package's overhead relative to its own baseline grows past the allowance in
+[`benchmarks/budgets.mjs`](https://github.com/MaverickCER/data-cap/blob/main/benchmarks/budgets.mjs) (the shared
+defaults; `GATES` overrides none of them). [READING-BENCHMARKS.md](benchmarks/READING-BENCHMARKS.md) describes the
+gates in full. A local run writes to `.benchmark-local/` (ignored) and gates the change without publishing a
+figure from a laptop; after a merge, a job measures the merge commit and records the results file and a history
+entry through its own small pull request. This is
 [`internal-package-contract`](https://github.com/MaverickCER/internal-package-contract)'s shared benchmark
-engine (`scripts/benchmark/append-history.mjs` / `render-summary.mjs`, called via its reusable
-`benchmark-pr.yml` workflow — see `.github/workflows/ci.yml`'s `benchmark-pr` job) — data-cap keeps only the
-measuring (`benchmarks/run-benchmarks.mjs` and each example's own `scripts/run-benchmark.mjs`) and its own
-`benchmark-fixtures/budgets.mjs` thresholds; everything downstream of a fresh `results.json` is shared,
-consumer-agnostic code. Each history entry is intentionally compact (median + per-tier `inputs`, plus
-commit/version/runner metadata) — the full per-run detail (min/max/p95/stdDev/memory) stays in that commit's
-own `results.json`, never duplicated here. A static history page (small-multiples charts, one per benchmark
+engine, called via its reusable `benchmark-pr.yml` workflow -- data-cap keeps only its suites
+(`benchmarks/performance-*/suite.mjs`); everything downstream of a fresh `results.json` is shared,
+consumer-agnostic code. Each history entry names the commit, pull request and version, and keeps how noisy
+that run was (standard deviation, p95 and iteration count for every size) and the processor it ran on, so a
+reader can judge whether a change is larger than the run's own spread. A static history page (small-multiples charts, one per benchmark
 group, annotated with its currently-inferred algorithmic complexity class) is rendered fresh at
 `docs/benchmarks/index.html` on every deploy — never committed, same treatment `docs/api/` already gets.
 

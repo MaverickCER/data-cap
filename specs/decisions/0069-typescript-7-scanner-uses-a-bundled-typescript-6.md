@@ -27,7 +27,7 @@ TypeScript 6 (`typescript@^6`, installed under the alias `@typescript/old`) as a
 - `@typescript/typescript6` (`^6.0.2`) is a dependency **and a `bundleDependencies` entry, together with
   its `@typescript/old` payload**: it ships inside this package's tarball, nested under the package's own
   `node_modules/`. It is the first runtime dependency of this package.
-- It belongs to the build entry alone. `scripts/verify-compiler-isolation.mjs` walks the static import
+- It belongs to the build entry alone. `internal-package-contract tool compiler-isolation` walks the static import
   graph of every built entry point and fails the build if the runtime, helpers, evidence, node or ESLint
   plugin entry can reach the bundled compiler or the loader's `node:module`, or any entry except the
   ESLint plugin (which runs inside the consumer's own ESLint process) can reach `typescript` itself -- and

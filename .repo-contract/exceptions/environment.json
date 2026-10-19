@@ -27,6 +27,20 @@
       "residualRisk": "If the page is never published, the link stays broken; the next DocsLinks run after the deploy would report it.",
       "revisitWhen": "The deploy that follows the merge has run; remove this record then.",
       "expires": "2026-12-01"
+    },
+    {
+      "id": "environment:DocsLinks:https://github.com/MaverickCER/data-cap/blob/main/ci/size-budgets.mjs",
+      "version": 2,
+      "justification": "ci/size-budgets.mjs is added by this change, so the link to it on the main branch returns 404 until the change is merged.",
+      "check": "DocsLinks",
+      "code": "https://github.com/MaverickCER/data-cap/blob/main/ci/size-budgets.mjs",
+      "ruleBroken": "Documentation links must resolve.",
+      "attempted": "Checked that ci/size-budgets.mjs exists on this branch and that the link names the path it will have on main; the live URL cannot resolve before the merge.",
+      "constraint": "A blob link on the main branch resolves only to files that are on main, and the file arrives with this change.",
+      "whyPreferable": "The alternative is to link a branch-specific URL that would break after the branch is deleted, or to drop the link for one release.",
+      "residualRisk": "If the file is later renamed without updating the link, it stays broken; the first DocsLinks run after the merge would report it.",
+      "revisitWhen": "This change has been merged to main; remove this record then.",
+      "expires": "2026-12-01"
     }
   ]
 }
