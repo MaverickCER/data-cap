@@ -1,0 +1,64 @@
+{
+  "entries": {
+    ".": {
+      "source": "src/core/",
+      "environment": "isomorphic, zero deps",
+      "tier": "Stable",
+      "purpose": "`buildData`, `documentData`, `fields.nullable`/`fields.optional`, `DataState`/`DataInfo`/`FieldInfo` types, error types"
+    },
+    "./runtime": {
+      "source": "src/runtime/",
+      "environment": "isomorphic, zero deps",
+      "tier": "Stable",
+      "purpose": "`createData`, `createDataStore`, `defaultCoordinator`/`createCoordinator`, `composeSignals`/`rejectOnAbort`"
+    },
+    "./runtime/cache": {
+      "source": "src/runtime/cache.ts",
+      "environment": "isomorphic",
+      "tier": "Stable",
+      "purpose": "`createDataCache` (optional, separately tree-shaken)"
+    },
+    "./runtime/retry": {
+      "source": "src/runtime/retry.ts",
+      "environment": "isomorphic",
+      "tier": "Stable",
+      "purpose": "`withRetry`, `isStillDefault` (optional, separately tree-shaken)"
+    },
+    "./helpers": {
+      "source": "src/helpers/",
+      "environment": "isomorphic",
+      "tier": "Stable",
+      "purpose": "`processors`, `identity`, `canonicalize`, `shape` namespaces"
+    },
+    "./build": {
+      "source": "src/build/",
+      "environment": "Node-only",
+      "tier": "Stable",
+      "purpose": "`discoverCapabilityFiles`/`parseCapabilityFile`/`linkCapabilityFiles`/`evaluateLiteral` (discovery), `buildInventory` (the `CapabilityInventory` model), the other canonical models (`buildLifecycleModel`/`buildDependencyModel`/`buildOwnershipModel`/`buildFindingModel`/`buildChangeModel`/`buildEvidenceModel`), the evidence cache (`getEvidenceModel`/`computeSourceFingerprint`), the report generators (`generateManifest`/`generateDocumentation`/`generateUsage`/`generateFlow`), and the orchestrator (`generateDataArtifacts`/`checkArtifacts`)"
+    },
+    "./node": {
+      "source": "src/node/",
+      "environment": "Node-only, dev/CI",
+      "tier": "Stable",
+      "purpose": "`nodeBuildFileSystem` \u2014 the ready-made `BuildFileSystem` adapter a build script hands to `./build`"
+    },
+    "./evidence": {
+      "source": "src/evidence/",
+      "environment": "isomorphic, zero deps",
+      "tier": "Stable",
+      "purpose": "`defineEvidenceProjection` \u2014 the schema-object projection definer with a read-only membrane and per-output-field provenance. Imports `EvidenceModel` with `import type` only, so it never pulls in `node:fs` or the TypeScript compiler API; `./build` re-exports it for backward compatibility."
+    },
+    "./eslint-plugin": {
+      "source": "src/eslint-plugin/",
+      "environment": "Node-only (ESLint)",
+      "tier": "Stable",
+      "purpose": "`stable-operation-reference`, `no-raw-external-io`, `no-fields-escape`, `no-node-fs` rules"
+    },
+    "./schema": {
+      "source": "schemas/",
+      "environment": "static JSON",
+      "tier": "Stable",
+      "purpose": "The published JSON Schema for `data-cap --json` output (`data-cap-report.schema.json`), plus the model schemas under `./schema/*`"
+    }
+  }
+}

@@ -245,7 +245,7 @@ control over execution, retry, and caching policy.
   behaviorally unchanged. All 15 pre-existing examples still pass,
   mechanically renamed (`createData` → `buildData` at their own call
   sites) with no logic changes.
-- `data-cap/runtime`'s gzip budget (`scripts/check-size.mjs`)
+- `data-cap/runtime`'s gzip budget (`ci/size-budgets.mjs`)
   rose from 4 KB to 6 KB (measured ~5.5 KB) to accommodate `createData`'s
   real code, landing in the same entry as `createDataStore`/`coordinator`
   rather than a separate tree-shaken sub-path the way `runtime/cache`/

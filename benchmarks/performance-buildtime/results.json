@@ -2733,19 +2733,37 @@
     "complexity": {
       "end-to-end:baseline": {
         "class": "linear",
-        "exponent": 0.9511515673093066,
+        "exponent": 0.9773924968184232,
+        "rSquared": 0.999489383792095,
+        "variable": "file",
         "notation": "O(n)",
         "points": 8
       },
       "end-to-end:with-package": {
-        "class": "linear",
-        "exponent": 1.0495506124024283,
-        "notation": "O(n)",
+        "class": "linearithmic",
+        "exponent": 1.1182179823474805,
+        "rSquared": 0.9914397401340713,
+        "variable": "file",
+        "unmeasured": [
+          {
+            "tier": "n1280",
+            "status": "failed",
+            "message": "Invalid string length"
+          },
+          {
+            "tier": "n2560",
+            "status": "failed",
+            "message": "Invalid string length"
+          }
+        ],
+        "notation": "O(n log n)",
         "points": 6
       },
       "fn:discover-capability-files": {
         "class": "linear",
-        "exponent": 0.9225647192663243,
+        "exponent": 0.9756036286474453,
+        "rSquared": 0.9998648145224566,
+        "variable": "file",
         "notation": "O(n)",
         "points": 8,
         "expected": "linear",
@@ -2754,7 +2772,9 @@
       },
       "fn:link-capability-files": {
         "class": "linear",
-        "exponent": 0.8193007775379516,
+        "exponent": 0.8218475095750079,
+        "rSquared": 0.9995102190063824,
+        "variable": "file",
         "notation": "O(n)",
         "points": 8,
         "expected": "linear",
@@ -2763,7 +2783,9 @@
       },
       "fn:build-inventory": {
         "class": "linear",
-        "exponent": 0.8643857679560321,
+        "exponent": 0.9453678207853693,
+        "rSquared": 0.9948377347530729,
+        "variable": "file",
         "notation": "O(n)",
         "points": 8,
         "expected": "linear",
@@ -2772,7 +2794,9 @@
       },
       "fn:build-ownership-model": {
         "class": "linear",
-        "exponent": 0.959981050034106,
+        "exponent": 0.9586758076868724,
+        "rSquared": 0.9957523895449504,
+        "variable": "file",
         "notation": "O(n)",
         "points": 8,
         "expected": "linear",
@@ -2781,7 +2805,9 @@
       },
       "fn:build-lifecycle-model": {
         "class": "linear",
-        "exponent": 0.9105855731202082,
+        "exponent": 1.0777062521738663,
+        "rSquared": 0.9420645135460014,
+        "variable": "file",
         "notation": "O(n)",
         "points": 8,
         "expected": "linear",
@@ -2790,7 +2816,9 @@
       },
       "fn:build-evidence-model": {
         "class": "constant",
-        "exponent": -0.021857354869708665,
+        "exponent": 0.01423178869159482,
+        "rSquared": 0.04067069404824242,
+        "variable": "file",
         "notation": "O(1)",
         "points": 8,
         "expected": "constant",
@@ -2799,7 +2827,9 @@
       },
       "fn:evidence-projection": {
         "class": "linear",
-        "exponent": 1.0117932046783358,
+        "exponent": 1.0809472298763467,
+        "rSquared": 0.9993294345139736,
+        "variable": "file",
         "notation": "O(n)",
         "points": 8,
         "expected": "linear",
@@ -2903,42 +2933,42 @@
             "n": 20,
             "calls": 1,
             "estimatedMs": 2.4091820000030566,
-            "shareOfOverhead": 0.03184391216834439,
+            "exclusiveMs": 2.4091820000030566,
             "shareOfTotal": 0.029268283201099306
           },
           {
             "n": 40,
             "calls": 1,
             "estimatedMs": 4.074517000000924,
-            "shareOfOverhead": 0.03057463689084567,
+            "exclusiveMs": 4.074517000000924,
             "shareOfTotal": 0.02832609560407658
           },
           {
             "n": 80,
             "calls": 1,
             "estimatedMs": 7.043131999998877,
-            "shareOfOverhead": 0.02871892999683797,
+            "exclusiveMs": 7.043131999998877,
             "shareOfTotal": 0.026636330485711752
           },
           {
             "n": 160,
             "calls": 1,
             "estimatedMs": 13.581364000005124,
-            "shareOfOverhead": 0.02746797049165367,
+            "exclusiveMs": 13.581364000005124,
             "shareOfTotal": 0.02544139015389196
           },
           {
             "n": 320,
             "calls": 1,
             "estimatedMs": 25.88976299999922,
-            "shareOfOverhead": 0.02267587063076766,
+            "exclusiveMs": 25.88976299999922,
             "shareOfTotal": 0.02119649794984815
           },
           {
             "n": 640,
             "calls": 1,
             "estimatedMs": 52.12428000000364,
-            "shareOfOverhead": 0.01701245648871679,
+            "exclusiveMs": 52.12428000000364,
             "shareOfTotal": 0.01615664355464681
           }
         ]
@@ -2952,42 +2982,42 @@
             "n": 20,
             "calls": 1,
             "estimatedMs": 28.181237999997393,
-            "shareOfOverhead": 0.37249193612852316,
+            "exclusiveMs": 28.181237999997393,
             "shareOfTotal": 0.34236369636684094
           },
           {
             "n": 40,
             "calls": 1,
             "estimatedMs": 43.01686000000336,
-            "shareOfOverhead": 0.3227928303364909,
+            "exclusiveMs": 43.01686000000336,
             "shareOfTotal": 0.29905377470433836
           },
           {
             "n": 80,
             "calls": 1,
             "estimatedMs": 76.23507000000245,
-            "shareOfOverhead": 0.310854551445928,
+            "exclusiveMs": 76.23507000000245,
             "shareOfTotal": 0.28831243246921373
           },
           {
             "n": 160,
             "calls": 1,
             "estimatedMs": 144.80785100000503,
-            "shareOfOverhead": 0.2928702726932596,
+            "exclusiveMs": 144.80785100000503,
             "shareOfTotal": 0.2712623735463089
           },
           {
             "n": 320,
             "calls": 1,
             "estimatedMs": 251.63028599999961,
-            "shareOfOverhead": 0.22039351276097932,
+            "exclusiveMs": 251.63028599999961,
             "shareOfTotal": 0.20601505086465474
           },
           {
             "n": 640,
             "calls": 1,
             "estimatedMs": 437.59846500000276,
-            "shareOfOverhead": 0.14282451182714248,
+            "exclusiveMs": 437.59846500000276,
             "shareOfTotal": 0.13563971375844688
           }
         ]
@@ -3001,42 +3031,42 @@
             "n": 20,
             "calls": 1,
             "estimatedMs": 0.27692966666654684,
-            "shareOfOverhead": 0.0036603809849680173,
+            "exclusiveMs": 0.27692966666654684,
             "shareOfTotal": 0.0033643186404232806
           },
           {
             "n": 40,
             "calls": 1,
             "estimatedMs": 0.4796395000012126,
-            "shareOfOverhead": 0.003599151396604928,
+            "exclusiveMs": 0.4796395000012126,
             "shareOfTotal": 0.0033344600924533523
           },
           {
             "n": 80,
             "calls": 1,
             "estimatedMs": 0.9656799999938812,
-            "shareOfOverhead": 0.003937636880747824,
+            "exclusiveMs": 0.9656799999938812,
             "shareOfTotal": 0.003652092793842745
           },
           {
             "n": 160,
             "calls": 1,
             "estimatedMs": 1.4872840000025462,
-            "shareOfOverhead": 0.0030079948541813003,
+            "exclusiveMs": 1.4872840000025462,
             "shareOfTotal": 0.0027860657083995065
           },
           {
             "n": 320,
             "calls": 1,
             "estimatedMs": 2.5537210000038613,
-            "shareOfOverhead": 0.002236708270491465,
+            "exclusiveMs": 2.5537210000038613,
             "shareOfTotal": 0.0020907855333039413
           },
           {
             "n": 640,
             "calls": 1,
             "estimatedMs": 4.7517900000093505,
-            "shareOfOverhead": 0.0015509014343924367,
+            "exclusiveMs": 4.7517900000093505,
             "shareOfTotal": 0.001472883218275262
           }
         ]
@@ -3050,42 +3080,42 @@
             "n": 20,
             "calls": 1,
             "estimatedMs": 0.0364918333329519,
-            "shareOfOverhead": 0.00048233912403251736,
+            "exclusiveMs": 0.0364918333329519,
             "shareOfTotal": 0.00044332612169391804
           },
           {
             "n": 40,
             "calls": 1,
             "estimatedMs": 0.06988563636365473,
-            "shareOfOverhead": 0.0005244125759455512,
+            "exclusiveMs": 0.06988563636365473,
             "shareOfTotal": 0.0004858458602548881
           },
           {
             "n": 80,
             "calls": 1,
             "estimatedMs": 0.13439185714274313,
-            "shareOfOverhead": 0.0005479934690174916,
+            "exclusiveMs": 0.13439185714274313,
             "shareOfTotal": 0.0005082548391032906
           },
           {
             "n": 160,
             "calls": 1,
             "estimatedMs": 0.2513607500004582,
-            "shareOfOverhead": 0.0005083708575788056,
+            "exclusiveMs": 0.2513607500004582,
             "shareOfTotal": 0.00047086337647191725
           },
           {
             "n": 320,
             "calls": 1,
             "estimatedMs": 0.534059999998135,
-            "shareOfOverhead": 0.0004677630872490355,
+            "exclusiveMs": 0.534059999998135,
             "shareOfTotal": 0.00043724624652055383
           },
           {
             "n": 640,
             "calls": 1,
             "estimatedMs": 1.1158790000044974,
-            "shareOfOverhead": 0.00036420345632108477,
+            "exclusiveMs": 1.1158790000044974,
             "shareOfTotal": 0.0003458821733976398
           }
         ]
@@ -3099,42 +3129,42 @@
             "n": 20,
             "calls": 1,
             "estimatedMs": 0.013571681817914148,
-            "shareOfOverhead": 0.00017938679758765686,
+            "exclusiveMs": 0.013571681817914148,
             "shareOfTotal": 0.00016487746752275983
           },
           {
             "n": 40,
             "calls": 1,
             "estimatedMs": 0.022769258064668504,
-            "shareOfOverhead": 0.00017085750227598538,
+            "exclusiveMs": 0.022769258064668504,
             "shareOfTotal": 0.0001582921805881643
           },
           {
             "n": 80,
             "calls": 1,
             "estimatedMs": 0.04424138888862217,
-            "shareOfOverhead": 0.0001803977762244734,
+            "exclusiveMs": 0.04424138888862217,
             "shareOfTotal": 0.00016731594063328978
           },
           {
             "n": 160,
             "calls": 1,
             "estimatedMs": 0.07914815789416407,
-            "shareOfOverhead": 0.00016007517842131497,
+            "exclusiveMs": 0.07914815789416407,
             "shareOfTotal": 0.00014826486978380908
           },
           {
             "n": 320,
             "calls": 1,
             "estimatedMs": 0.08622527272646865,
-            "shareOfOverhead": 0.00007552147655612457,
+            "exclusiveMs": 0.08622527272646865,
             "shareOfTotal": 0.00007059445915251312
           },
           {
             "n": 640,
             "calls": 1,
             "estimatedMs": 0.2658056000014767,
-            "shareOfOverhead": 0.00008675431496573319,
+            "exclusiveMs": 0.2658056000014767,
             "shareOfTotal": 0.00008239013246902569
           }
         ]
@@ -3148,45 +3178,261 @@
             "n": 20,
             "calls": 1,
             "estimatedMs": 0.0023613103448638113,
-            "shareOfOverhead": 0.00003121115765598066,
+            "exclusiveMs": 0.0023613103448638113,
             "shareOfTotal": 0.000028686707728628146
           },
           {
             "n": 40,
             "calls": 1,
             "estimatedMs": 0.0015871250001914126,
-            "shareOfOverhead": 0.000011909576173378293,
+            "exclusiveMs": 0.0015871250001914126,
             "shareOfTotal": 0.000011033713809767348
           },
           {
             "n": 80,
             "calls": 1,
             "estimatedMs": 0.0015756268657608403,
-            "shareOfOverhead": 0.000006424743659345019,
+            "exclusiveMs": 0.0015756268657608403,
             "shareOfTotal": 0.0000059588430145251596
           },
           {
             "n": 160,
             "calls": 1,
             "estimatedMs": 0.0018480869564328991,
-            "shareOfOverhead": 0.0000037377098489731786,
+            "exclusiveMs": 0.0018480869564328991,
             "shareOfTotal": 0.00000346194250422199
           },
           {
             "n": 320,
             "calls": 1,
             "estimatedMs": 0.0016152999999966206,
-            "shareOfOverhead": 0.0000014147805767786857,
+            "exclusiveMs": 0.0016152999999966206,
             "shareOfTotal": 0.0000013224803617676654
           },
           {
             "n": 640,
             "calls": 1,
             "estimatedMs": 0.0016260933332766095,
-            "shareOfOverhead": 5.307285218895848e-7,
+            "exclusiveMs": 0.0016260933332766095,
             "shareOfTotal": 5.040301827159213e-7
           }
         ]
+      },
+      {
+        "id": "generate-artifacts",
+        "group": "fn:generate-artifacts",
+        "description": "This is the end-to-end operation itself.",
+        "rows": []
+      },
+      {
+        "id": "compute-artifacts",
+        "group": "fn:compute-artifacts",
+        "description": "A read-only run, not part of generating the artifacts.",
+        "rows": []
+      },
+      {
+        "id": "check-artifacts",
+        "group": "fn:check-artifacts",
+        "description": "A CI gate, not part of generating the artifacts.",
+        "rows": []
+      },
+      {
+        "id": "compute-source-fingerprint",
+        "group": "fn:compute-source-fingerprint",
+        "description": "Run before a cached read, not while generating.",
+        "rows": []
+      },
+      {
+        "id": "get-evidence-model",
+        "group": "fn:get-evidence-model@cache-hit",
+        "description": "A cached read, not part of generating the artifacts.",
+        "rows": []
+      },
+      {
+        "id": "parse-capability-file",
+        "group": "fn:parse-capability-file",
+        "description": "Run once per capability file inside every generator; measured here on one file.",
+        "rows": []
+      },
+      {
+        "id": "generate-manifest",
+        "group": "fn:generate-manifest",
+        "description": "Run inside every artifact generation; measured on its own.",
+        "rows": []
+      },
+      {
+        "id": "generate-documentation",
+        "group": "fn:generate-documentation",
+        "description": "Run inside every artifact generation; measured on its own.",
+        "rows": []
+      },
+      {
+        "id": "generate-flow",
+        "group": "fn:generate-flow",
+        "description": "Run inside every artifact generation; measured on its own.",
+        "rows": []
+      },
+      {
+        "id": "diff-manifest-snapshots",
+        "group": "fn:diff-manifest-snapshots@first-run",
+        "description": "Run inside every artifact generation; measured on its own.",
+        "rows": []
+      },
+      {
+        "id": "project-audit-evidence",
+        "group": "fn:project-audit-evidence",
+        "description": "Not part of the end-to-end operation, which calls the generator; measured on its own.",
+        "rows": []
+      },
+      {
+        "id": "project-classification-evidence",
+        "group": "fn:project-classification-evidence",
+        "description": "Not part of the end-to-end operation, which calls the generator; measured on its own.",
+        "rows": []
+      },
+      {
+        "id": "project-compliance-evidence",
+        "group": "fn:project-compliance-evidence",
+        "description": "Not part of the end-to-end operation, which calls the generator; measured on its own.",
+        "rows": []
+      },
+      {
+        "id": "project-privacy-evidence",
+        "group": "fn:project-privacy-evidence",
+        "description": "Not part of the end-to-end operation, which calls the generator; measured on its own.",
+        "rows": []
+      },
+      {
+        "id": "project-retention-evidence",
+        "group": "fn:project-retention-evidence",
+        "description": "Not part of the end-to-end operation, which calls the generator; measured on its own.",
+        "rows": []
+      },
+      {
+        "id": "compute-expiring-entries",
+        "group": "fn:compute-expiring-entries",
+        "description": "Not part of the end-to-end operation, which calls the generator; measured on its own.",
+        "rows": []
+      },
+      {
+        "id": "build-ownership-matrix",
+        "group": "fn:build-ownership-matrix",
+        "description": "Not part of the end-to-end operation, which calls the generator; measured on its own.",
+        "rows": []
+      },
+      {
+        "id": "build-manifest-snapshot",
+        "group": "fn:build-manifest-snapshot",
+        "description": "Not part of the end-to-end operation, which calls the generator; measured on its own.",
+        "rows": []
+      },
+      {
+        "id": "check-duplicate-endpoints",
+        "group": "fn:check-duplicate-endpoints",
+        "description": "Not part of the end-to-end operation, which calls the generator; measured on its own.",
+        "rows": []
+      },
+      {
+        "id": "check-exclusive-groups",
+        "group": "fn:check-exclusive-groups",
+        "description": "Not part of the end-to-end operation, which calls the generator; measured on its own.",
+        "rows": []
+      },
+      {
+        "id": "check-ownership-and-sensitivity",
+        "group": "fn:check-ownership-and-sensitivity",
+        "description": "Not part of the end-to-end operation, which calls the generator; measured on its own.",
+        "rows": []
+      },
+      {
+        "id": "check-structural-duplication",
+        "group": "fn:check-structural-duplication",
+        "description": "Not part of the end-to-end operation, which calls the generator; measured on its own.",
+        "rows": []
+      },
+      {
+        "id": "find-manifest-export-collisions",
+        "group": "fn:find-manifest-export-collisions",
+        "description": "Not part of the end-to-end operation, which calls the generator; measured on its own.",
+        "rows": []
+      },
+      {
+        "id": "project-fields",
+        "group": "fn:project-fields",
+        "description": "Not part of the end-to-end operation, which calls the generator; measured on its own.",
+        "rows": []
+      },
+      {
+        "id": "project-getters",
+        "group": "fn:project-getters",
+        "description": "Not part of the end-to-end operation, which calls the generator; measured on its own.",
+        "rows": []
+      },
+      {
+        "id": "project-mutators",
+        "group": "fn:project-mutators",
+        "description": "Not part of the end-to-end operation, which calls the generator; measured on its own.",
+        "rows": []
+      },
+      {
+        "id": "project-operation-inventory",
+        "group": "fn:project-operation-inventory",
+        "description": "Not part of the end-to-end operation, which calls the generator; measured on its own.",
+        "rows": []
+      },
+      {
+        "id": "project-subscriptions",
+        "group": "fn:project-subscriptions",
+        "description": "Not part of the end-to-end operation, which calls the generator; measured on its own.",
+        "rows": []
+      },
+      {
+        "id": "render-manifest",
+        "group": "fn:render-manifest",
+        "description": "Not part of the end-to-end operation, which calls the generator; measured on its own.",
+        "rows": []
+      },
+      {
+        "id": "build-open-api-schema-artifact",
+        "group": "fn:build-open-api-schema-artifact",
+        "description": "Not part of the end-to-end operation, which calls the generator; measured on its own.",
+        "rows": []
+      },
+      {
+        "id": "render-documentation",
+        "group": "fn:render-documentation",
+        "description": "Not part of the end-to-end operation, which calls the generator; measured on its own.",
+        "rows": []
+      },
+      {
+        "id": "render-ownership-graph-dot",
+        "group": "fn:render-ownership-graph-dot",
+        "description": "Not part of the end-to-end operation, which calls the generator; measured on its own.",
+        "rows": []
+      },
+      {
+        "id": "build-flow-graph",
+        "group": "fn:build-flow-graph",
+        "description": "Not part of the end-to-end operation, which calls the generator; measured on its own.",
+        "rows": []
+      },
+      {
+        "id": "derive-usage-findings",
+        "group": "fn:derive-usage-findings",
+        "description": "Not part of the end-to-end operation, which calls the generator; measured on its own.",
+        "rows": []
+      },
+      {
+        "id": "render-usage-report",
+        "group": "fn:render-usage-report",
+        "description": "Not part of the end-to-end operation, which calls the generator; measured on its own.",
+        "rows": []
+      },
+      {
+        "id": "build-sarif-log",
+        "group": "fn:build-sarif-log",
+        "description": "Not part of the end-to-end operation, which calls the generator; measured on its own.",
+        "rows": []
       }
     ],
     "cost": {
@@ -3218,6 +3464,585 @@
           "highUsdPerMillion": 27.75615335271023,
           "opsPerSecondPerCore": 0.3263825704396417
         }
+      }
+    },
+    "coverage": {
+      "benchmarks": [
+        {
+          "id": "discover-capability-files",
+          "covers": {
+            "discoverCapabilityFiles": {
+              "options.exclude": "fixed: the default ignore list, whose patterns are tested against every path walked",
+              "options.fs": "fixed: the Node filesystem adapter, which is what every real build uses",
+              "options.include": "fixed: the default capability glob",
+              "options.root": "swept"
+            }
+          }
+        },
+        {
+          "id": "link-capability-files",
+          "covers": {
+            "linkCapabilityFiles": {
+              "files": "swept",
+              "options.fs": "fixed: the Node filesystem adapter, which is what every real build uses",
+              "options.packages": "not covered: resolving an allowlisted package reads that package's capabilities, and the fixtures allowlist none",
+              "options.root": "fixed: the generated fixture tree",
+              "options.tsconfig": "fixed: `false`, so no TypeScript program is built (see the type-information variable)"
+            }
+          }
+        },
+        {
+          "id": "build-inventory",
+          "covers": {
+            "buildInventory": {
+              "linkResult.capabilities": "swept",
+              "linkResult.root": "fixed: the generated fixture tree",
+              "linkResult.warnings": "fixed: none, the fixtures link without warnings"
+            }
+          }
+        },
+        {
+          "id": "build-ownership-model",
+          "covers": {
+            "buildOwnershipModel": {
+              "inventory.capabilities": "swept",
+              "inventory.schemaVersion": "fixed: one number, copied",
+              "inventory.warnings": "fixed: none, the fixtures link without warnings"
+            }
+          }
+        },
+        {
+          "id": "build-lifecycle-model",
+          "covers": {
+            "buildLifecycleModel": {
+              "inventory.capabilities": "swept",
+              "inventory.schemaVersion": "fixed: one number, copied",
+              "inventory.warnings": "fixed: none, the fixtures link without warnings",
+              "expiringWithinDays": "fixed: 30 days, the default window; the scan reads every capability once whatever the window",
+              "now": "fixed: one instant, because the clock only decides which entries are due"
+            }
+          }
+        },
+        {
+          "id": "build-evidence-model",
+          "covers": {
+            "buildEvidenceModel": {
+              "models.capability": "swept",
+              "models.change": "not covered: an optional model is held by reference like the others, so passing it adds constant work",
+              "models.dependency": "not covered: an optional model is held by reference like the others, so passing it adds constant work",
+              "models.finding": "not covered: an optional model is held by reference like the others, so passing it adds constant work",
+              "models.lifecycle": "swept",
+              "models.ownership": "swept",
+              "provenance.commit": "fixed: none, the commit is only copied",
+              "provenance.generatedAt": "fixed: one instant, which is only copied",
+              "provenance.toolVersion": "fixed: one short string, which is only copied"
+            }
+          }
+        },
+        {
+          "id": "generate-artifacts",
+          "covers": {
+            "generateDataArtifacts": {
+              "options.commit": "not covered: it calls the caller's own function once, whose cost is the caller's",
+              "options.exclude": "fixed: the default ignore list, whose patterns are tested against every path walked",
+              "options.expiringWithinDays": "fixed: 30 days, the default window; the scan reads every capability once whatever the window",
+              "options.fs": "fixed: the Node filesystem adapter, which is what every real build uses",
+              "options.generatedAt": "fixed: one instant, which is only printed in the headers",
+              "options.include": "fixed: the default capability glob",
+              "options.packages": "not covered: resolving an allowlisted package reads that package's capabilities, and the fixtures allowlist none",
+              "options.root": "swept",
+              "options.strict": "not covered: it only decides whether a finding fails the run, which the fixtures never raise",
+              "options.strictDocs": "not covered: it only decides whether a finding fails the run, which the fixtures never raise",
+              "options.strictFlow": "not covered: it only decides whether a finding fails the run, which the fixtures never raise",
+              "options.strictOwnership": "not covered: it only decides whether a finding fails the run, which the fixtures never raise",
+              "options.tsconfig": "fixed: `false`, so no TypeScript program is built (see the type-information variable)",
+              "options.docs": "fixed: requested, at one location",
+              "options.evidence": "fixed: requested, at one location",
+              "options.flow": "fixed: requested, at one folder",
+              "options.location": "fixed: requested, at one location",
+              "options.ownership": "fixed: requested, at one location"
+            }
+          }
+        },
+        {
+          "id": "compute-artifacts",
+          "covers": {
+            "computeDataArtifacts": {
+              "options.commit": "not covered: it calls the caller's own function once, whose cost is the caller's",
+              "options.exclude": "fixed: the default ignore list, whose patterns are tested against every path walked",
+              "options.expiringWithinDays": "fixed: 30 days, the default window; the scan reads every capability once whatever the window",
+              "options.fs": "fixed: the Node filesystem adapter, which is what every real build uses",
+              "options.generatedAt": "fixed: one instant, which is only printed in the headers",
+              "options.include": "fixed: the default capability glob",
+              "options.packages": "not covered: resolving an allowlisted package reads that package's capabilities, and the fixtures allowlist none",
+              "options.root": "swept",
+              "options.strict": "not covered: it only decides whether a finding fails the run, which the fixtures never raise",
+              "options.strictDocs": "not covered: it only decides whether a finding fails the run, which the fixtures never raise",
+              "options.strictFlow": "not covered: it only decides whether a finding fails the run, which the fixtures never raise",
+              "options.strictOwnership": "not covered: it only decides whether a finding fails the run, which the fixtures never raise",
+              "options.tsconfig": "fixed: `false`, so no TypeScript program is built (see the type-information variable)",
+              "options.docs": "fixed: requested, at one location",
+              "options.evidence": "fixed: requested, at one location",
+              "options.flow": "fixed: requested, at one folder",
+              "options.location": "fixed: requested, at one location",
+              "options.ownership": "fixed: requested, at one location"
+            }
+          }
+        },
+        {
+          "id": "check-artifacts",
+          "covers": {
+            "checkArtifacts": {
+              "options.commit": "not covered: it calls the caller's own function once, whose cost is the caller's",
+              "options.exclude": "fixed: the default ignore list, whose patterns are tested against every path walked",
+              "options.expiringWithinDays": "fixed: 30 days, the default window; the scan reads every capability once whatever the window",
+              "options.fs": "fixed: the Node filesystem adapter, which is what every real build uses",
+              "options.generatedAt": "fixed: one instant, which is only printed in the headers",
+              "options.include": "fixed: the default capability glob",
+              "options.packages": "not covered: resolving an allowlisted package reads that package's capabilities, and the fixtures allowlist none",
+              "options.root": "swept",
+              "options.strict": "not covered: it only decides whether a finding fails the run, which the fixtures never raise",
+              "options.strictDocs": "not covered: it only decides whether a finding fails the run, which the fixtures never raise",
+              "options.strictFlow": "not covered: it only decides whether a finding fails the run, which the fixtures never raise",
+              "options.strictOwnership": "not covered: it only decides whether a finding fails the run, which the fixtures never raise",
+              "options.tsconfig": "fixed: `false`, so no TypeScript program is built (see the type-information variable)",
+              "options.docs": "fixed: requested, at one location",
+              "options.evidence": "fixed: requested, at one location",
+              "options.flow": "fixed: requested, at one folder",
+              "options.location": "fixed: requested, at one location",
+              "options.ownership": "fixed: requested, at one location"
+            }
+          }
+        },
+        {
+          "id": "compute-source-fingerprint",
+          "covers": {
+            "computeSourceFingerprint": {
+              "options.exclude": "fixed: the default ignore list, whose patterns are tested against every path walked",
+              "options.fs": "fixed: the Node filesystem adapter, which is what every real build uses",
+              "options.include": "fixed: the default capability glob",
+              "options.packages": "not covered: resolving an allowlisted package reads that package's capabilities, and the fixtures allowlist none",
+              "options.root": "swept"
+            }
+          }
+        },
+        {
+          "id": "get-evidence-model",
+          "covers": {
+            "getEvidenceModel": {
+              "options.commit": "not covered: it calls the caller's own function once, whose cost is the caller's",
+              "options.exclude": "fixed: the default ignore list, whose patterns are tested against every path walked",
+              "options.expiringWithinDays": "fixed: 30 days, the default window; the scan reads every capability once whatever the window",
+              "options.fs": "fixed: the Node filesystem adapter, which is what every real build uses",
+              "options.generatedAt": "fixed: one instant, which is only printed in the headers",
+              "options.include": "fixed: the default capability glob",
+              "options.packages": "not covered: resolving an allowlisted package reads that package's capabilities, and the fixtures allowlist none",
+              "options.root": "swept",
+              "options.strict": "not covered: it only decides whether a finding fails the run, which the fixtures never raise",
+              "options.strictDocs": "not covered: it only decides whether a finding fails the run, which the fixtures never raise",
+              "options.strictFlow": "not covered: it only decides whether a finding fails the run, which the fixtures never raise",
+              "options.strictOwnership": "not covered: it only decides whether a finding fails the run, which the fixtures never raise",
+              "options.tsconfig": "fixed: `false`, so no TypeScript program is built (see the type-information variable)",
+              "options.docs": "fixed: requested, at one location",
+              "options.evidence": "variant:cache-hit",
+              "options.flow": "fixed: requested, at one folder",
+              "options.location": "fixed: requested, at one location",
+              "options.ownership": "fixed: requested, at one location"
+            }
+          }
+        },
+        {
+          "id": "parse-capability-file",
+          "covers": {
+            "parseCapabilityFile": {
+              "filePath": "fixed: one short path, which is only recorded in the result",
+              "sourceText": "swept"
+            }
+          }
+        },
+        {
+          "id": "generate-manifest",
+          "covers": {
+            "generateManifest": {
+              "options.changes": "swept",
+              "options.inventory": "swept",
+              "options.location": "fixed: one file under the fixture's output folder",
+              "options.root": "fixed: the generated fixture tree, which only shortens the file paths printed",
+              "options.snapshot": "swept"
+            }
+          }
+        },
+        {
+          "id": "generate-documentation",
+          "covers": {
+            "generateDocumentation": {
+              "options.changes": "swept",
+              "options.edges": "fixed: none, because the fixtures contain no consuming files, so no capability has a consumer",
+              "options.evidencePath": "fixed: none, so no evidence link is printed",
+              "options.expiringWithinDays": "fixed: 30 days, the default window; the scan reads every capability once whatever the window",
+              "options.generatedAt": "fixed: one instant, which is only printed in the header",
+              "options.inventory": "swept",
+              "options.location": "fixed: one file under the fixture's output folder",
+              "options.root": "fixed: the generated fixture tree, which only shortens the file paths printed"
+            }
+          }
+        },
+        {
+          "id": "generate-flow",
+          "covers": {
+            "generateFlow": {
+              "options.additionalFindings": "fixed: none, the fixtures raise no other findings",
+              "options.edges": "fixed: none, because the fixtures contain no consuming files, so no capability has a consumer",
+              "options.evidencePath": "fixed: none, so no evidence link is printed",
+              "options.inventory": "swept",
+              "options.location": "fixed: one file under the fixture's output folder",
+              "options.root": "fixed: the generated fixture tree, which only shortens the file paths printed"
+            }
+          }
+        },
+        {
+          "id": "diff-manifest-snapshots",
+          "covers": {
+            "diffManifestSnapshots": {
+              "previous": "variant:unchanged",
+              "current.capabilities": "swept",
+              "current.snapshotSchemaVersion": "fixed: one number, copied"
+            }
+          }
+        },
+        {
+          "id": "project-audit-evidence",
+          "covers": {
+            "projectAuditEvidence": {
+              "evidence.capability": "swept",
+              "evidence.change": "not covered: the benchmark's evidence model has no change model, an optional one the projection reads only when present",
+              "evidence.computed": "swept",
+              "evidence.dependency": "not covered: the benchmark's evidence model has no dependency model, an optional one the projection reads only when present",
+              "evidence.finding": "not covered: the benchmark's evidence model has no finding model, an optional one the projection reads only when present",
+              "evidence.lifecycle": "swept",
+              "evidence.ownership": "swept",
+              "evidence.provenance": "fixed: one small record, which is copied",
+              "evidence.runtimeContract": "fixed: one small record, which is copied",
+              "evidence.schemaVersion": "fixed: one number, copied"
+            }
+          }
+        },
+        {
+          "id": "project-classification-evidence",
+          "covers": {
+            "projectClassificationEvidence": {
+              "evidence.capability": "swept",
+              "evidence.change": "not covered: the benchmark's evidence model has no change model, an optional one the projection reads only when present",
+              "evidence.computed": "swept",
+              "evidence.dependency": "not covered: the benchmark's evidence model has no dependency model, an optional one the projection reads only when present",
+              "evidence.finding": "not covered: the benchmark's evidence model has no finding model, an optional one the projection reads only when present",
+              "evidence.lifecycle": "swept",
+              "evidence.ownership": "swept",
+              "evidence.provenance": "fixed: one small record, which is copied",
+              "evidence.runtimeContract": "fixed: one small record, which is copied",
+              "evidence.schemaVersion": "fixed: one number, copied"
+            }
+          }
+        },
+        {
+          "id": "project-compliance-evidence",
+          "covers": {
+            "projectComplianceEvidence": {
+              "evidence.capability": "swept",
+              "evidence.change": "not covered: the benchmark's evidence model has no change model, an optional one the projection reads only when present",
+              "evidence.computed": "swept",
+              "evidence.dependency": "not covered: the benchmark's evidence model has no dependency model, an optional one the projection reads only when present",
+              "evidence.finding": "not covered: the benchmark's evidence model has no finding model, an optional one the projection reads only when present",
+              "evidence.lifecycle": "swept",
+              "evidence.ownership": "swept",
+              "evidence.provenance": "fixed: one small record, which is copied",
+              "evidence.runtimeContract": "fixed: one small record, which is copied",
+              "evidence.schemaVersion": "fixed: one number, copied"
+            }
+          }
+        },
+        {
+          "id": "project-privacy-evidence",
+          "covers": {
+            "projectPrivacyEvidence": {
+              "evidence.capability": "swept",
+              "evidence.change": "not covered: the benchmark's evidence model has no change model, an optional one the projection reads only when present",
+              "evidence.computed": "swept",
+              "evidence.dependency": "not covered: the benchmark's evidence model has no dependency model, an optional one the projection reads only when present",
+              "evidence.finding": "not covered: the benchmark's evidence model has no finding model, an optional one the projection reads only when present",
+              "evidence.lifecycle": "swept",
+              "evidence.ownership": "swept",
+              "evidence.provenance": "fixed: one small record, which is copied",
+              "evidence.runtimeContract": "fixed: one small record, which is copied",
+              "evidence.schemaVersion": "fixed: one number, copied"
+            }
+          }
+        },
+        {
+          "id": "project-retention-evidence",
+          "covers": {
+            "projectRetentionEvidence": {
+              "evidence.capability": "swept",
+              "evidence.change": "not covered: the benchmark's evidence model has no change model, an optional one the projection reads only when present",
+              "evidence.computed": "swept",
+              "evidence.dependency": "not covered: the benchmark's evidence model has no dependency model, an optional one the projection reads only when present",
+              "evidence.finding": "not covered: the benchmark's evidence model has no finding model, an optional one the projection reads only when present",
+              "evidence.lifecycle": "swept",
+              "evidence.ownership": "swept",
+              "evidence.provenance": "fixed: one small record, which is copied",
+              "evidence.runtimeContract": "fixed: one small record, which is copied",
+              "evidence.schemaVersion": "fixed: one number, copied"
+            }
+          }
+        },
+        {
+          "id": "compute-expiring-entries",
+          "covers": {
+            "computeExpiringEntries": {
+              "inventory.capabilities": "swept",
+              "inventory.schemaVersion": "fixed: one number, copied",
+              "inventory.warnings": "fixed: none, the fixtures link without warnings",
+              "expiringWithinDays": "fixed: 30 days, the default window; the scan reads every capability once whatever the window",
+              "now": "fixed: one instant, because the clock only decides which entries are due"
+            }
+          }
+        },
+        {
+          "id": "build-ownership-matrix",
+          "covers": {
+            "buildOwnershipMatrix": {
+              "inventory.capabilities": "swept",
+              "inventory.schemaVersion": "fixed: one number, copied",
+              "inventory.warnings": "fixed: none, the fixtures link without warnings"
+            }
+          }
+        },
+        {
+          "id": "build-manifest-snapshot",
+          "covers": {
+            "buildManifestSnapshot": {
+              "inventory.capabilities": "swept",
+              "inventory.schemaVersion": "fixed: one number, copied",
+              "inventory.warnings": "fixed: none, the fixtures link without warnings"
+            }
+          }
+        },
+        {
+          "id": "check-duplicate-endpoints",
+          "covers": {
+            "checkDuplicateEndpoints": {
+              "inventory.capabilities": "swept",
+              "inventory.schemaVersion": "fixed: one number, copied",
+              "inventory.warnings": "fixed: none, the fixtures link without warnings"
+            }
+          }
+        },
+        {
+          "id": "check-exclusive-groups",
+          "covers": {
+            "checkExclusiveGroups": {
+              "inventory.capabilities": "swept",
+              "inventory.schemaVersion": "fixed: one number, copied",
+              "inventory.warnings": "fixed: none, the fixtures link without warnings"
+            }
+          }
+        },
+        {
+          "id": "check-ownership-and-sensitivity",
+          "covers": {
+            "checkOwnershipAndSensitivity": {
+              "inventory.capabilities": "swept",
+              "inventory.schemaVersion": "fixed: one number, copied",
+              "inventory.warnings": "fixed: none, the fixtures link without warnings"
+            }
+          }
+        },
+        {
+          "id": "check-structural-duplication",
+          "covers": {
+            "checkStructuralDuplication": {
+              "inventory.capabilities": "swept",
+              "inventory.schemaVersion": "fixed: one number, copied",
+              "inventory.warnings": "fixed: none, the fixtures link without warnings"
+            }
+          }
+        },
+        {
+          "id": "find-manifest-export-collisions",
+          "covers": {
+            "findManifestExportCollisions": {
+              "inventory.capabilities": "swept",
+              "inventory.schemaVersion": "fixed: one number, copied",
+              "inventory.warnings": "fixed: none, the fixtures link without warnings"
+            }
+          }
+        },
+        {
+          "id": "project-fields",
+          "covers": {
+            "projectFields": {
+              "inventory.capabilities": "swept",
+              "inventory.schemaVersion": "fixed: one number, copied",
+              "inventory.warnings": "fixed: none, the fixtures link without warnings"
+            }
+          }
+        },
+        {
+          "id": "project-getters",
+          "covers": {
+            "projectGetters": {
+              "inventory.capabilities": "swept",
+              "inventory.schemaVersion": "fixed: one number, copied",
+              "inventory.warnings": "fixed: none, the fixtures link without warnings"
+            }
+          }
+        },
+        {
+          "id": "project-mutators",
+          "covers": {
+            "projectMutators": {
+              "inventory.capabilities": "swept",
+              "inventory.schemaVersion": "fixed: one number, copied",
+              "inventory.warnings": "fixed: none, the fixtures link without warnings"
+            }
+          }
+        },
+        {
+          "id": "project-operation-inventory",
+          "covers": {
+            "projectOperationInventory": {
+              "inventory.capabilities": "swept",
+              "inventory.schemaVersion": "fixed: one number, copied",
+              "inventory.warnings": "fixed: none, the fixtures link without warnings"
+            }
+          }
+        },
+        {
+          "id": "project-subscriptions",
+          "covers": {
+            "projectSubscriptions": {
+              "inventory.capabilities": "swept",
+              "inventory.schemaVersion": "fixed: one number, copied",
+              "inventory.warnings": "fixed: none, the fixtures link without warnings"
+            }
+          }
+        },
+        {
+          "id": "render-manifest",
+          "covers": {
+            "renderManifest": {
+              "inventory.capabilities": "swept",
+              "inventory.schemaVersion": "fixed: one number, copied",
+              "inventory.warnings": "fixed: none, the fixtures link without warnings",
+              "outputPath": "fixed: one path, which only decides the relative import paths printed",
+              "root": "fixed: the generated fixture tree, which only shortens the file paths printed"
+            }
+          }
+        },
+        {
+          "id": "build-open-api-schema-artifact",
+          "covers": {
+            "buildOpenApiSchemaArtifact": {
+              "inventory.capabilities": "swept",
+              "inventory.schemaVersion": "fixed: one number, copied",
+              "inventory.warnings": "fixed: none, the fixtures link without warnings",
+              "info.title": "fixed: one short string, copied into the document",
+              "info.version": "fixed: one short string, copied into the document"
+            }
+          }
+        },
+        {
+          "id": "render-documentation",
+          "covers": {
+            "renderDocumentation": {
+              "inventory.capabilities": "swept",
+              "inventory.schemaVersion": "fixed: one number, copied",
+              "inventory.warnings": "fixed: none, the fixtures link without warnings",
+              "root": "fixed: the generated fixture tree, which only shortens the file paths printed",
+              "changes.addedCapabilities": "swept",
+              "changes.removedCapabilities": "fixed: none, the first-run change report lists everything as added",
+              "changes.updatedCapabilities": "fixed: none, the first-run change report lists everything as added",
+              "edges": "fixed: none, because the fixtures contain no consuming files, so no capability has a consumer",
+              "evidencePath": "fixed: none, so no evidence link is printed",
+              "lifecycle.capabilities": "swept",
+              "lifecycle.expiring": "swept",
+              "lifecycle.schemaVersion": "fixed: one number, copied"
+            }
+          }
+        },
+        {
+          "id": "render-ownership-graph-dot",
+          "covers": {
+            "renderOwnershipGraphDot": {
+              "model.entries": "swept",
+              "model.schemaVersion": "fixed: one number, copied"
+            }
+          }
+        },
+        {
+          "id": "build-flow-graph",
+          "covers": {
+            "buildFlowGraph": {
+              "inventory.capabilities": "swept",
+              "inventory.schemaVersion": "fixed: one number, copied",
+              "inventory.warnings": "fixed: none, the fixtures link without warnings",
+              "edges": "fixed: none, because the fixtures contain no consuming files, so no capability has a consumer"
+            }
+          }
+        },
+        {
+          "id": "derive-usage-findings",
+          "covers": {
+            "deriveUsageFindings": {
+              "inventory.capabilities": "swept",
+              "inventory.schemaVersion": "fixed: one number, copied",
+              "inventory.warnings": "fixed: none, the fixtures link without warnings",
+              "edges": "fixed: none, because the fixtures contain no consuming files, so no capability has a consumer"
+            }
+          }
+        },
+        {
+          "id": "render-usage-report",
+          "covers": {
+            "renderUsageReport": {
+              "inventory.capabilities": "swept",
+              "inventory.schemaVersion": "fixed: one number, copied",
+              "inventory.warnings": "fixed: none, the fixtures link without warnings",
+              "edges": "fixed: none, because the fixtures contain no consuming files, so no capability has a consumer",
+              "root": "fixed: the generated fixture tree, which only shortens the file paths printed",
+              "scannedPackages": "fixed: none, the fixtures scan no packages",
+              "evidencePath": "fixed: none, so no evidence link is printed"
+            }
+          }
+        },
+        {
+          "id": "build-sarif-log",
+          "covers": {
+            "buildSarifLog": {
+              "findingModel.findings": "swept",
+              "findingModel.schemaVersion": "fixed: one number, copied"
+            }
+          }
+        }
+      ],
+      "notBenchmarked": {
+        "buildChangeModel": "Its input is the change report of the previous manifest, empty on a first run and small on any later one; the model it builds is derived once in the evidence build, which `build-evidence-model` measures.",
+        "buildCitationSnapshots": "It re-reads the files that dynamic-access citations point at, and the fixtures declare no citations, so there is nothing for it to read at any size.",
+        "evaluateLiteral": "An internal step of the parser that evaluates one syntax node of a schema literal, a constant amount of work per node; `parse-capability-file` measures it inside every parse.",
+        "generateUsage": "It scans the files that consume the capabilities, and the fixtures contain none, so there is nothing for it to scan; the report it renders is measured as `render-usage-report`.",
+        "generatedBanner": "It joins three short strings into one comment, a constant amount of work done once per generated file.",
+        "groupEdgesByCapability": "It groups the dependency edges by capability, and the fixtures have no consumers, so there are no edges to group at any size.",
+        "groupEdgesByConsumer": "It groups the dependency edges by consumer, and the fixtures have no consumers, so there are no edges to group at any size.",
+        "locationOf": "It reads the position fields of one finding and builds one location, a constant amount of work done once per finding.",
+        "positionOf": "It converts one syntax node's offset into a line and column, a constant amount of work done once per node.",
+        "renderCapabilityDiagram": "It draws one diagram from the flows between capabilities and their consumers, and the fixtures have no consumers, so there are no flows to draw.",
+        "renderDependencyGraphDot": "It draws the consumer graph, and the fixtures have no consumers, so the graph has no edges at any size.",
+        "renderOverviewDiagram": "It draws one diagram from the flows between capabilities and their consumers, and the fixtures have no consumers, so there are no flows to draw.",
+        "renderSensitivityDiagram": "It draws one diagram from the flows between capabilities and their consumers, and the fixtures have no consumers, so there are no flows to draw.",
+        "scanDependencies": "It reads the files that consume the capabilities, and the fixtures contain none, so there is nothing for it to read at any size.",
+        "scanFileForUsage": "An internal step of `scanDependencies` that reads one parsed consuming file; the fixtures contain no consuming files.",
+        "verifyDynamicAccessCitations": "It verifies the files that dynamic-access citations point at, and the fixtures declare no citations, so there is nothing for it to verify.",
+        "writeEvidenceFingerprint": "It writes one short text file through the filesystem adapter, which the standard keeps out of the benchmarks (no real I/O)."
       }
     }
   }

@@ -1,7 +1,7 @@
 {
   "metadata": {
     "toolPackage": "@microsoft/api-extractor",
-    "toolVersion": "7.59.3",
+    "toolVersion": "7.59.4",
     "schemaVersion": 1011,
     "oldestForwardsCompatibleVersion": 1001,
     "tsdocConfig": {
@@ -527,14 +527,14 @@
         {
           "kind": "Interface",
           "canonicalReference": "data-cap!BuildDirent:interface",
-          "docComment": "/**\n * One directory entry from {@link BuildFileSystem.readdir} -- the subset of Node's `Dirent` `src/build/**` reads.\n */\n",
+          "docComment": "/**\n * One directory entry from {@link BuildFileSystem.readdir} -- the subset of Node's `Dirent` the build code reads.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
               "text": "export interface BuildDirent "
             }
           ],
-          "fileUrlPath": "src/build/types.ts",
+          "fileUrlPath": "src/_ipc/build-fs.ts",
           "releaseTag": "Public",
           "name": "BuildDirent",
           "preserveMemberOrder": false,
@@ -542,7 +542,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!BuildDirent#isDirectory:member",
-              "docComment": "",
+              "docComment": "/**\n * Same contract as Node's `Dirent.isDirectory()`.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -569,7 +569,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!BuildDirent#isFile:member",
-              "docComment": "",
+              "docComment": "/**\n * Same contract as Node's `Dirent.isFile()`.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -690,14 +690,14 @@
         {
           "kind": "Interface",
           "canonicalReference": "data-cap!BuildFileSystem:interface",
-          "docComment": "/**\n * The filesystem capability `data-cap/build` requires from its caller.\n *\n * `./build` is a **library surface**: it must not acquire filesystem access\n * implicitly (no `node:fs` import anywhere under `src/` outside `src/cli/`).\n * Every public options object in `build/index.ts` carries a required `fs`\n * field of this type, and the caller supplies a concrete adapter -- the\n * `data-cap` CLI builds one over `node:fs/promises` (`src/cli/filesystem.ts`);\n * a test builds either that same real adapter or an in-memory fake. See ADR\n * 0058.\n *\n * \"Ambient-fs-free\" means specifically: `./build` never reaches for\n * `node:fs` itself. It still performs real filesystem operations -- the\n * capability is always handed in.\n *\n * The shape is modeled on `node:fs/promises`'s own signatures so a thin\n * adapter is a drop-in value, but uses minimal structural types\n * ({@link BuildDirent}/{@link BuildStats}) rather than Node's `Dirent`/\n * `Stats` -- the capability boundary shouldn't leak Node's type surface just\n * because the concrete adapter happens to be Node-backed. Only the\n * operations `src/build/**` actually calls are here.\n *\n * **Not shared with `@maverickcer/env-cap`.** The two packages are\n * independent products with no runtime coupling; a shared types package to\n * dedupe six signatures would add real cross-package coupling for negligible\n * benefit. env-cap has its own, structurally-identical interface.\n */\n",
+          "docComment": "/**\n * The filesystem capability a package's `./build` entry requires from its caller.\n *\n * `./build` is a **library surface**: it must not acquire filesystem access\n * implicitly (no `node:fs` import outside the package's CLI). Every public options object carries a required\n * `fs` field of this type, and the caller supplies a concrete adapter: the CLI builds one over\n * `node:fs/promises`; a test builds either that same adapter or an in-memory fake.\n *\n * \"Ambient-fs-free\" means specifically: `./build` never reaches for\n * `node:fs` itself. It still performs real filesystem operations -- the\n * capability is always handed in.\n *\n * The shape is modeled on `node:fs/promises`'s own signatures so a thin\n * adapter is a drop-in value, but uses minimal structural types\n * ({@link BuildDirent}/{@link BuildStats}) rather than Node's `Dirent`/\n * `Stats` -- the capability boundary shouldn't leak Node's type surface just\n * because the concrete adapter happens to be Node-backed. Only the\n * operations the build code actually calls are here.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
               "text": "export interface BuildFileSystem "
             }
           ],
-          "fileUrlPath": "src/build/types.ts",
+          "fileUrlPath": "src/_ipc/build-fs.ts",
           "releaseTag": "Public",
           "name": "BuildFileSystem",
           "preserveMemberOrder": false,
@@ -1484,14 +1484,14 @@
         {
           "kind": "Interface",
           "canonicalReference": "data-cap!BuildStats:interface",
-          "docComment": "/**\n * A path's stat info from {@link BuildFileSystem.stat} -- the subset of Node's `Stats` `src/build/**` reads.\n */\n",
+          "docComment": "/**\n * A path's stat info from {@link BuildFileSystem.stat} -- the subset of Node's `Stats` the build code reads.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
               "text": "export interface BuildStats "
             }
           ],
-          "fileUrlPath": "src/build/types.ts",
+          "fileUrlPath": "src/_ipc/build-fs.ts",
           "releaseTag": "Public",
           "name": "BuildStats",
           "preserveMemberOrder": false,
@@ -1499,7 +1499,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!BuildStats#isFile:member",
-              "docComment": "",
+              "docComment": "/**\n * Same contract as Node's `Stats.isFile()`.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -3230,7 +3230,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "readonly string[]"
+                  "text": "readonly string[] | undefined"
                 },
                 {
                   "kind": "Content",
@@ -3277,7 +3277,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!ComputeSourceFingerprintOptions#include:member",
-              "docComment": "/**\n * Discovery globs. Defaults to `DEFAULT_INCLUDE`, matching `discoverCapabilityFiles`.\n */\n",
+              "docComment": "/**\n * Discovery globs. Defaults to the same globs as `discoverCapabilityFiles`.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -3285,7 +3285,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "readonly string[]"
+                  "text": "readonly string[] | undefined"
                 },
                 {
                   "kind": "Content",
@@ -3312,7 +3312,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "readonly string[]"
+                  "text": "readonly string[] | undefined"
                 },
                 {
                   "kind": "Content",
@@ -3542,7 +3542,7 @@
             },
             {
               "kind": "Content",
-              "text": "string[]"
+              "text": "readonly string[]"
             }
           ],
           "fileUrlPath": "src/build/discover.ts",
@@ -4684,7 +4684,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "readonly string[]"
+                  "text": "readonly string[] | undefined"
                 },
                 {
                   "kind": "Content",
@@ -4739,7 +4739,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "readonly string[]"
+                  "text": "readonly string[] | undefined"
                 },
                 {
                   "kind": "Content",
@@ -4796,7 +4796,7 @@
             },
             {
               "kind": "Reference",
-              "text": "ts.Expression",
+              "text": "TS.Expression",
               "canonicalReference": "typescript!ts.Expression:interface"
             },
             {
@@ -4988,7 +4988,7 @@
         {
           "kind": "Function",
           "canonicalReference": "data-cap!evidenceDisclaimer:function(1)",
-          "docComment": "/**\n * Short disclaimer prepended to every artifact that renders sensitivity/\n * protections/endpoints claims (the docs catalog, ownership report,\n * data-flow diagram) -- see AGENTS.md's declared-vs-proven invariant.\n * Never omit this from an artifact that renders governance metadata: it's\n * what keeps \"documented\" from being misread as \"verified\" or \"compliant.\"\n */\n",
+          "docComment": "/**\n * Short disclaimer stamped into every artifact that renders sensitivity, ownership or expiry claims. Never omit\n * it from an artifact that renders such metadata: it is what keeps \"documented\" from being misread as\n * \"verified\" or \"compliant\". Every fact in those artifacts is either a statically-provable code fact or an\n * author's own declaration; data-cap never validates a declaration against reality.\n *\n * @returns The disclaimer.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -7294,7 +7294,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "string"
+                  "text": "string | undefined"
                 },
                 {
                   "kind": "Content",
@@ -7321,7 +7321,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "readonly string[]"
+                  "text": "readonly string[] | undefined"
                 },
                 {
                   "kind": "Content",
@@ -7348,7 +7348,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "number"
+                  "text": "number | undefined"
                 },
                 {
                   "kind": "Content",
@@ -7458,7 +7458,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "readonly string[]"
+                  "text": "readonly string[] | undefined"
                 },
                 {
                   "kind": "Content",
@@ -7539,7 +7539,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "readonly string[]"
+                  "text": "readonly string[] | undefined"
                 },
                 {
                   "kind": "Content",
@@ -7701,7 +7701,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "string | false"
+                  "text": "string | false | undefined"
                 },
                 {
                   "kind": "Content",
@@ -7723,7 +7723,7 @@
         {
           "kind": "Function",
           "canonicalReference": "data-cap!generatedBanner:function(1)",
-          "docComment": "/**\n * Renders the \"do not edit by hand\" marker in the given comment syntax.\n */\n",
+          "docComment": "/**\n * Renders the \"do not edit by hand\" marker in the given comment syntax.\n *\n * @param format - Comment syntax to render in.\n *\n * @param regenerate - How to regenerate; defaults to the CLI, which writes the manifest.\n *\n * @returns The comment line.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -7732,6 +7732,14 @@
             {
               "kind": "Content",
               "text": "\"ts\" | \"markdown\""
+            },
+            {
+              "kind": "Content",
+              "text": ", regenerate?: "
+            },
+            {
+              "kind": "Content",
+              "text": "string"
             },
             {
               "kind": "Content",
@@ -7748,8 +7756,8 @@
           ],
           "fileUrlPath": "src/build/generated-banner.ts",
           "returnTypeTokenRange": {
-            "startIndex": 3,
-            "endIndex": 4
+            "startIndex": 5,
+            "endIndex": 6
           },
           "releaseTag": "Public",
           "overloadIndex": 1,
@@ -7759,6 +7767,14 @@
               "parameterTypeTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
+              },
+              "isOptional": true
+            },
+            {
+              "parameterName": "regenerate",
+              "parameterTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
               },
               "isOptional": true
             }
@@ -7843,6 +7859,10 @@
                 },
                 {
                   "kind": "Content",
+                  "text": " | undefined"
+                },
+                {
+                  "kind": "Content",
                   "text": ";"
                 }
               ],
@@ -7852,7 +7872,7 @@
               "name": "changes",
               "propertyTypeTokenRange": {
                 "startIndex": 1,
-                "endIndex": 2
+                "endIndex": 3
               }
             },
             {
@@ -7902,7 +7922,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "string"
+                  "text": "string | undefined"
                 },
                 {
                   "kind": "Content",
@@ -7929,7 +7949,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "number"
+                  "text": "number | undefined"
                 },
                 {
                   "kind": "Content",
@@ -8383,7 +8403,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "string"
+                  "text": "string | undefined"
                 },
                 {
                   "kind": "Content",
@@ -9054,7 +9074,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "string"
+                  "text": "string | undefined"
                 },
                 {
                   "kind": "Content",
@@ -9593,7 +9613,7 @@
             },
             {
               "kind": "Reference",
-              "text": "ts.PropertyName",
+              "text": "TS.PropertyName",
               "canonicalReference": "typescript!ts.PropertyName:type"
             },
             {
@@ -9972,7 +9992,7 @@
         {
           "kind": "Function",
           "canonicalReference": "data-cap!isGeneratedFile:function(1)",
-          "docComment": "/**\n * Whether `content` starts with a `generatedBanner()`-produced marker, in either format.\n */\n",
+          "docComment": "/**\n * Whether `content` carries a {@link generatedBanner}-produced marker, in either format.\n *\n * @remarks\n *\n * Deliberately not a bare `content.startsWith(generatedBanner(...))`: a shebang, a `\"use strict\"` pragma, or a\n * license header pushes a real banner off line one, and a stricter check would then read a genuinely\n * generated file as hand-written, which the dependency scan would take as \"a real consumer imports this\" and\n * so permanently mask an abandoned one. The marker is looked for across the first 20 non-empty lines instead,\n * which clears every realistic preamble without scanning a whole file.\n *\n * @param content - A file's text.\n *\n * @returns `true` when the file is generated.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -10747,7 +10767,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "readonly string[]"
+                  "text": "readonly string[] | undefined"
                 },
                 {
                   "kind": "Content",
@@ -10801,7 +10821,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "string | false"
+                  "text": "string | false | undefined"
                 },
                 {
                   "kind": "Content",
@@ -13018,7 +13038,7 @@
                 },
                 {
                   "kind": "Reference",
-                  "text": "ts.Expression",
+                  "text": "TS.Expression",
                   "canonicalReference": "typescript!ts.Expression:interface"
                 },
                 {
@@ -13161,7 +13181,7 @@
             },
             {
               "kind": "Reference",
-              "text": "ts.SourceFile",
+              "text": "TS.SourceFile",
               "canonicalReference": "typescript!ts.SourceFile:interface"
             },
             {
@@ -13170,7 +13190,7 @@
             },
             {
               "kind": "Reference",
-              "text": "ts.Node",
+              "text": "TS.Node",
               "canonicalReference": "typescript!ts.Node:interface"
             },
             {
@@ -13341,136 +13361,277 @@
           "extendsTokenRanges": []
         },
         {
-          "kind": "Variable",
-          "canonicalReference": "data-cap!projectAuditEvidence:var",
+          "kind": "Function",
+          "canonicalReference": "data-cap!projectAuditEvidence:function(1)",
           "docComment": "/**\n * Data Audit Evidence / Data Assurance Report / Data Governance Report\n * (reframed): a rollup of ownership and finding counts plus provenance --\n * never a governance verdict or a risk score, only the counted facts a\n * consumer's own policy can be evaluated against.\n *\n * The clearest case for the per-field schema: `ownedCapabilities` is derived\n * from Ownership Model alone, `findingsBySeverity` from Finding Model alone,\n * and `provenance` from neither. `.project()` reports exactly that, per\n * output field.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
-              "text": "projectAuditEvidence: "
-            },
-            {
-              "kind": "Content",
-              "text": "import(\"./index.js\")."
+              "text": "export declare function projectAuditEvidence(evidence: "
             },
             {
               "kind": "Reference",
-              "text": "EvidenceProjection",
-              "canonicalReference": "data-cap!EvidenceProjection:interface"
+              "text": "EvidenceModel",
+              "canonicalReference": "data-cap!EvidenceModel:interface"
             },
             {
               "kind": "Content",
-              "text": "<{\n    disclaimer: string;\n    provenance: "
+              "text": "): "
             },
             {
               "kind": "Reference",
-              "text": "EvidenceProvenance",
-              "canonicalReference": "data-cap!EvidenceProvenance:interface"
+              "text": "ProjectAuditEvidenceOutput",
+              "canonicalReference": "data-cap!~ProjectAuditEvidenceOutput:type"
             },
             {
               "kind": "Content",
-              "text": ";\n    capabilityCount: number;\n    ownedCapabilities: number | undefined;\n    unownedCapabilities: number | undefined;\n    findingsBySeverity: "
-            },
-            {
-              "kind": "Reference",
-              "text": "Record",
-              "canonicalReference": "!Record:type"
-            },
-            {
-              "kind": "Content",
-              "text": "<string, number> | undefined;\n}>"
+              "text": ";"
             }
           ],
           "fileUrlPath": "src/build/reference-projections.ts",
-          "isReadonly": true,
+          "returnTypeTokenRange": {
+            "startIndex": 3,
+            "endIndex": 4
+          },
           "releaseTag": "Public",
-          "name": "projectAuditEvidence",
-          "variableTypeTokenRange": {
-            "startIndex": 1,
-            "endIndex": 8
-          }
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "evidence",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isOptional": false
+            }
+          ],
+          "name": "projectAuditEvidence"
         },
         {
-          "kind": "Variable",
-          "canonicalReference": "data-cap!projectClassificationEvidence:var",
+          "kind": "Namespace",
+          "canonicalReference": "data-cap!projectAuditEvidence:namespace",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare namespace projectAuditEvidence "
+            }
+          ],
+          "fileUrlPath": "src/build/reference-projections.ts",
+          "releaseTag": "Public",
+          "name": "projectAuditEvidence",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "Variable",
+              "canonicalReference": "data-cap!projectAuditEvidence.project:var",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "project: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "typeof "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "projectAuditEvidenceWithSources",
+                  "canonicalReference": "data-cap!~projectAuditEvidenceWithSources:function"
+                }
+              ],
+              "isReadonly": false,
+              "releaseTag": "Public",
+              "name": "project",
+              "variableTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              }
+            }
+          ]
+        },
+        {
+          "kind": "Function",
+          "canonicalReference": "data-cap!projectClassificationEvidence:function(1)",
           "docComment": "/**\n * Data Classification Evidence: every capability/field with a declared `sensitivity`.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
-              "text": "projectClassificationEvidence: "
-            },
-            {
-              "kind": "Content",
-              "text": "import(\"./index.js\")."
+              "text": "export declare function projectClassificationEvidence(evidence: "
             },
             {
               "kind": "Reference",
-              "text": "EvidenceProjection",
-              "canonicalReference": "data-cap!EvidenceProjection:interface"
+              "text": "EvidenceModel",
+              "canonicalReference": "data-cap!EvidenceModel:interface"
             },
             {
               "kind": "Content",
-              "text": "<{\n    disclaimer: string;\n    entries: readonly "
+              "text": "): "
             },
             {
               "kind": "Reference",
-              "text": "ClassificationEntry",
-              "canonicalReference": "data-cap!ClassificationEntry:interface"
+              "text": "ProjectClassificationEvidenceOutput",
+              "canonicalReference": "data-cap!~ProjectClassificationEvidenceOutput:type"
             },
             {
               "kind": "Content",
-              "text": "[];\n}>"
+              "text": ";"
             }
           ],
           "fileUrlPath": "src/build/reference-projections.ts",
-          "isReadonly": true,
+          "returnTypeTokenRange": {
+            "startIndex": 3,
+            "endIndex": 4
+          },
           "releaseTag": "Public",
-          "name": "projectClassificationEvidence",
-          "variableTypeTokenRange": {
-            "startIndex": 1,
-            "endIndex": 6
-          }
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "evidence",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isOptional": false
+            }
+          ],
+          "name": "projectClassificationEvidence"
         },
         {
-          "kind": "Variable",
-          "canonicalReference": "data-cap!projectComplianceEvidence:var",
+          "kind": "Namespace",
+          "canonicalReference": "data-cap!projectClassificationEvidence:namespace",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare namespace projectClassificationEvidence "
+            }
+          ],
+          "fileUrlPath": "src/build/reference-projections.ts",
+          "releaseTag": "Public",
+          "name": "projectClassificationEvidence",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "Variable",
+              "canonicalReference": "data-cap!projectClassificationEvidence.project:var",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "project: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "typeof "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "projectClassificationEvidenceWithSources",
+                  "canonicalReference": "data-cap!~projectClassificationEvidenceWithSources:function"
+                }
+              ],
+              "isReadonly": false,
+              "releaseTag": "Public",
+              "name": "project",
+              "variableTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              }
+            }
+          ]
+        },
+        {
+          "kind": "Function",
+          "canonicalReference": "data-cap!projectComplianceEvidence:function(1)",
           "docComment": "/**\n * Data Compliance Evidence: every capability's declared `metadata` bag, unvalidated -- `data-cap` asserts no regime applies.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
-              "text": "projectComplianceEvidence: "
-            },
-            {
-              "kind": "Content",
-              "text": "import(\"./index.js\")."
+              "text": "export declare function projectComplianceEvidence(evidence: "
             },
             {
               "kind": "Reference",
-              "text": "EvidenceProjection",
-              "canonicalReference": "data-cap!EvidenceProjection:interface"
+              "text": "EvidenceModel",
+              "canonicalReference": "data-cap!EvidenceModel:interface"
             },
             {
               "kind": "Content",
-              "text": "<{\n    disclaimer: string;\n    entries: readonly "
+              "text": "): "
             },
             {
               "kind": "Reference",
-              "text": "ComplianceEntry",
-              "canonicalReference": "data-cap!ComplianceEntry:interface"
+              "text": "ProjectComplianceEvidenceOutput",
+              "canonicalReference": "data-cap!~ProjectComplianceEvidenceOutput:type"
             },
             {
               "kind": "Content",
-              "text": "[];\n}>"
+              "text": ";"
             }
           ],
           "fileUrlPath": "src/build/reference-projections.ts",
-          "isReadonly": true,
+          "returnTypeTokenRange": {
+            "startIndex": 3,
+            "endIndex": 4
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "evidence",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isOptional": false
+            }
+          ],
+          "name": "projectComplianceEvidence"
+        },
+        {
+          "kind": "Namespace",
+          "canonicalReference": "data-cap!projectComplianceEvidence:namespace",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare namespace projectComplianceEvidence "
+            }
+          ],
+          "fileUrlPath": "src/build/reference-projections.ts",
           "releaseTag": "Public",
           "name": "projectComplianceEvidence",
-          "variableTypeTokenRange": {
-            "startIndex": 1,
-            "endIndex": 6
-          }
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "Variable",
+              "canonicalReference": "data-cap!projectComplianceEvidence.project:var",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "project: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "typeof "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "projectComplianceEvidenceWithSources",
+                  "canonicalReference": "data-cap!~projectComplianceEvidenceWithSources:function"
+                }
+              ],
+              "isReadonly": false,
+              "releaseTag": "Public",
+              "name": "project",
+              "variableTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              }
+            }
+          ]
         },
         {
           "kind": "Function",
@@ -13729,86 +13890,186 @@
           "name": "projectOperationInventory"
         },
         {
-          "kind": "Variable",
-          "canonicalReference": "data-cap!projectPrivacyEvidence:var",
+          "kind": "Function",
+          "canonicalReference": "data-cap!projectPrivacyEvidence:function(1)",
           "docComment": "/**\n * Data Privacy Evidence: sensitivity plus whether protections are documented (presence only, never an adequacy claim).\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
-              "text": "projectPrivacyEvidence: "
-            },
-            {
-              "kind": "Content",
-              "text": "import(\"./index.js\")."
+              "text": "export declare function projectPrivacyEvidence(evidence: "
             },
             {
               "kind": "Reference",
-              "text": "EvidenceProjection",
-              "canonicalReference": "data-cap!EvidenceProjection:interface"
+              "text": "EvidenceModel",
+              "canonicalReference": "data-cap!EvidenceModel:interface"
             },
             {
               "kind": "Content",
-              "text": "<{\n    disclaimer: string;\n    entries: readonly "
+              "text": "): "
             },
             {
               "kind": "Reference",
-              "text": "PrivacyEntry",
-              "canonicalReference": "data-cap!PrivacyEntry:interface"
+              "text": "ProjectPrivacyEvidenceOutput",
+              "canonicalReference": "data-cap!~ProjectPrivacyEvidenceOutput:type"
             },
             {
               "kind": "Content",
-              "text": "[];\n}>"
+              "text": ";"
             }
           ],
           "fileUrlPath": "src/build/reference-projections.ts",
-          "isReadonly": true,
+          "returnTypeTokenRange": {
+            "startIndex": 3,
+            "endIndex": 4
+          },
           "releaseTag": "Public",
-          "name": "projectPrivacyEvidence",
-          "variableTypeTokenRange": {
-            "startIndex": 1,
-            "endIndex": 6
-          }
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "evidence",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isOptional": false
+            }
+          ],
+          "name": "projectPrivacyEvidence"
         },
         {
-          "kind": "Variable",
-          "canonicalReference": "data-cap!projectRetentionEvidence:var",
+          "kind": "Namespace",
+          "canonicalReference": "data-cap!projectPrivacyEvidence:namespace",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare namespace projectPrivacyEvidence "
+            }
+          ],
+          "fileUrlPath": "src/build/reference-projections.ts",
+          "releaseTag": "Public",
+          "name": "projectPrivacyEvidence",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "Variable",
+              "canonicalReference": "data-cap!projectPrivacyEvidence.project:var",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "project: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "typeof "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "projectPrivacyEvidenceWithSources",
+                  "canonicalReference": "data-cap!~projectPrivacyEvidenceWithSources:function"
+                }
+              ],
+              "isReadonly": false,
+              "releaseTag": "Public",
+              "name": "project",
+              "variableTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              }
+            }
+          ]
+        },
+        {
+          "kind": "Function",
+          "canonicalReference": "data-cap!projectRetentionEvidence:function(1)",
           "docComment": "/**\n * Data Retention Evidence: every capability/field with a declared `retention` policy (presence only, never an enforcement claim).\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
-              "text": "projectRetentionEvidence: "
-            },
-            {
-              "kind": "Content",
-              "text": "import(\"./index.js\")."
+              "text": "export declare function projectRetentionEvidence(evidence: "
             },
             {
               "kind": "Reference",
-              "text": "EvidenceProjection",
-              "canonicalReference": "data-cap!EvidenceProjection:interface"
+              "text": "EvidenceModel",
+              "canonicalReference": "data-cap!EvidenceModel:interface"
             },
             {
               "kind": "Content",
-              "text": "<{\n    disclaimer: string;\n    entries: readonly "
+              "text": "): "
             },
             {
               "kind": "Reference",
-              "text": "RetentionEntry",
-              "canonicalReference": "data-cap!RetentionEntry:interface"
+              "text": "ProjectRetentionEvidenceOutput",
+              "canonicalReference": "data-cap!~ProjectRetentionEvidenceOutput:type"
             },
             {
               "kind": "Content",
-              "text": "[];\n}>"
+              "text": ";"
             }
           ],
           "fileUrlPath": "src/build/reference-projections.ts",
-          "isReadonly": true,
+          "returnTypeTokenRange": {
+            "startIndex": 3,
+            "endIndex": 4
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "evidence",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isOptional": false
+            }
+          ],
+          "name": "projectRetentionEvidence"
+        },
+        {
+          "kind": "Namespace",
+          "canonicalReference": "data-cap!projectRetentionEvidence:namespace",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare namespace projectRetentionEvidence "
+            }
+          ],
+          "fileUrlPath": "src/build/reference-projections.ts",
           "releaseTag": "Public",
           "name": "projectRetentionEvidence",
-          "variableTypeTokenRange": {
-            "startIndex": 1,
-            "endIndex": 6
-          }
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "Variable",
+              "canonicalReference": "data-cap!projectRetentionEvidence.project:var",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "project: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "typeof "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "projectRetentionEvidenceWithSources",
+                  "canonicalReference": "data-cap!~projectRetentionEvidenceWithSources:function"
+                }
+              ],
+              "isReadonly": false,
+              "releaseTag": "Public",
+              "name": "project",
+              "variableTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              }
+            }
+          ]
         },
         {
           "kind": "Function",
@@ -14060,7 +14321,7 @@
                 },
                 {
                   "kind": "Reference",
-                  "text": "ts.CallExpression",
+                  "text": "TS.CallExpression",
                   "canonicalReference": "typescript!ts.CallExpression:interface"
                 },
                 {
@@ -14202,7 +14463,7 @@
                 },
                 {
                   "kind": "Reference",
-                  "text": "ts.Expression",
+                  "text": "TS.Expression",
                   "canonicalReference": "typescript!ts.Expression:interface"
                 },
                 {
@@ -14262,7 +14523,7 @@
                 },
                 {
                   "kind": "Reference",
-                  "text": "ts.CallExpression",
+                  "text": "TS.CallExpression",
                   "canonicalReference": "typescript!ts.CallExpression:interface"
                 },
                 {
@@ -16729,7 +16990,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "readonly string[]"
+                  "text": "readonly string[] | undefined"
                 },
                 {
                   "kind": "Content",
@@ -16783,7 +17044,7 @@
                 },
                 {
                   "kind": "Content",
-                  "text": "string | false"
+                  "text": "string | false | undefined"
                 },
                 {
                   "kind": "Content",
@@ -16930,7 +17191,7 @@
             },
             {
               "kind": "Reference",
-              "text": "ts.SourceFile",
+              "text": "TS.SourceFile",
               "canonicalReference": "typescript!ts.SourceFile:interface"
             },
             {
@@ -17183,7 +17444,7 @@
             },
             {
               "kind": "Reference",
-              "text": "ts.ObjectLiteralExpression",
+              "text": "TS.ObjectLiteralExpression",
               "canonicalReference": "typescript!ts.ObjectLiteralExpression:interface"
             },
             {
@@ -17341,24 +17602,20 @@
           "excerptTokens": [
             {
               "kind": "Content",
-              "text": "UNOWNED = "
+              "text": "UNOWNED: "
             },
             {
               "kind": "Content",
-              "text": "\"(unowned)\""
+              "text": "string"
             }
           ],
           "fileUrlPath": "src/build/ownership-model.ts",
-          "initializerTokenRange": {
-            "startIndex": 1,
-            "endIndex": 2
-          },
           "isReadonly": true,
           "releaseTag": "Public",
           "name": "UNOWNED",
           "variableTypeTokenRange": {
-            "startIndex": 0,
-            "endIndex": 0
+            "startIndex": 1,
+            "endIndex": 2
           }
         },
         {

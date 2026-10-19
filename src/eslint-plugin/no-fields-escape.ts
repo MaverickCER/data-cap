@@ -4,10 +4,10 @@
 import { RuleCreator } from "@typescript-eslint/utils/eslint-utils"
 import { AST_NODE_TYPES } from "@typescript-eslint/utils"
 import type { TSESTree } from "@typescript-eslint/utils"
-import { globToRegExp } from "./glob.js"
+import { matchesAllowList } from "./glob.js"
 
 const createRule = RuleCreator(
-  (name) => `https://github.com/maverickcer/data-cap#eslint-plugin-${name}`,
+  () => "https://github.com/MaverickCER/data-cap/blob/main/GUIDE.md#eslint-plugin",
 )
 
 /** Options for `no-fields-escape`. */
@@ -421,8 +421,8 @@ export const noFieldsEscape = createRule<
   defaultOptions: [{ allow: [] }],
   create(context, [options]) {
     // `RuleCreator` merges `defaultOptions` onto the configured options, so `allow` is always set.
-    const allowPatterns = options.allow as readonly string[]
-    if (allowPatterns.some((pattern) => globToRegExp(pattern).test(context.filename))) return {}
+    if (matchesAllowList(options.allow as readonly string[], context.filename, context.cwd))
+      return {}
 
     function check(node: TSESTree.MemberExpression | TSESTree.CallExpression): void {
       const kind = classifyEscape(node, context.sourceCode.ast)

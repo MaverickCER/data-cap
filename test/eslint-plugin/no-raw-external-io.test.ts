@@ -115,6 +115,12 @@ ruleTester.run("no-raw-external-io", noRawExternalIo as unknown as Rule.RuleModu
       filename: "/project/src/lib/http-client.ts",
       options: [{ allow: ["**/lib/**"] }],
     },
+    // ESLint passes an absolute path; a pattern written relative to the working directory still matches it.
+    {
+      code: `fetch("/api/anything");`,
+      filename: `${process.cwd()}/src/lib/http-client.ts`,
+      options: [{ allow: ["src/lib/**"] }],
+    },
     // -- A locally-declared binding that merely shares the name is not the bare global. --
     {
       code: `

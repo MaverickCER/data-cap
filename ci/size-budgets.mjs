@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 // Lightweight, dependency-free bundle size budget check (Node builtins only --
 // this is dev/CI tooling, not something that ships or runs at runtime).
 //
@@ -11,15 +10,8 @@
 // constraint) -- they just need to stay isolated from the runtime/helpers
 // bundles, which the tree-shaking tests already cover.
 
-import { readFileSync, existsSync } from "node:fs"
-import { gzipSync } from "node:zlib"
-import path from "node:path"
-import { fileURLToPath } from "node:url"
-
-const here = path.dirname(fileURLToPath(import.meta.url))
-const root = path.resolve(here, "..")
-
-const BUDGETS = [
+// Read by `internal-package-contract tool size`: one budget per entry point, in gzip bytes.
+export default [
   { label: "core", file: "dist/index.js", maxGzipBytes: 2 * 1024 },
   // Raised from 4KB alongside ADR 0048's `createData` (the batteries-
   // included operations layer: getter/mutator/subscription execution,
@@ -41,49 +33,3 @@ const BUDGETS = [
   { label: "eslint-plugin", file: "dist/eslint-plugin/index.js", maxGzipBytes: 999 * 1024 },
   { label: "cli", file: "dist/cli/index.js", maxGzipBytes: 999 * 1024 },
 ]
-
-let failed = false
-
-for (const { label, file, maxGzipBytes } of BUDGETS) {
-  const filePath = path.join(root, file)
-  if (!existsSync(filePath)) {
-    console.error(`[size] ${file} does not exist -- run \`npm run build\` first.`)
-    failed = true
-    continue
-  }
-  const raw = readFileSync(filePath)
-  const gzipBytes = gzipSync(raw).length
-  const status = gzipBytes <= maxGzipBytes ? "OK" : "OVER BUDGET"
-  console.log(
-    `[size] ${label.padEnd(14)} ${file.padEnd(28)} gzip=${gzipBytes}B (budget ${maxGzipBytes}B) ${status}`,
-  )
-  if (gzipBytes > maxGzipBytes) failed = true
-}
-
-if (failed) {
-  console.error("\n[size] One or more entry points exceeded their gzip budget.")
-  process.exitCode = 1
-} else {
-  console.log("\n[size] All budgets met.")
-}
-
-const jsonFlagIndex = process.argv.indexOf("--json")
-if (jsonFlagIndex !== -1) {
-  const outPath = process.argv[jsonFlagIndex + 1]
-  if (!outPath) {
-    console.error("[size] --json requires a file path.")
-    process.exitCode = 1
-  } else {
-    const { writeFileSync, mkdirSync } = await import("node:fs")
-    const payload = {
-      generatedAt: new Date().toISOString(),
-      entries: BUDGETS.map(({ label, file, maxGzipBytes }) => {
-        const filePath = path.join(root, file)
-        if (!existsSync(filePath)) return { label, file, gzipBytes: null, maxGzipBytes }
-        return { label, file, gzipBytes: gzipSync(readFileSync(filePath)).length, maxGzipBytes }
-      }),
-    }
-    mkdirSync(path.dirname(path.resolve(outPath)), { recursive: true })
-    writeFileSync(path.resolve(outPath), JSON.stringify(payload, null, 2), "utf8")
-  }
-}

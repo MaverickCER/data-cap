@@ -14,7 +14,7 @@ import { buildData } from "data-cap"
 import { createCoordinator, createData, createDataStore } from "data-cap/runtime"
 import { createDataCache } from "data-cap/runtime/cache"
 import { withRetry } from "data-cap/runtime/retry"
-import { canonicalize, identity } from "data-cap/helpers"
+import { canonicalize, identity, processors } from "data-cap/helpers"
 import {
   capabilitySchemaFields,
   generateRecords,
@@ -127,6 +127,15 @@ export default defineSuite({
     ],
   },
 
+  notBenchmarked: {
+    documentData:
+      "A deliberate no-op at runtime: it exists so build tooling can read the call site and so the compiler checks the documentation's shape, and it does nothing with its arguments, so it costs the same whatever they hold.",
+    createDataStore:
+      "It keeps one reference to the state it is given and returns the controller, a constant amount of work whatever the state holds; every commit benchmark creates one in its setup.",
+    rejectOnAbort:
+      "It attaches one listener to one signal and races one promise, a constant amount of work done once per aborted wait.",
+  },
+
   functions: [
     {
       id: "cold-start",
@@ -194,7 +203,12 @@ export default defineSuite({
         { name: "reference reuse", how: "fixed", value: "always new references", description: "Each sample commits freshly built records; committing the same reference again is a free no-op by design and is not what this measures." },
       ],
       notCovered: [{ name: "commits that fail ownership checks", reason: "A rejected commit stops early and is not a steady-state cost." }],
-      inEndToEnd: { callsPerOperation: 1, description: "One commit per fetch." },
+      inEndToEnd: {
+        callsPerOperation: 1,
+        description: "One commit per fetch.",
+        // Committing a collection reconciles it, so that time is inside this one.
+        includes: ["reconcile-array-info"],
+      },
       fresh: true,
       setup: (n) => ({
         store: createDataStore(buildData({ fields: capabilitySchemaFields(0) })),
@@ -231,13 +245,46 @@ export default defineSuite({
         "It visits each incoming record once to compute its identity key and look it up in a hash map of known records, so the work is proportional to the number of records.",
       variables: [
         ITEMS,
+        { name: "previous-records", how: "swept", description: "How many records the previous state already holds (none on a first load)." },
         RECORD_SHAPE,
         { name: "key composition", how: "fixed", value: "single `id` field", description: "Composite keys add a small constant per record." },
-        { name: "previous state", how: "fixed", value: "none (first load)", description: "Reconciling against a large previous collection would add map lookups; the first-load case is the worst case for allocation." },
       ],
+      sweeps: [
+        {
+          variable: "previous-records",
+          description: "How many records the previous state already holds.",
+          baseValue: 1,
+          primaryValue: 640,
+          expectedComplexity: "constant",
+          complexityReason:
+            "The previous state is a hash map consulted once per incoming record, so how many records it holds changes neither the number of lookups nor the cost of each.",
+        },
+      ],
+      covers: {
+        "identity.reconcileArrayInfo": {
+          prevInfo: "sweep:previous-records",
+          nextItems: "swept",
+          identityKeys: "fixed: the single `id` field, which is what almost every list uses",
+          touchedIdentities: "fixed: `all`, the replace-the-whole-array path, which is the worst case for allocation",
+          makeInfoFor: "fixed: returns one small object, so the benchmark measures the bookkeeping and not a caller's info builder",
+        },
+      },
       inEndToEnd: { callsPerOperation: 1, description: "Once per collection commit." },
-      setup: (n) => generateRecords(n),
-      run: (records) => identity.reconcileArrayInfo(undefined, records, ["id"], "all", () => ({ fetchedAt: 0 })),
+      setup: (_n, _options, context) => {
+        const makeInfo = () => ({ fetchedAt: 0 })
+        return {
+          previous: identity.reconcileArrayInfo(
+            undefined,
+            generateRecords(context.values["previous-records"]),
+            ["id"],
+            "all",
+            makeInfo,
+          ),
+          records: generateRecords(context.values.record),
+          makeInfo,
+        }
+      },
+      run: ({ previous, records, makeInfo }) => identity.reconcileArrayInfo(previous, records, ["id"], "all", makeInfo),
     },
     {
       id: "getter-dispatch-cold",
@@ -254,7 +301,12 @@ export default defineSuite({
         { name: "cache state", how: "fixed", value: "cold (fresh capability each sample)", description: "Each sample uses a brand-new capability, so no previous result or in-flight request is reused." },
         { name: "data source latency", how: "fixed", value: "0 ms (simulated)", description: "Excluded on purpose; see the end-to-end section." },
       ],
-      inEndToEnd: { callsPerOperation: 1, description: "This is the end-to-end operation itself." },
+      inEndToEnd: {
+        callsPerOperation: 1,
+        description: "This is the end-to-end operation itself.",
+        // A fetch ends in one authoritative commit, whose own time already holds the reconcile inside it.
+        includes: ["commit-authoritative-array-replace"],
+      },
       fresh: true,
       setup: (n) => ({ capability: capabilityOver(simulatedSource(n)) }),
       run: ({ capability }) => capability.listItems({ page: 0 }),
@@ -369,6 +421,85 @@ export default defineSuite({
         cache.set("entry", next)
         return cache.get("entry")
       },
+    },
+    {
+      id: "compute-item-identity",
+      name: "computeItemIdentity",
+      why: "It builds the identity key of every record in a collection commit, so it runs once per record on every list fetch.",
+      poorPerformanceMeans:
+        "Collection commits slow down in proportion to the number of key fields, adding to every list fetch of every capability that uses a composite key.",
+      expectedComplexity: "linear",
+      complexityReason:
+        "Each key field's value is read and joined once, so cost is proportional to the number of key fields.",
+      variables: [
+        { name: "identity-keys", how: "swept", description: "The tier axis: how many fields make up the record's identity key." },
+        RUNTIME,
+      ],
+      covers: {
+        "identity.computeItemIdentity": {
+          item: "fixed: one record whose every field is a short string",
+          keys: "swept",
+          path: "fixed: one short path, which only labels a warning",
+          warnings: "fixed: an empty list that is never written to, because every key field is present",
+        },
+      },
+      inEndToEnd: { callsPerOperation: 0, description: "Run once per record inside every collection commit; measured on its own." },
+      setup: (n) => {
+        const keys = Array.from({ length: n }, (_, index) => `key${String(index)}`)
+        return { item: Object.fromEntries(keys.map((key) => [key, `value-${key}`])), keys, warnings: [] }
+      },
+      run: ({ item, keys, warnings }) => identity.computeItemIdentity(item, keys, ["items"], warnings),
+    },
+    {
+      id: "create-data",
+      name: "createData",
+      why: "Every capability is declared by one `createData` call, so its cost is paid at module load by every process that imports a capability, not only by the first fetch.",
+      poorPerformanceMeans:
+        "Slower start-up for every process in proportion to the initial state each capability declares, on top of the per-capability floor cold start measures.",
+      expectedComplexity: "linear",
+      complexityReason:
+        "It builds the initial state once, which walks the schema's initial records to freeze and index them, so cost is proportional to the number of initial records.",
+      variables: [
+        { name: "initial records", how: "swept", description: "How many records the schema's collection field starts with." },
+        RECORD_SHAPE,
+        RUNTIME,
+      ],
+      covers: {
+        createData: {
+          schema: "swept",
+          "options.coordinator": "fixed: a fresh coordinator per call, which is what an isolated capability has",
+          "options.maxOperationHistory":
+            "fixed: 50, the default; it bounds a history that is filled as operations run and is never allocated at creation",
+        },
+      },
+      inEndToEnd: { callsPerOperation: 0, description: "Run at module load; measured on its own." },
+      setup: (n) => capabilitySchemaFields(n),
+      run: (fields) =>
+        createData(
+          { fields, getters: { listItems: { params: { page: 0 }, execute: () => Promise.resolve({ items: [] }), writes: { items: true } } } },
+          { coordinator: createCoordinator() },
+        ),
+    },
+    {
+      id: "to-array",
+      name: "processors.toArray",
+      why: "It splits a delimited value into a list, once for every variable that declares it, wherever a list is read from a single string.",
+      poorPerformanceMeans: "Slower reads of every list value, in proportion to its length.",
+      expectedComplexity: "linear",
+      complexityReason: "The text is scanned once and one item is produced for each separator, so cost is proportional to the number of items.",
+      variables: [
+        { name: "items", how: "swept", description: "The tier axis: how many comma-separated items the value holds." },
+        RUNTIME,
+      ],
+      covers: {
+        "processors.toArray": {
+          value: "swept",
+          separator: "fixed: a comma, the default, which is what almost every list uses",
+        },
+      },
+      inEndToEnd: { callsPerOperation: 0, description: "Run when a list value is read; measured on its own." },
+      setup: (n) => Array.from({ length: n }, (_, index) => `item${String(index)}`).join(","),
+      run: (text) => processors.toArray(text, ","),
     },
     {
       id: "with-retry",

@@ -1,20 +1,19 @@
-/** One directory entry from {@link BuildFileSystem.readdir} -- the subset of Node's `Dirent` `src/build/**` reads. */
+/** One directory entry from {@link BuildFileSystem.readdir} -- the subset of Node's `Dirent` the build code reads. */
 declare interface BuildDirent {
     readonly name: string;
+    /** Same contract as Node's `Dirent.isDirectory()`. */
     readonly isDirectory: () => boolean;
+    /** Same contract as Node's `Dirent.isFile()`. */
     readonly isFile: () => boolean;
 }
 
 /**
- * The filesystem capability `data-cap/build` requires from its caller.
+ * The filesystem capability a package's `./build` entry requires from its caller.
  *
  * `./build` is a **library surface**: it must not acquire filesystem access
- * implicitly (no `node:fs` import anywhere under `src/` outside `src/cli/`).
- * Every public options object in `build/index.ts` carries a required `fs`
- * field of this type, and the caller supplies a concrete adapter -- the
- * `data-cap` CLI builds one over `node:fs/promises` (`src/cli/filesystem.ts`);
- * a test builds either that same real adapter or an in-memory fake. See ADR
- * 0058.
+ * implicitly (no `node:fs` import outside the package's CLI). Every public options object carries a required
+ * `fs` field of this type, and the caller supplies a concrete adapter: the CLI builds one over
+ * `node:fs/promises`; a test builds either that same adapter or an in-memory fake.
  *
  * "Ambient-fs-free" means specifically: `./build` never reaches for
  * `node:fs` itself. It still performs real filesystem operations -- the
@@ -25,12 +24,7 @@ declare interface BuildDirent {
  * ({@link BuildDirent}/{@link BuildStats}) rather than Node's `Dirent`/
  * `Stats` -- the capability boundary shouldn't leak Node's type surface just
  * because the concrete adapter happens to be Node-backed. Only the
- * operations `src/build/**` actually calls are here.
- *
- * **Not shared with `@maverickcer/env-cap`.** The two packages are
- * independent products with no runtime coupling; a shared types package to
- * dedupe six signatures would add real cross-package coupling for negligible
- * benefit. env-cap has its own, structurally-identical interface.
+ * operations the build code actually calls are here.
  */
 declare interface BuildFileSystem {
     /** Read a UTF-8 text file. Rejects if the path doesn't exist or isn't readable. */
@@ -51,8 +45,9 @@ declare interface BuildFileSystem {
     readonly realpath: (path: string) => Promise<string>;
 }
 
-/** A path's stat info from {@link BuildFileSystem.stat} -- the subset of Node's `Stats` `src/build/**` reads. */
+/** A path's stat info from {@link BuildFileSystem.stat} -- the subset of Node's `Stats` the build code reads. */
 declare interface BuildStats {
+    /** Same contract as Node's `Stats.isFile()`. */
     readonly isFile: () => boolean;
     /** Size in bytes -- read by the package-schema resolver to enforce a size ceiling. */
     readonly size: number;

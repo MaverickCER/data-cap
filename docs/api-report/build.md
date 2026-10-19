@@ -239,7 +239,7 @@ Distinct consuming files known (from Dependency Model) to depend on this capabil
 
 ### BuildDirent
 
-One directory entry from [BuildFileSystem.readdir](#readdir) -- the subset of Node's `Dirent` `src/build/**` reads.
+One directory entry from [BuildFileSystem.readdir](#readdir) -- the subset of Node's `Dirent` the build code reads.
 
 #### Properties
 
@@ -248,6 +248,8 @@ One directory entry from [BuildFileSystem.readdir](#readdir) -- the subset of No
 ```ts
 readonly isDirectory: () => boolean;
 ```
+
+Same contract as Node's `Dirent.isDirectory()`.
 
 ###### Returns
 
@@ -258,6 +260,8 @@ readonly isDirectory: () => boolean;
 ```ts
 readonly isFile: () => boolean;
 ```
+
+Same contract as Node's `Dirent.isFile()`.
 
 ###### Returns
 
@@ -273,15 +277,12 @@ readonly name: string;
 
 ### BuildFileSystem
 
-The filesystem capability `data-cap/build` requires from its caller.
+The filesystem capability a package's `./build` entry requires from its caller.
 
 `./build` is a **library surface**: it must not acquire filesystem access
-implicitly (no `node:fs` import anywhere under `src/` outside `src/cli/`).
-Every public options object in `build/index.ts` carries a required `fs`
-field of this type, and the caller supplies a concrete adapter -- the
-`data-cap` CLI builds one over `node:fs/promises` (`src/cli/filesystem.ts`);
-a test builds either that same real adapter or an in-memory fake. See ADR
-0058.
+implicitly (no `node:fs` import outside the package's CLI). Every public options object carries a required
+`fs` field of this type, and the caller supplies a concrete adapter: the CLI builds one over
+`node:fs/promises`; a test builds either that same adapter or an in-memory fake.
 
 "Ambient-fs-free" means specifically: `./build` never reaches for
 `node:fs` itself. It still performs real filesystem operations -- the
@@ -292,12 +293,7 @@ adapter is a drop-in value, but uses minimal structural types
 ([BuildDirent](#builddirent)/[BuildStats](#buildstats)) rather than Node's `Dirent`/
 `Stats` -- the capability boundary shouldn't leak Node's type surface just
 because the concrete adapter happens to be Node-backed. Only the
-operations `src/build/**` actually calls are here.
-
-**Not shared with `@maverickcer/env-cap`.** The two packages are
-independent products with no runtime coupling; a shared types package to
-dedupe six signatures would add real cross-package coupling for negligible
-benefit. env-cap has its own, structurally-identical interface.
+operations the build code actually calls are here.
 
 #### Properties
 
@@ -420,7 +416,7 @@ Write a UTF-8 text file, creating or truncating it. The parent directory must al
 
 ### BuildStats
 
-A path's stat info from [BuildFileSystem.stat](#stat) -- the subset of Node's `Stats` `src/build/**` reads.
+A path's stat info from [BuildFileSystem.stat](#stat) -- the subset of Node's `Stats` the build code reads.
 
 #### Properties
 
@@ -429,6 +425,8 @@ A path's stat info from [BuildFileSystem.stat](#stat) -- the subset of Node's `S
 ```ts
 readonly isFile: () => boolean;
 ```
+
+Same contract as Node's `Stats.isFile()`.
 
 ###### Returns
 
@@ -4559,6 +4557,56 @@ readonly location: FindingLocation;
 
 ***
 
+### ProjectAuditEvidenceOutput
+
+```ts
+type ProjectAuditEvidenceOutput = OutputOf<ReturnType<typeof projectAuditEvidenceSchema>>;
+```
+
+What [projectAuditEvidence](#projectauditevidence) returns, so a caller can name it.
+
+***
+
+### ProjectClassificationEvidenceOutput
+
+```ts
+type ProjectClassificationEvidenceOutput = OutputOf<ReturnType<typeof projectClassificationEvidenceSchema>>;
+```
+
+What [projectClassificationEvidence](#projectclassificationevidence) returns, so a caller can name it.
+
+***
+
+### ProjectComplianceEvidenceOutput
+
+```ts
+type ProjectComplianceEvidenceOutput = OutputOf<ReturnType<typeof projectComplianceEvidenceSchema>>;
+```
+
+What [projectComplianceEvidence](#projectcomplianceevidence) returns, so a caller can name it.
+
+***
+
+### ProjectPrivacyEvidenceOutput
+
+```ts
+type ProjectPrivacyEvidenceOutput = OutputOf<ReturnType<typeof projectPrivacyEvidenceSchema>>;
+```
+
+What [projectPrivacyEvidence](#projectprivacyevidence) returns, so a caller can name it.
+
+***
+
+### ProjectRetentionEvidenceOutput
+
+```ts
+type ProjectRetentionEvidenceOutput = OutputOf<ReturnType<typeof projectRetentionEvidenceSchema>>;
+```
+
+What [projectRetentionEvidence](#projectretentionevidence) returns, so a caller can name it.
+
+***
+
 ### ReportFindingCode
 
 ```ts
@@ -4865,7 +4913,7 @@ Bump only when a reader could misinterpret the shape -- same discipline every ot
 ### UNOWNED
 
 ```ts
-const UNOWNED: string;
+const UNOWNED: "(unowned)";
 ```
 
 Sentinel bucket for a capability/field with no documented owner at any level --
@@ -5479,15 +5527,16 @@ Statically evaluates one AST expression against the allow-listed literal grammar
 function evidenceDisclaimer(): string;
 ```
 
-Short disclaimer prepended to every artifact that renders sensitivity/
-protections/endpoints claims (the docs catalog, ownership report,
-data-flow diagram) -- see AGENTS.md's declared-vs-proven invariant.
-Never omit this from an artifact that renders governance metadata: it's
-what keeps "documented" from being misread as "verified" or "compliant."
+Short disclaimer stamped into every artifact that renders sensitivity, ownership or expiry claims. Never omit
+it from an artifact that renders such metadata: it is what keeps "documented" from being misread as
+"verified" or "compliant". Every fact in those artifacts is either a statically-provable code fact or an
+author's own declaration; data-cap never validates a declaration against reality.
 
 #### Returns
 
 `string`
+
+The disclaimer.
 
 ***
 
@@ -5564,10 +5613,10 @@ Renders the "do not edit by hand" marker in the given comment syntax.
 
 #### Parameters
 
-| Parameter | Type | Default value | Description |
-| ------ | ------ | ------ | ------ |
-| `format` | `"ts"` \| `"markdown"` | `"ts"` | Comment syntax to render in. |
-| `regenerate` | `string` | `` "Run `npx data-cap` to regenerate." `` | How to regenerate; defaults to the CLI, which writes the manifest. |
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `format?` | `"ts"` \| `"markdown"` | Comment syntax to render in. |
+| `regenerate?` | `string` | How to regenerate; defaults to the CLI, which writes the manifest. |
 
 #### Returns
 
@@ -5768,17 +5817,27 @@ readonly [`DependencyModelConsumer`](#dependencymodelconsumer)[]
 function isGeneratedFile(content): boolean;
 ```
 
-Whether `content` starts with a `generatedBanner()`-produced marker, in either format and with any regeneration hint.
+Whether `content` carries a [generatedBanner](#generatedbanner)-produced marker, in either format.
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `content` | `string` |
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `content` | `string` | A file's text. |
 
 #### Returns
 
 `boolean`
+
+`true` when the file is generated.
+
+#### Remarks
+
+Deliberately not a bare `content.startsWith(generatedBanner(...))`: a shebang, a `"use strict"` pragma, or a
+license header pushes a real banner off line one, and a stricter check would then read a genuinely
+generated file as hand-written, which the dependency scan would take as "a real consumer imports this" and
+so permanently mask an abandoned one. The marker is looked for across the first 20 non-empty lines instead,
+which clears every realistic preamble without scanning a whole file.
 
 ***
 
@@ -5893,7 +5952,7 @@ output field.
 
 #### Returns
 
-`ProjectAuditEvidenceOutput`
+[`ProjectAuditEvidenceOutput`](#projectauditevidenceoutput)
 
 ***
 
@@ -5913,7 +5972,7 @@ Data Classification Evidence: every capability/field with a declared `sensitivit
 
 #### Returns
 
-`ProjectClassificationEvidenceOutput`
+[`ProjectClassificationEvidenceOutput`](#projectclassificationevidenceoutput)
 
 ***
 
@@ -5933,7 +5992,7 @@ Data Compliance Evidence: every capability's declared `metadata` bag, unvalidate
 
 #### Returns
 
-`ProjectComplianceEvidenceOutput`
+[`ProjectComplianceEvidenceOutput`](#projectcomplianceevidenceoutput)
 
 ***
 
@@ -6033,7 +6092,7 @@ Data Privacy Evidence: sensitivity plus whether protections are documented (pres
 
 #### Returns
 
-`ProjectPrivacyEvidenceOutput`
+[`ProjectPrivacyEvidenceOutput`](#projectprivacyevidenceoutput)
 
 ***
 
@@ -6053,7 +6112,7 @@ Data Retention Evidence: every capability/field with a declared `retention` poli
 
 #### Returns
 
-`ProjectRetentionEvidenceOutput`
+[`ProjectRetentionEvidenceOutput`](#projectretentionevidenceoutput)
 
 ***
 

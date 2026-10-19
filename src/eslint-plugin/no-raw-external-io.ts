@@ -12,12 +12,12 @@ import {
   isOperationBodyKey,
   isOperationSectionKey,
 } from "./capability-call.js"
-import { globToRegExp } from "./glob.js"
+import { matchesAllowList } from "./glob.js"
 
 type Scope = TSESLint.Scope.Scope
 
 const createRule = RuleCreator(
-  (name) => `https://github.com/maverickcer/data-cap#eslint-plugin-${name}`,
+  () => "https://github.com/MaverickCER/data-cap/blob/main/GUIDE.md#eslint-plugin",
 )
 
 /** Options for `no-raw-external-io`. */
@@ -170,8 +170,8 @@ export const noRawExternalIo = createRule<[RuleOptions], "noRawExternalIo">({
   defaultOptions: [{ allow: [], functions: DEFAULT_FUNCTIONS }],
   create(context, [options]) {
     // `RuleCreator` merges `defaultOptions` onto the configured options, so `allow` is always set.
-    const allowPatterns = options.allow as readonly string[]
-    if (allowPatterns.some((pattern) => globToRegExp(pattern).test(context.filename))) return {}
+    if (matchesAllowList(options.allow as readonly string[], context.filename, context.cwd))
+      return {}
 
     const flagged = new Set(options.functions ?? DEFAULT_FUNCTIONS)
 

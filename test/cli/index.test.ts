@@ -266,9 +266,18 @@ describe("helpText", () => {
     expect(helpText()).not.toContain("--flow ")
   })
 
+  it("shows an example, groups the flags by what they are for, and names no decision record", () => {
+    const text = helpText()
+    expect(text).toContain("\nExamples:\n")
+    for (const heading of ["Where to look:", "What to write:", "What counts as an error:"]) {
+      expect(text).toContain(`\n${heading}\n`)
+    }
+    expect(text).not.toMatch(/ADR \d+/)
+  })
+
   it("lists the init subcommand", () => {
     expect(helpText()).toContain("data-cap init")
-    expect(helpText()).toContain("init                      Scaffold a minimal starting point")
+    expect(helpText()).toContain("init                        Scaffold a minimal starting point")
   })
 })
 

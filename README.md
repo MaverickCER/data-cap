@@ -2,10 +2,10 @@
 
 [![CI](https://img.shields.io/github/actions/workflow/status/maverickcer/data-cap/ci.yml?branch=main&label=CI)](https://github.com/maverickcer/data-cap/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/data-cap)](https://www.npmjs.com/package/data-cap)
-[![Coverage](https://img.shields.io/endpoint?url=https://maverickcer.github.io/data-cap/coverage-badge.json)](https://github.com/MaverickCER/data-cap/blob/main/vitest.config.ts)
-[![Mutation](https://img.shields.io/endpoint?url=https://maverickcer.github.io/data-cap/mutation-badge.json)](https://github.com/MaverickCER/data-cap/blob/main/stryker.config.mjs)
+[![Coverage: the lowest of line, statement, function and branch coverage](https://img.shields.io/endpoint?url=https://maverickcer.github.io/data-cap/coverage-badge.json)](https://maverickcer.github.io/data-cap/coverage.json)
+[![Mutation score: the share of applicable mutants the tests detect](https://img.shields.io/endpoint?url=https://maverickcer.github.io/data-cap/mutation-badge.json)](https://maverickcer.github.io/data-cap/mutation.json)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/MaverickCER/data-cap/badge)](https://scorecard.dev/viewer/?uri=github.com/MaverickCER/data-cap)
-[![Bundle size](https://img.shields.io/endpoint?url=https://maverickcer.github.io/data-cap/size-badge.json)](https://github.com/MaverickCER/data-cap/blob/main/scripts/check-size.mjs)
+[![Bundle size: gzip size of the entry point against its budget](https://img.shields.io/endpoint?url=https://maverickcer.github.io/data-cap/size-badge.json)](https://maverickcer.github.io/data-cap/size.json)
 [![Socket Badge](https://badge.socket.dev/npm/package/data-cap/latest)](https://socket.dev/npm/package/data-cap)
 [![Node](https://img.shields.io/node/v/data-cap)](https://www.npmjs.com/package/data-cap)
 [![License](https://img.shields.io/npm/l/data-cap)](LICENSE)
@@ -91,7 +91,7 @@ This is real output from the example's own `npm run docs` (a `data-cap --evidenc
 ### Evidence it works
 
 - **Real fixtures:** the output above comes from a runnable example, and [complete applications](https://github.com/MaverickCER/data-cap/tree/main/examples) cover the model from one capability to a whole application.
-- **Enforced in CI:** coverage is a ratchet that may only move up, mutation score is a gate ([CODE_REVIEW.md](CODE_REVIEW.md)), and a bundle-size budget is checked ([`scripts/check-size.mjs`](https://github.com/MaverickCER/data-cap/blob/main/scripts/check-size.mjs)).
+- **Enforced in CI:** coverage is a ratchet that may only move up, mutation score is a gate ([CODE_REVIEW.md](CODE_REVIEW.md)), and a bundle-size budget is checked ([`ci/size-budgets.mjs`](https://github.com/MaverickCER/data-cap/blob/main/ci/size-budgets.mjs)).
 - **Runtime-tested:** core, runtime, and helpers are verified against real Node, Bun, and Deno engines in CI ([support matrix](GUIDE.md#runtime-support-matrix)).
 - **Known hazards tested:** the dual-package (ESM and CommonJS) hazard is pinned by a test that states its exact consequence ([SECURITY.md](SECURITY.md#dual-package-hazard)).
 - **Verifiable release:** published with npm OIDC provenance and no long-lived token ([SECURITY.md](SECURITY.md#supply-chain-posture)).
@@ -106,6 +106,8 @@ npx data-cap init                  # writes src/data.ts and scripts/generate-dat
 npm install --save-dev typescript # the generator parses your source with it
 node scripts/generate-data.mjs
 ```
+
+**Using an AI agent?** Give it [the skill](https://raw.githubusercontent.com/MaverickCER/data-cap/main/skills/data-cap/SKILL.md): a short manual written from this package's own exports, with the rules a type signature cannot say.
 
 `init` is filesystem-only: it never runs a package manager and never edits `package.json`. **Verify it works:** the generator prints `Discovered 1 active capability(ies).` and writes the manifest, `docs/DATA.md`, and an ownership report. The smallest practical capability declares fields and one getter:
 

@@ -1,9 +1,9 @@
 {
   "packageName": "data-cap",
-  "packageVersion": "0.6.2",
-  "apiExtractorVersion": "7.59.3",
+  "packageVersion": "0.7.0",
+  "apiExtractorVersion": "7.59.4",
   "apiJsonSchemaVersion": 1011,
-  "apiJsonHash": "0ed66fd51c0ebd4b18333f19f6497cc96b5914852b89867a6eaddfc44b0b0d3f",
-  "dtsHash": "ae70526ab63c5e8f263b221ede4d4612e73245458e2df9ffb06fdb798b770794",
-  "generatedAt": "2026-10-02T21:11:15.227Z"
+  "apiJsonHash": "d934aaa9fd79b1d3d7632420ff3c31dcd42515f9b5310e212773ba2a98518c78",
+  "dtsHash": "de9c3294a575f5a9088f6a43241924657a875a643483b6e6f754cec367398914",
+  "generatedAt": "2026-10-13T03:03:06.602Z"
 }

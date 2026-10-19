@@ -61,12 +61,12 @@ blocker for your evaluation today, wait for a `1.0` release or track
 ## Bundle size and performance
 
 Every consumer-facing entry point carries a hard gzip budget, enforced in
-CI (`scripts/check-size.mjs`) — see [`PERFORMANCE.md`](PERFORMANCE.md) for
+CI (`ci/size-budgets.mjs`) — see [`PERFORMANCE.md`](PERFORMANCE.md) for
 current numbers and methodology. `core` and `helpers` are each single-digit
 KB gzipped; `runtime`'s cache/retry features are separate, independently
 tree-shaken entry points so importing `./runtime` alone never pays for
 either. `build` and `eslint-plugin` are Node-only, dev-time-only, and
-carry no budget (they never ship to a browser bundle).
+carry only a 999 KB ceiling (they never ship to a browser bundle).
 
 ## Architectural guarantees worth knowing before you adopt
 

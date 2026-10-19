@@ -150,6 +150,11 @@ export type {
   ClassificationEntry,
   ComplianceEntry,
   PrivacyEntry,
+  ProjectAuditEvidenceOutput,
+  ProjectClassificationEvidenceOutput,
+  ProjectComplianceEvidenceOutput,
+  ProjectPrivacyEvidenceOutput,
+  ProjectRetentionEvidenceOutput,
   RetentionEntry,
 } from "./reference-projections.js"
 

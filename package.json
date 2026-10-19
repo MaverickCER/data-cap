@@ -139,12 +139,13 @@
   ],
   "scripts": {
     "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
-    "build": "npm run clean && tsup && tsc -p tsconfig.build.json && node scripts/emit-dts-shims.mjs && node scripts/fix-eslint-plugin-cjs-interop.mjs",
+    "build": "npm run clean && tsup && tsc -p tsconfig.build.json && node scripts/emit-dts-shims.mjs && internal-package-contract tool cjs-interop",
     "prepare": "npm run build",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "typescript-compat": "node scripts/typescript-compat.mjs",
-    "verify:compiler-isolation": "node scripts/verify-compiler-isolation.mjs",
+    "verify:compiler-isolation": "internal-package-contract tool compiler-isolation",
+    "verify:ambient": "internal-package-contract tool ambient",
     "verify:readme-example": "node scripts/check-readme-example-fresh.mjs",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
@@ -153,11 +154,13 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "size": "node scripts/check-size.mjs",
+    "size": "internal-package-contract tool size",
     "schema": "node scripts/generate-json-schema.mjs",
     "docs:api": "typedoc",
+    "docs:env": "internal-package-contract env",
     "docs:api:report": "typedoc --options typedoc.markdown.json",
-    "docs:api:report:check": "node scripts/check-api-report.mjs",
+    "docs:api:report:check": "internal-package-contract tool api-report",
+    "docs:benchmarks": "node node_modules/internal-package-contract/scripts/benchmark/render-page.mjs --out docs/benchmarks/index.html --readme https://github.com/maverickcer/data-cap/blob/main/benchmarks/README.md --history \"Runtime|benchmarks/history/runtime.json\" --history \"Build-time|benchmarks/history/buildtime.json\"",
     "examples:update-golden": "node scripts/update-example-goldens.mjs",
     "benchmark": "node benchmarks/run-benchmarks.mjs",
     "benchmark:history": "node node_modules/internal-package-contract/scripts/benchmark/append-history.mjs",
@@ -165,10 +168,8 @@
     "benchmark:page": "node node_modules/internal-package-contract/scripts/benchmark/render-page.mjs",
     "setup": "npm install && npm run build && npm run schema",
     "stage": "npm run typecheck && npm run build && npm run test && npm run size",
-    "verify:no-ambient-fs": "node scripts/verify-no-ambient-fs.mjs",
-    "verify:no-ambient-child-process": "node scripts/verify-no-ambient-child-process.mjs",
-    "verify": "npm run typecheck && npm run lint && npm run format:check && npm run build && npm run schema && npm run test:coverage && npm run size && npm run verify:no-ambient-fs && npm run verify:no-ambient-child-process && npm run verify:compiler-isolation && npm run verify:readme-example && npm run docs:api:report:check",
-    "precommit": "npm run typecheck && npm run lint && npm run format && npm run build && npm run schema && npm run test:coverage && npm run size && npm run verify:no-ambient-fs && npm run verify:no-ambient-child-process && npm run verify:compiler-isolation && npm run verify:readme-example && npm run docs:api:report:check",
+    "verify": "npm run typecheck && npm run lint && npm run format:check && npm run build && npm run schema && npm run test:coverage && npm run size && npm run verify:ambient && npm run verify:compiler-isolation && npm run verify:readme-example && npm run docs:api:report:check",
+    "precommit": "npm run typecheck && npm run lint && npm run format && npm run build && npm run schema && npm run test:coverage && npm run size && npm run verify:ambient && npm run verify:compiler-isolation && npm run verify:readme-example && npm run docs:api:report:check",
     "prepublishOnly": "npm run verify",
     "version": "changeset version && npm run build && npm run examples:update-golden",
     "release": "changeset publish",
@@ -198,7 +199,7 @@
     }
   },
   "devDependencies": {
-    "@changesets/cli": "^2.31.1",
+    "@changesets/cli": "^3.0.3",
     "@eslint/js": "^10.0.1",
     "@types/node": "^22.0.0",
     "@typescript-eslint/utils": "^8.65.0",
@@ -209,7 +210,7 @@
     "eslint-config-prettier": "10.1.8",
     "espree": "^11.2.0",
     "globals": "^17.9.0",
-    "internal-package-contract": "github:MaverickCER/internal-package-contract#v0.10.0",
+    "internal-package-contract": "github:MaverickCER/internal-package-contract#v0.13.0",
     "prettier": "3.9.9",
     "ts-json-schema-generator": "^2.9.0",
     "tsup": "^8.0.0",
@@ -240,6 +241,36 @@
       ".": "src/core/index.ts",
       "./runtime/cache": "src/runtime/cache.ts",
       "./runtime/retry": "src/runtime/retry.ts"
+    },
+    "copies": [
+      "benchmark-budgets",
+      "build-fs",
+      "code-of-conduct",
+      "compiler-api",
+      "display-path",
+      "editorconfig",
+      "generated-banner",
+      "glob",
+      "no-node-fs",
+      "reading-benchmarks",
+      "releasing",
+      "resolve-tsconfig-paths",
+      "support",
+      "typedoc-markdown",
+      "typescript",
+      "writing-benchmarks"
+    ],
+    "checks": [
+      "AgentSkill",
+      "AmbientCapabilities"
+    ],
+    "ambientCapabilities": {
+      "child_process": [],
+      "fs": [
+        "bin",
+        "./eslint-plugin",
+        "./node"
+      ]
     }
   }
 }

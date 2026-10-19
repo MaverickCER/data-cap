@@ -4,9 +4,9 @@ What does adopting this package add to latency, CPU, memory and compute spend --
 
 ## What adopting this package costs
 
-For a typical workload of **160 files** per operation, routing the work through `data-cap` adds **494 ms** per operation compared with a bare-minimum baseline (14× baseline), about **$1.03 – $9.91 per million operations** of compute. Overall, it grows O(n) with workload size (measured exponent 1.05).
+For a typical workload of **160 files** per operation, routing the work through `data-cap` adds **494 ms** per operation compared with a bare-minimum baseline (**14× the baseline**). Overall, it grows O(n log n) with workload size (measured exponent 1.12). At list prices that is on the order of **~$1 – $10 per million operations** of compute.
 
-> Dollar figures are **estimates** from published list prices (see _Cost model_ below) and are for comparing orders of magnitude, not for budgeting to the cent.
+> The relative figure and the growth class are the steadier ones: both come from the same run, so they depend far less on the machine than a time does, though runtime behaviour and contention on the runner still move them. The growth class is an empirical fit to the sizes tested, not a proof of asymptotic complexity. Dollar figures are **order-of-magnitude** estimates from published list prices on shared hardware (see _Cost model_ below) -- good for comparing one package with another, not for budgeting.
 
 | Cost | Typical (160 files) | Largest (640 files) |
 | --- | --- | --- |
@@ -14,7 +14,7 @@ For a typical workload of **160 files** per operation, routing the work through 
 | Added latency, relative to baseline | 14× baseline | 20× baseline |
 | Added CPU time per operation | 881 ms | 5.11 s |
 | Added memory per operation (heap delta) | 71.0 MiB | 556.6 MiB |
-| Estimated compute cost per 1M operations | $1.03 – $9.91 | $27.76 – $57.40 |
+| Compute cost per 1M operations (order of magnitude) | ~$1 – $10 | ~$10 – $100 |
 | Single-core throughput ceiling of the overhead alone | 2 ops/s | 0 ops/s |
 | Shipped code parsed at every cold start (gzip) | 40.2 KiB | 40.2 KiB |
 
@@ -50,21 +50,59 @@ The baseline is an empty or minimal function, so it costs almost nothing and the
 | 320 | 79.7 ms | 1.22 s | 1.14 s | 15× baseline | 1.93 s | $2.55 – $21.72 |
 | 640 | 162 ms | 3.23 s | 3.06 s | 20× baseline | 5.11 s | $27.76 – $57.40 |
 
-**How the total grows:** O(n) (linear), exponent 1.05 over 6 sizes.
+**How the total grows:** O(n log n) (linearithmic), exponent 1.12 over 6 sizes.
 
 ## 2. Function by function
 
 Every function the package exposes is measured on its own across the full size ladder, then its measured growth rate is compared with the big-O we documented for it. A function whose measured class **differs** from its documented one is the most useful thing in this report: either the documentation or the code is wrong.
 
-| Function | Documented | Measured | Agreement | At 160 | At 2560 |
-| --- | --- | --- | --- | --- | --- |
-| `discoverCapabilityFiles` | O(n) | O(n) | ✅ matches | 13.6 ms | 202 ms |
-| `linkCapabilityFiles` | O(n) | O(n) | ✅ matches | 145 ms | 1.43 s |
-| `buildInventory` | O(n) | O(n) | ✅ matches | 1.49 ms | 20.6 ms |
-| `buildOwnershipModel` | O(n) | O(n) | ✅ matches | 251 µs | 3.75 ms |
-| `buildLifecycleModel` | O(n) | O(n) | ✅ matches | 79.1 µs | 1.49 ms |
-| `buildEvidenceModel` | O(1) | O(1) | ✅ matches | 1.85 µs | 1.91 µs |
-| `defineEvidenceProjection (project)` | O(n) | O(n) | ✅ matches | 23.2 ms | 448 ms |
+| Function | Varies | Documented | Measured | Agreement | At 160 | At 2560 |
+| --- | --- | --- | --- | --- | --- | --- |
+| `discoverCapabilityFiles` | file | O(n) | O(n) | ✅ matches | 13.6 ms | 202 ms |
+| `linkCapabilityFiles` | file | O(n) | O(n) | ✅ matches | 145 ms | 1.43 s |
+| `buildInventory` | file | O(n) | O(n) | ✅ matches | 1.49 ms | 20.6 ms |
+| `buildOwnershipModel` | file | O(n) | O(n) | ✅ matches | 251 µs | 3.75 ms |
+| `buildLifecycleModel` | file | O(n) | O(n) | ✅ matches | 79.1 µs | 1.49 ms |
+| `buildEvidenceModel` | file | O(1) | O(1) | ✅ matches | 1.85 µs | 1.91 µs |
+| `generateDataArtifacts` | file | O(n) | n/a | ❔ not enough data | n/a | n/a |
+| `computeDataArtifacts` | file | O(n) | n/a | ❔ not enough data | n/a | n/a |
+| `checkArtifacts` | file | O(n) | n/a | ❔ not enough data | n/a | n/a |
+| `computeSourceFingerprint` | file | O(n) | n/a | ❔ not enough data | n/a | n/a |
+| `getEvidenceModel` (cache-hit) | file | O(n) | n/a | ❔ not enough data | n/a | n/a |
+| `getEvidenceModel` (cache-miss) | file | O(n) | n/a | ❔ not enough data | n/a | n/a |
+| `parseCapabilityFile` | file | O(n) | n/a | ❔ not enough data | n/a | n/a |
+| `generateManifest` | file | O(n) | n/a | ❔ not enough data | n/a | n/a |
+| `generateDocumentation` | file | O(n) | n/a | ❔ not enough data | n/a | n/a |
+| `generateFlow` | file | O(n²) | n/a | ❔ not enough data | n/a | n/a |
+| `diffManifestSnapshots` (first-run) | file | O(n) | n/a | ❔ not enough data | n/a | n/a |
+| `diffManifestSnapshots` (unchanged) | file | O(n) | n/a | ❔ not enough data | n/a | n/a |
+| `projectAuditEvidence` | file | O(n) | n/a | ❔ not enough data | n/a | n/a |
+| `projectClassificationEvidence` | file | O(n) | n/a | ❔ not enough data | n/a | n/a |
+| `projectComplianceEvidence` | file | O(n) | n/a | ❔ not enough data | n/a | n/a |
+| `projectPrivacyEvidence` | file | O(n) | n/a | ❔ not enough data | n/a | n/a |
+| `projectRetentionEvidence` | file | O(n) | n/a | ❔ not enough data | n/a | n/a |
+| `computeExpiringEntries` | file | O(n) | n/a | ❔ not enough data | n/a | n/a |
+| `buildOwnershipMatrix` | file | O(n) | n/a | ❔ not enough data | n/a | n/a |
+| `buildManifestSnapshot` | file | O(n) | n/a | ❔ not enough data | n/a | n/a |
+| `checkDuplicateEndpoints` | file | O(n²) | n/a | ❔ not enough data | n/a | n/a |
+| `checkExclusiveGroups` | file | O(n) | n/a | ❔ not enough data | n/a | n/a |
+| `checkOwnershipAndSensitivity` | file | O(n) | n/a | ❔ not enough data | n/a | n/a |
+| `checkStructuralDuplication` | file | O(n²) | n/a | ❔ not enough data | n/a | n/a |
+| `findManifestExportCollisions` | file | O(n) | n/a | ❔ not enough data | n/a | n/a |
+| `projectFields` | file | O(n) | n/a | ❔ not enough data | n/a | n/a |
+| `projectGetters` | file | O(n) | n/a | ❔ not enough data | n/a | n/a |
+| `projectMutators` | file | O(n) | n/a | ❔ not enough data | n/a | n/a |
+| `projectOperationInventory` | file | O(n) | n/a | ❔ not enough data | n/a | n/a |
+| `projectSubscriptions` | file | O(n) | n/a | ❔ not enough data | n/a | n/a |
+| `renderManifest` | file | O(n) | n/a | ❔ not enough data | n/a | n/a |
+| `buildOpenApiSchemaArtifact` | file | O(n) | n/a | ❔ not enough data | n/a | n/a |
+| `renderDocumentation` | file | O(n) | n/a | ❔ not enough data | n/a | n/a |
+| `renderOwnershipGraphDot` | file | O(n) | n/a | ❔ not enough data | n/a | n/a |
+| `buildFlowGraph` | file | O(n) | n/a | ❔ not enough data | n/a | n/a |
+| `deriveUsageFindings` | file | O(n) | n/a | ❔ not enough data | n/a | n/a |
+| `renderUsageReport` | file | O(n) | n/a | ❔ not enough data | n/a | n/a |
+| `buildSarifLog` | file | O(n) | n/a | ❔ not enough data | n/a | n/a |
+| `defineEvidenceProjection (project)` | file | O(n) | O(n) | ✅ matches | 23.2 ms | 448 ms |
 
 ### `discoverCapabilityFiles`
 
@@ -86,7 +124,7 @@ Every function the package exposes is measured on its own across the full size l
 
 **In the end-to-end run:** Once at the start of every artifact generation.
 
-**Measured: O(n)** (exponent 0.92, 8 sizes) -- ✅ matches.
+**Measured: O(n)** (exponent 0.98, 8 sizes) -- ✅ matches.
 
 | files | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
@@ -150,7 +188,7 @@ Every function the package exposes is measured on its own across the full size l
 
 **In the end-to-end run:** Once per artifact run.
 
-**Measured: O(n)** (exponent 0.86, 8 sizes) -- ✅ matches.
+**Measured: O(n)** (exponent 0.95, 8 sizes) -- ✅ matches.
 
 | files | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
@@ -212,7 +250,7 @@ Every function the package exposes is measured on its own across the full size l
 
 **In the end-to-end run:** Once per artifact run.
 
-**Measured: O(n)** (exponent 0.91, 8 sizes) -- ✅ matches.
+**Measured: O(n)** (exponent 1.08, 8 sizes) -- ✅ matches.
 
 | files | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
@@ -242,7 +280,7 @@ Every function the package exposes is measured on its own across the full size l
 
 **In the end-to-end run:** Once per artifact run.
 
-**Measured: O(1)** (exponent -0.02, 8 sizes) -- ✅ matches.
+**Measured: O(1)** (exponent 0.01, 8 sizes) -- ✅ matches.
 
 | files | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
@@ -254,6 +292,676 @@ Every function the package exposes is measured on its own across the full size l
 | 640 | 1.63 µs | 2.67 µs | 1.69 µs | 1.4 KiB | 614,971 |
 | 1280 | 1.67 µs | 1.97 µs | 1.82 µs | 1.4 KiB | 598,932 |
 | 2560 | 1.91 µs | 2.35 µs | 2.01 µs | 1.4 KiB | 523,650 |
+
+### `generateDataArtifacts`
+
+**Why we benchmark it.** The combined entry point most pipelines call: it shares one discovery and parse across the manifest, documentation, ownership report, flow diagrams and evidence.
+
+**What poor performance would mean.** The shared pass is the whole saving over running the generators one by one; if it stopped being shared, every pipeline would pay several times the parsing.
+
+**Expected growth: O(n).** It discovers, parses and links once and renders each artifact from that single pass, so cost is proportional to the amount of source.
+
+**Variables that could change its cost**
+
+| Variable | How it is handled | What it is |
+| --- | --- | --- |
+| capability files | swept | The tier axis: how many files in the project declare a data capability. |
+| capability content | fixed at "realistic generated TypeScript: literal schemas, varied fields, getters and mutators, documentData calls" | Parsing cost depends on source-text volume and variety; the fixtures are literal TypeScript, never executed by the tooling. |
+| filesystem | fixed at "local SSD through the Node adapter" | A network or virtual filesystem adds latency per file; not covered. |
+| runtime | fixed at "Node (V8)" | Measured on Node only. |
+
+**In the end-to-end run:** This is the end-to-end operation itself.
+
+### `computeDataArtifacts`
+
+**Why we benchmark it.** It computes every artifact in memory without writing any, for tools that want the content and not the files.
+
+**What poor performance would mean.** A slower read-only run in proportion to the amount of source.
+
+**Expected growth: O(n).** It runs the same single discovery, parse and link as generation and renders each artifact once, so cost is proportional to the amount of source.
+
+**Variables that could change its cost**
+
+| Variable | How it is handled | What it is |
+| --- | --- | --- |
+| capability files | swept | The tier axis: how many files in the project declare a data capability. |
+| capability content | fixed at "realistic generated TypeScript: literal schemas, varied fields, getters and mutators, documentData calls" | Parsing cost depends on source-text volume and variety; the fixtures are literal TypeScript, never executed by the tooling. |
+| filesystem | fixed at "local SSD through the Node adapter" | A network or virtual filesystem adds latency per file; not covered. |
+| runtime | fixed at "Node (V8)" | Measured on Node only. |
+
+**In the end-to-end run:** A read-only run, not part of generating the artifacts.
+
+### `checkArtifacts`
+
+**Why we benchmark it.** The CI gate that fails when a committed artifact is stale: it recomputes every artifact in memory and compares it with the file on disk.
+
+**What poor performance would mean.** A slower gate on every pull request, which is the most frequent place build-time cost is paid.
+
+**Expected growth: O(n).** It runs one shared discovery, parse and link, renders each artifact once and compares each with its file, so cost is proportional to the amount of source.
+
+**Variables that could change its cost**
+
+| Variable | How it is handled | What it is |
+| --- | --- | --- |
+| capability files | swept | The tier axis: how many files in the project declare a data capability. |
+| capability content | fixed at "realistic generated TypeScript: literal schemas, varied fields, getters and mutators, documentData calls" | Parsing cost depends on source-text volume and variety; the fixtures are literal TypeScript, never executed by the tooling. |
+| filesystem | fixed at "local SSD through the Node adapter" | A network or virtual filesystem adds latency per file; not covered. |
+| runtime | fixed at "Node (V8)" | Measured on Node only. |
+
+**In the end-to-end run:** A CI gate, not part of generating the artifacts.
+
+### `computeSourceFingerprint`
+
+**Why we benchmark it.** It decides whether a cached evidence model is still current, so it runs before every cached read and must cost far less than the recompute it avoids.
+
+**What poor performance would mean.** A cache that costs nearly as much as the recompute it saves, which makes every cached read pointless.
+
+**Expected growth: O(n).** It walks the capability files and hashes each one's text once, with no parsing or linking, so cost is proportional to the bytes of source.
+
+**Variables that could change its cost**
+
+| Variable | How it is handled | What it is |
+| --- | --- | --- |
+| capability files | swept | The tier axis: how many files in the project declare a data capability. |
+| capability content | fixed at "realistic generated TypeScript: literal schemas, varied fields, getters and mutators, documentData calls" | Parsing cost depends on source-text volume and variety; the fixtures are literal TypeScript, never executed by the tooling. |
+| filesystem | fixed at "local SSD through the Node adapter" | A network or virtual filesystem adds latency per file; not covered. |
+| runtime | fixed at "Node (V8)" | Measured on Node only. |
+
+**In the end-to-end run:** Run before a cached read, not while generating.
+
+### `getEvidenceModel`
+
+**Why we benchmark it.** The cached way to read the evidence model: it trusts a committed artifact only while the source fingerprint matches, and recomputes otherwise.
+
+**What poor performance would mean.** A miss that costs more than a plain recompute, or a hit that costs nearly as much as one, would make the cache worse than not having it.
+
+**Expected growth: O(n).** A hit fingerprints the source and reads one file; a miss does that and then rebuilds the model, so both grow with the amount of source.
+
+**Variables that could change its cost**
+
+| Variable | How it is handled | What it is |
+| --- | --- | --- |
+| capability files | swept | The tier axis: how many files in the project declare a data capability. |
+| capability content | fixed at "realistic generated TypeScript: literal schemas, varied fields, getters and mutators, documentData calls" | Parsing cost depends on source-text volume and variety; the fixtures are literal TypeScript, never executed by the tooling. |
+| filesystem | fixed at "local SSD through the Node adapter" | A network or virtual filesystem adds latency per file; not covered. |
+| cache state | variant | A committed artifact whose fingerprint matches, or none. |
+| runtime | fixed at "Node (V8)" | Measured on Node only. |
+
+**In the end-to-end run:** A cached read, not part of generating the artifacts.
+
+#### Variant `cache-hit`
+
+The committed artifact is current: read from disk, no recompute.
+
+#### Variant `cache-miss`
+
+No artifact exists: the model is rebuilt.
+
+### `parseCapabilityFile`
+
+**Why we benchmark it.** Every generator parses each capability file with the TypeScript parser, which is the largest single cost of a build-time run.
+
+**What poor performance would mean.** Every build-time command slows in proportion to the source it parses, and a super-linear parse would punish the largest files first.
+
+**Expected growth: O(n).** The text is parsed once by the TypeScript parser and the declarations read from one syntax tree, so cost is proportional to the length of the source.
+
+**Variables that could change its cost**
+
+| Variable | How it is handled | What it is |
+| --- | --- | --- |
+| capability files | swept | The tier axis: how many copies of the fixture capability the one source file declares. |
+| capability content | fixed at "realistic generated TypeScript: literal schemas, varied fields, getters and mutators, documentData calls" | Parsing cost depends on source-text volume and variety; the fixtures are literal TypeScript, never executed by the tooling. |
+| runtime | fixed at "Node (V8)" | Measured on Node only. |
+
+**In the end-to-end run:** Run once per capability file inside every generator; measured here on one file.
+
+### `generateManifest`
+
+**Why we benchmark it.** It renders the manifest the application imports at runtime and diffs it against the previous snapshot, in every build that ships the application.
+
+**What poor performance would mean.** Slower builds in proportion to the number of capabilities.
+
+**Expected growth: O(n).** One manifest entry is rendered and one snapshot entry diffed for each capability, so cost is proportional to the number of capabilities.
+
+**Variables that could change its cost**
+
+| Variable | How it is handled | What it is |
+| --- | --- | --- |
+| capability files | swept | The tier axis: how many files in the project declare a data capability. |
+| capability content | fixed at "realistic generated TypeScript: literal schemas, varied fields, getters and mutators, documentData calls" | Parsing cost depends on source-text volume and variety; the fixtures are literal TypeScript, never executed by the tooling. |
+| runtime | fixed at "Node (V8)" | Measured on Node only. |
+
+**In the end-to-end run:** Run inside every artifact generation; measured on its own.
+
+### `generateDocumentation`
+
+**Why we benchmark it.** It renders the Markdown reference from an inventory and a change report, wherever documentation is regenerated.
+
+**What poor performance would mean.** Documentation builds slow down in proportion to the number of capabilities and the prose each carries.
+
+**Expected growth: O(n).** One section is rendered for each capability, once, so cost is proportional to the amount of documentation.
+
+**Variables that could change its cost**
+
+| Variable | How it is handled | What it is |
+| --- | --- | --- |
+| capability files | swept | The tier axis: how many files in the project declare a data capability. |
+| capability content | fixed at "realistic generated TypeScript: literal schemas, varied fields, getters and mutators, documentData calls" | Parsing cost depends on source-text volume and variety; the fixtures are literal TypeScript, never executed by the tooling. |
+| runtime | fixed at "Node (V8)" | Measured on Node only. |
+
+**In the end-to-end run:** Run inside every artifact generation; measured on its own.
+
+### `generateFlow`
+
+**Why we benchmark it.** It renders the flow diagrams of how data moves between capabilities, in every pipeline that publishes them.
+
+**What poor performance would mean.** A slower diagram step that grows with the square of the number of capabilities, so the largest projects pay for it most; drawing each capability from a grouped list of its own flows would make it linear.
+
+**Expected growth: O(n²).** Each capability's diagram is drawn from the list of every flow filtered for that capability, so the work grows with the number of capabilities times the number of flows, and the flows grow with the capabilities.
+
+**Variables that could change its cost**
+
+| Variable | How it is handled | What it is |
+| --- | --- | --- |
+| capability files | swept | The tier axis: how many files in the project declare a data capability. |
+| capability content | fixed at "realistic generated TypeScript: literal schemas, varied fields, getters and mutators, documentData calls" | Parsing cost depends on source-text volume and variety; the fixtures are literal TypeScript, never executed by the tooling. |
+| runtime | fixed at "Node (V8)" | Measured on Node only. |
+
+**In the end-to-end run:** Run inside every artifact generation; measured on its own.
+
+### `diffManifestSnapshots`
+
+**Why we benchmark it.** It tells what changed since the previous manifest, once per artifact run.
+
+**What poor performance would mean.** A slower artifact run in proportion to the number of capabilities.
+
+**Expected growth: O(n).** Both snapshots are indexed once and each capability compared once, so cost is proportional to the number of capabilities.
+
+**Variables that could change its cost**
+
+| Variable | How it is handled | What it is |
+| --- | --- | --- |
+| capability files | swept | The tier axis: how many files in the project declare a data capability. |
+| previous snapshot | variant | None (a first run: everything is added) or an identical one (nothing changed). |
+| runtime | fixed at "Node (V8)" | Measured on Node only. |
+
+**In the end-to-end run:** Run inside every artifact generation; measured on its own.
+
+#### Variant `first-run`
+
+There is no previous snapshot: every capability reads as added.
+
+#### Variant `unchanged`
+
+The previous snapshot is identical: nothing changed.
+
+### `projectAuditEvidence`
+
+**Why we benchmark it.** It projects the evidence model into the view an audit reads.
+
+**What poor performance would mean.** A slower audit export in proportion to the evidence model.
+
+**Expected growth: O(n).** The model is read once and one row built for each capability, so cost is proportional to the number of capabilities.
+
+**Variables that could change its cost**
+
+| Variable | How it is handled | What it is |
+| --- | --- | --- |
+| capability files | swept | The tier axis: how many files in the project declare a data capability. |
+| capability content | fixed at "realistic generated TypeScript: literal schemas, varied fields, getters and mutators, documentData calls" | Parsing cost depends on source-text volume and variety; the fixtures are literal TypeScript, never executed by the tooling. |
+| runtime | fixed at "Node (V8)" | Measured on Node only. |
+
+**In the end-to-end run:** Not part of the end-to-end operation, which calls the generator; measured on its own.
+
+### `projectClassificationEvidence`
+
+**Why we benchmark it.** It projects the evidence model into the view a data-classification review reads.
+
+**What poor performance would mean.** A slower review export in proportion to the evidence model.
+
+**Expected growth: O(n).** The model is read once and one row built for each classified field, so cost is proportional to the number of fields.
+
+**Variables that could change its cost**
+
+| Variable | How it is handled | What it is |
+| --- | --- | --- |
+| capability files | swept | The tier axis: how many files in the project declare a data capability. |
+| capability content | fixed at "realistic generated TypeScript: literal schemas, varied fields, getters and mutators, documentData calls" | Parsing cost depends on source-text volume and variety; the fixtures are literal TypeScript, never executed by the tooling. |
+| runtime | fixed at "Node (V8)" | Measured on Node only. |
+
+**In the end-to-end run:** Not part of the end-to-end operation, which calls the generator; measured on its own.
+
+### `projectComplianceEvidence`
+
+**Why we benchmark it.** It projects the evidence model into the view a compliance review reads.
+
+**What poor performance would mean.** A slower review export in proportion to the evidence model.
+
+**Expected growth: O(n).** The model is read once and one row built for each capability, so cost is proportional to the number of capabilities.
+
+**Variables that could change its cost**
+
+| Variable | How it is handled | What it is |
+| --- | --- | --- |
+| capability files | swept | The tier axis: how many files in the project declare a data capability. |
+| capability content | fixed at "realistic generated TypeScript: literal schemas, varied fields, getters and mutators, documentData calls" | Parsing cost depends on source-text volume and variety; the fixtures are literal TypeScript, never executed by the tooling. |
+| runtime | fixed at "Node (V8)" | Measured on Node only. |
+
+**In the end-to-end run:** Not part of the end-to-end operation, which calls the generator; measured on its own.
+
+### `projectPrivacyEvidence`
+
+**Why we benchmark it.** It projects the evidence model into the view a privacy review reads.
+
+**What poor performance would mean.** A slower review export in proportion to the evidence model.
+
+**Expected growth: O(n).** The model is read once and one row built for each personal-data field, so cost is proportional to the number of fields.
+
+**Variables that could change its cost**
+
+| Variable | How it is handled | What it is |
+| --- | --- | --- |
+| capability files | swept | The tier axis: how many files in the project declare a data capability. |
+| capability content | fixed at "realistic generated TypeScript: literal schemas, varied fields, getters and mutators, documentData calls" | Parsing cost depends on source-text volume and variety; the fixtures are literal TypeScript, never executed by the tooling. |
+| runtime | fixed at "Node (V8)" | Measured on Node only. |
+
+**In the end-to-end run:** Not part of the end-to-end operation, which calls the generator; measured on its own.
+
+### `projectRetentionEvidence`
+
+**Why we benchmark it.** It projects the evidence model into the view a retention review reads.
+
+**What poor performance would mean.** A slower review export in proportion to the evidence model.
+
+**Expected growth: O(n).** The model is read once and one row built for each field with a retention rule, so cost is proportional to the number of fields.
+
+**Variables that could change its cost**
+
+| Variable | How it is handled | What it is |
+| --- | --- | --- |
+| capability files | swept | The tier axis: how many files in the project declare a data capability. |
+| capability content | fixed at "realistic generated TypeScript: literal schemas, varied fields, getters and mutators, documentData calls" | Parsing cost depends on source-text volume and variety; the fixtures are literal TypeScript, never executed by the tooling. |
+| runtime | fixed at "Node (V8)" | Measured on Node only. |
+
+**In the end-to-end run:** Not part of the end-to-end operation, which calls the generator; measured on its own.
+
+### `computeExpiringEntries`
+
+**Why we benchmark it.** It lists the capabilities that expire within a window, once for every reminder and every report that shows expiries.
+
+**What poor performance would mean.** A slower expiry reminder in proportion to the number of capabilities.
+
+**Expected growth: O(n).** Each capability's expiry date is compared with the window once, so cost is proportional to the number of capabilities.
+
+**Variables that could change its cost**
+
+| Variable | How it is handled | What it is |
+| --- | --- | --- |
+| capability files | swept | The tier axis: how many files in the project declare a data capability. |
+| capability content | fixed at "realistic generated TypeScript: literal schemas, varied fields, getters and mutators, documentData calls" | Parsing cost depends on source-text volume and variety; the fixtures are literal TypeScript, never executed by the tooling. |
+| runtime | fixed at "Node (V8)" | Measured on Node only. |
+
+**In the end-to-end run:** Not part of the end-to-end operation, which calls the generator; measured on its own.
+
+### `buildOwnershipMatrix`
+
+**Why we benchmark it.** It builds the matrix of who owns what that the ownership report prints.
+
+**What poor performance would mean.** A slower ownership report in proportion to the number of capabilities.
+
+**Expected growth: O(n).** Each capability is placed in the matrix once, so cost is proportional to the number of capabilities.
+
+**Variables that could change its cost**
+
+| Variable | How it is handled | What it is |
+| --- | --- | --- |
+| capability files | swept | The tier axis: how many files in the project declare a data capability. |
+| capability content | fixed at "realistic generated TypeScript: literal schemas, varied fields, getters and mutators, documentData calls" | Parsing cost depends on source-text volume and variety; the fixtures are literal TypeScript, never executed by the tooling. |
+| runtime | fixed at "Node (V8)" | Measured on Node only. |
+
+**In the end-to-end run:** Not part of the end-to-end operation, which calls the generator; measured on its own.
+
+### `buildManifestSnapshot`
+
+**Why we benchmark it.** It snapshots the inventory so the next run can tell what changed, once per artifact run.
+
+**What poor performance would mean.** A slower artifact run in proportion to the number of capabilities.
+
+**Expected growth: O(n).** One snapshot entry is built for each capability, so cost is proportional to the number of capabilities.
+
+**Variables that could change its cost**
+
+| Variable | How it is handled | What it is |
+| --- | --- | --- |
+| capability files | swept | The tier axis: how many files in the project declare a data capability. |
+| capability content | fixed at "realistic generated TypeScript: literal schemas, varied fields, getters and mutators, documentData calls" | Parsing cost depends on source-text volume and variety; the fixtures are literal TypeScript, never executed by the tooling. |
+| runtime | fixed at "Node (V8)" | Measured on Node only. |
+
+**In the end-to-end run:** Not part of the end-to-end operation, which calls the generator; measured on its own.
+
+### `checkDuplicateEndpoints`
+
+**Why we benchmark it.** It reports operations that call the same endpoint, once per artifact run.
+
+**What poor performance would mean.** A slower artifact run that grows with the square of the number of capabilities, so the largest projects pay for it most; a grouped comparison would make it linear.
+
+**Expected growth: O(n²).** It enumerates every pair of active capabilities and rebuilds each one's endpoint list for each pair it is in, so cost grows with the square of the number of capabilities even when nothing is duplicated.
+
+**Variables that could change its cost**
+
+| Variable | How it is handled | What it is |
+| --- | --- | --- |
+| capability files | swept | The tier axis: how many files in the project declare a data capability. |
+| capability content | fixed at "realistic generated TypeScript: literal schemas, varied fields, getters and mutators, documentData calls" | Parsing cost depends on source-text volume and variety; the fixtures are literal TypeScript, never executed by the tooling. |
+| runtime | fixed at "Node (V8)" | Measured on Node only. |
+
+**In the end-to-end run:** Not part of the end-to-end operation, which calls the generator; measured on its own.
+
+### `checkExclusiveGroups`
+
+**Why we benchmark it.** It reports capabilities whose exclusive-group declarations conflict, once per artifact run.
+
+**What poor performance would mean.** A slower artifact run in proportion to the number of capabilities.
+
+**Expected growth: O(n).** Each capability's group is recorded in a map once, so cost is proportional to the number of capabilities.
+
+**Variables that could change its cost**
+
+| Variable | How it is handled | What it is |
+| --- | --- | --- |
+| capability files | swept | The tier axis: how many files in the project declare a data capability. |
+| capability content | fixed at "realistic generated TypeScript: literal schemas, varied fields, getters and mutators, documentData calls" | Parsing cost depends on source-text volume and variety; the fixtures are literal TypeScript, never executed by the tooling. |
+| runtime | fixed at "Node (V8)" | Measured on Node only. |
+
+**In the end-to-end run:** Not part of the end-to-end operation, which calls the generator; measured on its own.
+
+### `checkOwnershipAndSensitivity`
+
+**Why we benchmark it.** It reports capabilities that handle sensitive data without an owner, once per artifact run.
+
+**What poor performance would mean.** A slower artifact run in proportion to the number of capabilities.
+
+**Expected growth: O(n).** Each capability's owner and sensitivity are read once, so cost is proportional to the number of capabilities.
+
+**Variables that could change its cost**
+
+| Variable | How it is handled | What it is |
+| --- | --- | --- |
+| capability files | swept | The tier axis: how many files in the project declare a data capability. |
+| capability content | fixed at "realistic generated TypeScript: literal schemas, varied fields, getters and mutators, documentData calls" | Parsing cost depends on source-text volume and variety; the fixtures are literal TypeScript, never executed by the tooling. |
+| runtime | fixed at "Node (V8)" | Measured on Node only. |
+
+**In the end-to-end run:** Not part of the end-to-end operation, which calls the generator; measured on its own.
+
+### `checkStructuralDuplication`
+
+**Why we benchmark it.** It reports capabilities whose structure repeats another's, once per artifact run.
+
+**What poor performance would mean.** A slower artifact run, and an output that grows with the square of the number of capabilities when many are structurally alike, which is a report nobody can read.
+
+**Expected growth: O(n²).** It compares every pair of active capabilities, and the fixtures make every capability structurally alike, so one finding is reported for each pair and both the work and the output grow with the square of the number of capabilities.
+
+**Variables that could change its cost**
+
+| Variable | How it is handled | What it is |
+| --- | --- | --- |
+| capability files | swept | The tier axis: how many files in the project declare a data capability. |
+| capability content | fixed at "realistic generated TypeScript: literal schemas, varied fields, getters and mutators, documentData calls" | Parsing cost depends on source-text volume and variety; the fixtures are literal TypeScript, never executed by the tooling. |
+| runtime | fixed at "Node (V8)" | Measured on Node only. |
+
+**In the end-to-end run:** Not part of the end-to-end operation, which calls the generator; measured on its own.
+
+### `findManifestExportCollisions`
+
+**Why we benchmark it.** It finds capabilities whose exported names would collide in the generated manifest, once per manifest.
+
+**What poor performance would mean.** A slower manifest build in proportion to the number of capabilities.
+
+**Expected growth: O(n).** Each capability's export name is recorded in a map once, so cost is proportional to the number of capabilities.
+
+**Variables that could change its cost**
+
+| Variable | How it is handled | What it is |
+| --- | --- | --- |
+| capability files | swept | The tier axis: how many files in the project declare a data capability. |
+| capability content | fixed at "realistic generated TypeScript: literal schemas, varied fields, getters and mutators, documentData calls" | Parsing cost depends on source-text volume and variety; the fixtures are literal TypeScript, never executed by the tooling. |
+| runtime | fixed at "Node (V8)" | Measured on Node only. |
+
+**In the end-to-end run:** Not part of the end-to-end operation, which calls the generator; measured on its own.
+
+### `projectFields`
+
+**Why we benchmark it.** It lists every field of every capability, the view the field tables and the privacy projections read.
+
+**What poor performance would mean.** A slower report in proportion to the number of capabilities and the fields each has.
+
+**Expected growth: O(n).** Every field of every capability is listed once, so cost is proportional to the number of fields.
+
+**Variables that could change its cost**
+
+| Variable | How it is handled | What it is |
+| --- | --- | --- |
+| capability files | swept | The tier axis: how many files in the project declare a data capability. |
+| capability content | fixed at "realistic generated TypeScript: literal schemas, varied fields, getters and mutators, documentData calls" | Parsing cost depends on source-text volume and variety; the fixtures are literal TypeScript, never executed by the tooling. |
+| runtime | fixed at "Node (V8)" | Measured on Node only. |
+
+**In the end-to-end run:** Not part of the end-to-end operation, which calls the generator; measured on its own.
+
+### `projectGetters`
+
+**Why we benchmark it.** It lists every getter of every capability, the view the operation tables read.
+
+**What poor performance would mean.** A slower report in proportion to the number of capabilities and the getters each has.
+
+**Expected growth: O(n).** Every getter of every capability is listed once, so cost is proportional to the number of getters.
+
+**Variables that could change its cost**
+
+| Variable | How it is handled | What it is |
+| --- | --- | --- |
+| capability files | swept | The tier axis: how many files in the project declare a data capability. |
+| capability content | fixed at "realistic generated TypeScript: literal schemas, varied fields, getters and mutators, documentData calls" | Parsing cost depends on source-text volume and variety; the fixtures are literal TypeScript, never executed by the tooling. |
+| runtime | fixed at "Node (V8)" | Measured on Node only. |
+
+**In the end-to-end run:** Not part of the end-to-end operation, which calls the generator; measured on its own.
+
+### `projectMutators`
+
+**Why we benchmark it.** It lists every mutator of every capability, the view the operation tables read.
+
+**What poor performance would mean.** A slower report in proportion to the number of capabilities and the mutators each has.
+
+**Expected growth: O(n).** Every mutator of every capability is listed once, so cost is proportional to the number of mutators.
+
+**Variables that could change its cost**
+
+| Variable | How it is handled | What it is |
+| --- | --- | --- |
+| capability files | swept | The tier axis: how many files in the project declare a data capability. |
+| capability content | fixed at "realistic generated TypeScript: literal schemas, varied fields, getters and mutators, documentData calls" | Parsing cost depends on source-text volume and variety; the fixtures are literal TypeScript, never executed by the tooling. |
+| runtime | fixed at "Node (V8)" | Measured on Node only. |
+
+**In the end-to-end run:** Not part of the end-to-end operation, which calls the generator; measured on its own.
+
+### `projectOperationInventory`
+
+**Why we benchmark it.** It lists every operation (getter, mutator and subscription) of every capability, the view audits read.
+
+**What poor performance would mean.** A slower audit in proportion to the number of operations.
+
+**Expected growth: O(n).** Every operation of every capability is listed once, so cost is proportional to the number of operations.
+
+**Variables that could change its cost**
+
+| Variable | How it is handled | What it is |
+| --- | --- | --- |
+| capability files | swept | The tier axis: how many files in the project declare a data capability. |
+| capability content | fixed at "realistic generated TypeScript: literal schemas, varied fields, getters and mutators, documentData calls" | Parsing cost depends on source-text volume and variety; the fixtures are literal TypeScript, never executed by the tooling. |
+| runtime | fixed at "Node (V8)" | Measured on Node only. |
+
+**In the end-to-end run:** Not part of the end-to-end operation, which calls the generator; measured on its own.
+
+### `projectSubscriptions`
+
+**Why we benchmark it.** It lists every subscription of every capability, the view the operation tables read.
+
+**What poor performance would mean.** A slower report in proportion to the number of capabilities.
+
+**Expected growth: O(n).** Every subscription of every capability is listed once, so cost is proportional to the number of subscriptions.
+
+**Variables that could change its cost**
+
+| Variable | How it is handled | What it is |
+| --- | --- | --- |
+| capability files | swept | The tier axis: how many files in the project declare a data capability. |
+| capability content | fixed at "realistic generated TypeScript: literal schemas, varied fields, getters and mutators, documentData calls" | Parsing cost depends on source-text volume and variety; the fixtures are literal TypeScript, never executed by the tooling. |
+| runtime | fixed at "Node (V8)" | Measured on Node only. |
+
+**In the end-to-end run:** Not part of the end-to-end operation, which calls the generator; measured on its own.
+
+### `renderManifest`
+
+**Why we benchmark it.** It renders the TypeScript manifest the application imports, in every build that ships the application.
+
+**What poor performance would mean.** Slower builds in proportion to the number of capabilities.
+
+**Expected growth: O(n).** One manifest entry is rendered for each capability, so cost is proportional to the number of capabilities.
+
+**Variables that could change its cost**
+
+| Variable | How it is handled | What it is |
+| --- | --- | --- |
+| capability files | swept | The tier axis: how many files in the project declare a data capability. |
+| capability content | fixed at "realistic generated TypeScript: literal schemas, varied fields, getters and mutators, documentData calls" | Parsing cost depends on source-text volume and variety; the fixtures are literal TypeScript, never executed by the tooling. |
+| runtime | fixed at "Node (V8)" | Measured on Node only. |
+
+**In the end-to-end run:** Not part of the end-to-end operation, which calls the generator; measured on its own.
+
+### `buildOpenApiSchemaArtifact`
+
+**Why we benchmark it.** It renders the OpenAPI schema for the capabilities, in every pipeline that publishes one.
+
+**What poor performance would mean.** A slower publish step in proportion to the number of capabilities and their fields.
+
+**Expected growth: O(n).** One schema is built for each capability and field, once, so cost is proportional to the amount of schema.
+
+**Variables that could change its cost**
+
+| Variable | How it is handled | What it is |
+| --- | --- | --- |
+| capability files | swept | The tier axis: how many files in the project declare a data capability. |
+| capability content | fixed at "realistic generated TypeScript: literal schemas, varied fields, getters and mutators, documentData calls" | Parsing cost depends on source-text volume and variety; the fixtures are literal TypeScript, never executed by the tooling. |
+| runtime | fixed at "Node (V8)" | Measured on Node only. |
+
+**In the end-to-end run:** Not part of the end-to-end operation, which calls the generator; measured on its own.
+
+### `renderDocumentation`
+
+**Why we benchmark it.** It renders the Markdown reference of every capability, the largest text data-cap writes.
+
+**What poor performance would mean.** Documentation builds slow in proportion to the number of capabilities and the prose each carries.
+
+**Expected growth: O(n).** One section is rendered for each capability, once, so cost is proportional to the amount of documentation.
+
+**Variables that could change its cost**
+
+| Variable | How it is handled | What it is |
+| --- | --- | --- |
+| capability files | swept | The tier axis: how many files in the project declare a data capability. |
+| capability content | fixed at "realistic generated TypeScript: literal schemas, varied fields, getters and mutators, documentData calls" | Parsing cost depends on source-text volume and variety; the fixtures are literal TypeScript, never executed by the tooling. |
+| runtime | fixed at "Node (V8)" | Measured on Node only. |
+
+**In the end-to-end run:** Not part of the end-to-end operation, which calls the generator; measured on its own.
+
+### `renderOwnershipGraphDot`
+
+**Why we benchmark it.** It renders the ownership graph as Graphviz text, in every pipeline that publishes the ownership diagram.
+
+**What poor performance would mean.** A slower diagram step in proportion to the number of owners and capabilities.
+
+**Expected growth: O(n).** One node is written for each owner and capability, once, so cost is proportional to the number of capabilities.
+
+**Variables that could change its cost**
+
+| Variable | How it is handled | What it is |
+| --- | --- | --- |
+| capability files | swept | The tier axis: how many files in the project declare a data capability. |
+| capability content | fixed at "realistic generated TypeScript: literal schemas, varied fields, getters and mutators, documentData calls" | Parsing cost depends on source-text volume and variety; the fixtures are literal TypeScript, never executed by the tooling. |
+| runtime | fixed at "Node (V8)" | Measured on Node only. |
+
+**In the end-to-end run:** Not part of the end-to-end operation, which calls the generator; measured on its own.
+
+### `buildFlowGraph`
+
+**Why we benchmark it.** It builds the graph of how data flows between capabilities and their consumers, once per artifact run.
+
+**What poor performance would mean.** A slower artifact run in proportion to the number of capabilities and the consumers wired to them.
+
+**Expected growth: O(n).** Each capability's fields are visited once and each edge applied once, so cost is proportional to the fields plus the edges.
+
+**Variables that could change its cost**
+
+| Variable | How it is handled | What it is |
+| --- | --- | --- |
+| capability files | swept | The tier axis: how many files in the project declare a data capability. |
+| capability content | fixed at "realistic generated TypeScript: literal schemas, varied fields, getters and mutators, documentData calls" | Parsing cost depends on source-text volume and variety; the fixtures are literal TypeScript, never executed by the tooling. |
+| runtime | fixed at "Node (V8)" | Measured on Node only. |
+
+**In the end-to-end run:** Not part of the end-to-end operation, which calls the generator; measured on its own.
+
+### `deriveUsageFindings`
+
+**Why we benchmark it.** It derives the unused and over-used findings from how consumers use each capability, once per usage report.
+
+**What poor performance would mean.** A slower usage report in proportion to the number of capabilities and the edges.
+
+**Expected growth: O(n).** Each capability's edges are counted once, so cost is proportional to the capabilities plus the edges.
+
+**Variables that could change its cost**
+
+| Variable | How it is handled | What it is |
+| --- | --- | --- |
+| capability files | swept | The tier axis: how many files in the project declare a data capability. |
+| capability content | fixed at "realistic generated TypeScript: literal schemas, varied fields, getters and mutators, documentData calls" | Parsing cost depends on source-text volume and variety; the fixtures are literal TypeScript, never executed by the tooling. |
+| runtime | fixed at "Node (V8)" | Measured on Node only. |
+
+**In the end-to-end run:** Not part of the end-to-end operation, which calls the generator; measured on its own.
+
+### `renderUsageReport`
+
+**Why we benchmark it.** It renders the report of who uses which capability, in every pipeline that publishes it.
+
+**What poor performance would mean.** A slower report in proportion to the number of capabilities and the edges.
+
+**Expected growth: O(n).** One section is rendered for each capability and each edge, once, so cost is proportional to the capabilities plus the edges.
+
+**Variables that could change its cost**
+
+| Variable | How it is handled | What it is |
+| --- | --- | --- |
+| capability files | swept | The tier axis: how many files in the project declare a data capability. |
+| capability content | fixed at "realistic generated TypeScript: literal schemas, varied fields, getters and mutators, documentData calls" | Parsing cost depends on source-text volume and variety; the fixtures are literal TypeScript, never executed by the tooling. |
+| runtime | fixed at "Node (V8)" | Measured on Node only. |
+
+**In the end-to-end run:** Not part of the end-to-end operation, which calls the generator; measured on its own.
+
+### `buildSarifLog`
+
+**Why we benchmark it.** It converts the finding model into SARIF for code-scanning dashboards, in every pipeline that uploads findings.
+
+**What poor performance would mean.** A slower upload step in proportion to the number of findings.
+
+**Expected growth: O(n).** One SARIF result is built for each finding, so cost is proportional to the number of findings.
+
+**Variables that could change its cost**
+
+| Variable | How it is handled | What it is |
+| --- | --- | --- |
+| capability files | swept | The tier axis here is findings, one for each of this many capabilities with a problem. |
+| finding mix | fixed at "one error, one warning and one info in turn" | Severity only picks the SARIF level. |
+| runtime | fixed at "Node (V8)" | Measured on Node only. |
+
+**In the end-to-end run:** Not part of the end-to-end operation, which calls the generator; measured on its own.
 
 ### `defineEvidenceProjection (project)`
 
@@ -271,7 +979,7 @@ Every function the package exposes is measured on its own across the full size l
 | projection shape | fixed at "four derived fields" | A projection reading fewer fields still pays the clone; one computing more adds proportional work. |
 | runtime | fixed at "Node (V8)" | Measured on Node only. |
 
-**Measured: O(n)** (exponent 1.01, 8 sizes) -- ✅ matches.
+**Measured: O(n)** (exponent 1.08, 8 sizes) -- ✅ matches.
 
 | files | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
@@ -284,21 +992,21 @@ Every function the package exposes is measured on its own across the full size l
 | 1280 | 222 ms | 222 ms | 301 ms | 37.5 MiB | 5 |
 | 2560 | 448 ms | 454 ms | 604 ms | 82.9 MiB | 2 |
 
-## 3. What makes up the end-to-end overhead
+## 3. What makes up one end-to-end operation
 
-Each function's measured cost is multiplied by how many times one end-to-end operation calls it, then compared with the total overhead from section 1. This shows where the cost actually lives, so effort goes to the function that matters. Shares are estimates: they can sum to slightly more or less than 100% because the two measurements were taken separately (the remainder is shown as _unattributed_).
+Each function's measured cost is multiplied by how many times one end-to-end operation calls it. A function measured on its own includes everything it calls, so where one attributed function calls another, the nested time is subtracted from the caller (its _exclusive_ time): every moment of the operation belongs to at most one row. Shares are measured against the whole operation with the package, a figure measured directly -- not against the _added_ time, which is the small difference of two noisy medians. They are estimates (each function was measured separately); the remainder is shown as _unattributed_.
 
-**At 160 files** (total added: 494 ms)
+**At 160 files** (whole operation: 534 ms)
 
-| Function | Calls / operation | Estimated time | Share of added time | Share of operation |
+| Function | Calls / operation | Time if called that often | Exclusive time | Share of operation |
 | --- | --- | --- | --- | --- |
-| `link-capability-files` | 1 | 145 ms | 29% | 27% |
-| `discover-capability-files` | 1 | 13.6 ms | 2.7% | 2.5% |
-| `build-inventory` | 1 | 1.49 ms | 0.3% | 0.3% |
-| `build-ownership-model` | 1 | 251 µs | 0.1% | 0.0% |
-| `build-lifecycle-model` | 1 | 79.1 µs | 0.0% | 0.0% |
-| `build-evidence-model` | 1 | 1.85 µs | 0.0% | 0.0% |
-| _unattributed_ |  | 334 ms | 68% |  |
+| `link-capability-files` | 1 | 145 ms | 145 ms | 27% |
+| `discover-capability-files` | 1 | 13.6 ms | 13.6 ms | 2.5% |
+| `build-inventory` | 1 | 1.49 ms | 1.49 ms | 0.3% |
+| `build-ownership-model` | 1 | 251 µs | 251 µs | 0.0% |
+| `build-lifecycle-model` | 1 | 79.1 µs | 79.1 µs | 0.0% |
+| `build-evidence-model` | 1 | 1.85 µs | 1.85 µs | 0.0% |
+| _unattributed_ |  |  | 374 ms | 70% |
 
 ## Failed measurements
 

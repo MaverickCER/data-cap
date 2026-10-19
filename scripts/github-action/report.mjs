@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Turns a `data-cap --json` report into GitHub PR annotations, a job-summary
 // table, and a sticky PR comment. Plain Node, no dependencies -- matches
-// `scripts/check-size.mjs`'s dependency-free convention, and every GitHub
+// `ci/size-budgets.mjs`'s dependency-free convention, and every GitHub
 // interaction goes through the preinstalled `gh` CLI rather than octokit.
 //
 // data-cap's `ReportResult` already unifies every generator's output into

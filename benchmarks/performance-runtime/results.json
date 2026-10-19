@@ -4836,19 +4836,78 @@
     "complexity": {
       "end-to-end:baseline": {
         "class": "constant",
-        "exponent": -0.06822915538546935,
+        "exponent": 0.008356327464186315,
+        "rSquared": 0.6988866757934469,
+        "variable": "record",
         "notation": "O(1)",
         "points": 10
       },
       "end-to-end:with-package": {
-        "class": "logarithmic",
-        "exponent": 0.5553684618890521,
-        "notation": "O(log n)",
+        "class": "linear",
+        "exponent": 0.860706536994158,
+        "rSquared": 0.9920064688258463,
+        "variable": "record",
+        "notation": "O(n)",
         "points": 10
       },
       "fn:cold-start": {
         "class": null,
         "exponent": null,
+        "rSquared": null,
+        "reason": "insufficient-data",
+        "variable": "record",
+        "unmeasured": [
+          {
+            "tier": "n20",
+            "status": "failed",
+            "message": "Command failed: /opt/hostedtoolcache/node/22.23.3/x64/bin/node --expose-gc /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/fixtures/generated/cold-start/n20/index.mjs\nnode:internal/modules/esm/resolve:275\n    throw new ERR_MODULE_NOT_FOUND(\n          ^\n\nError [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs' imported from /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs\n    at finalizeResolution (node:internal/modules/esm/resolve:275:11)\n    at moduleResolve (node:internal/modules/esm/resolve:865:10)\n    at defaultResolve (node:internal/modules/esm/resolve:989:11)\n    at #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)\n    at ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)\n    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)\n    at ModuleJob._link (node:internal/modules/esm/module_job:182:49) {\n  code: 'ERR_MODULE_NOT_FOUND',\n  url: 'file:///home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs'\n}\n\nNode.js v22.23.3\n"
+          },
+          {
+            "tier": "n40",
+            "status": "failed",
+            "message": "Command failed: /opt/hostedtoolcache/node/22.23.3/x64/bin/node --expose-gc /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/fixtures/generated/cold-start/n40/index.mjs\nnode:internal/modules/esm/resolve:275\n    throw new ERR_MODULE_NOT_FOUND(\n          ^\n\nError [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs' imported from /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs\n    at finalizeResolution (node:internal/modules/esm/resolve:275:11)\n    at moduleResolve (node:internal/modules/esm/resolve:865:10)\n    at defaultResolve (node:internal/modules/esm/resolve:989:11)\n    at #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)\n    at ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)\n    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)\n    at ModuleJob._link (node:internal/modules/esm/module_job:182:49) {\n  code: 'ERR_MODULE_NOT_FOUND',\n  url: 'file:///home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs'\n}\n\nNode.js v22.23.3\n"
+          },
+          {
+            "tier": "n80",
+            "status": "failed",
+            "message": "Command failed: /opt/hostedtoolcache/node/22.23.3/x64/bin/node --expose-gc /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/fixtures/generated/cold-start/n80/index.mjs\nnode:internal/modules/esm/resolve:275\n    throw new ERR_MODULE_NOT_FOUND(\n          ^\n\nError [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs' imported from /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs\n    at finalizeResolution (node:internal/modules/esm/resolve:275:11)\n    at moduleResolve (node:internal/modules/esm/resolve:865:10)\n    at defaultResolve (node:internal/modules/esm/resolve:989:11)\n    at #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)\n    at ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)\n    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)\n    at ModuleJob._link (node:internal/modules/esm/module_job:182:49) {\n  code: 'ERR_MODULE_NOT_FOUND',\n  url: 'file:///home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs'\n}\n\nNode.js v22.23.3\n"
+          },
+          {
+            "tier": "n160",
+            "status": "failed",
+            "message": "Command failed: /opt/hostedtoolcache/node/22.23.3/x64/bin/node --expose-gc /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/fixtures/generated/cold-start/n160/index.mjs\nnode:internal/modules/esm/resolve:275\n    throw new ERR_MODULE_NOT_FOUND(\n          ^\n\nError [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs' imported from /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs\n    at finalizeResolution (node:internal/modules/esm/resolve:275:11)\n    at moduleResolve (node:internal/modules/esm/resolve:865:10)\n    at defaultResolve (node:internal/modules/esm/resolve:989:11)\n    at #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)\n    at ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)\n    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)\n    at ModuleJob._link (node:internal/modules/esm/module_job:182:49) {\n  code: 'ERR_MODULE_NOT_FOUND',\n  url: 'file:///home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs'\n}\n\nNode.js v22.23.3\n"
+          },
+          {
+            "tier": "n320",
+            "status": "failed",
+            "message": "Command failed: /opt/hostedtoolcache/node/22.23.3/x64/bin/node --expose-gc /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/fixtures/generated/cold-start/n320/index.mjs\nnode:internal/modules/esm/resolve:275\n    throw new ERR_MODULE_NOT_FOUND(\n          ^\n\nError [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs' imported from /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs\n    at finalizeResolution (node:internal/modules/esm/resolve:275:11)\n    at moduleResolve (node:internal/modules/esm/resolve:865:10)\n    at defaultResolve (node:internal/modules/esm/resolve:989:11)\n    at #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)\n    at ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)\n    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)\n    at ModuleJob._link (node:internal/modules/esm/module_job:182:49) {\n  code: 'ERR_MODULE_NOT_FOUND',\n  url: 'file:///home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs'\n}\n\nNode.js v22.23.3\n"
+          },
+          {
+            "tier": "n640",
+            "status": "failed",
+            "message": "Command failed: /opt/hostedtoolcache/node/22.23.3/x64/bin/node --expose-gc /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/fixtures/generated/cold-start/n640/index.mjs\nnode:internal/modules/esm/resolve:275\n    throw new ERR_MODULE_NOT_FOUND(\n          ^\n\nError [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs' imported from /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs\n    at finalizeResolution (node:internal/modules/esm/resolve:275:11)\n    at moduleResolve (node:internal/modules/esm/resolve:865:10)\n    at defaultResolve (node:internal/modules/esm/resolve:989:11)\n    at #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)\n    at ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)\n    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)\n    at ModuleJob._link (node:internal/modules/esm/module_job:182:49) {\n  code: 'ERR_MODULE_NOT_FOUND',\n  url: 'file:///home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs'\n}\n\nNode.js v22.23.3\n"
+          },
+          {
+            "tier": "n1280",
+            "status": "failed",
+            "message": "Command failed: /opt/hostedtoolcache/node/22.23.3/x64/bin/node --expose-gc /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/fixtures/generated/cold-start/n1280/index.mjs\nnode:internal/modules/esm/resolve:275\n    throw new ERR_MODULE_NOT_FOUND(\n          ^\n\nError [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs' imported from /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs\n    at finalizeResolution (node:internal/modules/esm/resolve:275:11)\n    at moduleResolve (node:internal/modules/esm/resolve:865:10)\n    at defaultResolve (node:internal/modules/esm/resolve:989:11)\n    at #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)\n    at ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)\n    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)\n    at ModuleJob._link (node:internal/modules/esm/module_job:182:49) {\n  code: 'ERR_MODULE_NOT_FOUND',\n  url: 'file:///home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs'\n}\n\nNode.js v22.23.3\n"
+          },
+          {
+            "tier": "n2560",
+            "status": "failed",
+            "message": "Command failed: /opt/hostedtoolcache/node/22.23.3/x64/bin/node --expose-gc /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/fixtures/generated/cold-start/n2560/index.mjs\nnode:internal/modules/esm/resolve:275\n    throw new ERR_MODULE_NOT_FOUND(\n          ^\n\nError [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs' imported from /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs\n    at finalizeResolution (node:internal/modules/esm/resolve:275:11)\n    at moduleResolve (node:internal/modules/esm/resolve:865:10)\n    at defaultResolve (node:internal/modules/esm/resolve:989:11)\n    at #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)\n    at ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)\n    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)\n    at ModuleJob._link (node:internal/modules/esm/module_job:182:49) {\n  code: 'ERR_MODULE_NOT_FOUND',\n  url: 'file:///home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs'\n}\n\nNode.js v22.23.3\n"
+          },
+          {
+            "tier": "n5120",
+            "status": "failed",
+            "message": "Command failed: /opt/hostedtoolcache/node/22.23.3/x64/bin/node --expose-gc /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/fixtures/generated/cold-start/n5120/index.mjs\nnode:internal/modules/esm/resolve:275\n    throw new ERR_MODULE_NOT_FOUND(\n          ^\n\nError [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs' imported from /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs\n    at finalizeResolution (node:internal/modules/esm/resolve:275:11)\n    at moduleResolve (node:internal/modules/esm/resolve:865:10)\n    at defaultResolve (node:internal/modules/esm/resolve:989:11)\n    at #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)\n    at ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)\n    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)\n    at ModuleJob._link (node:internal/modules/esm/module_job:182:49) {\n  code: 'ERR_MODULE_NOT_FOUND',\n  url: 'file:///home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs'\n}\n\nNode.js v22.23.3\n"
+          },
+          {
+            "tier": "n10240",
+            "status": "failed",
+            "message": "Command failed: /opt/hostedtoolcache/node/22.23.3/x64/bin/node --expose-gc /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/fixtures/generated/cold-start/n10240/index.mjs\nnode:internal/modules/esm/resolve:275\n    throw new ERR_MODULE_NOT_FOUND(\n          ^\n\nError [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs' imported from /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs\n    at finalizeResolution (node:internal/modules/esm/resolve:275:11)\n    at moduleResolve (node:internal/modules/esm/resolve:865:10)\n    at defaultResolve (node:internal/modules/esm/resolve:989:11)\n    at #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)\n    at ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)\n    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)\n    at ModuleJob._link (node:internal/modules/esm/module_job:182:49) {\n  code: 'ERR_MODULE_NOT_FOUND',\n  url: 'file:///home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs'\n}\n\nNode.js v22.23.3\n"
+          }
+        ],
         "notation": null,
         "points": 0,
         "expected": "linear",
@@ -4857,7 +4916,9 @@
       },
       "fn:build-data": {
         "class": "linear",
-        "exponent": 0.9333303056746736,
+        "exponent": 1.023890879803478,
+        "rSquared": 0.9991196130130223,
+        "variable": "record",
         "notation": "O(n)",
         "points": 10,
         "expected": "linear",
@@ -4866,7 +4927,9 @@
       },
       "fn:commit-authoritative-array-replace": {
         "class": "linear",
-        "exponent": 0.7780204527019756,
+        "exponent": 0.8714336194757422,
+        "rSquared": 0.99801139391525,
+        "variable": "record",
         "notation": "O(n)",
         "points": 10,
         "expected": "linear",
@@ -4875,7 +4938,9 @@
       },
       "fn:commit-authoritative-leaf": {
         "class": "constant",
-        "exponent": -0.03590414161779478,
+        "exponent": 0.0005911033745376352,
+        "rSquared": 0.04215813095044185,
+        "variable": "record",
         "notation": "O(1)",
         "points": 10,
         "expected": "constant",
@@ -4884,7 +4949,9 @@
       },
       "fn:reconcile-array-info": {
         "class": "linear",
-        "exponent": 0.9334099311333977,
+        "exponent": 1.0527640174945088,
+        "rSquared": 0.9996530306369797,
+        "variable": "record",
         "notation": "O(n)",
         "points": 10,
         "expected": "linear",
@@ -4892,17 +4959,21 @@
         "agreement": "matches"
       },
       "fn:getter-dispatch-cold": {
-        "class": "logarithmic",
-        "exponent": 0.586464896359793,
-        "notation": "O(log n)",
+        "class": "linear",
+        "exponent": 0.8719513464560602,
+        "rSquared": 0.9923404661182255,
+        "variable": "record",
+        "notation": "O(n)",
         "points": 10,
         "expected": "linear",
         "expectedNotation": "O(n)",
-        "agreement": "close"
+        "agreement": "matches"
       },
       "fn:canonicalize": {
         "class": "linear",
-        "exponent": 0.9369436026900191,
+        "exponent": 1.0067805082644745,
+        "rSquared": 0.9978703845669024,
+        "variable": "record",
         "notation": "O(n)",
         "points": 10,
         "expected": "linearithmic",
@@ -4911,7 +4982,9 @@
       },
       "fn:dedupe-fan-in@identical": {
         "class": "linear",
-        "exponent": 0.8327103249668336,
+        "exponent": 0.8404465982109086,
+        "rSquared": 0.9944322731114307,
+        "variable": "record",
         "notation": "O(n)",
         "points": 10,
         "expected": "linear",
@@ -4920,7 +4993,9 @@
       },
       "fn:dedupe-fan-in@independent": {
         "class": "linear",
-        "exponent": 0.8341583887846472,
+        "exponent": 0.8359876132262611,
+        "rSquared": 0.9891312403525555,
+        "variable": "record",
         "notation": "O(n)",
         "points": 10,
         "expected": "linear",
@@ -4929,7 +5004,9 @@
       },
       "fn:run-getters-fan-out": {
         "class": "quadratic",
-        "exponent": 1.9014372016055194,
+        "exponent": 2.2900059055696005,
+        "rSquared": 0.99878414499471,
+        "variable": "record",
         "notation": "O(n²)",
         "points": 10,
         "expected": "quadratic",
@@ -4937,17 +5014,21 @@
         "agreement": "matches"
       },
       "fn:data-cache-set-get": {
-        "class": "logarithmic",
-        "exponent": 0.20998250881313082,
-        "notation": "O(log n)",
+        "class": "constant",
+        "exponent": 0.05453890743988488,
+        "rSquared": 0.6997172571386427,
+        "variable": "record",
+        "notation": "O(1)",
         "points": 10,
         "expected": "constant",
         "expectedNotation": "O(1)",
-        "agreement": "close"
+        "agreement": "matches"
       },
       "fn:with-retry": {
         "class": "linear",
-        "exponent": 1.04610412285954,
+        "exponent": 1.0461041228595416,
+        "rSquared": 0.9988884459348701,
+        "variable": "record",
         "notation": "O(n)",
         "points": 4,
         "expected": "linear",
@@ -5107,71 +5188,71 @@
             "n": 20,
             "calls": 1,
             "estimatedMs": 0.04881100000056904,
-            "shareOfOverhead": 0.2270652884327914,
-            "shareOfTotal": 0.22635200935134495
+            "exclusiveMs": 0.03179472727325364,
+            "shareOfTotal": 0.1474421832167968
           },
           {
             "n": 40,
             "calls": 1,
             "estimatedMs": 0.07308600000033039,
-            "shareOfOverhead": 0.3097964593243129,
-            "shareOfTotal": 0.3092278400689246
+            "exclusiveMs": 0.05012256250029168,
+            "shareOfTotal": 0.21206922995669225
           },
           {
             "n": 80,
             "calls": 1,
             "estimatedMs": 0.12435199999890756,
-            "shareOfOverhead": 0.4336383188328483,
-            "shareOfTotal": 0.4330936003440421
+            "exclusiveMs": 0.08534924999912619,
+            "shareOfTotal": 0.2972546800140732
           },
           {
             "n": 160,
             "calls": 1,
             "estimatedMs": 0.216973999999027,
-            "shareOfOverhead": 0.5980781235251088,
-            "shareOfTotal": 0.5973526124205385
+            "exclusiveMs": 0.14407671428489266,
+            "shareOfTotal": 0.3966585935062915
           },
           {
             "n": 320,
             "calls": 1,
             "estimatedMs": 0.3795269999991433,
-            "shareOfOverhead": 0.8162883258104886,
-            "shareOfTotal": 0.8155066310249784
+            "exclusiveMs": 0.2444071999994776,
+            "shareOfTotal": 0.5251686764585181
           },
           {
             "n": 640,
             "calls": 1,
             "estimatedMs": 0.5799409999999625,
-            "shareOfOverhead": 0.8712553125342719,
-            "shareOfTotal": 0.8707940497695824
+            "exclusiveMs": 0.3129133333338056,
+            "shareOfTotal": 0.46984618911348136
           },
           {
             "n": 1280,
             "calls": 1,
             "estimatedMs": 0.9859570000007807,
-            "shareOfOverhead": 0.9149379761851806,
-            "shareOfTotal": 0.9146347006769774
+            "exclusiveMs": 0.4614689999998518,
+            "shareOfTotal": 0.4280871890825202
           },
           {
             "n": 2560,
             "calls": 1,
             "estimatedMs": 1.789614999999685,
-            "shareOfOverhead": 0.9533087496452736,
-            "shareOfTotal": 0.9531249251050404
+            "exclusiveMs": 0.6455320000004576,
+            "shareOfTotal": 0.3438016775415111
           },
           {
             "n": 5120,
             "calls": 1,
             "estimatedMs": 3.290483000000677,
-            "shareOfOverhead": 0.9617814766810351,
-            "shareOfTotal": 0.9616804667531259
+            "exclusiveMs": 0.9466539999993984,
+            "shareOfTotal": 0.2766702215367616
           },
           {
             "n": 10240,
             "calls": 1,
             "estimatedMs": 6.5061079999995854,
-            "shareOfOverhead": 0.8814365489190985,
-            "shareOfTotal": 0.8813933315694353
+            "exclusiveMs": 1.6529009999994742,
+            "shareOfTotal": 0.22392126278015684
           }
         ]
       },
@@ -5184,70 +5265,70 @@
             "n": 20,
             "calls": 1,
             "estimatedMs": 0.017016272727315398,
-            "shareOfOverhead": 0.07915848630091307,
+            "exclusiveMs": 0.017016272727315398,
             "shareOfTotal": 0.07890982613454812
           },
           {
             "n": 40,
             "calls": 1,
             "estimatedMs": 0.022963437500038708,
-            "shareOfOverhead": 0.09733726885306329,
+            "exclusiveMs": 0.022963437500038708,
             "shareOfTotal": 0.09715861011223238
           },
           {
             "n": 80,
             "calls": 1,
             "estimatedMs": 0.03900274999978137,
-            "shareOfOverhead": 0.13600977016784332,
+            "exclusiveMs": 0.03900274999978137,
             "shareOfTotal": 0.13583892032996894
           },
           {
             "n": 160,
             "calls": 1,
             "estimatedMs": 0.07289728571413434,
-            "shareOfOverhead": 0.20093777065537205,
+            "exclusiveMs": 0.07289728571413434,
             "shareOfTotal": 0.20069401891424699
           },
           {
             "n": 320,
             "calls": 1,
             "estimatedMs": 0.1351197999996657,
-            "shareOfOverhead": 0.2906162547745592,
+            "exclusiveMs": 0.1351197999996657,
             "shareOfTotal": 0.29033795456646033
           },
           {
             "n": 640,
             "calls": 1,
             "estimatedMs": 0.2670276666661569,
-            "shareOfOverhead": 0.4011602441912797,
+            "exclusiveMs": 0.2670276666661569,
             "shareOfTotal": 0.4009478606561011
           },
           {
             "n": 1280,
             "calls": 1,
             "estimatedMs": 0.5244880000009289,
-            "shareOfOverhead": 0.486708841515282,
+            "exclusiveMs": 0.5244880000009289,
             "shareOfTotal": 0.48654751159445725
           },
           {
             "n": 2560,
             "calls": 1,
             "estimatedMs": 1.1440829999992275,
-            "shareOfOverhead": 0.6094407647565924,
+            "exclusiveMs": 1.1440829999992275,
             "shareOfTotal": 0.6093232475635293
           },
           {
             "n": 5120,
             "calls": 1,
             "estimatedMs": 2.3438290000012785,
-            "shareOfOverhead": 0.6850821951393153,
+            "exclusiveMs": 2.3438290000012785,
             "shareOfTotal": 0.6850102452163643
           },
           {
             "n": 10240,
             "calls": 1,
             "estimatedMs": 4.853207000000111,
-            "shareOfOverhead": 0.6575043066100934,
+            "exclusiveMs": 4.853207000000111,
             "shareOfTotal": 0.6574720687892786
           }
         ]
@@ -5261,73 +5342,91 @@
             "n": 20,
             "calls": 1,
             "estimatedMs": 0.19607600000017555,
-            "shareOfOverhead": 0.9121315583427676,
-            "shareOfTotal": 0.9092662839338805
+            "exclusiveMs": 0.14726499999960652,
+            "shareOfTotal": 0.6829142745825355
           },
           {
             "n": 40,
             "calls": 1,
             "estimatedMs": 0.22207399999751942,
-            "shareOfOverhead": 0.9413258203610538,
-            "shareOfTotal": 0.939598053722859
+            "exclusiveMs": 0.14898799999718904,
+            "shareOfTotal": 0.6303702136539344
           },
           {
             "n": 80,
             "calls": 1,
             "estimatedMs": 0.26688799999828916,
-            "shareOfOverhead": 0.9306875935806104,
-            "shareOfTotal": 0.9295185023875386
+            "exclusiveMs": 0.1425359999993816,
+            "shareOfTotal": 0.4964249020434965
           },
           {
             "n": 160,
             "calls": 1,
             "estimatedMs": 0.3591100000012375,
-            "shareOfOverhead": 0.9898689932471405,
-            "shareOfTotal": 0.9886682120808981
+            "exclusiveMs": 0.1421360000022105,
+            "shareOfTotal": 0.39131559966035956
           },
           {
             "n": 320,
             "calls": 1,
             "estimatedMs": 0.48736799999824143,
-            "shareOfOverhead": 1.048233218646022,
-            "shareOfTotal": 1.0472294085765828
+            "exclusiveMs": 0.10784099999909813,
+            "shareOfTotal": 0.2317227775516043
           },
           {
             "n": 640,
             "calls": 1,
             "estimatedMs": 0.7022890000007465,
-            "shareOfOverhead": 1.0550608116775175,
-            "shareOfTotal": 1.0545022380195914
+            "exclusiveMs": 0.12234800000078394,
+            "shareOfTotal": 0.1837081882500089
           },
           {
             "n": 1280,
             "calls": 1,
             "estimatedMs": 1.1431999999986147,
-            "shareOfOverhead": 1.0608546765962439,
-            "shareOfTotal": 1.0605030339171237
+            "exclusiveMs": 0.15724299999783398,
+            "shareOfTotal": 0.14586833324014634
           },
           {
             "n": 2560,
             "calls": 1,
             "estimatedMs": 2.0391209999979765,
-            "shareOfOverhead": 1.0862179244607544,
-            "shareOfTotal": 1.086008471321222
+            "exclusiveMs": 0.24950599999829137,
+            "shareOfTotal": 0.13288354621618143
           },
           {
             "n": 5120,
             "calls": 1,
             "estimatedMs": 3.6715450000010605,
-            "shareOfOverhead": 1.0731628067372374,
-            "shareOfTotal": 1.0730500991208278
+            "exclusiveMs": 0.3810620000003837,
+            "shareOfTotal": 0.11136963236770203
           },
           {
             "n": 10240,
             "calls": 1,
             "estimatedMs": 8.045815999998013,
-            "shareOfOverhead": 1.0900335943204087,
-            "shareOfTotal": 1.0899801493355732
+            "exclusiveMs": 1.5397079999984271,
+            "shareOfTotal": 0.20858681776613797
           }
         ]
+      },
+      {
+        "id": "compute-item-identity",
+        "group": "fn:compute-item-identity",
+        "description": "Run once per record inside every collection commit; measured on its own.",
+        "rows": []
+      },
+      {
+        "id": "create-data",
+        "group": "fn:create-data",
+        "description": "Run at module load; measured on its own.",
+        "rows": []
+      },
+      {
+        "id": "to-array",
+        "group": "fn:to-array",
+        "description": "Run when a list value is read; measured on its own.",
+        "rows": []
       }
     ],
     "cost": {
@@ -5359,6 +5458,57 @@
           "highUsdPerMillion": 0.015377645494812825,
           "opsPerSecondPerCore": 135.47831498019318
         }
+      }
+    },
+    "coverage": {
+      "benchmarks": [
+        {
+          "id": "reconcile-array-info",
+          "covers": {
+            "identity.reconcileArrayInfo": {
+              "prevInfo": "sweep:previous-records",
+              "nextItems": "swept",
+              "identityKeys": "fixed: the single `id` field, which is what almost every list uses",
+              "touchedIdentities": "fixed: `all`, the replace-the-whole-array path, which is the worst case for allocation",
+              "makeInfoFor": "fixed: returns one small object, so the benchmark measures the bookkeeping and not a caller's info builder"
+            }
+          }
+        },
+        {
+          "id": "compute-item-identity",
+          "covers": {
+            "identity.computeItemIdentity": {
+              "item": "fixed: one record whose every field is a short string",
+              "keys": "swept",
+              "path": "fixed: one short path, which only labels a warning",
+              "warnings": "fixed: an empty list that is never written to, because every key field is present"
+            }
+          }
+        },
+        {
+          "id": "create-data",
+          "covers": {
+            "createData": {
+              "schema": "swept",
+              "options.coordinator": "fixed: a fresh coordinator per call, which is what an isolated capability has",
+              "options.maxOperationHistory": "fixed: 50, the default; it bounds a history that is filled as operations run and is never allocated at creation"
+            }
+          }
+        },
+        {
+          "id": "to-array",
+          "covers": {
+            "processors.toArray": {
+              "value": "swept",
+              "separator": "fixed: a comma, the default, which is what almost every list uses"
+            }
+          }
+        }
+      ],
+      "notBenchmarked": {
+        "documentData": "A deliberate no-op at runtime: it exists so build tooling can read the call site and so the compiler checks the documentation's shape, and it does nothing with its arguments, so it costs the same whatever they hold.",
+        "createDataStore": "It keeps one reference to the state it is given and returns the controller, a constant amount of work whatever the state holds; every commit benchmark creates one in its setup.",
+        "rejectOnAbort": "It attaches one listener to one signal and races one promise, a constant amount of work done once per aborted wait."
       }
     }
   }

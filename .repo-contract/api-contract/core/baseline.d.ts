@@ -313,36 +313,6 @@ declare interface EvidenceFieldDocs {
     readonly dynamicAccess?: readonly string[];
 }
 
-/**
- * Field default helpers.
- *
- * `fields.nullable`/`fields.optional` are thin markers recognized only during
- * `buildData`'s schema-authoring walk (see build.ts) -- they never leak
- * into the resolved `fields` object. The runtime default they produce is
- * always `null`/`undefined` respectively, regardless of what `inner` holds;
- * `inner` exists purely so the underlying type can be inferred (see
- * `InferFieldValue` in types.ts).
- *
- * `FIELD_MARKER`/`isFieldMarker` are internal plumbing, not part of the
- * public field-access API -- data-cap's field system never requires a symbol
- * to read a field's value, only to recognize these two authoring-time
- * helpers while building the initial defaults tree.
- *
- * `Symbol.for(...)` (the global symbol registry), not a bare `Symbol(...)`,
- * is load-bearing here -- `core` and `runtime` are separate tsup entries,
- * each independently bundled, so a bare `Symbol()` would create a genuinely
- * different symbol identity in each bundle's own inlined copy of this
- * module. The runtime's `createData` (runtime/capability.ts) calls core's
- * `resolveOperationPatch` against a schema built with core's own
- * `fields.nullable`/`fields.optional` -- both bundles must recognize the
- * *same* marker identity for that ownership walk to work at all, even
- * though no ESM/CJS dual-package resolution is involved (contrast with
- * ADR 0041's `defaultCoordinator` case, which tolerates duplication via
- * graceful degradation -- a duplicated `FIELD_MARKER` doesn't degrade
- * gracefully, it silently misclassifies every marker as a plain object and
- * corrupts ownership resolution, so the global registry is required here,
- * not merely convenient).
- */
 declare const FIELD_MARKER: unique symbol;
 
 /**
@@ -531,12 +501,12 @@ export declare type FieldOwnership<T> = true | {
 };
 
 /** Field-default authoring helpers, recognized only inside a `buildData`/`createData` schema. */
-export declare const fields: {
+export declare class fields {
     /** Infers the underlying type from `defaultInner`; the runtime default is always `null`. */
-    nullable<T>(defaultInner: T): NullableMarker<T>;
+    static nullable<T>(defaultInner: T): NullableMarker<T>;
     /** Infers the underlying type from `defaultInner`; the runtime default is always `undefined`. */
-    optional<T>(defaultInner: T): OptionalMarker<T>;
-};
+    static optional<T>(defaultInner: T): OptionalMarker<T>;
+}
 
 /**
  * The generic *bound* only, never surfaced to a consumer's inferred type --

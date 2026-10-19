@@ -8,11 +8,16 @@ every `src/build/**` module and every public options object in
 as the public `data-cap/node` entry (`src/node/index.ts`) for a
 consumer's own build script; `src/build/package-version.ts` + `src/cli/json.ts`
 (version via build-time constant, not a self-read); `src/eslint-plugin/no-node-fs.ts`
-and `no-restricted-imports` in `eslint.config.js`; `scripts/verify-no-ambient-fs.mjs`.
+and `no-restricted-imports` in `eslint.config.js`; the `AmbientCapabilities` check.
 
 Mirrors `@maverickcer/env-cap`'s own ADR 0040 exactly -- the two packages are
 independent products, so each carries its own structurally-identical version of
 this decision rather than sharing one.
+
+**Amended.** The `BuildFileSystem`, `BuildDirent` and `BuildStats` types and the `no-node-fs` lint rule are now
+carried as managed copies of internal-package-contract's canonical sources (`src/_ipc/build-fs.ts`,
+`src/_ipc/no-node-fs.ts`), re-exported from `src/build/types.ts` and wrapped in `src/eslint-plugin/no-node-fs.ts`.
+The decision itself, that library surfaces never acquire `node:fs`, is unchanged.
 
 ## Context
 
@@ -88,10 +93,12 @@ Buffer reads that previously fed the fingerprint/citation hashes now hash the
 decoded text instead, which changes recorded hash values but not their
 change-detection behaviour.
 
-**Not shared with `@maverickcer/env-cap`.** The two packages are
+**Not shared with `@maverickcer/env-cap` as a runtime dependency (superseded for the file-system types and
+the `no-node-fs` rule, see the amendment above).** The two packages are
 independent products with no runtime coupling; a shared types package to
 dedupe six signatures would add real cross-package coupling for negligible
-benefit. env-cap gets its own, structurally-identical interface.
+benefit. env-cap gets its own, structurally-identical interface; the amendment keeps that independence while both now
+receive the same managed source copy from internal-package-contract, not a shared package.
 
 Every public options object in `build/index.ts` carries a **required** `fs:
 BuildFileSystem`. Internal positional helpers take it as a parameter, or via
@@ -133,7 +140,7 @@ flagged capabilities.
   under `src/**` except `src/cli/**`. The published
   `data-cap/eslint-plugin` also ships `no-node-fs` for a consumer
   to enforce the same discipline on its own code.
-- **Tarball-level** (release-blocking backstop): `scripts/verify-no-ambient-fs.mjs`
+- **Tarball-level** (release-blocking backstop): the `AmbientCapabilities` check
   runs `npm pack --ignore-scripts`, extracts it, and greps every `.js`/
   `.cjs`/`.mjs` file **inside the extracted package root** for the forbidden
   specifier set, excluding only the resolved `bin`, `./eslint-plugin`, and

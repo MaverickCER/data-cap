@@ -124,7 +124,7 @@ see [ADR 0058](decisions/0058-library-surfaces-do-not-acquire-node-fs.md).
 
 Dependency direction, enforced by convention and by the tree-shaking/
 gzip-budget/dual-package-hazard test suite (`test/*/tree-shaking.test.ts`,
-`scripts/check-size.mjs`, `test/runtime/dual-package-hazard.test.ts`):
+`ci/size-budgets.mjs`, `test/runtime/dual-package-hazard.test.ts`):
 
 ```mermaid
 flowchart LR
@@ -447,7 +447,7 @@ output).
 - **Tree-shaking** (`test/helpers/tree-shaking.test.ts`,
   `test/runtime/tree-shaking.test.ts`): every optional namespace/entry point
   is provably absent from a downstream bundle that doesn't import it.
-- **Gzip budgets** (`scripts/check-size.mjs`, run in CI's `verify` job):
+- **Gzip budgets** (`ci/size-budgets.mjs`, run in CI's `verify` job):
   every consumer-facing entry point (`core`, `runtime`, `runtime/cache`,
   `runtime/retry`, `helpers`) carries a hard size ceiling.
 - **Dual-package hazard** (`test/runtime/dual-package-hazard.test.ts`):
@@ -458,7 +458,7 @@ output).
 - **Cross-runtime conformance** (`test/cross-runtime/{bun,deno}.test.ts`):
   core+runtime's isomorphism claim is verified against real Bun and Deno
   engines, not just Node/vitest.
-- **No ambient filesystem access** (`scripts/verify-no-ambient-fs.mjs`, run
+- **No ambient filesystem access** (the `AmbientCapabilities` check, run
   in CI's `verify`/`precommit` jobs): a real `npm pack` tarball is grepped
   for `node:fs` reachable outside the CLI/`./node`/`./eslint-plugin`
   exceptions ([ADR 0058](decisions/0058-library-surfaces-do-not-acquire-node-fs.md)).

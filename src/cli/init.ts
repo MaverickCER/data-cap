@@ -18,7 +18,7 @@ import path from "node:path"
  *
  * `src/cli/**` is the sanctioned place for direct `node:fs` use (ADR 0058) --
  * this file is bundled into the `bin` target, exempt from the
- * `verify-no-ambient-fs` tarball guard exactly as `src/cli/index.ts` is.
+ * the `AmbientCapabilities` check tarball guard exactly as `src/cli/index.ts` is.
  */
 
 // The next three are functions, not module-level `const` string templates,

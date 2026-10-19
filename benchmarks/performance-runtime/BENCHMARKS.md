@@ -4,9 +4,9 @@ What does adopting this package add to latency, CPU, memory and compute spend --
 
 ## What adopting this package costs
 
-For a typical workload of **640 records** per operation, routing the work through `data-cap` adds **666 µs** per operation compared with a bare-minimum baseline (1,889× baseline), about **$0.0014 – $0.019 per million operations** of compute. Overall, it grows O(log n) with workload size (measured exponent 0.56).
+For a typical workload of **640 records** per operation, routing the work through `data-cap` adds **666 µs** per operation compared with a bare-minimum baseline (**1,889× the baseline**). Overall, it grows O(n) with workload size (measured exponent 0.86). At list prices that is on the order of **~$0.001 – $0.01 per million operations** of compute.
 
-> Dollar figures are **estimates** from published list prices (see _Cost model_ below) and are for comparing orders of magnitude, not for budgeting to the cent.
+> The relative figure and the growth class are the steadier ones: both come from the same run, so they depend far less on the machine than a time does, though runtime behaviour and contention on the runner still move them. The growth class is an empirical fit to the sizes tested, not a proof of asymptotic complexity. Dollar figures are **order-of-magnitude** estimates from published list prices on shared hardware (see _Cost model_ below) -- good for comparing one package with another, not for budgeting.
 
 | Cost | Typical (640 records) | Largest (10240 records) |
 | --- | --- | --- |
@@ -14,7 +14,7 @@ For a typical workload of **640 records** per operation, routing the work throug
 | Added latency, relative to baseline | 1,889× baseline | 20,395× baseline |
 | Added CPU time per operation | 1.72 ms | 11.0 ms |
 | Added memory per operation (heap delta) | 222.5 KiB | 3.1 MiB |
-| Estimated compute cost per 1M operations | $0.0014 – $0.019 | $0.015 – $0.124 |
+| Compute cost per 1M operations (order of magnitude) | ~$0.001 – $0.01 | ~$0.01 – $0.1 |
 | Single-core throughput ceiling of the overhead alone | 1,502 ops/s | 135 ops/s |
 | Shipped code parsed at every cold start (gzip) | 10.4 KiB | 10.4 KiB |
 
@@ -52,26 +52,34 @@ The baseline is an empty or minimal function, so it costs almost nothing and the
 | 5120 | 0.359 µs | 3.42 ms | 3.42 ms | 9,522× baseline | 3.73 ms | $0.0071 – $0.042 |
 | 10240 | 0.362 µs | 7.38 ms | 7.38 ms | 20,395× baseline | 11.0 ms | $0.015 – $0.124 |
 
-**How the total grows:** O(log n) (logarithmic), exponent 0.56 over 10 sizes.
+**How the total grows:** O(n) (linear), exponent 0.86 over 10 sizes.
 
 ## 2. Function by function
 
 Every function the package exposes is measured on its own across the full size ladder, then its measured growth rate is compared with the big-O we documented for it. A function whose measured class **differs** from its documented one is the most useful thing in this report: either the documentation or the code is wrong.
 
-| Function | Documented | Measured | Agreement | At 640 | At 10240 |
-| --- | --- | --- | --- | --- | --- |
-| `createData (cold start)` | O(n) | n/a | ❔ not enough data | n/a | n/a |
-| `buildData` | O(n) | O(n) | ✅ matches | 1.69 ms | 27.7 ms |
-| `commitAuthoritative (replace a whole array)` | O(n) | O(n) | ✅ matches | 580 µs | 6.51 ms |
-| `commitAuthoritative (change one small field)` | O(1) | O(1) | ✅ matches | 3.07 µs | 3.08 µs |
-| `reconcileArrayInfo` | O(n) | O(n) | ✅ matches | 267 µs | 4.85 ms |
-| `getter dispatch (one full round trip)` | O(n) | O(log n) | 🟡 close (neighbouring class) | 702 µs | 8.05 ms |
-| `canonicalize (request key)` | O(n log n) | O(n) | 🟡 close (neighbouring class) | 151 µs | 2.34 ms |
-| `coordinator dedup (identical concurrent calls)` (identical) | O(n) | O(n) | ✅ matches | 8.02 ms | 83.1 ms |
-| `coordinator dedup (identical concurrent calls)` (independent) | O(n) | O(n) | ✅ matches | 7.52 ms | 83.6 ms |
-| `runGetters (one call, many getters)` | O(n²) | O(n²) | ✅ matches | 243 ms | 128 s |
-| `createDataCache (set then get)` | O(1) | O(log n) | 🟡 close (neighbouring class) | 23.2 µs | 26.5 µs |
-| `withRetry` | O(n) | O(n) | ✅ matches | 90.6 ms (at 80) | 90.6 ms (at 80) |
+| Function | Varies | Documented | Measured | Agreement | At 640 | At 10240 |
+| --- | --- | --- | --- | --- | --- | --- |
+| `createData (cold start)` | record | O(n) | n/a | ❔ not enough data | n/a | n/a |
+| `buildData` | record | O(n) | O(n) | ✅ matches | 1.69 ms | 27.7 ms |
+| `commitAuthoritative (replace a whole array)` | record | O(n) | O(n) | ✅ matches | 580 µs | 6.51 ms |
+| `commitAuthoritative (change one small field)` | record | O(1) | O(1) | ✅ matches | 3.07 µs | 3.08 µs |
+| `reconcileArrayInfo` | record | O(n) | O(n) | ✅ matches | 267 µs | 4.85 ms |
+| `reconcileArrayInfo` | previous-records | O(1) | n/a | ❔ not enough data | n/a | n/a |
+| `getter dispatch (one full round trip)` | record | O(n) | O(n) | ✅ matches | 702 µs | 8.05 ms |
+| `canonicalize (request key)` | record | O(n log n) | O(n) | 🟡 close (neighbouring class) | 151 µs | 2.34 ms |
+| `coordinator dedup (identical concurrent calls)` (identical) | record | O(n) | O(n) | ✅ matches | 8.02 ms | 83.1 ms |
+| `coordinator dedup (identical concurrent calls)` (independent) | record | O(n) | O(n) | ✅ matches | 7.52 ms | 83.6 ms |
+| `runGetters (one call, many getters)` | record | O(n²) | O(n²) | ✅ matches | 243 ms | 128 s |
+| `createDataCache (set then get)` | record | O(1) | O(1) | ✅ matches | 23.2 µs | 26.5 µs |
+| `computeItemIdentity` | record | O(n) | n/a | ❔ not enough data | n/a | n/a |
+| `createData` | record | O(n) | n/a | ❔ not enough data | n/a | n/a |
+| `processors.toArray` | record | O(n) | n/a | ❔ not enough data | n/a | n/a |
+| `withRetry` | record | O(n) | O(n) | ✅ matches | 90.6 ms (at 80) | 90.6 ms (at 80) |
+
+> **Could not be determined.** The big-O of these could not be measured, so they are not checked against their documentation:
+>
+> - `cold-start` (varying record): only 0 record sizes gave a usable measurement and a growth rate needs at least 2; lost: n20 failed (Command failed: …/node --expose-gc …/cold-start-child.mjs …/index.mjs); n40 failed (Command failed: …/node --expose-gc …/cold-start-child.mjs …/index.mjs); n80 failed (Command failed: …/node --expose-gc …/cold-start-child.mjs …/index.mjs); n160 failed (Command failed: …/node --expose-gc …/cold-start-child.mjs …/index.mjs); n320 failed (Command failed: …/node --expose-gc …/cold-start-child.mjs …/index.mjs); n640 failed (Command failed: …/node --expose-gc …/cold-start-child.mjs …/index.mjs); n1280 failed (Command failed: …/node --expose-gc …/cold-start-child.mjs …/index.mjs); n2560 failed (Command failed: …/node --expose-gc …/cold-start-child.mjs …/index.mjs); n5120 failed (Command failed: …/node --expose-gc …/cold-start-child.mjs …/index.mjs); n10240 failed (Command failed: …/node --expose-gc …/cold-start-child.mjs …/index.mjs)
 
 ### `createData (cold start)`
 
@@ -97,196 +105,16 @@ Every function the package exposes is measured on its own across the full size l
 
 | records | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
-| 20 | ❌ Command failed: /opt/hostedtoolcache/node/22.23.3/x64/bin/node --expose-gc /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/fixtures/generated/cold-start/n20/index.mjs
-node:internal/modules/esm/resolve:275
-    throw new ERR_MODULE_NOT_FOUND(
-          ^
-
-Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs' imported from /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs
-    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
-    at moduleResolve (node:internal/modules/esm/resolve:865:10)
-    at defaultResolve (node:internal/modules/esm/resolve:989:11)
-    at #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)
-    at ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)
-    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)
-    at ModuleJob._link (node:internal/modules/esm/module_job:182:49) {
-  code: 'ERR_MODULE_NOT_FOUND',
-  url: 'file:///home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs'
-}
-
-Node.js v22.23.3
- |  |  |  |  |
-| 40 | ❌ Command failed: /opt/hostedtoolcache/node/22.23.3/x64/bin/node --expose-gc /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/fixtures/generated/cold-start/n40/index.mjs
-node:internal/modules/esm/resolve:275
-    throw new ERR_MODULE_NOT_FOUND(
-          ^
-
-Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs' imported from /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs
-    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
-    at moduleResolve (node:internal/modules/esm/resolve:865:10)
-    at defaultResolve (node:internal/modules/esm/resolve:989:11)
-    at #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)
-    at ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)
-    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)
-    at ModuleJob._link (node:internal/modules/esm/module_job:182:49) {
-  code: 'ERR_MODULE_NOT_FOUND',
-  url: 'file:///home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs'
-}
-
-Node.js v22.23.3
- |  |  |  |  |
-| 80 | ❌ Command failed: /opt/hostedtoolcache/node/22.23.3/x64/bin/node --expose-gc /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/fixtures/generated/cold-start/n80/index.mjs
-node:internal/modules/esm/resolve:275
-    throw new ERR_MODULE_NOT_FOUND(
-          ^
-
-Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs' imported from /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs
-    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
-    at moduleResolve (node:internal/modules/esm/resolve:865:10)
-    at defaultResolve (node:internal/modules/esm/resolve:989:11)
-    at #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)
-    at ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)
-    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)
-    at ModuleJob._link (node:internal/modules/esm/module_job:182:49) {
-  code: 'ERR_MODULE_NOT_FOUND',
-  url: 'file:///home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs'
-}
-
-Node.js v22.23.3
- |  |  |  |  |
-| 160 | ❌ Command failed: /opt/hostedtoolcache/node/22.23.3/x64/bin/node --expose-gc /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/fixtures/generated/cold-start/n160/index.mjs
-node:internal/modules/esm/resolve:275
-    throw new ERR_MODULE_NOT_FOUND(
-          ^
-
-Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs' imported from /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs
-    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
-    at moduleResolve (node:internal/modules/esm/resolve:865:10)
-    at defaultResolve (node:internal/modules/esm/resolve:989:11)
-    at #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)
-    at ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)
-    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)
-    at ModuleJob._link (node:internal/modules/esm/module_job:182:49) {
-  code: 'ERR_MODULE_NOT_FOUND',
-  url: 'file:///home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs'
-}
-
-Node.js v22.23.3
- |  |  |  |  |
-| 320 | ❌ Command failed: /opt/hostedtoolcache/node/22.23.3/x64/bin/node --expose-gc /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/fixtures/generated/cold-start/n320/index.mjs
-node:internal/modules/esm/resolve:275
-    throw new ERR_MODULE_NOT_FOUND(
-          ^
-
-Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs' imported from /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs
-    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
-    at moduleResolve (node:internal/modules/esm/resolve:865:10)
-    at defaultResolve (node:internal/modules/esm/resolve:989:11)
-    at #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)
-    at ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)
-    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)
-    at ModuleJob._link (node:internal/modules/esm/module_job:182:49) {
-  code: 'ERR_MODULE_NOT_FOUND',
-  url: 'file:///home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs'
-}
-
-Node.js v22.23.3
- |  |  |  |  |
-| 640 | ❌ Command failed: /opt/hostedtoolcache/node/22.23.3/x64/bin/node --expose-gc /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/fixtures/generated/cold-start/n640/index.mjs
-node:internal/modules/esm/resolve:275
-    throw new ERR_MODULE_NOT_FOUND(
-          ^
-
-Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs' imported from /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs
-    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
-    at moduleResolve (node:internal/modules/esm/resolve:865:10)
-    at defaultResolve (node:internal/modules/esm/resolve:989:11)
-    at #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)
-    at ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)
-    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)
-    at ModuleJob._link (node:internal/modules/esm/module_job:182:49) {
-  code: 'ERR_MODULE_NOT_FOUND',
-  url: 'file:///home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs'
-}
-
-Node.js v22.23.3
- |  |  |  |  |
-| 1280 | ❌ Command failed: /opt/hostedtoolcache/node/22.23.3/x64/bin/node --expose-gc /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/fixtures/generated/cold-start/n1280/index.mjs
-node:internal/modules/esm/resolve:275
-    throw new ERR_MODULE_NOT_FOUND(
-          ^
-
-Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs' imported from /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs
-    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
-    at moduleResolve (node:internal/modules/esm/resolve:865:10)
-    at defaultResolve (node:internal/modules/esm/resolve:989:11)
-    at #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)
-    at ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)
-    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)
-    at ModuleJob._link (node:internal/modules/esm/module_job:182:49) {
-  code: 'ERR_MODULE_NOT_FOUND',
-  url: 'file:///home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs'
-}
-
-Node.js v22.23.3
- |  |  |  |  |
-| 2560 | ❌ Command failed: /opt/hostedtoolcache/node/22.23.3/x64/bin/node --expose-gc /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/fixtures/generated/cold-start/n2560/index.mjs
-node:internal/modules/esm/resolve:275
-    throw new ERR_MODULE_NOT_FOUND(
-          ^
-
-Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs' imported from /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs
-    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
-    at moduleResolve (node:internal/modules/esm/resolve:865:10)
-    at defaultResolve (node:internal/modules/esm/resolve:989:11)
-    at #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)
-    at ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)
-    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)
-    at ModuleJob._link (node:internal/modules/esm/module_job:182:49) {
-  code: 'ERR_MODULE_NOT_FOUND',
-  url: 'file:///home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs'
-}
-
-Node.js v22.23.3
- |  |  |  |  |
-| 5120 | ❌ Command failed: /opt/hostedtoolcache/node/22.23.3/x64/bin/node --expose-gc /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/fixtures/generated/cold-start/n5120/index.mjs
-node:internal/modules/esm/resolve:275
-    throw new ERR_MODULE_NOT_FOUND(
-          ^
-
-Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs' imported from /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs
-    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
-    at moduleResolve (node:internal/modules/esm/resolve:865:10)
-    at defaultResolve (node:internal/modules/esm/resolve:989:11)
-    at #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)
-    at ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)
-    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)
-    at ModuleJob._link (node:internal/modules/esm/module_job:182:49) {
-  code: 'ERR_MODULE_NOT_FOUND',
-  url: 'file:///home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs'
-}
-
-Node.js v22.23.3
- |  |  |  |  |
-| 10240 | ❌ Command failed: /opt/hostedtoolcache/node/22.23.3/x64/bin/node --expose-gc /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/fixtures/generated/cold-start/n10240/index.mjs
-node:internal/modules/esm/resolve:275
-    throw new ERR_MODULE_NOT_FOUND(
-          ^
-
-Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs' imported from /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs
-    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
-    at moduleResolve (node:internal/modules/esm/resolve:865:10)
-    at defaultResolve (node:internal/modules/esm/resolve:989:11)
-    at #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)
-    at ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)
-    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)
-    at ModuleJob._link (node:internal/modules/esm/module_job:182:49) {
-  code: 'ERR_MODULE_NOT_FOUND',
-  url: 'file:///home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs'
-}
-
-Node.js v22.23.3
- |  |  |  |  |
+| 20 | ❌ Command failed: …/node --expose-gc …/cold-start-child.mjs …/index.mjs |  |  |  |  |
+| 40 | ❌ Command failed: …/node --expose-gc …/cold-start-child.mjs …/index.mjs |  |  |  |  |
+| 80 | ❌ Command failed: …/node --expose-gc …/cold-start-child.mjs …/index.mjs |  |  |  |  |
+| 160 | ❌ Command failed: …/node --expose-gc …/cold-start-child.mjs …/index.mjs |  |  |  |  |
+| 320 | ❌ Command failed: …/node --expose-gc …/cold-start-child.mjs …/index.mjs |  |  |  |  |
+| 640 | ❌ Command failed: …/node --expose-gc …/cold-start-child.mjs …/index.mjs |  |  |  |  |
+| 1280 | ❌ Command failed: …/node --expose-gc …/cold-start-child.mjs …/index.mjs |  |  |  |  |
+| 2560 | ❌ Command failed: …/node --expose-gc …/cold-start-child.mjs …/index.mjs |  |  |  |  |
+| 5120 | ❌ Command failed: …/node --expose-gc …/cold-start-child.mjs …/index.mjs |  |  |  |  |
+| 10240 | ❌ Command failed: …/node --expose-gc …/cold-start-child.mjs …/index.mjs |  |  |  |  |
 
 ### `buildData`
 
@@ -308,7 +136,7 @@ Node.js v22.23.3
 
 - **schemas with validators** -- Validators are application code; their cost belongs to the application.
 
-**Measured: O(n)** (exponent 0.93, 10 sizes) -- ✅ matches.
+**Measured: O(n)** (exponent 1.02, 10 sizes) -- ✅ matches.
 
 | records | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
@@ -346,7 +174,7 @@ Node.js v22.23.3
 
 **In the end-to-end run:** One commit per fetch.
 
-**Measured: O(n)** (exponent 0.78, 10 sizes) -- ✅ matches.
+**Measured: O(n)** (exponent 0.87, 10 sizes) -- ✅ matches.
 
 | records | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
@@ -381,7 +209,7 @@ Node.js v22.23.3
 
 - **deeply nested change paths** -- Path length adds a small constant per level; the store's fields are shallow by design.
 
-**Measured: O(1)** (exponent -0.04, 10 sizes) -- ✅ matches.
+**Measured: O(1)** (exponent 0.00, 10 sizes) -- ✅ matches.
 
 | records | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
@@ -409,13 +237,13 @@ Node.js v22.23.3
 | Variable | How it is handled | What it is |
 | --- | --- | --- |
 | records per fetch | swept | The tier axis: how many records one getter call fetches and commits. |
+| previous-records | swept | How many records the previous state already holds (none on a first load). |
 | record shape | fixed at "7-field task record (strings, dates, a tag array)" | Records come from the deterministic generator in benchmark-fixtures/generator.mjs; wider or deeper records would raise the per-record cost. |
 | key composition | fixed at "single `id` field" | Composite keys add a small constant per record. |
-| previous state | fixed at "none (first load)" | Reconciling against a large previous collection would add map lookups; the first-load case is the worst case for allocation. |
 
 **In the end-to-end run:** Once per collection commit.
 
-**Measured: O(n)** (exponent 0.93, 10 sizes) -- ✅ matches.
+**Measured: O(n)** (exponent 1.05, 10 sizes) -- ✅ matches.
 
 | records | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
@@ -429,6 +257,12 @@ Node.js v22.23.3
 | 2560 | 1.14 ms | 1.34 ms | 2.73 ms | 1.4 MiB | 874 |
 | 5120 | 2.34 ms | 2.42 ms | 4.26 ms | 2.7 MiB | 427 |
 | 10240 | 4.85 ms | 5.20 ms | 7.81 ms | 5.4 MiB | 206 |
+
+##### Varying `previous-records`
+
+How many records the previous state already holds.
+
+**Expected: O(1).** The previous state is a hash map consulted once per incoming record, so how many records it holds changes neither the number of lookups nor the cost of each.
 
 ### `getter dispatch (one full round trip)`
 
@@ -449,7 +283,7 @@ Node.js v22.23.3
 
 **In the end-to-end run:** This is the end-to-end operation itself.
 
-**Measured: O(log n)** (exponent 0.59, 10 sizes) -- 🟡 close (neighbouring class).
+**Measured: O(n)** (exponent 0.87, 10 sizes) -- ✅ matches.
 
 | records | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
@@ -484,7 +318,7 @@ Node.js v22.23.3
 
 - **deeply nested parameters** -- Nesting is bounded by a hard depth limit and is not representative of real request parameters.
 
-**Measured: O(n)** (exponent 0.94, 10 sizes) -- 🟡 close (neighbouring class).
+**Measured: O(n)** (exponent 1.01, 10 sizes) -- 🟡 close (neighbouring class).
 
 | records | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
@@ -519,7 +353,7 @@ Node.js v22.23.3
 
 Every caller asks for the same page; the coordinator runs one fetch and shares it.
 
-**Measured: O(n)** (exponent 0.83, 10 sizes) -- ✅ matches.
+**Measured: O(n)** (exponent 0.84, 10 sizes) -- ✅ matches.
 
 | records | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
@@ -538,7 +372,7 @@ Every caller asks for the same page; the coordinator runs one fetch and shares i
 
 Every caller asks for a different page; nothing can be shared, so this is the no-dedup comparison.
 
-**Measured: O(n)** (exponent 0.83, 10 sizes) -- ✅ matches.
+**Measured: O(n)** (exponent 0.84, 10 sizes) -- ✅ matches.
 
 | records | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
@@ -570,7 +404,7 @@ Every caller asks for a different page; nothing can be shared, so this is the no
 | payload per getter | fixed at "20 records" | Small and constant so the getter count, not payload size, drives the result. |
 | getter independence | fixed at "all independent, all succeed" | A failing getter takes the error path, which is cheaper and not representative. |
 
-**Measured: O(n²)** (exponent 1.90, 10 sizes) -- ✅ matches.
+**Measured: O(n²)** (exponent 2.29, 10 sizes) -- ✅ matches.
 
 | records | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
@@ -601,7 +435,7 @@ Every caller asks for a different page; nothing can be shared, so this is the no
 | cache fullness | fixed at "full (50 entries), every set evicts" | The worst case: each set evicts the oldest entry. |
 | hit versus miss | fixed at "hit" | The get immediately follows the set, so it is always a hit; a miss is cheaper. |
 
-**Measured: O(log n)** (exponent 0.21, 10 sizes) -- 🟡 close (neighbouring class).
+**Measured: O(1)** (exponent 0.05, 10 sizes) -- ✅ matches.
 
 | records | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
@@ -615,6 +449,58 @@ Every caller asks for a different page; nothing can be shared, so this is the no
 | 2560 | 27.1 µs | 28.4 µs | 32.0 µs | 680 B | 36,913 |
 | 5120 | 26.9 µs | 27.9 µs | 32.0 µs | 680 B | 37,202 |
 | 10240 | 26.5 µs | 28.9 µs | 32.0 µs | 680 B | 37,750 |
+
+### `computeItemIdentity`
+
+**Why we benchmark it.** It builds the identity key of every record in a collection commit, so it runs once per record on every list fetch.
+
+**What poor performance would mean.** Collection commits slow down in proportion to the number of key fields, adding to every list fetch of every capability that uses a composite key.
+
+**Expected growth: O(n).** Each key field's value is read and joined once, so cost is proportional to the number of key fields.
+
+**Variables that could change its cost**
+
+| Variable | How it is handled | What it is |
+| --- | --- | --- |
+| identity-keys | swept | The tier axis: how many fields make up the record's identity key. |
+| runtime | fixed at "Node (V8)" | Measured on Node only. Bun, Deno, browsers and edge runtimes are not covered. |
+
+**In the end-to-end run:** Run once per record inside every collection commit; measured on its own.
+
+### `createData`
+
+**Why we benchmark it.** Every capability is declared by one `createData` call, so its cost is paid at module load by every process that imports a capability, not only by the first fetch.
+
+**What poor performance would mean.** Slower start-up for every process in proportion to the initial state each capability declares, on top of the per-capability floor cold start measures.
+
+**Expected growth: O(n).** It builds the initial state once, which walks the schema's initial records to freeze and index them, so cost is proportional to the number of initial records.
+
+**Variables that could change its cost**
+
+| Variable | How it is handled | What it is |
+| --- | --- | --- |
+| initial records | swept | How many records the schema's collection field starts with. |
+| record shape | fixed at "7-field task record (strings, dates, a tag array)" | Records come from the deterministic generator in benchmark-fixtures/generator.mjs; wider or deeper records would raise the per-record cost. |
+| runtime | fixed at "Node (V8)" | Measured on Node only. Bun, Deno, browsers and edge runtimes are not covered. |
+
+**In the end-to-end run:** Run at module load; measured on its own.
+
+### `processors.toArray`
+
+**Why we benchmark it.** It splits a delimited value into a list, once for every variable that declares it, wherever a list is read from a single string.
+
+**What poor performance would mean.** Slower reads of every list value, in proportion to its length.
+
+**Expected growth: O(n).** The text is scanned once and one item is produced for each separator, so cost is proportional to the number of items.
+
+**Variables that could change its cost**
+
+| Variable | How it is handled | What it is |
+| --- | --- | --- |
+| items | swept | The tier axis: how many comma-separated items the value holds. |
+| runtime | fixed at "Node (V8)" | Measured on Node only. Bun, Deno, browsers and edge runtimes are not covered. |
+
+**In the end-to-end run:** Run when a list value is read; measured on its own.
 
 ### `withRetry`
 
@@ -647,220 +533,40 @@ Every caller asks for a different page; nothing can be shared, so this is the no
 | 40 | 43.3 ms | 47.7 ms | 3.51 ms | 134.2 KiB | 23 |
 | 80 | 90.6 ms | 91.8 ms | 4.83 ms | 264.4 KiB | 11 |
 
-## 3. What makes up the end-to-end overhead
+## 3. What makes up one end-to-end operation
 
-Each function's measured cost is multiplied by how many times one end-to-end operation calls it, then compared with the total overhead from section 1. This shows where the cost actually lives, so effort goes to the function that matters. Shares are estimates: they can sum to slightly more or less than 100% because the two measurements were taken separately (the remainder is shown as _unattributed_).
+Each function's measured cost is multiplied by how many times one end-to-end operation calls it. A function measured on its own includes everything it calls, so where one attributed function calls another, the nested time is subtracted from the caller (its _exclusive_ time): every moment of the operation belongs to at most one row. Shares are measured against the whole operation with the package, a figure measured directly -- not against the _added_ time, which is the small difference of two noisy medians. They are estimates (each function was measured separately); the remainder is shown as _unattributed_.
 
-**At 640 records** (total added: 666 µs)
+**At 640 records** (whole operation: 666 µs)
 
-| Function | Calls / operation | Estimated time | Share of added time | Share of operation |
+| Function | Calls / operation | Time if called that often | Exclusive time | Share of operation |
 | --- | --- | --- | --- | --- |
-| `getter-dispatch-cold` | 1 | 702 µs | 106% | 105% |
-| `commit-authoritative-array-replace` | 1 | 580 µs | 87% | 87% |
-| `reconcile-array-info` | 1 | 267 µs | 40% | 40% |
-| _unattributed_ |  | 0 | 0.0% |  |
+| `commit-authoritative-array-replace` | 1 | 580 µs | 313 µs | 47% |
+| `reconcile-array-info` | 1 | 267 µs | 267 µs | 40% |
+| `getter-dispatch-cold` | 1 | 702 µs | 122 µs | 18% |
+| _unattributed_ |  |  | 0 | 0.0% |
 
-**At 10240 records** (total added: 7.38 ms)
+**At 10240 records** (whole operation: 7.38 ms)
 
-| Function | Calls / operation | Estimated time | Share of added time | Share of operation |
+| Function | Calls / operation | Time if called that often | Exclusive time | Share of operation |
 | --- | --- | --- | --- | --- |
-| `getter-dispatch-cold` | 1 | 8.05 ms | 109% | 109% |
-| `commit-authoritative-array-replace` | 1 | 6.51 ms | 88% | 88% |
-| `reconcile-array-info` | 1 | 4.85 ms | 66% | 66% |
-| _unattributed_ |  | 0 | 0.0% |  |
+| `reconcile-array-info` | 1 | 4.85 ms | 4.85 ms | 66% |
+| `commit-authoritative-array-replace` | 1 | 6.51 ms | 1.65 ms | 22% |
+| `getter-dispatch-cold` | 1 | 8.05 ms | 1.54 ms | 21% |
+| _unattributed_ |  |  | 0 | 0.0% |
 
 ## Failed measurements
 
-- **fn:cold-start** at n20: Error: Command failed: /opt/hostedtoolcache/node/22.23.3/x64/bin/node --expose-gc /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/fixtures/generated/cold-start/n20/index.mjs
-node:internal/modules/esm/resolve:275
-    throw new ERR_MODULE_NOT_FOUND(
-          ^
-
-Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs' imported from /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs
-    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
-    at moduleResolve (node:internal/modules/esm/resolve:865:10)
-    at defaultResolve (node:internal/modules/esm/resolve:989:11)
-    at #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)
-    at ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)
-    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)
-    at ModuleJob._link (node:internal/modules/esm/module_job:182:49) {
-  code: 'ERR_MODULE_NOT_FOUND',
-  url: 'file:///home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs'
-}
-
-Node.js v22.23.3
-
-- **fn:cold-start** at n40: Error: Command failed: /opt/hostedtoolcache/node/22.23.3/x64/bin/node --expose-gc /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/fixtures/generated/cold-start/n40/index.mjs
-node:internal/modules/esm/resolve:275
-    throw new ERR_MODULE_NOT_FOUND(
-          ^
-
-Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs' imported from /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs
-    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
-    at moduleResolve (node:internal/modules/esm/resolve:865:10)
-    at defaultResolve (node:internal/modules/esm/resolve:989:11)
-    at #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)
-    at ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)
-    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)
-    at ModuleJob._link (node:internal/modules/esm/module_job:182:49) {
-  code: 'ERR_MODULE_NOT_FOUND',
-  url: 'file:///home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs'
-}
-
-Node.js v22.23.3
-
-- **fn:cold-start** at n80: Error: Command failed: /opt/hostedtoolcache/node/22.23.3/x64/bin/node --expose-gc /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/fixtures/generated/cold-start/n80/index.mjs
-node:internal/modules/esm/resolve:275
-    throw new ERR_MODULE_NOT_FOUND(
-          ^
-
-Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs' imported from /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs
-    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
-    at moduleResolve (node:internal/modules/esm/resolve:865:10)
-    at defaultResolve (node:internal/modules/esm/resolve:989:11)
-    at #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)
-    at ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)
-    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)
-    at ModuleJob._link (node:internal/modules/esm/module_job:182:49) {
-  code: 'ERR_MODULE_NOT_FOUND',
-  url: 'file:///home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs'
-}
-
-Node.js v22.23.3
-
-- **fn:cold-start** at n160: Error: Command failed: /opt/hostedtoolcache/node/22.23.3/x64/bin/node --expose-gc /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/fixtures/generated/cold-start/n160/index.mjs
-node:internal/modules/esm/resolve:275
-    throw new ERR_MODULE_NOT_FOUND(
-          ^
-
-Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs' imported from /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs
-    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
-    at moduleResolve (node:internal/modules/esm/resolve:865:10)
-    at defaultResolve (node:internal/modules/esm/resolve:989:11)
-    at #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)
-    at ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)
-    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)
-    at ModuleJob._link (node:internal/modules/esm/module_job:182:49) {
-  code: 'ERR_MODULE_NOT_FOUND',
-  url: 'file:///home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs'
-}
-
-Node.js v22.23.3
-
-- **fn:cold-start** at n320: Error: Command failed: /opt/hostedtoolcache/node/22.23.3/x64/bin/node --expose-gc /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/fixtures/generated/cold-start/n320/index.mjs
-node:internal/modules/esm/resolve:275
-    throw new ERR_MODULE_NOT_FOUND(
-          ^
-
-Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs' imported from /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs
-    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
-    at moduleResolve (node:internal/modules/esm/resolve:865:10)
-    at defaultResolve (node:internal/modules/esm/resolve:989:11)
-    at #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)
-    at ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)
-    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)
-    at ModuleJob._link (node:internal/modules/esm/module_job:182:49) {
-  code: 'ERR_MODULE_NOT_FOUND',
-  url: 'file:///home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs'
-}
-
-Node.js v22.23.3
-
-- **fn:cold-start** at n640: Error: Command failed: /opt/hostedtoolcache/node/22.23.3/x64/bin/node --expose-gc /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/fixtures/generated/cold-start/n640/index.mjs
-node:internal/modules/esm/resolve:275
-    throw new ERR_MODULE_NOT_FOUND(
-          ^
-
-Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs' imported from /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs
-    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
-    at moduleResolve (node:internal/modules/esm/resolve:865:10)
-    at defaultResolve (node:internal/modules/esm/resolve:989:11)
-    at #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)
-    at ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)
-    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)
-    at ModuleJob._link (node:internal/modules/esm/module_job:182:49) {
-  code: 'ERR_MODULE_NOT_FOUND',
-  url: 'file:///home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs'
-}
-
-Node.js v22.23.3
-
-- **fn:cold-start** at n1280: Error: Command failed: /opt/hostedtoolcache/node/22.23.3/x64/bin/node --expose-gc /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/fixtures/generated/cold-start/n1280/index.mjs
-node:internal/modules/esm/resolve:275
-    throw new ERR_MODULE_NOT_FOUND(
-          ^
-
-Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs' imported from /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs
-    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
-    at moduleResolve (node:internal/modules/esm/resolve:865:10)
-    at defaultResolve (node:internal/modules/esm/resolve:989:11)
-    at #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)
-    at ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)
-    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)
-    at ModuleJob._link (node:internal/modules/esm/module_job:182:49) {
-  code: 'ERR_MODULE_NOT_FOUND',
-  url: 'file:///home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs'
-}
-
-Node.js v22.23.3
-
-- **fn:cold-start** at n2560: Error: Command failed: /opt/hostedtoolcache/node/22.23.3/x64/bin/node --expose-gc /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/fixtures/generated/cold-start/n2560/index.mjs
-node:internal/modules/esm/resolve:275
-    throw new ERR_MODULE_NOT_FOUND(
-          ^
-
-Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs' imported from /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs
-    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
-    at moduleResolve (node:internal/modules/esm/resolve:865:10)
-    at defaultResolve (node:internal/modules/esm/resolve:989:11)
-    at #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)
-    at ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)
-    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)
-    at ModuleJob._link (node:internal/modules/esm/module_job:182:49) {
-  code: 'ERR_MODULE_NOT_FOUND',
-  url: 'file:///home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs'
-}
-
-Node.js v22.23.3
-
-- **fn:cold-start** at n5120: Error: Command failed: /opt/hostedtoolcache/node/22.23.3/x64/bin/node --expose-gc /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/fixtures/generated/cold-start/n5120/index.mjs
-node:internal/modules/esm/resolve:275
-    throw new ERR_MODULE_NOT_FOUND(
-          ^
-
-Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs' imported from /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs
-    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
-    at moduleResolve (node:internal/modules/esm/resolve:865:10)
-    at defaultResolve (node:internal/modules/esm/resolve:989:11)
-    at #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)
-    at ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)
-    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)
-    at ModuleJob._link (node:internal/modules/esm/module_job:182:49) {
-  code: 'ERR_MODULE_NOT_FOUND',
-  url: 'file:///home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs'
-}
-
-Node.js v22.23.3
-
-- **fn:cold-start** at n10240: Error: Command failed: /opt/hostedtoolcache/node/22.23.3/x64/bin/node --expose-gc /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/fixtures/generated/cold-start/n10240/index.mjs
-node:internal/modules/esm/resolve:275
-    throw new ERR_MODULE_NOT_FOUND(
-          ^
-
-Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs' imported from /home/runner/work/data-cap/data-cap/benchmarks/performance-runtime/scripts/cold-start-child.mjs
-    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
-    at moduleResolve (node:internal/modules/esm/resolve:865:10)
-    at defaultResolve (node:internal/modules/esm/resolve:989:11)
-    at #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)
-    at ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)
-    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)
-    at ModuleJob._link (node:internal/modules/esm/module_job:182:49) {
-  code: 'ERR_MODULE_NOT_FOUND',
-  url: 'file:///home/runner/work/data-cap/data-cap/benchmarks/benchmark-fixtures/measure.mjs'
-}
-
-Node.js v22.23.3
-
+- **fn:cold-start** at n20: Error: Command failed: …/node --expose-gc …/cold-start-child.mjs …/index.mjs
+- **fn:cold-start** at n40: Error: Command failed: …/node --expose-gc …/cold-start-child.mjs …/index.mjs
+- **fn:cold-start** at n80: Error: Command failed: …/node --expose-gc …/cold-start-child.mjs …/index.mjs
+- **fn:cold-start** at n160: Error: Command failed: …/node --expose-gc …/cold-start-child.mjs …/index.mjs
+- **fn:cold-start** at n320: Error: Command failed: …/node --expose-gc …/cold-start-child.mjs …/index.mjs
+- **fn:cold-start** at n640: Error: Command failed: …/node --expose-gc …/cold-start-child.mjs …/index.mjs
+- **fn:cold-start** at n1280: Error: Command failed: …/node --expose-gc …/cold-start-child.mjs …/index.mjs
+- **fn:cold-start** at n2560: Error: Command failed: …/node --expose-gc …/cold-start-child.mjs …/index.mjs
+- **fn:cold-start** at n5120: Error: Command failed: …/node --expose-gc …/cold-start-child.mjs …/index.mjs
+- **fn:cold-start** at n10240: Error: Command failed: …/node --expose-gc …/cold-start-child.mjs …/index.mjs
 
 ## Cost model
 

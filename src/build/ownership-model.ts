@@ -23,7 +23,7 @@ export const OWNERSHIP_MODEL_SCHEMA_VERSION = 2
 
 // A function so the label is read when buckets are built, not once at module load (where a change to
 // it could not be attributed to a test).
-function unowned(): string {
+function unowned(): "(unowned)" {
   return "(unowned)"
 }
 
@@ -32,7 +32,7 @@ function unowned(): string {
  * surfaced explicitly rather than silently omitted, so "nobody owns this" is as
  * visible as any real owner.
  */
-export const UNOWNED: string = unowned()
+export const UNOWNED: "(unowned)" = unowned()
 
 /** Identifies one capability by where it's declared. */
 export interface OwnershipCapabilityRef {

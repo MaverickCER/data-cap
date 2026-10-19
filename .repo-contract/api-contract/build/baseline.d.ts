@@ -1,4 +1,14 @@
-import ts from 'typescript';
+import type TS from 'typescript';
+
+declare function auditCapabilityCount(evidence: EvidenceModel): number;
+
+declare function auditFindingsBySeverity(evidence: EvidenceModel): Record<string, number> | undefined;
+
+declare function auditOwnedCapabilities(evidence: EvidenceModel): number | undefined;
+
+declare function auditProvenance(evidence: EvidenceModel): EvidenceProvenance;
+
+declare function auditUnownedCapabilities(evidence: EvidenceModel): number | undefined;
 
 /** One changed capability's known current consumers. */
 export declare interface BlastRadiusEntry {
@@ -39,10 +49,12 @@ declare interface BuildDataConfig<TFields extends FieldsShape> {
  */
 export declare function buildDependencyModel(edges: readonly DependencyEdge[]): DependencyModel;
 
-/** One directory entry from {@link BuildFileSystem.readdir} -- the subset of Node's `Dirent` `src/build/**` reads. */
+/** One directory entry from {@link BuildFileSystem.readdir} -- the subset of Node's `Dirent` the build code reads. */
 export declare interface BuildDirent {
     readonly name: string;
+    /** Same contract as Node's `Dirent.isDirectory()`. */
     readonly isDirectory: () => boolean;
+    /** Same contract as Node's `Dirent.isFile()`. */
     readonly isFile: () => boolean;
 }
 
@@ -50,15 +62,12 @@ export declare interface BuildDirent {
 export declare function buildEvidenceModel(models: EvidenceModelInputs, provenance: EvidenceProvenance): EvidenceModel;
 
 /**
- * The filesystem capability `data-cap/build` requires from its caller.
+ * The filesystem capability a package's `./build` entry requires from its caller.
  *
  * `./build` is a **library surface**: it must not acquire filesystem access
- * implicitly (no `node:fs` import anywhere under `src/` outside `src/cli/`).
- * Every public options object in `build/index.ts` carries a required `fs`
- * field of this type, and the caller supplies a concrete adapter -- the
- * `data-cap` CLI builds one over `node:fs/promises` (`src/cli/filesystem.ts`);
- * a test builds either that same real adapter or an in-memory fake. See ADR
- * 0058.
+ * implicitly (no `node:fs` import outside the package's CLI). Every public options object carries a required
+ * `fs` field of this type, and the caller supplies a concrete adapter: the CLI builds one over
+ * `node:fs/promises`; a test builds either that same adapter or an in-memory fake.
  *
  * "Ambient-fs-free" means specifically: `./build` never reaches for
  * `node:fs` itself. It still performs real filesystem operations -- the
@@ -69,12 +78,7 @@ export declare function buildEvidenceModel(models: EvidenceModelInputs, provenan
  * ({@link BuildDirent}/{@link BuildStats}) rather than Node's `Dirent`/
  * `Stats` -- the capability boundary shouldn't leak Node's type surface just
  * because the concrete adapter happens to be Node-backed. Only the
- * operations `src/build/**` actually calls are here.
- *
- * **Not shared with `@maverickcer/env-cap`.** The two packages are
- * independent products with no runtime coupling; a shared types package to
- * dedupe six signatures would add real cross-package coupling for negligible
- * benefit. env-cap has its own, structurally-identical interface.
+ * operations the build code actually calls are here.
  */
 export declare interface BuildFileSystem {
     /** Read a UTF-8 text file. Rejects if the path doesn't exist or isn't readable. */
@@ -151,8 +155,9 @@ export declare function buildRuntimeContractModel(): RuntimeContractModel;
 /** Projects Finding Model into a SARIF 2.1.0 log. */
 export declare function buildSarifLog(findingModel: FindingModel): SarifLog;
 
-/** A path's stat info from {@link BuildFileSystem.stat} -- the subset of Node's `Stats` `src/build/**` reads. */
+/** A path's stat info from {@link BuildFileSystem.stat} -- the subset of Node's `Stats` the build code reads. */
 export declare interface BuildStats {
+    /** Same contract as Node's `Stats.isFile()`. */
     readonly isFile: () => boolean;
     /** Size in bytes -- read by the package-schema resolver to enforce a size ceiling. */
     readonly size: number;
@@ -426,6 +431,8 @@ export declare interface CitationSnapshotEntry extends SourceLocation {
     readonly hash: string;
 }
 
+declare function classificationEntries(evidence: EvidenceModel): readonly ClassificationEntry[];
+
 /** One capability or field's declared sensitivity. */
 export declare interface ClassificationEntry {
     readonly capability: {
@@ -435,6 +442,8 @@ export declare interface ClassificationEntry {
     readonly field: readonly string[] | undefined;
     readonly sensitivity: string;
 }
+
+declare function complianceEntries(evidence: EvidenceModel): readonly ComplianceEntry[];
 
 /** One capability's declared regulatory-classification metadata bag (ADR 0049's/0051's open `metadata` convention). */
 export declare interface ComplianceEntry {
@@ -495,12 +504,12 @@ export declare interface ComputeSourceFingerprintOptions {
     readonly fs: BuildFileSystem;
     /** Directory discovery resolves against -- same meaning as `GenerateDataArtifactsOptions.root`. */
     readonly root: string;
-    /** Discovery globs. Defaults to `DEFAULT_INCLUDE`, matching `discoverCapabilityFiles`. */
-    readonly include?: readonly string[];
+    /** Discovery globs. Defaults to the same globs as `discoverCapabilityFiles`. */
+    readonly include?: readonly string[] | undefined;
     /** Discovery exclusion globs. */
-    readonly exclude?: readonly string[];
+    readonly exclude?: readonly string[] | undefined;
     /** Allow-listed package names whose own resolved schema files also feed the fingerprint. */
-    readonly packages?: readonly string[];
+    readonly packages?: readonly string[] | undefined;
 }
 
 /**
@@ -629,7 +638,7 @@ declare type DeepPartial<T> = T extends readonly (infer Item)[] ? readonly Item[
 export declare const DEFAULT_EXPIRING_WITHIN_DAYS = 30;
 
 /** The default `include` glob when none is supplied: every `.ts`/`.tsx` file. */
-export declare const DEFAULT_INCLUDE: string[];
+export declare const DEFAULT_INCLUDE: readonly string[];
 
 /**
  * Declares a projection: a pure transform from the `EvidenceModel` to any
@@ -748,6 +757,8 @@ export declare function deriveUsageFindings(inventory: CapabilityInventory, edge
  */
 export declare function diffManifestSnapshots(previous: ManifestSnapshot | undefined, current: ManifestSnapshot): ManifestChangeReport;
 
+declare function disclaimer(): string;
+
 /**
  * Discovers every file matching `include`/`exclude` under `root`, alphabetically sorted, as absolute paths.
  */
@@ -789,15 +800,15 @@ export declare interface DiscoverOptions {
     /** Directory to walk. */
     readonly root: string;
     /** Glob patterns (relative to `root`) a file must match at least one of to be included. Defaults to every `.ts`/`.tsx` file. */
-    readonly include?: readonly string[];
+    readonly include?: readonly string[] | undefined;
     /** Glob patterns (relative to `root`) that prune a file or directory regardless of `include`. */
-    readonly exclude?: readonly string[];
+    readonly exclude?: readonly string[] | undefined;
 }
 
 /**
  * Statically evaluates one AST expression against the allow-listed literal grammar -- never `eval`/`import`/`require`s anything (ADR 0002).
  */
-export declare function evaluateLiteral(node: ts.Expression): LiteralEvalResult;
+export declare function evaluateLiteral(node: TS.Expression): LiteralEvalResult;
 
 /**
  * Bump only when a reader could misinterpret the shape -- same discipline
@@ -845,11 +856,11 @@ export declare interface EvidenceComputedModels {
 }
 
 /**
- * Short disclaimer prepended to every artifact that renders sensitivity/
- * protections/endpoints claims (the docs catalog, ownership report,
- * data-flow diagram) -- see AGENTS.md's declared-vs-proven invariant.
- * Never omit this from an artifact that renders governance metadata: it's
- * what keeps "documented" from being misread as "verified" or "compliant."
+ * Short disclaimer stamped into every artifact that renders sensitivity, ownership or expiry claims. Never omit
+ * it from an artifact that renders such metadata: it is what keeps "documented" from being misread as
+ * "verified" or "compliant". Every fact in those artifacts is either a statically-provable code fact or an
+ * author's own declaration; data-cap never validates a declaration against reality.
+ * @returns The disclaimer.
  */
 export declare function evidenceDisclaimer(): string;
 
@@ -1015,36 +1026,6 @@ export declare interface ExpiringEntry {
     readonly daysRemaining: number;
 }
 
-/**
- * Field default helpers.
- *
- * `fields.nullable`/`fields.optional` are thin markers recognized only during
- * `buildData`'s schema-authoring walk (see build.ts) -- they never leak
- * into the resolved `fields` object. The runtime default they produce is
- * always `null`/`undefined` respectively, regardless of what `inner` holds;
- * `inner` exists purely so the underlying type can be inferred (see
- * `InferFieldValue` in types.ts).
- *
- * `FIELD_MARKER`/`isFieldMarker` are internal plumbing, not part of the
- * public field-access API -- data-cap's field system never requires a symbol
- * to read a field's value, only to recognize these two authoring-time
- * helpers while building the initial defaults tree.
- *
- * `Symbol.for(...)` (the global symbol registry), not a bare `Symbol(...)`,
- * is load-bearing here -- `core` and `runtime` are separate tsup entries,
- * each independently bundled, so a bare `Symbol()` would create a genuinely
- * different symbol identity in each bundle's own inlined copy of this
- * module. The runtime's `createData` (runtime/capability.ts) calls core's
- * `resolveOperationPatch` against a schema built with core's own
- * `fields.nullable`/`fields.optional` -- both bundles must recognize the
- * *same* marker identity for that ownership walk to work at all, even
- * though no ESM/CJS dual-package resolution is involved (contrast with
- * ADR 0041's `defaultCoordinator` case, which tolerates duplication via
- * graceful degradation -- a duplicated `FIELD_MARKER` doesn't degrade
- * gracefully, it silently misclassifies every marker as a plain object and
- * corrupts ownership resolution, so the global registry is required here,
- * not merely convenient).
- */
 declare const FIELD_MARKER: unique symbol;
 
 /**
@@ -1407,13 +1388,13 @@ export declare interface GenerateDataArtifactsOptions {
     /** Directory discovery/linking resolves against. */
     readonly root: string;
     /** Glob patterns (relative to `root`) a file must match at least one of to be discovered. Defaults to every `.ts`/`.tsx` file. */
-    readonly include?: readonly string[];
+    readonly include?: readonly string[] | undefined;
     /** Glob patterns (relative to `root`) that prune a file or directory regardless of `include`. */
-    readonly exclude?: readonly string[];
+    readonly exclude?: readonly string[] | undefined;
     /** Explicit `tsconfig.json` path override, or `false` to disable alias resolution -- see `LinkOptions.tsconfig`. */
-    readonly tsconfig?: string | false;
+    readonly tsconfig?: string | false | undefined;
     /** Explicit cross-package schema discovery allowlist -- see `resolve-package-schema.ts`. */
-    readonly packages?: readonly string[];
+    readonly packages?: readonly string[] | undefined;
     /** Output path for the generated manifest `.ts` file. Omit to skip manifest generation (the inventory is still built and static rules still run). */
     readonly location?: string;
     /** Output path for the Markdown documentation catalog. */
@@ -1423,7 +1404,7 @@ export declare interface GenerateDataArtifactsOptions {
     /** Output directory for the Data Flow Diagram + Security Data-Flow Review set. */
     readonly flow?: string;
     /** Output path for the composed Evidence Model (ADR 0050), as JSON -- see `ReportResult.evidence`, which is always computed regardless of this option; this only controls whether it's additionally written to disk. */
-    readonly evidence?: string;
+    readonly evidence?: string | undefined;
     /** Escalate every pass's `warning` findings to `error` (never `info`). */
     readonly strict?: boolean;
     /** Escalate static (ownership/sensitivity/duplication) findings to `error`. */
@@ -1437,17 +1418,16 @@ export declare interface GenerateDataArtifactsOptions {
     /** The single instant every time-sensitive computation in this run shares (`EvidenceModel.provenance.generatedAt`, Lifecycle Model's `daysRemaining`), so none of them can disagree about "now". Defaults to the wall clock at the moment this function is called. */
     readonly generatedAt?: Date;
     /** How many days out counts as "expiring soon" for the Lifecycle Model and the documentation catalog's own expiring section. Defaults to `DEFAULT_EXPIRING_WITHIN_DAYS`. */
-    readonly expiringWithinDays?: number;
+    readonly expiringWithinDays?: number | undefined;
 }
 
 /**
- * The marker every build-tooling-generated file starts with, so it's
- * unambiguous the file is derived output, never hand-edited -- and so
- * `check-artifacts.ts`'s drift check can refuse to ever overwrite a
- * hand-written file that happens to occupy the same output path.
+ * Renders the "do not edit by hand" marker in the given comment syntax.
+ * @param format - Comment syntax to render in.
+ * @param regenerate - How to regenerate; defaults to the CLI, which writes the manifest.
+ * @returns The comment line.
  */
-/** Renders the "do not edit by hand" marker in the given comment syntax. */
-export declare function generatedBanner(format?: "ts" | "markdown"): string;
+export declare function generatedBanner(format?: "ts" | "markdown", regenerate?: string): string;
 
 /** Renders the Markdown documentation catalog and runs the ownership/sensitivity static rules (C4). */
 export declare function generateDocumentation(options: GenerateDocumentationOptions): GenerateDocumentationResult;
@@ -1461,17 +1441,17 @@ export declare interface GenerateDocumentationOptions {
     /** Output path for the rendered documentation catalog. */
     readonly location: string;
     /** Manifest changes since the last report, rendered as a "changes since last report" section when present. */
-    readonly changes?: ManifestChangeReport;
+    readonly changes?: ManifestChangeReport | undefined;
     /** Proven usage edges, when the caller already ran the usage scan (`--ownership`/`--flow`) -- renders exact `file:line:column` consumption sites per field when supplied. Omit when no usage scan ran; the catalog still renders, just without that column populated. */
     readonly edges?: readonly DependencyEdge[];
     /** This same run's own `--evidence` output path, when requested -- named in the generated banner's Evidence Model note. */
-    readonly evidencePath?: string;
+    readonly evidencePath?: string | undefined;
     /**
      * How many days out counts as "expiring soon" in the rendered Lifecycle
      * section. Defaults to `DEFAULT_EXPIRING_WITHIN_DAYS` (30), matching
      * env-cap's own default.
      */
-    readonly expiringWithinDays?: number;
+    readonly expiringWithinDays?: number | undefined;
     /**
      * The instant `daysRemaining` is measured from. Defaults to the wall clock
      * at call time; `generateDataArtifacts` passes its own single run-wide
@@ -1515,7 +1495,7 @@ export declare interface GenerateFlowOptions {
     /** Findings from other passes (C2's static rules, C6's usage scan) to fold into the Security Data-Flow Review -- optional, so `--flow` alone still produces a meaningful review of just its own findings. */
     readonly additionalFindings?: readonly ReportFinding[];
     /** This same run's own `--evidence` output path, when requested -- named in the generated banner's Evidence Model note. */
-    readonly evidencePath?: string;
+    readonly evidencePath?: string | undefined;
 }
 
 /** The generated Data Flow Diagram + Security Data-Flow Review set. */
@@ -1573,7 +1553,7 @@ export declare interface GenerateUsageOptions {
     /** Passed through to `scanDependencies` -- root/tsconfig/packages for import-specifier resolution. `scan.root` also doubles as the discovery root every rendered path in the report displays relative to. */
     readonly scan: ScanDependenciesOptions;
     /** This same run's own `--evidence` output path, when requested -- named in the generated banner's Evidence Model note. */
-    readonly evidencePath?: string;
+    readonly evidencePath?: string | undefined;
 }
 
 /** The rendered Dependency & Ownership report plus the proven `DependencyEdge`s and findings it's built from. */
@@ -1639,7 +1619,7 @@ export declare interface GetEvidenceModelResult {
 }
 
 /** Reads a property name statically (identifier, string literal, or numeric literal) -- a computed key (e.g. `[expr]`) resolves to `undefined` rather than being guessed at. */
-export declare function getStaticPropertyName(name: ts.PropertyName): string | undefined;
+export declare function getStaticPropertyName(name: TS.PropertyName): string | undefined;
 
 /**
  * A getter operation: acquires data. `writes` is required and explicit
@@ -1717,7 +1697,18 @@ declare type InferFieldValue<F> = F extends NullableMarker<infer Inner> ? InferF
     [K in keyof F]: InferFieldValue<F[K]>;
 } : F;
 
-/** Whether `content` starts with a `generatedBanner()`-produced marker, in either format. */
+/**
+ * Whether `content` carries a {@link generatedBanner}-produced marker, in either format.
+ *
+ * @remarks
+ * Deliberately not a bare `content.startsWith(generatedBanner(...))`: a shebang, a `"use strict"` pragma, or a
+ * license header pushes a real banner off line one, and a stricter check would then read a genuinely
+ * generated file as hand-written, which the dependency scan would take as "a real consumer imports this" and
+ * so permanently mask an abandoned one. The marker is looked for across the first 20 non-empty lines instead,
+ * which clears every realistic preamble without scanning a whole file.
+ * @param content - A file's text.
+ * @returns `true` when the file is generated.
+ */
 export declare function isGeneratedFile(content: string): boolean;
 
 /** A minimal JSON-Schema-ish type descriptor -- only what can be honestly inferred from a literal default value. `{}` (no `type`) means "unrepresentable/unknown," never a guess. */
@@ -1784,9 +1775,9 @@ export declare interface LinkOptions {
     /** Directory import specifiers/tsconfig auto-detection resolve against. */
     readonly root: string;
     /** Explicit `tsconfig.json` path override, or `false` to disable alias resolution. Defaults to auto-detecting `root/tsconfig.json`. */
-    readonly tsconfig?: string | false;
+    readonly tsconfig?: string | false | undefined;
     /** Explicit cross-package schema discovery allowlist -- see `resolve-package-schema.ts`. */
-    readonly packages?: readonly string[];
+    readonly packages?: readonly string[] | undefined;
 }
 
 /** Every capability discovered and linked across the project, plus every warning encountered along the way. */
@@ -2073,6 +2064,12 @@ declare interface OptionalMarker<T> {
     readonly inner: T;
 }
 
+/** The shared "presence of declared metadata is evidence, not a compliance claim" note. */
+/** The output a projection schema produces: each key holds what its projector returns. */
+declare type OutputOf<S extends Record<string, (evidence: EvidenceModel) => unknown>> = {
+    [K in keyof S]: ReturnType<S[K]>;
+};
+
 /**
  * Narrows `DeepPartial<T>` down to exactly the keys `TOwnership` (a
  * `FieldOwnership<T>` value) permits, mirroring its shape one-for-one. A
@@ -2142,7 +2139,7 @@ export declare interface ParseResult {
     /** Every `documentData(...)` call found in this file. */
     readonly documentDataCalls: readonly RawDocumentDataCall[];
     /** Top-level `const X = <expr>` bindings, keyed by name -- for resolving an `identifier`-kind `SchemaRef` within the same file. */
-    readonly localConsts: ReadonlyMap<string, ts.Expression>;
+    readonly localConsts: ReadonlyMap<string, TS.Expression>;
     /** Every top-level import binding found in this file. */
     readonly imports: readonly ImportBinding[];
     /** Extraction problems encountered while parsing this file -- never thrown, always collected. */
@@ -2158,7 +2155,9 @@ export declare interface ParseWarning {
 }
 
 /** The one place a `SourcePosition` is ever computed from a raw AST node -- every caller reuses this instead of hand-rolling `getLineAndCharacterOfPosition` arithmetic. */
-export declare function positionOf(sourceFile: ts.SourceFile, node: ts.Node): SourcePosition;
+export declare function positionOf(sourceFile: TS.SourceFile, node: TS.Node): SourcePosition;
+
+declare function privacyEntries(evidence: EvidenceModel): readonly PrivacyEntry[];
 
 /** One capability or field's declared privacy-relevant facts. */
 export declare interface PrivacyEntry {
@@ -2182,26 +2181,56 @@ export declare interface PrivacyEntry {
  * and `provenance` from neither. `.project()` reports exactly that, per
  * output field.
  */
-export declare const projectAuditEvidence: EvidenceProjection<    {
-disclaimer: string;
-provenance: EvidenceProvenance;
-capabilityCount: number;
-ownedCapabilities: number | undefined;
-unownedCapabilities: number | undefined;
-findingsBySeverity: Record<string, number> | undefined;
-}>;
+export declare function projectAuditEvidence(evidence: EvidenceModel): ProjectAuditEvidenceOutput;
+
+export declare namespace projectAuditEvidence {
+    var project: typeof projectAuditEvidenceWithSources;
+}
+
+declare type ProjectAuditEvidenceOutput = OutputOf<ReturnType<typeof projectAuditEvidenceSchema>>;
+
+declare function projectAuditEvidenceSchema(): {
+    disclaimer: typeof disclaimer;
+    provenance: typeof auditProvenance;
+    capabilityCount: typeof auditCapabilityCount;
+    ownedCapabilities: typeof auditOwnedCapabilities;
+    unownedCapabilities: typeof auditUnownedCapabilities;
+    findingsBySeverity: typeof auditFindingsBySeverity;
+};
+
+declare function projectAuditEvidenceWithSources(evidence: EvidenceModel): EvidenceProjectionResult<ProjectAuditEvidenceOutput>;
 
 /** Data Classification Evidence: every capability/field with a declared `sensitivity`. */
-export declare const projectClassificationEvidence: EvidenceProjection<    {
-disclaimer: string;
-entries: readonly ClassificationEntry[];
-}>;
+export declare function projectClassificationEvidence(evidence: EvidenceModel): ProjectClassificationEvidenceOutput;
+
+export declare namespace projectClassificationEvidence {
+    var project: typeof projectClassificationEvidenceWithSources;
+}
+
+declare type ProjectClassificationEvidenceOutput = OutputOf<ReturnType<typeof projectClassificationEvidenceSchema>>;
+
+declare function projectClassificationEvidenceSchema(): {
+    disclaimer: typeof disclaimer;
+    entries: typeof classificationEntries;
+};
+
+declare function projectClassificationEvidenceWithSources(evidence: EvidenceModel): EvidenceProjectionResult<ProjectClassificationEvidenceOutput>;
 
 /** Data Compliance Evidence: every capability's declared `metadata` bag, unvalidated -- `data-cap` asserts no regime applies. */
-export declare const projectComplianceEvidence: EvidenceProjection<    {
-disclaimer: string;
-entries: readonly ComplianceEntry[];
-}>;
+export declare function projectComplianceEvidence(evidence: EvidenceModel): ProjectComplianceEvidenceOutput;
+
+export declare namespace projectComplianceEvidence {
+    var project: typeof projectComplianceEvidenceWithSources;
+}
+
+declare type ProjectComplianceEvidenceOutput = OutputOf<ReturnType<typeof projectComplianceEvidenceSchema>>;
+
+declare function projectComplianceEvidenceSchema(): {
+    disclaimer: typeof disclaimer;
+    entries: typeof complianceEntries;
+};
+
+declare function projectComplianceEvidenceWithSources(evidence: EvidenceModel): EvidenceProjectionResult<ProjectComplianceEvidenceOutput>;
 
 /** Every field across every capability -- the Field Inventory Report. */
 export declare function projectFields(inventory: CapabilityInventory): readonly WithCapability<FieldNode>[];
@@ -2216,16 +2245,36 @@ export declare function projectMutators(inventory: CapabilityInventory): readonl
 export declare function projectOperationInventory(inventory: CapabilityInventory): readonly WithCapability<OperationNode>[];
 
 /** Data Privacy Evidence: sensitivity plus whether protections are documented (presence only, never an adequacy claim). */
-export declare const projectPrivacyEvidence: EvidenceProjection<    {
-disclaimer: string;
-entries: readonly PrivacyEntry[];
-}>;
+export declare function projectPrivacyEvidence(evidence: EvidenceModel): ProjectPrivacyEvidenceOutput;
+
+export declare namespace projectPrivacyEvidence {
+    var project: typeof projectPrivacyEvidenceWithSources;
+}
+
+declare type ProjectPrivacyEvidenceOutput = OutputOf<ReturnType<typeof projectPrivacyEvidenceSchema>>;
+
+declare function projectPrivacyEvidenceSchema(): {
+    disclaimer: typeof disclaimer;
+    entries: typeof privacyEntries;
+};
+
+declare function projectPrivacyEvidenceWithSources(evidence: EvidenceModel): EvidenceProjectionResult<ProjectPrivacyEvidenceOutput>;
 
 /** Data Retention Evidence: every capability/field with a declared `retention` policy (presence only, never an enforcement claim). */
-export declare const projectRetentionEvidence: EvidenceProjection<    {
-disclaimer: string;
-entries: readonly RetentionEntry[];
-}>;
+export declare function projectRetentionEvidence(evidence: EvidenceModel): ProjectRetentionEvidenceOutput;
+
+export declare namespace projectRetentionEvidence {
+    var project: typeof projectRetentionEvidenceWithSources;
+}
+
+declare type ProjectRetentionEvidenceOutput = OutputOf<ReturnType<typeof projectRetentionEvidenceSchema>>;
+
+declare function projectRetentionEvidenceSchema(): {
+    disclaimer: typeof disclaimer;
+    entries: typeof retentionEntries;
+};
+
+declare function projectRetentionEvidenceWithSources(evidence: EvidenceModel): EvidenceProjectionResult<ProjectRetentionEvidenceOutput>;
 
 /** Every subscription across every capability -- the Subscription Report. */
 export declare function projectSubscriptions(inventory: CapabilityInventory): readonly WithCapability<OperationNode>[];
@@ -2245,7 +2294,7 @@ export declare interface RawCreateDataCall {
     /** Static `processor`/`optimistic` key-presence facts, keyed the same way as `operationNames`. `undefined` for a `buildData()` call, which has no operations section. */
     readonly operationPresence: OperationPresenceByKind | undefined;
     /** The full call expression AST node, for later structural inspection. */
-    readonly node: ts.CallExpression;
+    readonly node: TS.CallExpression;
     /** Position of this call's own declaration site -- always available, since `node` always resolves to a real AST location regardless of how `fields` itself resolves. */
     readonly declarationPosition: SourcePosition;
     /** Position of each top-level field's own key, keyed by field name -- only when `fieldsRef.kind === "literal"` (an identifier-resolved `fields` crosses a file boundary this pass doesn't retain AST access to; `undefined` there, never guessed at). */
@@ -2257,9 +2306,9 @@ export declare interface RawDocumentDataCall {
     /** How this call's first (`fields` reference) argument resolves within this one file. */
     readonly fieldsRef: SchemaRef;
     /** The second (`docs`) argument, for later structural inspection -- not evaluated here. */
-    readonly docsNode: ts.Expression | undefined;
+    readonly docsNode: TS.Expression | undefined;
     /** The full call expression AST node, for later structural inspection. */
-    readonly node: ts.CallExpression;
+    readonly node: TS.CallExpression;
 }
 
 /**
@@ -2502,6 +2551,8 @@ export declare interface ResolvedGovernanceValue<T> {
     readonly declaredOn: "field" | "capability" | undefined;
 }
 
+declare function retentionEntries(evidence: EvidenceModel): readonly RetentionEntry[];
+
 /** One capability or field's declared retention policy. */
 export declare interface RetentionEntry {
     readonly capability: {
@@ -2590,9 +2641,9 @@ export declare interface ScanDependenciesOptions {
     /** Directory import specifiers resolve against. */
     readonly root: string;
     /** Explicit `tsconfig.json` path override, or `false` to disable alias resolution -- same meaning as `LinkOptions.tsconfig`. */
-    readonly tsconfig?: string | false;
+    readonly tsconfig?: string | false | undefined;
     /** Explicit cross-package schema discovery allowlist -- see `resolve-package-schema.ts`. */
-    readonly packages?: readonly string[];
+    readonly packages?: readonly string[] | undefined;
 }
 
 /** Every proven consumer edge the scan found, plus any resolution warnings. */
@@ -2612,7 +2663,7 @@ export declare interface ScanDependenciesResult {
  * binding's own import declaration is walked like any other node but produces
  * no edge -- an import-position identifier is never in an access expression.
  */
-export declare function scanFileForUsage(sourceFile: ts.SourceFile, fromFile: string, matches: readonly ImportBindingMatch[]): readonly DependencyEdge[];
+export declare function scanFileForUsage(sourceFile: TS.SourceFile, fromFile: string, matches: readonly ImportBindingMatch[]): readonly DependencyEdge[];
 
 /** One capability to scan a file's AST for usage of. */
 export declare interface ScanTarget {
@@ -2687,7 +2738,7 @@ export declare type SchemaRef =
     /** Always `"literal"` for this variant. */
     readonly kind: "literal";
     /** The object literal AST node itself. */
-    readonly node: ts.ObjectLiteralExpression;
+    readonly node: TS.ObjectLiteralExpression;
 }
 /** `fields` is a bare identifier -- resolved against `ParseResult.localConsts`/cross-file imports by `link.ts`. */
 | {
@@ -2770,7 +2821,7 @@ declare interface SubscriptionInfo {
  * surfaced explicitly rather than silently omitted, so "nobody owns this" is as
  * visible as any real owner.
  */
-export declare const UNOWNED = "(unowned)";
+export declare const UNOWNED: string;
 
 /**
  * Re-checks every currently-declared citation against `previousSnapshot`.

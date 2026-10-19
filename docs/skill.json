@@ -1,0 +1,51 @@
+{
+  "when": "Load when a task creates or edits a data-cap capability (a schema with fields, getters, mutators or subscriptions), calls createData or buildData, or generates data-cap manifests, docs or reports. Skip it for state that does not use data-cap.",
+  "purpose": "data-cap gives each capability (a feature or package) an analyzable data contract: the fields it owns and the getters, mutators and subscriptions that acquire, change or observe them.",
+  "notFor": "fetching data or holding UI state. It declares and checks ownership; your own functions do the I/O.",
+  "example": {
+    "file": "examples/team-service/src/capabilities/member.capability.ts",
+    "lines": [15, 49]
+  },
+  "rules": [
+    "Declare the schema once as a literal and pass that object to `createData(schema)` and `documentData(schema, docs)`, which follows it in the example's file.",
+    "Give every getter and subscription a `writes` map naming the fields it may write. A mutator without one may write the whole declared schema.",
+    "Keep `execute` and `subscribe` references stable. Sharing and dedupe are by function identity, so a fresh arrow per render defeats them.",
+    "Import only from the exports in package.json; `/build` and `/node` are Node-only."
+  ],
+  "behavior": [
+    "A newer getter call discards an older in-flight getter commit. A mutator commit is never discarded: each folds onto the current authoritative state as it finishes.",
+    "A thrown processor fails the whole operation; one invalid field resets to its default and its valid siblings survive."
+  ],
+  "mistakes": [
+    {
+      "wrong": "Checking a field's presence with truthiness",
+      "right": "Use `Object.hasOwn`: `0`, `false`, `\"\"`, `null` and `[]` are real values."
+    },
+    {
+      "wrong": "Reading `info.tasks.status` on an array field",
+      "right": "Array `info` is keyed by item identity; read status from a scalar field."
+    }
+  ],
+  "verify": [
+    "Run the type check and tests.",
+    "Update the `documentData()` entry, run the project's data-cap script, and commit generated files only if the project does."
+  ],
+  "references": [
+    {
+      "when": "Every option of the generators and the CLI",
+      "path": "GUIDE.md"
+    }
+  ],
+  "imports": {
+    "data-cap": "`buildData`, `documentData`, `fields.nullable` and `fields.optional`, the state types",
+    "data-cap/runtime": "`createData`, `createDataStore`, `createCoordinator`",
+    "data-cap/runtime/cache": "`createDataCache`, optional",
+    "data-cap/runtime/retry": "`withRetry`, `isStillDefault`, optional",
+    "data-cap/helpers": "`processors`, `identity`, `canonicalize`, `shape`",
+    "data-cap/build": "Node only: discovery, the models, and generating manifests, docs and reports",
+    "data-cap/node": "Node only: `nodeBuildFileSystem`, the file system a build script hands to `/build`",
+    "data-cap/evidence": "`defineEvidenceProjection`, projections over the evidence model",
+    "data-cap/eslint-plugin": "Lint rules: `stable-operation-reference`, `no-raw-external-io`, `no-fields-escape`, `no-node-fs`",
+    "data-cap/schema": "The JSON Schemas for `data-cap --json` output"
+  }
+}

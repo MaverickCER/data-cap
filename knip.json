@@ -15,7 +15,17 @@
     "benchmarks/*.mjs"
   ],
   "project": ["src/**/*.{ts,tsx}!"],
-  "ignore": ["**/*.d.ts", "dist/**", "coverage/**", "reports/**", "examples/**", "benchmarks/**"],
+  // A managed copy of internal-package-contract's runtime code exports more than any one package uses;
+  // its dead code is the canonical source's concern, where it is tested.
+  "ignore": [
+    "**/*.d.ts",
+    "dist/**",
+    "coverage/**",
+    "reports/**",
+    "examples/**",
+    "benchmarks/**",
+    "src/_ipc/**"
+  ],
   // typedoc-plugin-markdown: genuinely used, but its "plugin" declaration now lives in
   // internal-package-contract's shared config/typedoc-markdown.json (this repo's own
   // typedoc.markdown.json only `extends` it -- see that file) -- knip's typedoc plugin
