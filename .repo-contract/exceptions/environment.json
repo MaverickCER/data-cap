@@ -41,6 +41,48 @@
       "residualRisk": "If the file is later renamed without updating the link, it stays broken; the first DocsLinks run after the merge would report it.",
       "revisitWhen": "This change has been merged to main; remove this record then.",
       "expires": "2026-12-01"
+    },
+    {
+      "id": "environment:DocsLinks:https://maverickcer.github.io/data-cap/coverage.json",
+      "version": 2,
+      "justification": "coverage.json, the details file beside the coverage badge, is added by this change and is written by the `badges` CI job and published by the Pages deploy that follows the merge to main, so https://maverickcer.github.io/data-cap/coverage.json returns 404 until then.",
+      "check": "DocsLinks",
+      "code": "https://maverickcer.github.io/data-cap/coverage.json",
+      "ruleBroken": "Documentation links must resolve.",
+      "attempted": "Checked that the README links the path the `badges` job writes (docs/coverage.json) and that the deploy uploads it; the live URL cannot resolve before the deploy.",
+      "constraint": "GitHub Pages serves only what the deploy job publishes from main, and the deploy runs after the merge.",
+      "whyPreferable": "The alternative is to drop the link to the badge's details for the one deploy that precedes it.",
+      "residualRisk": "If the file is never published, the link stays broken; the next DocsLinks run after the deploy would report it.",
+      "revisitWhen": "The deploy that follows the merge has run; remove this record then.",
+      "expires": "2026-12-01"
+    },
+    {
+      "id": "environment:DocsLinks:https://maverickcer.github.io/data-cap/mutation.json",
+      "version": 2,
+      "justification": "mutation.json, the details file beside the mutation badge, is added by this change and is written by the `badges` CI job and published by the Pages deploy that follows the merge to main, so https://maverickcer.github.io/data-cap/mutation.json returns 404 until then.",
+      "check": "DocsLinks",
+      "code": "https://maverickcer.github.io/data-cap/mutation.json",
+      "ruleBroken": "Documentation links must resolve.",
+      "attempted": "Checked that the README links the path the `badges` job writes (docs/mutation.json) and that the deploy uploads it; the live URL cannot resolve before the deploy.",
+      "constraint": "GitHub Pages serves only what the deploy job publishes from main, and the deploy runs after the merge.",
+      "whyPreferable": "The alternative is to drop the link to the badge's details for the one deploy that precedes it.",
+      "residualRisk": "If the file is never published, the link stays broken; the next DocsLinks run after the deploy would report it.",
+      "revisitWhen": "The deploy that follows the merge has run; remove this record then.",
+      "expires": "2026-12-01"
+    },
+    {
+      "id": "environment:DocsLinks:https://maverickcer.github.io/data-cap/size.json",
+      "version": 2,
+      "justification": "size.json, the details file beside the size badge, is added by this change and is written by the `badges` CI job and published by the Pages deploy that follows the merge to main, so https://maverickcer.github.io/data-cap/size.json returns 404 until then.",
+      "check": "DocsLinks",
+      "code": "https://maverickcer.github.io/data-cap/size.json",
+      "ruleBroken": "Documentation links must resolve.",
+      "attempted": "Checked that the README links the path the `badges` job writes (docs/size.json) and that the deploy uploads it; the live URL cannot resolve before the deploy.",
+      "constraint": "GitHub Pages serves only what the deploy job publishes from main, and the deploy runs after the merge.",
+      "whyPreferable": "The alternative is to drop the link to the badge's details for the one deploy that precedes it.",
+      "residualRisk": "If the file is never published, the link stays broken; the next DocsLinks run after the deploy would report it.",
+      "revisitWhen": "The deploy that follows the merge has run; remove this record then.",
+      "expires": "2026-12-01"
     }
   ]
 }
