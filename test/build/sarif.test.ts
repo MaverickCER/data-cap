@@ -64,7 +64,7 @@ describe("buildSarifLog", () => {
   it("pins the SARIF schema URL and the tool driver's information URI", () => {
     const log = buildSarifLog(buildFindingModel([]))
     expect(log.$schema).toBe(
-      "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/main/Schemata/sarif-schema-2.1.0.json",
+      "https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json",
     )
     expect(log.runs[0]!.tool.driver.informationUri).toBe(
       "https://github.com/maverickcer/data-cap#readme",

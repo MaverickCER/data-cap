@@ -8,7 +8,7 @@
 
 | Type Parameter |
 | ------ |
-| `TFields` |
+| <a id="type-parameter-tfields"></a> `TFields` |
 
 #### Properties
 
@@ -111,13 +111,13 @@ concern outside this module, which is deliberately keying-scheme-agnostic).
 
 | Type Parameter |
 | ------ |
-| `TFields` |
+| <a id="type-parameter-tfields-1"></a> `TFields` |
 
 #### Parameters
 
 | Parameter | Type |
 | ------ | ------ |
-| `options` | [`DataCacheOptions`](#datacacheoptions) |
+| `options?` | [`DataCacheOptions`](#datacacheoptions) |
 
 #### Returns
 

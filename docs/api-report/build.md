@@ -624,7 +624,7 @@ capability key then current name.
 
 Only ever populated from an *authored* `FieldDocs.renamedFrom` -- never
 guessed from name similarity, which is the same "prove it, never infer
-it" rule AGENTS.md invariant 11 applies to every other derived fact
+it" rule `AGENTS.md` invariant 11 applies to every other derived fact
 here. An additive view, not a filter: `manifest.updatedCapabilities`'s
 own `fields.added`/`fields.removed` still list a correlated rename's two
 halves separately, so a consumer that doesn't know about this field
@@ -908,7 +908,7 @@ A statically-proven connection from one consuming file to a capability
 (or a specific field/operation on it). Unlike the declared metadata in
 `core/document.ts` (`source`, `credentials`, `endpoints`), every
 `DependencyEdge` is derived by AST analysis, never author-declared -- see
-AGENTS.md's declared-vs-proven invariant. Produced by the usage-scan
+`AGENTS.md`'s declared-vs-proven invariant. Produced by the usage-scan
 pass (`scan-dependencies.ts`), not by this module.
 
 #### Properties
@@ -3150,7 +3150,7 @@ The operation's key name.
 ##### writes
 
 ```ts
-readonly writes: readonly readonly string[][];
+readonly writes: readonly (readonly string[])[];
 ```
 
 Top-level field paths this operation's statically-extracted `writes` shape covers. Empty when `writes` was absent (on a getter/subscription) or unresolvable -- never guessed at.
@@ -3663,7 +3663,7 @@ The field's name before the rename -- matches a `removed` entry in that capabili
 
 One reportable fact about the discovered capability graph. `severity` is
 assigned by the rule that produces the finding, following the two
-governing invariants in AGENTS.md: static analysis never infers a
+governing invariants in `AGENTS.md`: static analysis never infers a
 relationship from insufficient evidence (an ambiguous case is `info` or
 `indeterminate`-flavored, never guessed at as `error`), and a finding
 built from declared metadata (e.g. a missing `protections` field) never
@@ -3894,7 +3894,7 @@ declared a value at all (`value` is then also `undefined`).
 
 | Type Parameter |
 | ------ |
-| `T` |
+| <a id="type-parameter-t"></a> `T` |
 
 #### Properties
 
@@ -4261,7 +4261,7 @@ One node plus the capability it belongs to.
 
 | Type Parameter |
 | ------ |
-| `T` |
+| <a id="type-parameter-t-1"></a> `T` |
 
 #### Properties
 
@@ -6376,7 +6376,7 @@ requested one, in the banner note.
 | `inventory` | [`CapabilityInventory`](#capabilityinventory) | `undefined` |
 | `edges` | readonly [`DependencyEdge`](#dependencyedge)[] | `undefined` |
 | `root` | `string` | `undefined` |
-| `scannedPackages` | readonly `string`[] | `[]` |
+| `scannedPackages?` | readonly `string`[] | `[]` |
 | `evidencePath?` | `string` | `undefined` |
 
 #### Returns

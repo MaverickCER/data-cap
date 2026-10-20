@@ -265,7 +265,7 @@ has released.
 
 | Type Parameter |
 | ------ |
-| `TEvent` |
+| <a id="type-parameter-tevent"></a> `TEvent` |
 
 ###### Parameters
 
@@ -302,8 +302,8 @@ underlying execution or any other caller sharing it.
 
 | Type Parameter |
 | ------ |
-| `TParams` |
-| `TResult` |
+| <a id="type-parameter-tparams"></a> `TParams` |
+| <a id="type-parameter-tresult"></a> `TResult` |
 
 ###### Parameters
 
@@ -359,7 +359,7 @@ A strict superset of `DataState<TFields>` -- every existing `DataStore` consumer
 
 | Type Parameter |
 | ------ |
-| `TFields` |
+| <a id="type-parameter-tfields"></a> `TFields` |
 
 #### Properties
 
@@ -410,7 +410,7 @@ The store contract the standalone runtime implements --
 
 | Type Parameter |
 | ------ |
-| `TFields` |
+| <a id="type-parameter-tfields-1"></a> `TFields` |
 
 #### Methods
 
@@ -644,7 +644,7 @@ Handlers a coordinator-managed subscription drives -- see `SubscriptionEventHand
 
 | Type Parameter |
 | ------ |
-| `TEvent` |
+| <a id="type-parameter-tevent-1"></a> `TEvent` |
 
 #### Properties
 
@@ -700,7 +700,7 @@ The object `createData(schema)` returns: one callable method per getter/mutator/
 
 | Type Parameter |
 | ------ |
-| `TSchema` *extends* [`DataSchema`](core.md#dataschema)\<[`FieldsShape`](core.md#fieldsshape)\> |
+| <a id="type-parameter-tschema"></a> `TSchema` *extends* [`DataSchema`](core.md#dataschema)\<[`FieldsShape`](core.md#fieldsshape)\> |
 
 ***
 
@@ -724,7 +724,7 @@ The settled result of one `runGetters` call: either the resolved patch, or the e
 
 | Type Parameter |
 | ------ |
-| `T` |
+| <a id="type-parameter-t"></a> `T` |
 
 #### Union Members
 
@@ -804,7 +804,7 @@ Opens a shared subscription's transport; the returned function tears it down.
 
 | Type Parameter |
 | ------ |
-| `TEvent` |
+| <a id="type-parameter-tevent-2"></a> `TEvent` |
 
 #### Parameters
 
@@ -886,14 +886,14 @@ the direct one-call equivalent of `createDataStore(buildData({fields}))`.
 
 | Type Parameter |
 | ------ |
-| `TSchema` *extends* [`DataSchema`](core.md#dataschema)\<[`FieldsShape`](core.md#fieldsshape)\> |
+| <a id="type-parameter-tschema-1"></a> `TSchema` *extends* [`DataSchema`](core.md#dataschema)\<[`FieldsShape`](core.md#fieldsshape)\> |
 
 #### Parameters
 
 | Parameter | Type |
 | ------ | ------ |
 | `schema` | `TSchema` |
-| `options` | [`CreateDataOptions`](#createdataoptions) |
+| `options?` | [`CreateDataOptions`](#createdataoptions) |
 
 #### Returns
 
@@ -913,7 +913,7 @@ Creates a standalone `DataStoreController`, seeded with `initialState` -- the ma
 
 | Type Parameter |
 | ------ |
-| `TFields` |
+| <a id="type-parameter-tfields-2"></a> `TFields` |
 
 #### Parameters
 
@@ -942,7 +942,7 @@ is not the same as the shared execution being cancelled for every caller).
 
 | Type Parameter |
 | ------ |
-| `T` |
+| <a id="type-parameter-t-1"></a> `T` |
 
 #### Parameters
 

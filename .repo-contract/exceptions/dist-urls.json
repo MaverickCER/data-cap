@@ -18,6 +18,23 @@
       "whyPreferable": "A documentation link in a type comment costs one informational Socket alert and nothing at runtime."
     },
     {
+      "id": "dist-url:https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json",
+      "version": 2,
+      "justification": "The `$schema` value of every SARIF log data-cap emits. It is the conventional, validator-friendly identifier for SARIF 2.1.0; consumers and editors use it to validate the log.",
+      "alternatives": "Omit `$schema`: SARIF 2.1.0 section 3.13.3 makes it optional, so the log stays valid, but editors lose schema-aware validation and completion.",
+      "attempted": "Checked the specification: `$schema` is optional (an earlier version of this record wrongly said it was required). The schema's former raw.githubusercontent.com address (oasis-tcs/sarif-spec, Schemata/) now returns 404, so the value is OASIS's own published copy of the 2.1.0 schema (errata 01).",
+      "constraint": "Ecosystem convention rather than a specification requirement: validators and editors key off the URL.",
+      "exceptionType": "platform-or-vendor-constraint",
+      "expires": "",
+      "method": "independent-human-review",
+      "remediation": "Decided: keep. Not required by the specification, but it is what GitHub's own examples and every validator expect.",
+      "residualRisk": "One informational supply-chain alert; no behaviour.",
+      "revisitWhen": "consumers stop relying on `$schema` for SARIF validation.",
+      "ruleBroken": "DistNoUrls: no scheme-prefixed URL may ship in the build output unexplained (Socket.dev urlStrings alert).",
+      "url": "https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json",
+      "whyPreferable": "Emitting the conventional identifier keeps the log self-describing for every consumer."
+    },
+    {
       "id": "dist-url:https://github.com/MaverickCER/data-cap/blob/main/GUIDE.md",
       "version": 2,
       "justification": "The documentation link inside the Evidence Model note stamped into generated Markdown reports; it tells the reader of a report where the model is explained.",
@@ -84,23 +101,6 @@
       "ruleBroken": "DistNoUrls: no scheme-prefixed URL may ship in the build output unexplained (Socket.dev urlStrings alert).",
       "url": "https://github.com/maverickcer/data-cap#readme",
       "whyPreferable": "A discoverable tool home is worth one informational alert."
-    },
-    {
-      "id": "dist-url:https://raw.githubusercontent.com/oasis-tcs/sarif-spec/main/Schemata/sarif-schema-2.1.0.json",
-      "version": 2,
-      "justification": "The `$schema` value of every SARIF log data-cap emits. It is the conventional, validator-friendly identifier for SARIF 2.1.0; consumers and editors use it to validate the log.",
-      "alternatives": "Omit `$schema`: SARIF 2.1.0 section 3.13.3 makes it optional, so the log stays valid, but editors lose schema-aware validation and completion.",
-      "attempted": "Checked the specification: `$schema` is optional (an earlier version of this record wrongly said it was required).",
-      "constraint": "Ecosystem convention rather than a specification requirement: validators and editors key off the URL.",
-      "exceptionType": "platform-or-vendor-constraint",
-      "expires": "",
-      "method": "independent-human-review",
-      "remediation": "Decided: keep. Not required by the specification, but it is what GitHub's own examples and every validator expect.",
-      "residualRisk": "One informational supply-chain alert; no behaviour.",
-      "revisitWhen": "consumers stop relying on `$schema` for SARIF validation.",
-      "ruleBroken": "DistNoUrls: no scheme-prefixed URL may ship in the build output unexplained (Socket.dev urlStrings alert).",
-      "url": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/main/Schemata/sarif-schema-2.1.0.json",
-      "whyPreferable": "Emitting the conventional identifier keeps the log self-describing for every consumer."
     }
   ]
 }

@@ -23,7 +23,7 @@
  *   rejected and why -- which is exactly what a combinator library like
  *   `helpers.validators` exists to compose.
  * - `data-cap` has no reject path to write a message for. Fields are
- *   always synchronously readable (AGENTS.md invariant 2), so a
+ *   always synchronously readable (`AGENTS.md` invariant 2), so a
  *   processor/operation result that doesn't match a field's declared shape
  *   **resets that field to its declared default** via `core/schema.ts`'s
  *   `checkValueAgainstSchema` -- the state stays valid and readable, and
@@ -33,7 +33,7 @@
  *   the structural check `checkValueAgainstSchema` already performs.
  *
  * A field's own runtime type is its shape descriptor, and a `processor` is
- * the single escape hatch for anything beyond that (AGENTS.md's "Avoid"
+ * the single escape hatch for anything beyond that (`AGENTS.md`'s "Avoid"
  * list). Adding a validator vocabulary would introduce a second, parallel
  * notion of "valid" that nothing in the runtime could enforce.
  */

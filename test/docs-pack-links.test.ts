@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process"
-import { readFileSync } from "node:fs"
+import { existsSync, readFileSync, statSync } from "node:fs"
 import path from "node:path"
 import { describe, expect, it } from "vitest"
 
@@ -117,8 +117,23 @@ describe("relativeLinks", () => {
   })
 })
 
+/** When the build output was last written, or `undefined` before the first build. */
+function builtAt(): number | undefined {
+  const entry = path.join(root, "dist/index.js")
+  return existsSync(entry) ? statSync(entry).mtimeMs : undefined
+}
+
 describe("published documentation links", () => {
+  // npm 10 runs `prepare` during `npm pack` even with --ignore-scripts (npm 11 does not). package.json's
+  // `prepare` honours the flag itself: a rebuild here would empty dist/ under every test reading it.
+  const before = builtAt()
   const published = publishedFiles()
+  const after = builtAt()
+
+  it("packs without rebuilding the package", () => {
+    expect(after).toBe(before)
+  })
+
   const documents = published.filter((file) => file.endsWith(".md"))
 
   it("publishes a meaningful number of documents", () => {

@@ -276,7 +276,7 @@ Infers the underlying type from `defaultInner`; the runtime default is always `n
 
 | Type Parameter |
 | ------ |
-| `T` |
+| <a id="type-parameter-t"></a> `T` |
 
 ###### Parameters
 
@@ -300,7 +300,7 @@ Infers the underlying type from `defaultInner`; the runtime default is always `u
 
 | Type Parameter |
 | ------ |
-| `T` |
+| <a id="type-parameter-t-1"></a> `T` |
 
 ###### Parameters
 
@@ -536,7 +536,7 @@ https://v8.dev/docs/stack-trace-api#customizing-stack-traces
 
 | Type Parameter |
 | ------ |
-| `TFields` *extends* [`FieldsShape`](#fieldsshape) |
+| <a id="type-parameter-tfields"></a> `TFields` *extends* [`FieldsShape`](#fieldsshape) |
 
 #### Properties
 
@@ -556,7 +556,7 @@ The default/example value for every field, declaring the capability's shape.
 
 | Type Parameter |
 | ------ |
-| `TSchema` *extends* [`DataSchema`](#dataschema)\<[`FieldsShape`](#fieldsshape)\> |
+| <a id="type-parameter-tschema"></a> `TSchema` *extends* [`DataSchema`](#dataschema)\<[`FieldsShape`](#fieldsshape)\> |
 
 #### Properties
 
@@ -883,7 +883,7 @@ a given schema is ultimately passed to.
 
 | Type Parameter |
 | ------ |
-| `TFields` *extends* [`FieldsShape`](#fieldsshape) |
+| <a id="type-parameter-tfields-1"></a> `TFields` *extends* [`FieldsShape`](#fieldsshape) |
 
 #### Properties
 
@@ -939,7 +939,7 @@ specs/architecture.md.
 
 | Type Parameter |
 | ------ |
-| `TFields` |
+| <a id="type-parameter-tfields-2"></a> `TFields` |
 
 #### Properties
 
@@ -974,7 +974,7 @@ The store contract the standalone runtime implements --
 
 | Type Parameter |
 | ------ |
-| `TFields` |
+| <a id="type-parameter-tfields-3"></a> `TFields` |
 
 #### Methods
 
@@ -1042,7 +1042,7 @@ pipeline, where a failing validator must carry a message explaining the
 rejection; `data-cap` has no reject path to write a message for --
 invalid processor/operation output resets the field to its declared
 default via `core/schema.ts`'s `checkValueAgainstSchema`, keeping fields
-synchronously readable (AGENTS.md invariant 2) and surfacing the
+synchronously readable (`AGENTS.md` invariant 2) and surfacing the
 mismatch through `DataInfo`. See `helpers/shape.ts`'s own module comment
 for the full reasoning.
 
@@ -1336,10 +1336,10 @@ never derived from this capability's `fields` nullability, so a
 
 | Type Parameter |
 | ------ |
-| `TFields` |
-| `TParams` |
-| `TRaw` |
-| `TWrites` *extends* [`FieldOwnership`](#fieldownership)\<`TFields`\> |
+| <a id="type-parameter-tfields-4"></a> `TFields` |
+| <a id="type-parameter-tparams"></a> `TParams` |
+| <a id="type-parameter-traw"></a> `TRaw` |
+| <a id="type-parameter-twrites"></a> `TWrites` *extends* [`FieldOwnership`](#fieldownership)\<`TFields`\> |
 
 #### Properties
 
@@ -1410,10 +1410,10 @@ anything the schema allows" case doesn't pay a declaration tax.
 
 | Type Parameter |
 | ------ |
-| `TFields` |
-| `TParams` |
-| `TRaw` |
-| `TWrites` *extends* [`FieldOwnership`](#fieldownership)\<`TFields`\> \| `undefined` |
+| <a id="type-parameter-tfields-5"></a> `TFields` |
+| <a id="type-parameter-tparams-1"></a> `TParams` |
+| <a id="type-parameter-traw-1"></a> `TRaw` |
+| <a id="type-parameter-twrites-1"></a> `TWrites` *extends* [`FieldOwnership`](#fieldownership)\<`TFields`\> \| `undefined` |
 
 #### Properties
 
@@ -1506,7 +1506,7 @@ Produced by `fields.nullable(...)` -- recognized only during `buildData`'s schem
 
 | Type Parameter |
 | ------ |
-| `T` |
+| <a id="type-parameter-t-2"></a> `T` |
 
 #### Properties
 
@@ -1610,7 +1610,7 @@ Produced by `fields.optional(...)` -- recognized only during `buildData`'s schem
 
 | Type Parameter |
 | ------ |
-| `T` |
+| <a id="type-parameter-t-3"></a> `T` |
 
 #### Properties
 
@@ -1648,10 +1648,10 @@ the sanctioned way to stop a subscription.
 
 | Type Parameter |
 | ------ |
-| `TFields` |
-| `TParams` |
-| `TEvent` |
-| `TWrites` *extends* [`FieldOwnership`](#fieldownership)\<`TFields`\> |
+| <a id="type-parameter-tfields-6"></a> `TFields` |
+| <a id="type-parameter-tparams-2"></a> `TParams` |
+| <a id="type-parameter-tevent"></a> `TEvent` |
+| <a id="type-parameter-twrites-2"></a> `TWrites` *extends* [`FieldOwnership`](#fieldownership)\<`TFields`\> |
 
 #### Properties
 
@@ -1719,7 +1719,7 @@ Handlers a subscription's `subscribe` implementation drives -- the same shape `c
 
 | Type Parameter |
 | ------ |
-| `TEvent` |
+| <a id="type-parameter-tevent-1"></a> `TEvent` |
 
 #### Properties
 
@@ -1844,7 +1844,7 @@ than a bare `DataState` would be; every other consumer should keep using
 
 | Type Parameter |
 | ------ |
-| `TFields` *extends* [`FieldsShape`](#fieldsshape) |
+| <a id="type-parameter-tfields-7"></a> `TFields` *extends* [`FieldsShape`](#fieldsshape) |
 
 ***
 
@@ -1860,7 +1860,7 @@ type CapabilityFieldDocs<TFields> = { [K in keyof TFields]?: FieldDocs };
 
 | Type Parameter |
 | ------ |
-| `TFields` |
+| <a id="type-parameter-tfields-8"></a> `TFields` |
 
 ***
 
@@ -1876,7 +1876,7 @@ type CapabilityOperationDocs<TOperations> = { [K in keyof TOperations]?: Operati
 
 | Type Parameter |
 | ------ |
-| `TOperations` |
+| <a id="type-parameter-toperations"></a> `TOperations` |
 
 ***
 
@@ -1889,8 +1889,8 @@ type DataFlowDirection = "input" | "output";
 Which direction data moves across a declared boundary, and what kind of
 boundary it is. Author-declared documentation only -- never statically
 verified against an operation's actual `execute`/`subscribe` body (those
-stay opaque per AGENTS.md invariant 6). A report may never present an
-endpoint as a proven fact; see AGENTS.md's declared-vs-proven invariant.
+stay opaque per `AGENTS.md` invariant 6). A report may never present an
+endpoint as a proven fact; see `AGENTS.md`'s declared-vs-proven invariant.
 
 ***
 
@@ -1929,7 +1929,7 @@ only `info` represents array items as identity-keyed objects (a bare
 
 | Type Parameter |
 | ------ |
-| `T` |
+| <a id="type-parameter-t-4"></a> `T` |
 
 ***
 
@@ -1962,7 +1962,7 @@ atomic, ordinary values.
 
 | Type Parameter |
 | ------ |
-| `T` |
+| <a id="type-parameter-t-5"></a> `T` |
 
 ***
 
@@ -1991,7 +1991,7 @@ Resolves the application-facing field-value type for an entire `fields` shape, k
 
 | Type Parameter |
 | ------ |
-| `F` *extends* [`FieldsShape`](#fieldsshape) |
+| <a id="type-parameter-f"></a> `F` *extends* [`FieldsShape`](#fieldsshape) |
 
 ***
 
@@ -2009,7 +2009,7 @@ resolves to `never` (see fields.ts's runtime counterpart, which throws).
 
 | Type Parameter |
 | ------ |
-| `F` |
+| <a id="type-parameter-f-1"></a> `F` |
 
 ***
 
@@ -2032,8 +2032,8 @@ return value is never statically provable to match its declared type.
 
 | Type Parameter |
 | ------ |
-| `T` |
-| `TOwnership` |
+| <a id="type-parameter-t-6"></a> `T` |
+| <a id="type-parameter-townership"></a> `TOwnership` |
 
 ## Functions
 
@@ -2059,7 +2059,7 @@ executed yet, so there is nothing to report metadata for.
 
 | Type Parameter |
 | ------ |
-| `TFields` *extends* [`FieldsShape`](#fieldsshape) |
+| <a id="type-parameter-tfields-9"></a> `TFields` *extends* [`FieldsShape`](#fieldsshape) |
 
 #### Parameters
 
@@ -2102,7 +2102,7 @@ capability with none to document.
 
 | Type Parameter |
 | ------ |
-| `TSchema` *extends* [`DataSchema`](#dataschema)\<[`FieldsShape`](#fieldsshape)\> |
+| <a id="type-parameter-tschema-1"></a> `TSchema` *extends* [`DataSchema`](#dataschema)\<[`FieldsShape`](#fieldsshape)\> |
 
 #### Parameters
 

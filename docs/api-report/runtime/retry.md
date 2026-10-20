@@ -164,7 +164,7 @@ aborted signal always wins over a pending retry.
 
 | Type Parameter |
 | ------ |
-| `T` |
+| <a id="type-parameter-t"></a> `T` |
 
 #### Parameters
 
@@ -172,7 +172,7 @@ aborted signal always wins over a pending retry.
 | ------ | ------ |
 | `fn` | (`signal`) => `Promise`\<`T`\> |
 | `signal` | `AbortSignal` |
-| `options` | [`RetryOptions`](#retryoptions) |
+| `options?` | [`RetryOptions`](#retryoptions) |
 
 #### Returns
 

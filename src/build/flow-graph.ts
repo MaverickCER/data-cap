@@ -7,7 +7,7 @@
  * external/api/queue boundary. No filesystem access.
  *
  * Every field on `FieldFlow` is clearly either declared or proven -- never
- * blended, per AGENTS.md's declared-vs-proven invariant. This module
+ * blended, per `AGENTS.md`'s declared-vs-proven invariant. This module
  * cannot trace *through* a third-party system (once data reaches an
  * `external-service`/`api` endpoint, what that system does next is
  * unknowable to a static scan of one repository), and does not assign a

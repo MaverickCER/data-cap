@@ -61,7 +61,7 @@ export interface ChangeModel {
    * @remarks
    * Only ever populated from an *authored* `FieldDocs.renamedFrom` -- never
    * guessed from name similarity, which is the same "prove it, never infer
-   * it" rule AGENTS.md invariant 11 applies to every other derived fact
+   * it" rule `AGENTS.md` invariant 11 applies to every other derived fact
    * here. An additive view, not a filter: `manifest.updatedCapabilities`'s
    * own `fields.added`/`fields.removed` still list a correlated rename's two
    * halves separately, so a consumer that doesn't know about this field

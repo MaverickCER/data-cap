@@ -4,8 +4,8 @@ import type { DataSchema, FieldsShape } from "./types.js"
  * Which direction data moves across a declared boundary, and what kind of
  * boundary it is. Author-declared documentation only -- never statically
  * verified against an operation's actual `execute`/`subscribe` body (those
- * stay opaque per AGENTS.md invariant 6). A report may never present an
- * endpoint as a proven fact; see AGENTS.md's declared-vs-proven invariant.
+ * stay opaque per `AGENTS.md` invariant 6). A report may never present an
+ * endpoint as a proven fact; see `AGENTS.md`'s declared-vs-proven invariant.
  */
 export type DataFlowDirection = "input" | "output"
 
@@ -80,7 +80,7 @@ export interface DataFlowEndpoint {
  * rejection; `data-cap` has no reject path to write a message for --
  * invalid processor/operation output resets the field to its declared
  * default via `core/schema.ts`'s `checkValueAgainstSchema`, keeping fields
- * synchronously readable (AGENTS.md invariant 2) and surfacing the
+ * synchronously readable (`AGENTS.md` invariant 2) and surfacing the
  * mismatch through `DataInfo`. See `helpers/shape.ts`'s own module comment
  * for the full reasoning.
  */
@@ -279,7 +279,7 @@ export type CapabilityOperationDocs<TOperations> = { [K in keyof TOperations]?: 
  * env-cap's `documentEnv()` second-arg vocabulary but reframed for data
  * (see `specs/decisions/` for the full semantic-contract table: what each
  * field means, and exactly what a generator may claim about it). All of it
- * is author-declared, never statically verified -- see AGENTS.md's
+ * is author-declared, never statically verified -- see `AGENTS.md`'s
  * declared-vs-proven invariant.
  */
 

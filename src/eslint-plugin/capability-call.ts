@@ -7,7 +7,7 @@
  * still avoid.
  *
  * Nothing here inspects what an operation's `execute`/`processor`/`subscribe`
- * body *does* -- that stays opaque, per AGENTS.md invariant 6. These helpers
+ * body *does* -- that stays opaque, per `AGENTS.md` invariant 6. These helpers
  * only answer questions about the shape of the call expression itself.
  */
 
