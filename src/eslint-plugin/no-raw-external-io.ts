@@ -89,7 +89,7 @@ function isBareGlobal(
  * `subscribe` -- never by cross-referencing a URL against declared endpoint
  * metadata, which would make this rule depend on documentation being
  * accurate and would violate the invariant that an operation's body stays
- * opaque to static analysis (AGENTS.md invariant 6).
+ * opaque to static analysis (`AGENTS.md` invariant 6).
  */
 function isInsideOperationBody(node: TSESTree.Node): boolean {
   let sawOperationBody = false
@@ -133,7 +133,7 @@ function isFunctionValueOf(property: TSESTree.Property): boolean {
  * section -- position alone. There is no cross-referencing against declared
  * `endpoints` metadata, no URL matching, and no inspection of what the
  * operation's body actually does: an operation body is opaque to `data-cap`'s
- * static analysis by design (AGENTS.md invariant 6), and a rule that peeked
+ * static analysis by design (`AGENTS.md` invariant 6), and a rule that peeked
  * inside one would be the first thing in this package to break that.
  *
  * The consequence is worth stating plainly: this rule proves *where* a call

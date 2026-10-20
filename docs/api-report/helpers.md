@@ -34,7 +34,7 @@ The result of reconciling an array field's identity-keyed `DataInfo` map against
 
 | Type Parameter |
 | ------ |
-| `TInfo` |
+| <a id="type-parameter-tinfo"></a> `TInfo` |
 
 #### Properties
 
@@ -59,7 +59,7 @@ Items that couldn't be reconciled by identity, never silently dropped.
 ### IdentityKeys
 
 ```ts
-type IdentityKeys<Item> = readonly keyof Item & string[];
+type IdentityKeys<Item> = readonly (keyof Item & string)[];
 ```
 
 Declared identity field names for one array item shape -- e.g. `["id"]`, or `["postId", "commentId"]` for a composite key.
@@ -68,7 +68,7 @@ Declared identity field names for one array item shape -- e.g. `["id"]`, or `["p
 
 | Type Parameter |
 | ------ |
-| `Item` |
+| <a id="type-parameter-item"></a> `Item` |
 
 ***
 
@@ -240,7 +240,7 @@ Splits a delimited string into trimmed items; an array input passes through stri
 | Parameter | Type | Default value |
 | ------ | ------ | ------ |
 | `value` | `unknown` | `undefined` |
-| `separator` | `string` \| `RegExp` | `","` |
+| `separator?` | `string` \| `RegExp` | `","` |
 
 ###### Returns
 

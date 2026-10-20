@@ -57,7 +57,7 @@ export function buildSarifLog(findingModel: FindingModel): SarifLog {
 
   return {
     $schema:
-      "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/main/Schemata/sarif-schema-2.1.0.json",
+      "https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json",
     version: "2.1.0",
     runs: [
       {

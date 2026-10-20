@@ -4,7 +4,7 @@
  * access.
  *
  * Every table draws a hard line the codebase's declared-vs-proven
- * invariant requires (AGENTS.md): `source`/`credentials`/`endpoints` are
+ * invariant requires (`AGENTS.md`): `source`/`credentials`/`endpoints` are
  * labeled *declared* (author-asserted, never verified against the
  * operation's actual body); `protections`/`retention` are labeled
  * *documented* only -- "documented" is never rendered as "adequate,"

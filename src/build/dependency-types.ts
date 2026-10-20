@@ -25,7 +25,7 @@ export type DependencyRelationship =
  * (or a specific field/operation on it). Unlike the declared metadata in
  * `core/document.ts` (`source`, `credentials`, `endpoints`), every
  * `DependencyEdge` is derived by AST analysis, never author-declared -- see
- * AGENTS.md's declared-vs-proven invariant. Produced by the usage-scan
+ * `AGENTS.md`'s declared-vs-proven invariant. Produced by the usage-scan
  * pass (`scan-dependencies.ts`), not by this module.
  */
 export interface DependencyEdge {

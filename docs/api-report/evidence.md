@@ -108,7 +108,7 @@ same value alongside automatic, per-field provenance.
 
 | Type Parameter |
 | ------ |
-| `T` *extends* `Record`\<`string`, `unknown`\> |
+| <a id="type-parameter-t"></a> `T` *extends* `Record`\<`string`, `unknown`\> |
 
 ```ts
 EvidenceProjection(evidence): T;
@@ -162,7 +162,7 @@ use look like an unbound-method bug.
 
 | Type Parameter |
 | ------ |
-| `T` *extends* `Record`\<`string`, `unknown`\> |
+| <a id="type-parameter-t-1"></a> `T` *extends* `Record`\<`string`, `unknown`\> |
 
 #### Properties
 
@@ -240,7 +240,7 @@ One independent, pure projector function per key of the projection's output shap
 
 | Type Parameter |
 | ------ |
-| `T` *extends* `Record`\<`string`, `unknown`\> |
+| <a id="type-parameter-t-2"></a> `T` *extends* `Record`\<`string`, `unknown`\> |
 
 ***
 
@@ -260,7 +260,7 @@ enforce the read-only half of purity but not the "no side effects" half.
 
 | Type Parameter |
 | ------ |
-| `T` |
+| <a id="type-parameter-t-3"></a> `T` |
 
 #### Parameters
 
@@ -293,7 +293,7 @@ consumer's own projection is a first-class citizen, not a lesser one.
 
 | Type Parameter |
 | ------ |
-| `T` *extends* `Record`\<`string`, `unknown`\> |
+| <a id="type-parameter-t-4"></a> `T` *extends* `Record`\<`string`, `unknown`\> |
 
 #### Parameters
 

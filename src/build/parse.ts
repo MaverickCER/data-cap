@@ -499,7 +499,7 @@ function extractOperationPresenceByKind(
  * Statically extracts CapabilityDocs metadata from a documentData() call's
  * second argument -- mirrors env-cap's extractContractDocs/
  * extractVariableDocsMap convention. Every value here is author-declared,
- * never statically verified (AGENTS.md's declared-vs-proven invariant): a
+ * never statically verified (`AGENTS.md`'s declared-vs-proven invariant): a
  * non-literal value becomes a ParseWarning, never a thrown error or a
  * guessed value.
  */

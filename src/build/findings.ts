@@ -70,7 +70,7 @@ export type ReportFindingCode =
 /**
  * One reportable fact about the discovered capability graph. `severity` is
  * assigned by the rule that produces the finding, following the two
- * governing invariants in AGENTS.md: static analysis never infers a
+ * governing invariants in `AGENTS.md`: static analysis never infers a
  * relationship from insufficient evidence (an ambiguous case is `info` or
  * `indeterminate`-flavored, never guessed at as `error`), and a finding
  * built from declared metadata (e.g. a missing `protections` field) never
