@@ -227,6 +227,7 @@
       "puppeteer": "npm:puppeteer-core@^25.9.0"
     },
     "adm-zip": "0.6.1",
+    "katex": "^0.18.2",
     "qs": "6.16.0"
   },
   "publishConfig": {
