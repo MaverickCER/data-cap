@@ -209,6 +209,7 @@
     "eslint": "^10.9.0",
     "eslint-config-prettier": "10.1.8",
     "espree": "^11.2.0",
+    "fast-check": "^4.10.2",
     "globals": "^17.9.0",
     "internal-package-contract": "github:MaverickCER/internal-package-contract#v0.13.2",
     "prettier": "3.9.10",
