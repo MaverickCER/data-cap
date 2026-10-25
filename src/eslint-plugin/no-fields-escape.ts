@@ -352,6 +352,15 @@ function classifyEscape(node: NonRootNode, program: TSESTree.Program): EscapeKin
   return undefined
 }
 
+/** The rule's options when none are configured. */
+const DEFAULT_RULE_OPTIONS = [{ allow: [] as string[] }] as const
+
+// `@typescript-eslint/utils` before 8.55 reads a rule's default options from this top-level property only.
+// Later releases read `meta.defaultOptions` and mark the top-level one deprecated. The peer range still covers
+// the earlier releases, so it is passed too, spread from a plain object so the call does not name the
+// deprecated property itself.
+const LEGACY_DEFAULT_OPTIONS = { defaultOptions: DEFAULT_RULE_OPTIONS }
+
 /**
  * Flags a capability's whole `.fields` (or a bare `getSnapshot()` result)
  * escaping this file's local, single-`.fields.<name>`-read visibility --
@@ -417,10 +426,11 @@ export const noFieldsEscape = createRule<
       exported:
         "Exporting \"{{expr}}\" whole hands every field it contains to whatever, anywhere, imports this module -- this module's own boundary is the last point data-cap's build-time scanner can see at all. Export the specific field(s) an importer actually needs instead (see ADR 0064).",
     },
+    defaultOptions: [{ allow: [] }],
   },
-  defaultOptions: [{ allow: [] }],
+  ...LEGACY_DEFAULT_OPTIONS,
   create(context, [options]) {
-    // `RuleCreator` merges `defaultOptions` onto the configured options, so `allow` is always set.
+    // `RuleCreator` merges the default options onto the configured options, so `allow` is always set.
     if (matchesAllowList(options.allow as readonly string[], context.filename, context.cwd))
       return {}
 

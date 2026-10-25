@@ -119,6 +119,15 @@ function isFunctionValueOf(property: TSESTree.Property): boolean {
   )
 }
 
+/** The rule's options when none are configured. */
+const DEFAULT_RULE_OPTIONS = [{ allow: [] as string[], functions: DEFAULT_FUNCTIONS }] as const
+
+// `@typescript-eslint/utils` before 8.55 reads a rule's default options from this top-level property only.
+// Later releases read `meta.defaultOptions` and mark the top-level one deprecated. The peer range still covers
+// the earlier releases, so it is passed too, spread from a plain object so the call does not name the
+// deprecated property itself.
+const LEGACY_DEFAULT_OPTIONS = { defaultOptions: DEFAULT_RULE_OPTIONS }
+
 /**
  * Flags a direct call to a global I/O function (`fetch` by default) written
  * anywhere other than inside a capability's own `execute`/`subscribe`, so
@@ -166,10 +175,11 @@ export const noRawExternalIo = createRule<[RuleOptions], "noRawExternalIo">({
       noRawExternalIo:
         "\"{{name}}\" is called outside any capability's execute/subscribe, so this data access is invisible to data-cap's analysis -- no owner, no sensitivity, no declared endpoint, and nothing for the generated reports to describe. Move it into a getter/mutator/subscription's own execute/subscribe (see GUIDE.md's ESLint plugin section for the allow-list escape hatch for a project's own transport layer).",
     },
+    defaultOptions: [{ allow: [], functions: DEFAULT_FUNCTIONS }],
   },
-  defaultOptions: [{ allow: [], functions: DEFAULT_FUNCTIONS }],
+  ...LEGACY_DEFAULT_OPTIONS,
   create(context, [options]) {
-    // `RuleCreator` merges `defaultOptions` onto the configured options, so `allow` is always set.
+    // `RuleCreator` merges the default options onto the configured options, so `allow` is always set.
     if (matchesAllowList(options.allow as readonly string[], context.filename, context.cwd))
       return {}
 

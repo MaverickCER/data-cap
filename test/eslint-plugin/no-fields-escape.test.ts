@@ -352,3 +352,14 @@ describe("ancestorChain", () => {
     expect(ancestorChain(leaf as never).map((n) => n.type)).toEqual(["Leaf", "Mid", "Root"])
   })
 })
+
+describe("noFieldsEscape default options", () => {
+  it("passes its defaults in both places a version of @typescript-eslint/utils reads them", () => {
+    // `meta.defaultOptions` is read from 8.55 on; the top-level property by every release before that, and
+    // by the later ones as a fallback. Read through a cast: the property is deprecated, and this checks it
+    // is still passed.
+    const legacy = (noFieldsEscape as { defaultOptions?: unknown }).defaultOptions
+    expect(noFieldsEscape.meta.defaultOptions).toEqual([{ allow: [] }])
+    expect(legacy).toEqual([{ allow: [] }])
+  })
+})

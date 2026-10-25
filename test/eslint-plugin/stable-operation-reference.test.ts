@@ -1,6 +1,6 @@
 import { RuleTester } from "eslint"
 import type { Rule } from "eslint"
-import { describe, it } from "vitest"
+import { describe, expect, it } from "vitest"
 import { stableOperationReference } from "../../src/eslint-plugin/stable-operation-reference.js"
 
 // RuleTester's own `run()` registers cases via Mocha-style global
@@ -220,3 +220,14 @@ ruleTester.run(
     ],
   },
 )
+
+describe("stableOperationReference default options", () => {
+  it("passes its defaults in both places a version of @typescript-eslint/utils reads them", () => {
+    // `meta.defaultOptions` is read from 8.55 on; the top-level property by every release before that, and
+    // by the later ones as a fallback. Read through a cast: the property is deprecated, and this checks it
+    // is still passed.
+    const legacy = (stableOperationReference as { defaultOptions?: unknown }).defaultOptions
+    expect(stableOperationReference.meta.defaultOptions).toEqual([])
+    expect(legacy).toEqual([])
+  })
+})
