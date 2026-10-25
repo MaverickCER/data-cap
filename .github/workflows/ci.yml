@@ -380,7 +380,7 @@ jobs:
       - name: application
         working-directory: examples/application
         run: |
-          npm install
+          npm ci
           npm run typecheck
 
       # With the example's dependencies installed, so the README's "See it run" block is compared with a
@@ -391,13 +391,13 @@ jobs:
       - name: team-service
         working-directory: examples/team-service
         run: |
-          npm install
+          npm ci
           npm run typecheck
 
       - name: enterprise-platform
         working-directory: examples/enterprise-platform
         run: |
-          npm install
+          npm ci
           npm run typecheck
 
       # Not a fourth tier -- see examples/README.md's "Framework integration"
@@ -408,7 +408,7 @@ jobs:
       - name: nextjs-app
         working-directory: examples/nextjs-app
         run: |
-          npm install
+          npm ci
           npm run build
 
       - run: npx vitest run test/examples/
@@ -434,85 +434,85 @@ jobs:
       - name: basic-standalone
         working-directory: test/integration/runtime-core/basic-standalone
         run: |
-          npm install
+          npm ci
           npm run typecheck
 
       - name: server-database-integration
         working-directory: test/integration/runtime-core/server-database-integration
         run: |
-          npm install
+          npm ci
           npm run typecheck
 
       - name: optimistic-mutation-concurrency
         working-directory: test/integration/runtime-core/optimistic-mutation-concurrency
         run: |
-          npm install
+          npm ci
           npm run typecheck
 
       - name: array-identity-reconciliation
         working-directory: test/integration/runtime-core/array-identity-reconciliation
         run: |
-          npm install
+          npm ci
           npm run typecheck
 
       - name: subscription-lifecycle
         working-directory: test/integration/subscriptions/subscription-lifecycle
         run: |
-          npm install
+          npm ci
           npm run typecheck
 
       - name: subscription-with-recover
         working-directory: test/integration/subscriptions/subscription-with-recover
         run: |
-          npm install
+          npm ci
           npm run typecheck
 
       - name: multi-capability-shared-transport
         working-directory: test/integration/subscriptions/multi-capability-shared-transport
         run: |
-          npm install
+          npm ci
           npm run typecheck
 
       - name: socket-io-subscription
         working-directory: test/integration/subscriptions/socket-io-subscription
         run: |
-          npm install
+          npm ci
           npm run typecheck
 
       - name: coordinator-dedup
         working-directory: test/integration/coordinator/coordinator-dedup
         run: |
-          npm install
+          npm ci
           npm run typecheck
 
       - name: coordinator-isolation
         working-directory: test/integration/coordinator/coordinator-isolation
         run: |
-          npm install
+          npm ci
           npm run typecheck
 
       - name: runtime-cache
         working-directory: test/integration/runtime-modules/runtime-cache
         run: |
-          npm install
+          npm ci
           npm run typecheck
 
       - name: runtime-retry
         working-directory: test/integration/runtime-modules/runtime-retry
         run: |
-          npm install
+          npm ci
           npm run typecheck
 
       - name: tanstack-query-integration
         working-directory: test/integration/adoption-patterns/tanstack-query-integration
         run: |
-          npm install
+          npm ci
           npm run typecheck
 
       - name: tsconfig-aliases
         working-directory: test/integration/build-tooling/tsconfig-aliases
         run: |
-          npm install
+          npm ci
           npm run typecheck
 
       # Installs shared-schema-package (a sibling file: dependency, not a
@@ -522,13 +522,13 @@ jobs:
       - name: tsconfig-aliases-consumer
         working-directory: test/integration/build-tooling/tsconfig-aliases-consumer
         run: |
-          npm install
+          npm ci
           npm run typecheck
 
       - name: eslint-plugin-usage
         working-directory: test/integration/build-tooling/eslint-plugin-usage
         run: |
-          npm install
+          npm ci
           npm run typecheck
 
       - run: npx vitest run test/integration/
