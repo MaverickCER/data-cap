@@ -78,6 +78,15 @@ function isRecreatedPerCall(variable: ScopeVariable): boolean {
   return isDeclaredWithinFunctionScope(variable.scope)
 }
 
+/** The rule's options when none are configured. */
+const DEFAULT_RULE_OPTIONS = [] as const
+
+// `@typescript-eslint/utils` before 8.55 reads a rule's default options from this top-level property only.
+// Later releases read `meta.defaultOptions` and mark the top-level one deprecated. The peer range still covers
+// the earlier releases, so it is passed too, spread from a plain object so the call does not name the
+// deprecated property itself.
+const LEGACY_DEFAULT_OPTIONS = { defaultOptions: DEFAULT_RULE_OPTIONS }
+
 /**
  * Flags an `execute`/`subscribe` value inside a `createData()` call that
  * isn't a reference to a stable, module-level function, so the runtime
@@ -122,8 +131,9 @@ export const stableOperationReference = createRule<
       recreatedPerCall:
         '"{{key}}" references "{{name}}", which is declared inside a function rather than at module scope -- so it gets a fresh function identity every time that function runs, which defeats the coordinator\'s function-identity-based sharing/deduplication. Move "{{name}}" to module scope and reference that instead.',
     },
+    defaultOptions: [],
   },
-  defaultOptions: [],
+  ...LEGACY_DEFAULT_OPTIONS,
   create(context) {
     let createDataDepth = 0
 
