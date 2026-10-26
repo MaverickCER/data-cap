@@ -305,3 +305,28 @@ describe("buildFindingModel", () => {
     expect(buildFindingModel([]).findings).toEqual([])
   })
 })
+
+describe("buildFindingModel -- evidence references (ADR 0070)", () => {
+  const base = {
+    code: "FLOW_POLICY_VIOLATED" as const,
+    family: "flow" as const,
+    severity: "error" as const,
+    message: "m",
+  }
+
+  it("carries a finding's evidence references through to the located finding", () => {
+    const evidence = [
+      { model: "policy" as const, id: "rule#field" },
+      { model: "flow" as const, id: "edge:x" },
+    ]
+    const model = buildFindingModel([{ ...base, evidence }])
+    expect(model.findings[0]?.evidence).toEqual(evidence)
+  })
+
+  it("omits the key entirely for a finding with none (not an explicit undefined, not an empty list)", () => {
+    const [finding] = buildFindingModel([base]).findings
+    expect("evidence" in (finding as object)).toBe(false)
+    const [empty] = buildFindingModel([{ ...base, evidence: [] }]).findings
+    expect("evidence" in (empty as object)).toBe(false)
+  })
+})

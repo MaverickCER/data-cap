@@ -3,10 +3,15 @@ import path from "node:path"
 import { pathToFileURL } from "node:url"
 import {
   checkArtifacts,
+  evaluateEvidenceRules,
   generateDataArtifacts,
+  parseEvidenceRules,
   type CheckArtifactsResult,
+  type EvidenceRules,
+  type EvidenceRulesResult,
   type ReportResult,
 } from "../build/index.js"
+import type { ObservationEvent } from "../observe/index.js"
 import { nodeBuildFileSystem } from "./filesystem.js"
 import { runInitCommand } from "./init.js"
 import { serializeFailure, serializeSuccess, writeJson } from "./json.js"
@@ -27,11 +32,17 @@ export interface ParsedArgs {
   packages: string[]
   tsconfig?: string | false | undefined
   evidence?: string | undefined
+  /** Path of a JSON file of runtime observation events (`data-cap/observe`) to ingest, resolved against `--root`. */
+  observations?: string | undefined
+  /** Path of a JSON file of rules to enforce over the evidence (ADR 0070), resolved against `--root`. */
+  rules?: string | undefined
   expiringWithinDays?: number | undefined
   strict: boolean
   strictDocs: boolean
   strictOwnership: boolean
   strictFlow: boolean
+  /** Run the flow pass: field-level data-flow, declared flow policies, and the claims derived from them (ADR 0070). */
+  flowEvidence: boolean
   json: boolean
   check: boolean
   help: boolean
@@ -51,6 +62,7 @@ export function parseArgs(argv: string[]): ParsedArgs {
     strictDocs: false,
     strictOwnership: false,
     strictFlow: false,
+    flowEvidence: false,
     json: false,
     check: false,
     help: false,
@@ -66,6 +78,8 @@ export function parseArgs(argv: string[]): ParsedArgs {
     "--package": (a, v) => a.packages.push(v),
     "--tsconfig": (a, v) => (a.tsconfig = v),
     "--evidence": (a, v) => (a.evidence = v),
+    "--observations": (a, v) => (a.observations = v),
+    "--rules": (a, v) => (a.rules = v),
     "--expiring-within-days": (a, v) =>
       (a.expiringWithinDays = positiveInteger(v, "--expiring-within-days")),
   }
@@ -75,6 +89,7 @@ export function parseArgs(argv: string[]): ParsedArgs {
     "--strict-docs": (a) => (a.strictDocs = true),
     "--strict-ownership": (a) => (a.strictOwnership = true),
     "--strict-flow": (a) => (a.strictFlow = true),
+    "--flow-evidence": (a) => (a.flowEvidence = true),
     "--json": (a) => (a.json = true),
     "--check": (a) => (a.check = true),
     "--help": (a) => (a.help = true),
@@ -145,6 +160,12 @@ Where to look:
   --tsconfig <path>           A tsconfig.json (relative to root) whose paths/baseUrl resolve aliased imports (default: tsconfig.json at root)
   --no-tsconfig               Do not resolve aliased imports
 
+What to analyze:
+  --flow-evidence             Trace each capability field through your functions to where it goes, evaluate the flowPolicy
+                              rules your capabilities declare, and add the result to the Evidence Model
+  --observations <path>       A JSON array of runtime observations (from data-cap/observe) to add to the Evidence Model and
+                              compare with the static findings
+
 What to write:
   --evidence <path>           Write the Evidence Model as JSON at this path
   --expiring-within-days <n>  How many days out counts as "expiring soon" (default: 30)
@@ -155,7 +176,10 @@ What counts as an error:
   --strict                    Treat every warning as an error (info is never one)
   --strict-docs               ... static findings: ownership, sensitivity, duplication
   --strict-ownership          ... usage findings: abandoned capabilities, unconsumed owned fields
-  --strict-flow               ... data-flow findings; only meaningful if you also build a Data Flow Diagram yourself, and a no-op for this CLI
+  --rules <path>              A JSON file of rules enforced over the evidence (for example noPolicyViolations, maxUnknowns,
+                              requireVerified); exit 1 if any is violated, and a rule whose analysis did not run is a violation
+  --strict-flow               ... data-flow findings: a sensitive field crossing a boundary, flow policies that could not be decided,
+                              fields sent to a client whole or never used (with --flow-evidence)
 
   --help                      Show this message
 
@@ -206,6 +230,55 @@ export function writeFindings(findings: ReportResult["findings"]): void {
 // for the same rendering, now invoked directly as application code instead
 // of through this CLI.
 
+/** One line per flow-related sub-model the run computed; nothing when none was. */
+/** @internal Exported for direct unit coverage. */
+export function writeFlowSummary(evidence: ReportResult["evidence"] | undefined): void {
+  if (evidence === undefined) return
+  const { flow, policy, observation, claims } = evidence
+  if (flow !== undefined) {
+    const { coverage } = flow
+    const parts = [`${coverage.functionsAnalyzed} function(s) analyzed`]
+    if (coverage.functionsUnanalyzed > 0)
+      parts.push(`${coverage.functionsUnanalyzed} not fully analyzed`)
+    if (coverage.unknowns > 0) parts.push(`${coverage.unknowns} unknown(s)`)
+    process.stdout.write(
+      `Flow analysis: ${parts.join(", ")} -- ${coverage.complete ? "complete" : "not complete"}.\n`,
+    )
+  }
+  if (policy !== undefined) {
+    const { satisfied, violated, indeterminate } = policy.summary
+    process.stdout.write(
+      `Policy: ${satisfied} satisfied, ${violated} violated, ${indeterminate} indeterminate.\n`,
+    )
+  }
+  if (observation !== undefined) {
+    const skipped = observation.skipped > 0 ? `, ${observation.skipped} skipped as malformed` : ""
+    process.stdout.write(
+      `Observations: ${observation.observations.length} across ${observation.scopes.length} scope(s)${skipped}.\n`,
+    )
+  }
+  if (claims !== undefined) {
+    const counts = Object.entries(claims.summary).filter(([, count]) => count > 0)
+    process.stdout.write(
+      `Claims: ${counts.length === 0 ? "none" : counts.map(([name, count]) => `${count} ${name}`).join(", ")}.\n`,
+    )
+  }
+}
+
+/** One line, then one line per violation. */
+/** @internal Exported for direct unit coverage. */
+export function writeRulesSummary(result: EvidenceRulesResult): void {
+  if (result.ok) {
+    process.stdout.write(`Evidence rules: ${result.evaluated.length} evaluated, all satisfied.\n`)
+    return
+  }
+  process.stdout.write(
+    `Evidence rules: ${result.evaluated.length} evaluated, ${result.violations.length} violation(s):\n`,
+  )
+  for (const violation of result.violations)
+    process.stdout.write(`  - [${violation.rule}] ${violation.message}\n`)
+}
+
 /** @internal Exported for direct unit coverage. */
 export function writeGenerationSummary(
   options: { readonly evidence?: string },
@@ -220,6 +293,8 @@ export function writeGenerationSummary(
   if (options.evidence !== undefined) {
     process.stdout.write(`Wrote evidence model: ${options.evidence}\n`)
   }
+
+  writeFlowSummary(result.evidence)
 
   writeFindings(result.findings)
 
@@ -269,7 +344,10 @@ export function writeCheckSummary(
 }
 
 /** The resolved option object `checkArtifacts`/`generateDataArtifacts` receive. */
-type CliOptions = ReturnType<typeof resolveOptions>
+type CliOptions = ReturnType<typeof resolveOptions> & {
+  readonly observations?: readonly ObservationEvent[] | undefined
+  readonly rules?: EvidenceRules | undefined
+}
 
 /**
  * Turns parsed flags into the option object the build functions take: empty
@@ -311,7 +389,58 @@ export function resolveOptions(args: ParsedArgs) {
     strictDocs: args.strictDocs,
     strictOwnership: args.strictOwnership,
     strictFlow: args.strictFlow,
+    ...(args.flowEvidence ? { flowEvidence: true } : {}),
   }
+}
+
+/**
+ * Reads `--rules`: a JSON document of rules to enforce over the evidence. Every problem is reported at once, by
+ * name, before anything is generated -- a misspelled rule must never be a rule that quietly does not run.
+ */
+export async function readRulesFile(file: string): Promise<EvidenceRules> {
+  let text: string
+  try {
+    text = await nodeBuildFileSystem.readFile(file, "utf8")
+  } catch (error) {
+    throw new Error(
+      `--rules ${file} could not be read: ${error instanceof Error ? error.message : String(error)}`,
+      { cause: error },
+    )
+  }
+  const parsed = parseEvidenceRules(text)
+  if (!parsed.ok)
+    throw new Error(
+      `--rules ${file} is not a valid rules file:\n${parsed.errors.map((message) => `  - ${message}`).join("\n")}`,
+    )
+  return parsed.rules
+}
+
+/**
+ * Reads `--observations`: a JSON array of events written from a
+ * `data-cap/observe` sink. The file is read here, in the CLI -- the build
+ * library never opens a file of its own (ADR 0058). Malformed individual
+ * events are not rejected here; the Observation Model counts them as skipped.
+ */
+export async function readObservationsFile(file: string): Promise<readonly ObservationEvent[]> {
+  let text: string
+  try {
+    text = await nodeBuildFileSystem.readFile(file, "utf8")
+  } catch (error) {
+    throw new Error(
+      `--observations ${file} could not be read: ${error instanceof Error ? error.message : String(error)}`,
+      { cause: error },
+    )
+  }
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(text)
+  } catch {
+    throw new Error(`--observations ${file} is not valid JSON.`)
+  }
+  if (!Array.isArray(parsed)) {
+    throw new Error(`--observations ${file} must contain a JSON array of observation events.`)
+  }
+  return parsed as ObservationEvent[]
 }
 
 /** `--check`: report staleness (its own exit code) and surface findings for visibility. */
@@ -327,17 +456,23 @@ export async function runCheck(args: ParsedArgs, options: CliOptions): Promise<v
     return
   }
 
+  const verdict =
+    options.rules === undefined
+      ? undefined
+      : evaluateEvidenceRules(checkResult.result.evidence, options.rules)
   if (args.json) {
     writeJson(
-      serializeSuccess(checkResult.result, {
-        ok: checkResult.stale.length === 0,
-        stale: checkResult.stale,
-      }),
+      serializeSuccess(
+        checkResult.result,
+        { ok: checkResult.stale.length === 0, stale: checkResult.stale },
+        verdict,
+      ),
     )
   } else {
     writeCheckSummary(options, checkResult)
+    if (verdict !== undefined) writeRulesSummary(verdict)
   }
-  process.exitCode = checkResult.stale.length === 0 ? 0 : 1
+  process.exitCode = checkResult.stale.length === 0 && verdict?.ok !== false ? 0 : 1
 }
 
 /** A real generate run. */
@@ -353,8 +488,14 @@ export async function runGenerate(args: ParsedArgs, options: CliOptions): Promis
     return
   }
 
-  if (args.json) writeJson(serializeSuccess(result))
-  else writeGenerationSummary(options, result)
+  const verdict =
+    options.rules === undefined ? undefined : evaluateEvidenceRules(result.evidence, options.rules)
+  if (args.json) writeJson(serializeSuccess(result, undefined, verdict))
+  else {
+    writeGenerationSummary(options, result)
+    if (verdict !== undefined) writeRulesSummary(verdict)
+  }
+  if (verdict?.ok === false) process.exitCode = 1
 }
 
 /**
@@ -391,7 +532,19 @@ export async function main(): Promise<void> {
     return
   }
 
-  const options = resolveOptions(args)
+  const base = resolveOptions(args)
+  // Everything the run depends on is read and validated first, so a bad rules or observations file fails before any work.
+  const rules =
+    args.rules === undefined ? undefined : await readRulesFile(path.resolve(base.root, args.rules))
+  const observations =
+    args.observations === undefined
+      ? undefined
+      : await readObservationsFile(path.resolve(base.root, args.observations))
+  const options: CliOptions = {
+    ...base,
+    observations,
+    rules,
+  }
 
   await (args.check ? runCheck(args, options) : runGenerate(args, options))
 }

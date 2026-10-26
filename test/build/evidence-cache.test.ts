@@ -210,6 +210,30 @@ describe("evidence cache", () => {
       expect(result.evidence.schemaVersion).toBe(EVIDENCE_MODEL_SCHEMA_VERSION)
     })
 
+    it("misses when flow analysis is switched on over unchanged source (ADR 0070)", async () => {
+      await seedCapability()
+      await generateDataArtifacts(optionsFor())
+      const withoutFlow = await getEvidenceModel(optionsFor())
+      expect(withoutFlow.source).toBe("hit")
+      const withFlow = await getEvidenceModel({ ...optionsFor(), flowEvidence: true })
+      expect(withFlow.source).toBe("miss")
+      expect(withFlow.evidence.computed.flow).toBe(true)
+    })
+
+    it("misses when runtime observations change over unchanged source, and hits when they do not", async () => {
+      await seedCapability()
+      const observed = (field: string) => [
+        { scope: "s", boundary: { kind: "api" as const, name: "x" }, field },
+      ]
+      await generateDataArtifacts({ ...optionsFor(), observations: observed("a.b") })
+      expect(
+        (await getEvidenceModel({ ...optionsFor(), observations: observed("a.b") })).source,
+      ).toBe("hit")
+      const changed = await getEvidenceModel({ ...optionsFor(), observations: observed("a.c") })
+      expect(changed.source).toBe("miss")
+      expect(changed.evidence.observation?.observations[0]?.field).toBe("a.c")
+    })
+
     it("hits when the artifact and its sidecar both match current source", async () => {
       await seedCapability()
       await generateDataArtifacts(optionsFor())

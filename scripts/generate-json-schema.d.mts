@@ -23,4 +23,8 @@ export function generateLifecycleModelSchema(): object
 export function generateFindingModelSchema(): object
 export function generateChangeModelSchema(): object
 export function generateRuntimeContractModelSchema(): object
+export function generateFlowModelSchema(): object
+export function generatePolicyModelSchema(): object
+export function generateObservationModelSchema(): object
+export function generateClaimsModelSchema(): object
 export function generateEvidenceModelSchema(): object

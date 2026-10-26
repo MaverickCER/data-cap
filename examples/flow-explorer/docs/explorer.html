@@ -1,0 +1,1589 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Data flow explorer</title>
+<style>
+:root { color-scheme: light dark; --bg: #ffffff; --fg: #1a1f24; --muted: #4a5560; --panel: #f1f4f7; --border: #5c6773; --accent: #0a58a8; --accent-fg: #ffffff; --danger: #a8071a; --warn: #8a4a00; --ok: #1b6e2d; }
+@media (prefers-color-scheme: dark) { :root { --bg: #0f141a; --fg: #e8edf2; --muted: #aeb9c4; --panel: #18202a; --border: #8a97a5; --accent: #7db7f5; --accent-fg: #0f141a; --danger: #ff8a97; --warn: #f0b866; --ok: #7fd18f; } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.5 system-ui, sans-serif; }
+.skip { position: absolute; left: 8px; top: -48px; background: var(--accent); color: var(--accent-fg); padding: 8px 12px; z-index: 10; }
+.skip:focus { top: 8px; }
+header, main { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+h1 { margin: 16px 0 4px; font-size: 1.6rem; }
+h2 { margin: 24px 0 8px; font-size: 1.2rem; }
+h3 { margin: 12px 0 4px; font-size: 1rem; }
+p, li { max-width: 80ch; }
+section { border-top: 1px solid var(--border); padding-bottom: 8px; }
+.banner { margin: 8px 0; padding: 8px 12px; border: 2px solid var(--warn); color: var(--warn); font-weight: 600; }
+.banner.complete { border-color: var(--ok); color: var(--ok); }
+.controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px 16px; align-items: end; }
+.controls label { display: block; font-weight: 600; }
+.controls button { align-self: end; }
+select, input[type="text"], input[type="search"], button, input[type="file"] { font: inherit; color: var(--fg); background: var(--panel); border: 1px solid var(--border); padding: 6px 8px; min-height: 36px; }
+button { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); cursor: pointer; }
+fieldset { border: 1px solid var(--border); padding: 4px 8px 8px; }
+fieldset label { display: inline-block; margin-right: 12px; font-weight: 400; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+#graph { overflow: auto; border: 1px solid var(--border); background: var(--bg); max-height: 70vh; }
+#graph svg { height: auto; }
+#graph.fit-width svg { width: 100%; }
+#graph svg g.graph > polygon { fill: var(--bg); stroke: none; }
+#graph svg text { fill: var(--fg); }
+#graph g.node polygon, #graph g.node ellipse, #graph g.node path, #graph g.node polyline { stroke: var(--fg); fill: var(--panel); }
+#graph g.edge path, #graph g.edge polyline { stroke: var(--muted); }
+#graph g.edge polygon { stroke: var(--muted); fill: var(--muted); }
+#graph g.node { cursor: pointer; }
+#graph g.node.status-declared polygon, #graph g.node.status-declared ellipse, #graph g.node.status-declared path { stroke: var(--accent); stroke-dasharray: 5 3; }
+#graph g.node.status-inferred polygon, #graph g.node.status-inferred ellipse, #graph g.node.status-inferred path { stroke: var(--warn); stroke-dasharray: 2 3; }
+#graph g.node.status-unknown polygon, #graph g.node.status-unknown ellipse, #graph g.node.status-unknown path { stroke: var(--danger); stroke-dasharray: 6 3; stroke-width: 2; }
+#graph g.edge.status-declared path { stroke: var(--accent); stroke-dasharray: 5 3; }
+#graph g.edge.status-inferred path { stroke: var(--warn); stroke-dasharray: 2 3; }
+#graph g.edge.status-unknown path { stroke: var(--danger); stroke-dasharray: 6 3; }
+#graph g.edge.violation path { stroke: var(--danger); stroke-width: 3; stroke-dasharray: none; }
+#graph g.edge.violation polygon { stroke: var(--danger); fill: var(--danger); }
+#graph g.added polygon, #graph g.added ellipse, #graph g.added path { stroke: var(--ok); stroke-width: 3; }
+#graph g.node:focus { outline: 3px solid var(--accent); outline-offset: 2px; }
+#graph .dim { opacity: 0.18; }
+#graph .filtered { display: none; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 8px 0; padding: 0; list-style: none; }
+#detail:focus { outline: 3px solid var(--accent); }
+#detail-body ul { margin: 4px 0 8px; padding-left: 20px; }
+.violation-note { color: var(--danger); font-weight: 600; }
+pre { white-space: pre-wrap; overflow-wrap: anywhere; background: var(--panel); border: 1px solid var(--border); padding: 12px; }
+table { border-collapse: collapse; width: 100%; }
+th, td { border: 1px solid var(--border); padding: 4px 8px; text-align: left; vertical-align: top; }
+th { background: var(--panel); }
+@media (forced-colors: active) { #graph g.node polygon, #graph g.node ellipse, #graph g.node path { stroke: CanvasText; } }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the controls</a>
+<header>
+  <h1>Data flow explorer</h1>
+  <p class="banner" id="coverage" role="status">Coverage: 5 function(s) analyzed, 1 unknown(s) -- NOT complete. A flow missing from the graph is not proof it does not exist.</p>
+  <noscript><p>Interactive tracing needs JavaScript. The graph, the claims and the text equivalent below are complete without it.</p></noscript>
+</header>
+<main id="main">
+  <section aria-labelledby="controls-h">
+    <h2 id="controls-h">Trace data</h2>
+    <div class="controls">
+      <div><label for="field">Field</label><select id="field"></select></div>
+      <div><label for="direction">Direction</label><select id="direction"><option value="downstream">Downstream: where it goes</option><option value="upstream">Upstream: where it came from</option></select></div>
+      <div><label for="path">Path inside the field (optional)</label><input type="text" id="path" autocomplete="off" placeholder="for example passwordHash"></div>
+      <div><label for="classification">Classification</label><select id="classification"><option value="">Any</option></select></div>
+      <div><label for="execution">Execution</label><select id="execution"><option value="">Any (do not filter by execution)</option></select></div>
+      <div><label for="search">Find a node</label><input type="search" id="search" autocomplete="off"></div>
+      <div><label><input type="checkbox" id="violations"> Only policy violations</label></div>
+      <div><button type="button" id="reset">Show everything</button></div>
+    </div>
+    <fieldset id="statuses"><legend>Show evidence with these statuses</legend></fieldset>
+    <p id="summary" role="status" aria-live="polite">Loading.</p>
+    <p id="execution-note"></p>
+  </section>
+  <section aria-labelledby="graph-h">
+    <h2 id="graph-h">Graph</h2>
+    <p><button type="button" id="fit" aria-pressed="false">Fit graph to width (overview)</button></p>
+    <p>Tab moves between nodes. Enter or Space inspects one; T traces data from it. Dashed outlines are declared, dotted are inferred, and red dashed is something the analysis could not follow. Status is also stated in each node's name for assistive technology.</p>
+    <div id="graph" role="region" aria-label="Data flow graph" tabindex="0"><svg width="2307pt" height="650pt"
+ viewBox="0.00 0.00 2307.00 650.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 645.9)">
+<title>data&#45;flow</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-645.9 2302.8,-645.9 2302.8,4 -4,4"/>
+<text xml:space="preserve" text-anchor="middle" x="1149.4" y="-625.3" font-family="Times,serif" font-size="14.00">Data flow &#45;&#45; NOT complete: parts could not be followed, so a missing flow is not proof of absence</text>
+<!-- n0 -->
+<g id="boundary:boundary#postgres:users" class="node">
+<title>n0</title>
+<path fill="none" stroke="blue" d="M173.21,-215.45C173.21,-217.25 134.39,-218.72 86.6,-218.72 38.82,-218.72 0,-217.25 0,-215.45 0,-215.45 0,-185.99 0,-185.99 0,-184.19 38.82,-182.72 86.6,-182.72 134.39,-182.72 173.21,-184.19 173.21,-185.99 173.21,-185.99 173.21,-215.45 173.21,-215.45"/>
+<path fill="none" stroke="blue" d="M173.21,-215.45C173.21,-213.64 134.39,-212.17 86.6,-212.17 38.82,-212.17 0,-213.64 0,-215.45"/>
+<text xml:space="preserve" text-anchor="middle" x="86.6" y="-196.52" font-family="Helvetica,sans-Serif" font-size="14.00">database: postgres:users</text>
+</g>
+<!-- n2 -->
+<g id="field:src/features/user.capability.ts#userData.user" class="node">
+<title>n2</title>
+<polygon fill="none" stroke="black" points="601.35,-242.32 429.95,-242.32 385.85,-159.12 557.26,-159.12 601.35,-242.32"/>
+<text xml:space="preserve" text-anchor="middle" x="493.6" y="-204.92" font-family="Helvetica,sans-Serif" font-size="14.00">userData.user</text>
+<text xml:space="preserve" text-anchor="middle" x="493.6" y="-188.12" font-family="Helvetica,sans-Serif" font-size="14.00">(confidential)</text>
+</g>
+<!-- n0&#45;&gt;n2 -->
+<g id="crosses&#45;boundary:boundary:boundary#postgres:users&#45;&gt;field:src/features/user.capability.ts#userData.user@declared^field:src/features/user.capability.ts#userData.user" class="edge">
+<title>n0&#45;&gt;n2</title>
+<path fill="none" stroke="blue" stroke-dasharray="5,2" d="M173.49,-200.72C238.82,-200.72 328.7,-200.72 396.44,-200.72"/>
+<polygon fill="blue" stroke="blue" points="396.02,-204.22 406.02,-200.72 396.02,-197.22 396.02,-204.22"/>
+<text xml:space="preserve" text-anchor="middle" x="279.53" y="-204.92" font-family="Helvetica,sans-Serif" font-size="14.00">crosses&#45;boundary [declared]</text>
+</g>
+<!-- n1 -->
+<g id="boundary:boundary:code#http&#45;response" class="node">
+<title>n1</title>
+<polygon fill="none" stroke="black" points="1950.38,-197.16 2124.59,-184.72 2298.8,-197.16 2298.63,-217.28 1950.54,-217.28 1950.38,-197.16"/>
+<text xml:space="preserve" text-anchor="middle" x="2124.59" y="-198.52" font-family="Helvetica,sans-Serif" font-size="14.00">client&#45;response: http&#45;response</text>
+</g>
+<!-- n3 -->
+<g id="function:src/app/export.ts#exportEverything" class="node">
+<title>n3</title>
+<path fill="none" stroke="black" d="M1029.97,-167.72C1029.97,-167.72 932.92,-167.72 932.92,-167.72 926.92,-167.72 920.92,-161.72 920.92,-155.72 920.92,-155.72 920.92,-143.72 920.92,-143.72 920.92,-137.72 926.92,-131.72 932.92,-131.72 932.92,-131.72 1029.97,-131.72 1029.97,-131.72 1035.97,-131.72 1041.97,-137.72 1041.97,-143.72 1041.97,-143.72 1041.97,-155.72 1041.97,-155.72 1041.97,-161.72 1035.97,-167.72 1029.97,-167.72"/>
+<text xml:space="preserve" text-anchor="middle" x="981.44" y="-145.52" font-family="Helvetica,sans-Serif" font-size="14.00">exportEverything</text>
+</g>
+<!-- n2&#45;&gt;n3 -->
+<g id="reads:field:src/features/user.capability.ts#userData.user&#45;&gt;function:src/app/export.ts#exportEverything:@static^field:src/features/user.capability.ts#userData.user" class="edge">
+<title>n2&#45;&gt;n3</title>
+<path fill="none" stroke="red" stroke-width="2" d="M594.61,-228.7C602.93,-230.32 611.26,-231.7 619.35,-232.72 684.89,-240.99 703.33,-246.27 767.97,-232.72 834.07,-218.87 843.75,-195.02 907.13,-171.72 907.54,-171.57 907.95,-171.42 908.36,-171.27"/>
+<polygon fill="red" stroke="red" stroke-width="2" points="909.47,-174.59 917.77,-168 907.17,-167.98 909.47,-174.59"/>
+<text xml:space="preserve" text-anchor="middle" x="693.66" y="-245.22" font-family="Helvetica,sans-Serif" font-size="14.00">reads (whole)</text>
+</g>
+<!-- n5 -->
+<g id="function:src/app/profile.ts#profileHandler" class="node">
+<title>n5</title>
+<path fill="none" stroke="black" d="M877.13,-324.72C877.13,-324.72 797.97,-324.72 797.97,-324.72 791.97,-324.72 785.97,-318.72 785.97,-312.72 785.97,-312.72 785.97,-300.72 785.97,-300.72 785.97,-294.72 791.97,-288.72 797.97,-288.72 797.97,-288.72 877.13,-288.72 877.13,-288.72 883.13,-288.72 889.13,-294.72 889.13,-300.72 889.13,-300.72 889.13,-312.72 889.13,-312.72 889.13,-318.72 883.13,-324.72 877.13,-324.72"/>
+<text xml:space="preserve" text-anchor="middle" x="837.55" y="-302.52" font-family="Helvetica,sans-Serif" font-size="14.00">profileHandler</text>
+</g>
+<!-- n2&#45;&gt;n5 -->
+<g id="reads:field:src/features/user.capability.ts#userData.user&#45;&gt;function:src/app/profile.ts#profileHandler:@static^field:src/features/user.capability.ts#userData.user" class="edge">
+<title>n2&#45;&gt;n5</title>
+<path fill="none" stroke="black" d="M547.28,-242.65C568.51,-257.41 593.96,-272.59 619.35,-281.72 669.52,-299.76 730.02,-305.53 774.41,-307.06"/>
+<polygon fill="black" stroke="black" points="774.3,-310.56 784.39,-307.34 774.49,-303.57 774.3,-310.56"/>
+<text xml:space="preserve" text-anchor="middle" x="693.66" y="-310.99" font-family="Helvetica,sans-Serif" font-size="14.00">reads (whole)</text>
+</g>
+<!-- n7 -->
+<g id="function:src/app/track.ts#trackUser" class="node">
+<title>n7</title>
+<path fill="none" stroke="black" d="M863.5,-118.72C863.5,-118.72 811.61,-118.72 811.61,-118.72 805.61,-118.72 799.61,-112.72 799.61,-106.72 799.61,-106.72 799.61,-94.72 799.61,-94.72 799.61,-88.72 805.61,-82.72 811.61,-82.72 811.61,-82.72 863.5,-82.72 863.5,-82.72 869.5,-82.72 875.5,-88.72 875.5,-94.72 875.5,-94.72 875.5,-106.72 875.5,-106.72 875.5,-112.72 869.5,-118.72 863.5,-118.72"/>
+<text xml:space="preserve" text-anchor="middle" x="837.55" y="-96.52" font-family="Helvetica,sans-Serif" font-size="14.00">trackUser</text>
+</g>
+<!-- n2&#45;&gt;n7 -->
+<g id="reads:field:src/features/user.capability.ts#userData.user&#45;&gt;function:src/app/track.ts#trackUser:@static^field:src/features/user.capability.ts#userData.user" class="edge">
+<title>n2&#45;&gt;n7</title>
+<path fill="none" stroke="black" d="M531.36,-158.69C554.11,-135.96 585.41,-110.1 619.35,-97.92 674.54,-78.11 742.8,-83.4 787.9,-90.6"/>
+<polygon fill="black" stroke="black" points="787.19,-94.03 797.64,-92.26 788.37,-87.13 787.19,-94.03"/>
+<text xml:space="preserve" text-anchor="middle" x="693.66" y="-102.12" font-family="Helvetica,sans-Serif" font-size="14.00">reads (whole)</text>
+</g>
+<!-- n2&#45;&gt;n7 -->
+<g id="reads:field:src/features/user.capability.ts#userData.user&#45;&gt;function:src/app/track.ts#trackUser:email@static^field:src/features/user.capability.ts#userData.user" class="edge">
+<title>n2&#45;&gt;n7</title>
+<path fill="none" stroke="black" d="M518.73,-158.84C540.35,-125.9 575.4,-82.42 619.35,-62.92 679.73,-36.13 704.01,-46.46 767.97,-62.92 779.23,-65.82 790.62,-71 800.79,-76.61"/>
+<polygon fill="black" stroke="black" points="798.81,-79.5 809.21,-81.53 802.35,-73.46 798.81,-79.5"/>
+<text xml:space="preserve" text-anchor="middle" x="693.66" y="-67.12" font-family="Helvetica,sans-Serif" font-size="14.00">reads email</text>
+</g>
+<!-- n3&#45;&gt;n1 -->
+<g id="side&#45;effect:function:src/app/export.ts#exportEverything&#45;&gt;boundary:boundary:code#http&#45;response:@static^field:src/features/user.capability.ts#userData.user" class="edge">
+<title>n3&#45;&gt;n1</title>
+<path fill="none" stroke="red" stroke-width="2" d="M1042.27,-150.16C1192.26,-151.62 1596.41,-157.65 1932.38,-181.72 1959.84,-183.69 1989.44,-186.57 2016.96,-189.56"/>
+<polygon fill="red" stroke="red" stroke-width="2" points="2016.53,-193.04 2026.86,-190.66 2017.3,-186.08 2016.53,-193.04"/>
+<text xml:space="preserve" text-anchor="middle" x="1597.52" y="-169.94" font-family="Helvetica,sans-Serif" font-size="14.00">side&#45;effect (whole)</text>
+</g>
+<!-- n4 -->
+<g id="function:src/app/profile.ts#buildUserProfile" class="node">
+<title>n4</title>
+<path fill="none" stroke="black" d="M1787.2,-500.72C1787.2,-500.72 1696.38,-500.72 1696.38,-500.72 1690.38,-500.72 1684.38,-494.72 1684.38,-488.72 1684.38,-488.72 1684.38,-476.72 1684.38,-476.72 1684.38,-470.72 1690.38,-464.72 1696.38,-464.72 1696.38,-464.72 1787.2,-464.72 1787.2,-464.72 1793.2,-464.72 1799.2,-470.72 1799.2,-476.72 1799.2,-476.72 1799.2,-488.72 1799.2,-488.72 1799.2,-494.72 1793.2,-500.72 1787.2,-500.72"/>
+<text xml:space="preserve" text-anchor="middle" x="1741.79" y="-478.52" font-family="Helvetica,sans-Serif" font-size="14.00">buildUserProfile</text>
+</g>
+<!-- n4&#45;&gt;n2 -->
+<g id="discards:function:src/app/profile.ts#buildUserProfile&#45;&gt;field:src/features/user.capability.ts#userData.user:passwordHash@static^field:src/features/user.capability.ts#userData.user" class="edge">
+<title>n4&#45;&gt;n2</title>
+<path fill="none" stroke="black" d="M1725.2,-501.12C1709.43,-518.18 1683.35,-542.44 1654.71,-552.72 1506.44,-605.95 721.16,-625.72 619.35,-552.72 523.18,-483.76 500.73,-334.2 495.77,-254.02"/>
+<polygon fill="black" stroke="black" points="499.27,-254.02 495.24,-244.23 492.28,-254.4 499.27,-254.02"/>
+<text xml:space="preserve" text-anchor="middle" x="981.44" y="-604.5" font-family="Helvetica,sans-Serif" font-size="14.00">discards passwordHash</text>
+</g>
+<!-- n4&#45;&gt;n2 -->
+<g id="discards:function:src/app/profile.ts#buildUserProfile&#45;&gt;field:src/features/user.capability.ts#userData.user:role@static^field:src/features/user.capability.ts#userData.user" class="edge">
+<title>n4&#45;&gt;n2</title>
+<path fill="none" stroke="black" d="M1685.73,-501.2C1675.53,-503.91 1664.88,-506.27 1654.71,-507.72 1604.38,-514.88 1591.14,-509.24 1540.33,-507.72 1258.53,-499.27 1179.64,-541.97 907.13,-469.72 769.27,-433.17 734.9,-411.33 619.35,-327.72 588.98,-305.75 559.39,-276.09 536.65,-250.95"/>
+<polygon fill="black" stroke="black" points="539.49,-248.88 530.22,-243.75 534.27,-253.54 539.49,-248.88"/>
+<text xml:space="preserve" text-anchor="middle" x="981.44" y="-505.55" font-family="Helvetica,sans-Serif" font-size="14.00">discards role</text>
+</g>
+<!-- n10 -->
+<g id="return:src/app/profile.ts#buildUserProfile#return" class="node">
+<title>n10</title>
+<ellipse fill="none" stroke="black" cx="2124.59" cy="-402.72" rx="36.26" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="2124.59" y="-398.52" font-family="Helvetica,sans-Serif" font-size="14.00">return</text>
+</g>
+<!-- n4&#45;&gt;n10 -->
+<g id="returns:function:src/app/profile.ts#buildUserProfile&#45;&gt;return:src/app/profile.ts#buildUserProfile#return:email@static^field:src/features/user.capability.ts#userData.user" class="edge">
+<title>n4&#45;&gt;n10</title>
+<path fill="none" stroke="black" d="M1799.36,-486.31C1837.36,-487.48 1888.33,-486.65 1932.38,-477.72 1989.4,-466.16 2051.4,-438.87 2088.88,-420.59"/>
+<polygon fill="black" stroke="black" points="2090.01,-423.94 2097.42,-416.37 2086.9,-417.67 2090.01,-423.94"/>
+<text xml:space="preserve" text-anchor="middle" x="1880.63" y="-490.92" font-family="Helvetica,sans-Serif" font-size="14.00">returns email</text>
+</g>
+<!-- n4&#45;&gt;n10 -->
+<g id="returns:function:src/app/profile.ts#buildUserProfile&#45;&gt;return:src/app/profile.ts#buildUserProfile#return:id@static^field:src/features/user.capability.ts#userData.user" class="edge">
+<title>n4&#45;&gt;n10</title>
+<path fill="none" stroke="black" d="M1799.51,-464.77C1809.26,-461.96 1819.32,-459.22 1828.88,-456.92 1831.93,-456.18 1997.76,-425.78 2079.29,-410.84"/>
+<polygon fill="black" stroke="black" points="2079.51,-414.35 2088.72,-409.11 2078.25,-407.47 2079.51,-414.35"/>
+<text xml:space="preserve" text-anchor="middle" x="1880.63" y="-461.12" font-family="Helvetica,sans-Serif" font-size="14.00">returns id</text>
+</g>
+<!-- n4&#45;&gt;n10 -->
+<g id="returns:function:src/app/profile.ts#buildUserProfile&#45;&gt;return:src/app/profile.ts#buildUserProfile#return:name@static^field:src/features/user.capability.ts#userData.user" class="edge">
+<title>n4&#45;&gt;n10</title>
+<path fill="none" stroke="black" d="M1760.32,-464.44C1776.48,-448.93 1801.98,-427.69 1828.88,-417.92 1873.07,-401.87 2005.37,-401.02 2076.73,-401.83"/>
+<polygon fill="black" stroke="black" points="2076.5,-405.32 2086.55,-401.95 2076.59,-398.32 2076.5,-405.32"/>
+<text xml:space="preserve" text-anchor="middle" x="1880.63" y="-422.12" font-family="Helvetica,sans-Serif" font-size="14.00">returns name</text>
+</g>
+<!-- n8 -->
+<g id="parameter:src/app/profile.ts#buildUserProfile.user" class="node">
+<title>n8</title>
+<ellipse fill="none" stroke="black" cx="1298.04" cy="-449.72" rx="29.82" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="1298.04" y="-445.52" font-family="Helvetica,sans-Serif" font-size="14.00">user</text>
+</g>
+<!-- n5&#45;&gt;n8 -->
+<g id="passes:function:src/app/profile.ts#profileHandler&#45;&gt;parameter:src/app/profile.ts#buildUserProfile.user:@static^field:src/features/user.capability.ts#userData.user" class="edge">
+<title>n5&#45;&gt;n8</title>
+<path fill="none" stroke="black" d="M846.37,-325.12C856.77,-347.13 877.38,-383.17 907.13,-400.72 1019.96,-467.25 1182.84,-461.55 1257.25,-454.54"/>
+<polygon fill="black" stroke="black" points="1257.31,-458.05 1266.91,-453.57 1256.61,-451.09 1257.31,-458.05"/>
+<text xml:space="preserve" text-anchor="middle" x="981.44" y="-452.92" font-family="Helvetica,sans-Serif" font-size="14.00">passes (whole)</text>
+</g>
+<!-- n9 -->
+<g id="parameter:src/app/profile.ts#sendProfileToClient.profile" class="node">
+<title>n9</title>
+<ellipse fill="none" stroke="black" cx="1298.04" cy="-230.72" rx="37.34" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="1298.04" y="-226.52" font-family="Helvetica,sans-Serif" font-size="14.00">profile</text>
+</g>
+<!-- n5&#45;&gt;n9 -->
+<g id="passes:function:src/app/profile.ts#profileHandler&#45;&gt;parameter:src/app/profile.ts#sendProfileToClient.profile:email@static^field:src/features/user.capability.ts#userData.user" class="edge">
+<title>n5&#45;&gt;n9</title>
+<path fill="none" stroke="black" d="M873.56,-288.34C879.22,-284.36 884.68,-279.8 889.13,-274.72 901.68,-260.43 891.18,-246.26 907.13,-235.92 962.38,-200.13 1158.7,-215.71 1249.88,-225.27"/>
+<polygon fill="black" stroke="black" points="1249.42,-228.75 1259.73,-226.33 1250.16,-221.79 1249.42,-228.75"/>
+<text xml:space="preserve" text-anchor="middle" x="981.44" y="-240.12" font-family="Helvetica,sans-Serif" font-size="14.00">passes email</text>
+</g>
+<!-- n5&#45;&gt;n9 -->
+<g id="passes:function:src/app/profile.ts#profileHandler&#45;&gt;parameter:src/app/profile.ts#sendProfileToClient.profile:id@static^field:src/features/user.capability.ts#userData.user" class="edge">
+<title>n5&#45;&gt;n9</title>
+<path fill="none" stroke="black" d="M875.55,-288.34C880.72,-284.44 885.49,-279.91 889.13,-274.72 910.51,-244.24 878.12,-216.24 907.13,-192.92 959.55,-150.78 1163.72,-196.32 1253.86,-219.21"/>
+<polygon fill="black" stroke="black" points="1252.76,-222.54 1263.32,-221.64 1254.5,-215.76 1252.76,-222.54"/>
+<text xml:space="preserve" text-anchor="middle" x="981.44" y="-197.12" font-family="Helvetica,sans-Serif" font-size="14.00">passes id</text>
+</g>
+<!-- n5&#45;&gt;n9 -->
+<g id="passes:function:src/app/profile.ts#profileHandler&#45;&gt;parameter:src/app/profile.ts#sendProfileToClient.profile:name@static^field:src/features/user.capability.ts#userData.user" class="edge">
+<title>n5&#45;&gt;n9</title>
+<path fill="none" stroke="black" d="M874.09,-288.28C884.5,-283.56 896.06,-278.97 907.13,-275.92 970.56,-258.45 1160.11,-241.62 1249.45,-234.4"/>
+<polygon fill="black" stroke="black" points="1249.66,-237.9 1259.35,-233.61 1249.11,-230.92 1249.66,-237.9"/>
+<text xml:space="preserve" text-anchor="middle" x="981.44" y="-280.12" font-family="Helvetica,sans-Serif" font-size="14.00">passes name</text>
+</g>
+<!-- n6 -->
+<g id="function:src/app/profile.ts#sendProfileToClient" class="node">
+<title>n6</title>
+<path fill="none" stroke="black" d="M1798.88,-242.72C1798.88,-242.72 1684.71,-242.72 1684.71,-242.72 1678.71,-242.72 1672.71,-236.72 1672.71,-230.72 1672.71,-230.72 1672.71,-218.72 1672.71,-218.72 1672.71,-212.72 1678.71,-206.72 1684.71,-206.72 1684.71,-206.72 1798.88,-206.72 1798.88,-206.72 1804.88,-206.72 1810.88,-212.72 1810.88,-218.72 1810.88,-218.72 1810.88,-230.72 1810.88,-230.72 1810.88,-236.72 1804.88,-242.72 1798.88,-242.72"/>
+<text xml:space="preserve" text-anchor="middle" x="1741.79" y="-220.52" font-family="Helvetica,sans-Serif" font-size="14.00">sendProfileToClient</text>
+</g>
+<!-- n6&#45;&gt;n1 -->
+<g id="side&#45;effect:function:src/app/profile.ts#sendProfileToClient&#45;&gt;boundary:boundary:code#http&#45;response:email@static^field:src/features/user.capability.ts#userData.user" class="edge">
+<title>n6&#45;&gt;n1</title>
+<path fill="none" stroke="black" d="M1811.31,-220.76C1847.31,-218.68 1893.35,-216.02 1938.94,-213.39"/>
+<polygon fill="black" stroke="black" points="1938.91,-216.9 1948.69,-212.82 1938.51,-209.91 1938.91,-216.9"/>
+<text xml:space="preserve" text-anchor="middle" x="1880.63" y="-223.6" font-family="Helvetica,sans-Serif" font-size="14.00">side&#45;effect email</text>
+</g>
+<!-- n6&#45;&gt;n1 -->
+<g id="side&#45;effect:function:src/app/profile.ts#sendProfileToClient&#45;&gt;boundary:boundary:code#http&#45;response:id@static^field:src/features/user.capability.ts#userData.user" class="edge">
+<title>n6&#45;&gt;n1</title>
+<path fill="none" stroke="black" d="M1785.36,-206.23C1799,-201.2 1814.34,-196.44 1828.88,-193.92 1892.59,-182.87 1965.19,-184.86 2022.39,-189.72"/>
+<polygon fill="black" stroke="black" points="2021.83,-193.19 2032.11,-190.6 2022.46,-186.22 2021.83,-193.19"/>
+<text xml:space="preserve" text-anchor="middle" x="1880.63" y="-198.12" font-family="Helvetica,sans-Serif" font-size="14.00">side&#45;effect id</text>
+</g>
+<!-- n6&#45;&gt;n1 -->
+<g id="side&#45;effect:function:src/app/profile.ts#sendProfileToClient&#45;&gt;boundary:boundary:code#http&#45;response:name@static^field:src/features/user.capability.ts#userData.user" class="edge">
+<title>n6&#45;&gt;n1</title>
+<path fill="none" stroke="black" d="M1811.26,-237.75C1817.2,-238.54 1823.14,-239.22 1828.88,-239.72 1874.71,-243.68 1886.59,-244.11 1932.38,-239.72 1971.86,-235.93 2015.31,-227.85 2050.79,-220.2"/>
+<polygon fill="black" stroke="black" points="2051.52,-223.62 2060.54,-218.06 2050.02,-216.79 2051.52,-223.62"/>
+<text xml:space="preserve" text-anchor="middle" x="1880.63" y="-247.05" font-family="Helvetica,sans-Serif" font-size="14.00">side&#45;effect name</text>
+</g>
+<!-- n7&#45;&gt;n2 -->
+<g id="discards:function:src/app/track.ts#trackUser&#45;&gt;field:src/features/user.capability.ts#userData.user:id@static^field:src/features/user.capability.ts#userData.user" class="edge">
+<title>n7&#45;&gt;n2</title>
+<path fill="none" stroke="black" d="M826.84,-82.28C815.57,-63.12 795.04,-34.25 767.97,-21.92 707.86,5.45 677.92,8.63 619.35,-21.92 568.77,-48.31 534.51,-105.6 514.88,-148.27"/>
+<polygon fill="black" stroke="black" points="511.69,-146.83 510.82,-157.39 518.08,-149.67 511.69,-146.83"/>
+<text xml:space="preserve" text-anchor="middle" x="693.66" y="-26.12" font-family="Helvetica,sans-Serif" font-size="14.00">discards id</text>
+</g>
+<!-- n7&#45;&gt;n2 -->
+<g id="discards:function:src/app/track.ts#trackUser&#45;&gt;field:src/features/user.capability.ts#userData.user:name@static^field:src/features/user.capability.ts#userData.user" class="edge">
+<title>n7&#45;&gt;n2</title>
+<path fill="none" stroke="black" d="M829.96,-118.87C820.38,-142.23 800.14,-181.82 767.97,-198.72 738.73,-214.08 660.47,-213.33 595.14,-209.45"/>
+<polygon fill="black" stroke="black" points="595.65,-205.97 585.45,-208.84 595.21,-212.96 595.65,-205.97"/>
+<text xml:space="preserve" text-anchor="middle" x="693.66" y="-216.01" font-family="Helvetica,sans-Serif" font-size="14.00">discards name</text>
+</g>
+<!-- n7&#45;&gt;n2 -->
+<g id="discards:function:src/app/track.ts#trackUser&#45;&gt;field:src/features/user.capability.ts#userData.user:passwordHash@static^field:src/features/user.capability.ts#userData.user" class="edge">
+<title>n7&#45;&gt;n2</title>
+<path fill="none" stroke="black" d="M820.46,-119.11C807.65,-132.44 788.52,-149.66 767.97,-158.72 707.03,-185.59 685.16,-167.66 619.35,-177.92 607.61,-179.75 595.28,-181.82 583.12,-183.95"/>
+<polygon fill="black" stroke="black" points="582.75,-180.46 573.51,-185.66 583.97,-187.36 582.75,-180.46"/>
+<text xml:space="preserve" text-anchor="middle" x="693.66" y="-182.12" font-family="Helvetica,sans-Serif" font-size="14.00">discards passwordHash</text>
+</g>
+<!-- n7&#45;&gt;n2 -->
+<g id="discards:function:src/app/track.ts#trackUser&#45;&gt;field:src/features/user.capability.ts#userData.user:role@static^field:src/features/user.capability.ts#userData.user" class="edge">
+<title>n7&#45;&gt;n2</title>
+<path fill="none" stroke="black" d="M799.38,-111.4C789.25,-114.06 778.24,-116.72 767.97,-118.72 702.6,-131.47 683.03,-118.4 619.35,-137.92 602.81,-142.99 585.79,-150.12 569.86,-157.75"/>
+<polygon fill="black" stroke="black" points="568.33,-154.6 560.91,-162.16 571.43,-160.88 568.33,-154.6"/>
+<text xml:space="preserve" text-anchor="middle" x="693.66" y="-142.12" font-family="Helvetica,sans-Serif" font-size="14.00">discards role</text>
+</g>
+<!-- n11 -->
+<g id="unknown:unresolved&#45;call:src/app/track.ts:11:3" class="node">
+<title>n11</title>
+<polygon fill="none" stroke="red" stroke-dasharray="5,2" points="1522.33,-55.21 1522.33,-92.23 1390.94,-118.42 1205.14,-118.42 1073.75,-92.23 1073.75,-55.21 1205.14,-29.02 1390.94,-29.02 1522.33,-55.21"/>
+<text xml:space="preserve" text-anchor="middle" x="1298.04" y="-86.32" font-family="Helvetica,sans-Serif" font-size="14.00">unknown: unresolved&#45;call</text>
+<text xml:space="preserve" text-anchor="middle" x="1298.04" y="-69.52" font-family="Helvetica,sans-Serif" font-size="14.00">src/app/track.ts:11:3</text>
+<text xml:space="preserve" text-anchor="middle" x="1298.04" y="-52.72" font-family="Helvetica,sans-Serif" font-size="14.00">an unresolved call that receives tracked data</text>
+</g>
+<!-- n7&#45;&gt;n11 -->
+<g id="edge32" class="edge">
+<title>n7&#45;&gt;n11</title>
+<path fill="none" stroke="red" stroke-dasharray="5,2" d="M875.69,-98.53C917.61,-96.06 989.49,-91.83 1062.13,-87.55"/>
+<polygon fill="red" stroke="red" points="1062.03,-91.07 1071.81,-86.98 1061.62,-84.08 1062.03,-91.07"/>
+<text xml:space="preserve" text-anchor="middle" x="981.44" y="-100.39" font-family="Helvetica,sans-Serif" font-size="14.00">could not follow</text>
+</g>
+<!-- n8&#45;&gt;n4 -->
+<g id="reads:parameter:src/app/profile.ts#buildUserProfile.user&#45;&gt;function:src/app/profile.ts#buildUserProfile:email@static^field:src/features/user.capability.ts#userData.user" class="edge">
+<title>n8&#45;&gt;n4</title>
+<path fill="none" stroke="black" d="M1325.6,-442.08C1385.66,-426.09 1535.92,-393.32 1654.71,-427.92 1674.85,-433.79 1694.78,-445.95 1710.38,-457.33"/>
+<polygon fill="black" stroke="black" points="1708.21,-460.08 1718.3,-463.34 1712.45,-454.51 1708.21,-460.08"/>
+<text xml:space="preserve" text-anchor="middle" x="1597.52" y="-432.12" font-family="Helvetica,sans-Serif" font-size="14.00">reads email</text>
+</g>
+<!-- n8&#45;&gt;n4 -->
+<g id="reads:parameter:src/app/profile.ts#buildUserProfile.user&#45;&gt;function:src/app/profile.ts#buildUserProfile:id@static^field:src/features/user.capability.ts#userData.user" class="edge">
+<title>n8&#45;&gt;n4</title>
+<path fill="none" stroke="black" d="M1326.76,-455.07C1371.49,-463.4 1462.44,-479.1 1540.33,-484.72 1591.03,-488.38 1603.88,-485.31 1654.71,-484.72 1660.69,-484.65 1666.9,-484.55 1673.13,-484.44"/>
+<polygon fill="black" stroke="black" points="1672.86,-487.95 1682.79,-484.25 1672.72,-480.95 1672.86,-487.95"/>
+<text xml:space="preserve" text-anchor="middle" x="1597.52" y="-490.69" font-family="Helvetica,sans-Serif" font-size="14.00">reads id</text>
+</g>
+<!-- n8&#45;&gt;n4 -->
+<g id="reads:parameter:src/app/profile.ts#buildUserProfile.user&#45;&gt;function:src/app/profile.ts#buildUserProfile:name@static^field:src/features/user.capability.ts#userData.user" class="edge">
+<title>n8&#45;&gt;n4</title>
+<path fill="none" stroke="black" d="M1328.23,-449.16C1389.17,-448.38 1534.26,-448.48 1654.71,-463.92 1660.68,-464.69 1666.86,-465.66 1673.03,-466.76"/>
+<polygon fill="black" stroke="black" points="1672.12,-470.15 1682.6,-468.58 1673.43,-463.28 1672.12,-470.15"/>
+<text xml:space="preserve" text-anchor="middle" x="1597.52" y="-468.12" font-family="Helvetica,sans-Serif" font-size="14.00">reads name</text>
+</g>
+<!-- n9&#45;&gt;n6 -->
+<g id="reads:parameter:src/app/profile.ts#sendProfileToClient.profile&#45;&gt;function:src/app/profile.ts#sendProfileToClient:email@static^field:src/features/user.capability.ts#userData.user" class="edge">
+<title>n9&#45;&gt;n6</title>
+<path fill="none" stroke="black" d="M1335.57,-230.22C1406.58,-229.26 1564.73,-227.11 1661.12,-225.8"/>
+<polygon fill="black" stroke="black" points="1661.09,-229.3 1671.04,-225.67 1660.99,-222.3 1661.09,-229.3"/>
+<text xml:space="preserve" text-anchor="middle" x="1597.52" y="-231.56" font-family="Helvetica,sans-Serif" font-size="14.00">reads email</text>
+</g>
+<!-- n9&#45;&gt;n6 -->
+<g id="reads:parameter:src/app/profile.ts#sendProfileToClient.profile&#45;&gt;function:src/app/profile.ts#sendProfileToClient:id@static^field:src/features/user.capability.ts#userData.user" class="edge">
+<title>n9&#45;&gt;n6</title>
+<path fill="none" stroke="black" d="M1332.96,-224.09C1396.33,-212.62 1536.91,-191.55 1654.71,-204.92 1656.88,-205.17 1659.08,-205.45 1661.29,-205.76"/>
+<polygon fill="black" stroke="black" points="1660.51,-209.18 1670.94,-207.29 1661.61,-202.26 1660.51,-209.18"/>
+<text xml:space="preserve" text-anchor="middle" x="1597.52" y="-209.12" font-family="Helvetica,sans-Serif" font-size="14.00">reads id</text>
+</g>
+<!-- n9&#45;&gt;n6 -->
+<g id="reads:parameter:src/app/profile.ts#sendProfileToClient.profile&#45;&gt;function:src/app/profile.ts#sendProfileToClient:name@static^field:src/features/user.capability.ts#userData.user" class="edge">
+<title>n9&#45;&gt;n6</title>
+<path fill="none" stroke="black" d="M1334.26,-235.67C1398.28,-243.87 1537.91,-258.11 1654.71,-244.72 1656.88,-244.47 1659.08,-244.19 1661.29,-243.87"/>
+<polygon fill="black" stroke="black" points="1661.62,-247.37 1670.94,-242.32 1660.51,-240.45 1661.62,-247.37"/>
+<text xml:space="preserve" text-anchor="middle" x="1597.52" y="-254.42" font-family="Helvetica,sans-Serif" font-size="14.00">reads name</text>
+</g>
+<!-- n10&#45;&gt;n5 -->
+<g id="passes:return:src/app/profile.ts#buildUserProfile#return&#45;&gt;function:src/app/profile.ts#profileHandler:email@static^field:src/features/user.capability.ts#userData.user" class="edge">
+<title>n10&#45;&gt;n5</title>
+<path fill="none" stroke="black" d="M2088.09,-401.8C1890.67,-396.63 935.6,-371.14 907.13,-360.72 890.99,-354.81 875.68,-343.53 863.64,-332.81"/>
+<polygon fill="black" stroke="black" points="866.29,-330.49 856.59,-326.21 861.5,-335.6 866.29,-330.49"/>
+<text xml:space="preserve" text-anchor="middle" x="1597.52" y="-393.94" font-family="Helvetica,sans-Serif" font-size="14.00">passes email</text>
+</g>
+<!-- n10&#45;&gt;n5 -->
+<g id="passes:return:src/app/profile.ts#buildUserProfile#return&#45;&gt;function:src/app/profile.ts#profileHandler:id@static^field:src/features/user.capability.ts#userData.user" class="edge">
+<title>n10&#45;&gt;n5</title>
+<path fill="none" stroke="black" d="M2097.34,-390.6C2061.09,-374.45 1993.27,-346.34 1932.38,-332.72 1733.82,-288.32 1101.66,-300.02 900.59,-305.02"/>
+<polygon fill="black" stroke="black" points="900.8,-301.52 890.89,-305.27 900.97,-308.51 900.8,-301.52"/>
+<text xml:space="preserve" text-anchor="middle" x="1597.52" y="-309.81" font-family="Helvetica,sans-Serif" font-size="14.00">passes id</text>
+</g>
+<!-- n10&#45;&gt;n5 -->
+<g id="passes:return:src/app/profile.ts#buildUserProfile#return&#45;&gt;function:src/app/profile.ts#profileHandler:name@static^field:src/features/user.capability.ts#userData.user" class="edge">
+<title>n10&#45;&gt;n5</title>
+<path fill="none" stroke="black" d="M2088.31,-399.78C2010.21,-393.32 1816.78,-377.5 1654.71,-365.92 1322.61,-342.18 1238,-354.84 907.13,-317.72 904.98,-317.48 902.78,-317.22 900.57,-316.94"/>
+<polygon fill="black" stroke="black" points="901.29,-313.5 890.91,-315.63 900.35,-320.44 901.29,-313.5"/>
+<text xml:space="preserve" text-anchor="middle" x="1597.52" y="-370.12" font-family="Helvetica,sans-Serif" font-size="14.00">passes name</text>
+</g>
+</g>
+</svg>
+</div>
+  </section>
+  <section id="detail" tabindex="-1" aria-labelledby="detail-h">
+    <h2 id="detail-h">Details</h2>
+    <div id="detail-body"><p>Select a node or an edge to see what the evidence says about it.</p></div>
+  </section>
+  <section aria-labelledby="diff-h">
+    <h2 id="diff-h">Compare with another revision</h2>
+    <label for="baseline">Evidence file (docs/data.evidence.json from another commit)</label>
+    <input type="file" id="baseline" accept="application/json,.json">
+    <div id="diff-result" role="status"></div>
+  </section>
+  <section aria-labelledby="claims-h">
+    <h2 id="claims-h">Claims</h2>
+    <table>
+      <caption>What the evidence claims, and how well each claim is supported</caption>
+      <thead><tr><th scope="col">Verification</th><th scope="col">Claim</th><th scope="col">Status</th><th scope="col">Trace</th></tr></thead>
+      <tbody>
+<tr><td>verified</td><td>userData.user reaches client-response http-response</td><td>static</td><td>not complete</td></tr>
+<tr><td>unobserved</td><td>userData.user is sourced from database postgres:users</td><td>declared</td><td>complete</td></tr>
+<tr><td>contradicted</td><td>Rule userData/no-password-to-client holds for userData.user</td><td>static</td><td>complete</td></tr>
+<tr><td>verified</td><td>Rule userData/no-role-to-log holds for userData.user</td><td>static</td><td>complete</td></tr>
+      </tbody>
+    </table>
+  </section>
+  <section aria-labelledby="text-h">
+    <h2 id="text-h">Text equivalent</h2>
+    <p>Everything the graph shows, as text.</p>
+    <pre id="text-body"># Data flow
+
+Coverage: 5 function(s) analyzed, 1 unknown(s) -- not complete: parts of the program could not be followed, so a flow missing below is not proof that it does not exist.
+
+## Status legend
+
+- **declared**: Asserted by an author in documentData(); not checked against code.
+- **static**: Established by the analyzed code under the analysis's stated assumptions.
+- **observed**: Witnessed in a specific execution or test.
+- **inferred**: Plausible but not established: data assumed to pass through code the analysis could not follow.
+- **unknown**: Not analyzable: dynamic behavior, missing source, an unsupported construct, or incomplete coverage.
+
+## Functions
+
+### exportEverything
+
+- Confidence: static
+- Classifications: confidential
+- Inputs: res
+- Reads: userData.user: (whole)
+- Returns: none
+- Passes on: none
+- Side effects: client-response http-response: userData.user: (whole)
+- Discards: none
+- Callers: none
+- Callees: none
+
+### buildUserProfile
+
+- Confidence: static
+- Classifications: confidential
+- Inputs: user
+- Reads: userData.user (via parameter): email, id, name
+- Returns: userData.user: email, id, name
+- Passes on: none
+- Side effects: none
+- Discards: userData.user: passwordHash, role
+- Callers: profileHandler
+- Callees: none
+
+### profileHandler
+
+- Confidence: static
+- Classifications: confidential
+- Inputs: res
+- Reads: userData.user: (whole); userData.user (via return): email, id, name
+- Returns: none
+- Passes on: buildUserProfile.user -- userData.user: (whole); sendProfileToClient.profile -- userData.user: email, id, name
+- Side effects: none
+- Discards: none
+- Callers: none
+- Callees: buildUserProfile, sendProfileToClient
+
+### sendProfileToClient
+
+- Confidence: static
+- Classifications: confidential
+- Inputs: profile, res
+- Reads: userData.user (via parameter): email, id, name
+- Returns: none
+- Passes on: none
+- Side effects: client-response http-response: userData.user: email, id, name
+- Discards: none
+- Callers: profileHandler
+- Callees: none
+
+### trackUser
+
+- Confidence: inferred
+- Classifications: confidential
+- Inputs: none
+- Reads: userData.user: (whole), email
+- Returns: none
+- Passes on: none
+- Side effects: none
+- Discards: userData.user: id, name, passwordHash, role
+- Callers: none
+- Callees: none
+- Not followed: src/app/track.ts:11:3 -- an unresolved call that receives tracked data
+
+## Fields
+
+### userData.user
+
+- Classification: confidential
+- Fetched from: postgres:users (database, declared)
+- Reaches: client-response http-response: (whole), email, id, name (static)
+- Dropped by: buildUserProfile: passwordHash, role; trackUser: id, name, passwordHash, role
+- Read by: exportEverything, profileHandler, trackUser
+- Complete: no -- the analysis could not follow part of this field's flow, so the destinations above may be incomplete.
+
+## Claims
+
+- [verified] userData.user reaches client-response http-response (static)
+- [unobserved] userData.user is sourced from database postgres:users (declared)
+- [contradicted] Rule userData/no-password-to-client holds for userData.user (static)
+- [verified] Rule userData/no-role-to-log holds for userData.user (static)
+
+## What the analysis could not follow
+
+- src/app/track.ts:11:3 -- an unresolved call that receives tracked data (call target is not a project function)
+</pre>
+  </section>
+</main>
+<script type="application/json" id="evidence">{"schemaVersion":3,"provenance":{"generatedAt":"2026-01-01T00:00:00.000Z","toolVersion":"0.8.2","commit":"0000000000000000000000000000000000000000"},"capability":{"schemaVersion":3,"capabilities":[{"file":"src/features/user.capability.ts","exportName":"userData","kind":"createData","docs":{"name":"user","owner":"identity-team","sensitivity":"confidential","protections":"Session-authenticated access only; passwordHash is never selected for display.","purpose":"Showing a signed-in person their own profile.","legalBasis":"contract","dataResidency":"us","flowPolicy":[{"id":"no-password-to-client","description":"A password hash never reaches a client response.","appliesTo":{"field":"user","path":["passwordHash"]},"forbidDestinations":["client-response"]},{"id":"no-role-to-log","description":"A role is authorization data and does not belong in logs.","appliesTo":{"field":"user","path":["role"]},"forbidDestinations":["log"]}],"fields":{"user":{"description":"The signed-in user's account row.","retention":"Deleted within 30 days of account closure."}},"getters":{"getUser":{"description":"Loads the account row for one user.","endpoints":[{"direction":"input","kind":"database","name":"postgres:users"}]}}},"active":true,"declarationPosition":{"line":29,"column":25},"fields":[{"path":["user"],"docs":{"description":"The signed-in user's account row.","retention":"Deleted within 30 days of account closure."},"owner":{"value":"identity-team","declaredOn":"capability"},"sensitivity":{"value":"confidential","declaredOn":"capability"},"purpose":{"value":"Showing a signed-in person their own profile.","declaredOn":"capability"},"legalBasis":{"value":"contract","declaredOn":"capability"},"dataResidency":{"value":"us","declaredOn":"capability"},"auditRequired":{},"writtenBy":[{"kind":"getter","name":"getUser"}],"shape":{"id":"","name":"","email":"","passwordHash":"","role":""},"declarationPosition":{"line":17,"column":5}}],"getters":[{"kind":"getter","name":"getUser","docs":{"description":"Loads the account row for one user.","endpoints":[{"direction":"input","kind":"database","name":"postgres:users"}]},"writes":[["user"]],"hasProcessor":true,"hasOptimistic":false,"endpoints":[{"direction":"input","kind":"database","name":"postgres:users"}]}],"mutators":[],"subscriptions":[]}],"warnings":[]},"lifecycle":{"schemaVersion":1,"capabilities":[{"file":"src/features/user.capability.ts","exportName":"userData","fields":[{"path":["user"],"retention":"Deleted within 30 days of account closure."}]}],"expiring":[]},"computed":{"dependency":true,"ownership":true,"finding":true,"change":false,"flow":true,"policy":true,"observation":true,"claims":true},"dependency":{"schemaVersion":3,"edges":[{"relationship":"reads-field","from":"src/app/export.ts","to":{"capability":{"file":"src/features/user.capability.ts","exportName":"userData"},"field":["user"]},"resolution":"resolved","position":{"line":10,"column":12}},{"relationship":"reads-field","from":"src/app/profile.ts","to":{"capability":{"file":"src/features/user.capability.ts","exportName":"userData"},"field":["user"]},"resolution":"resolved","position":{"line":21,"column":16}},{"relationship":"reads-field","from":"src/app/track.ts","to":{"capability":{"file":"src/features/user.capability.ts","exportName":"userData"},"field":["user"]},"resolution":"resolved","position":{"line":11,"column":27}}]},"ownership":{"schemaVersion":2,"entries":[{"owner":"identity-team","capabilities":[{"file":"src/features/user.capability.ts","exportName":"userData"}],"fields":[{"capability":{"file":"src/features/user.capability.ts","exportName":"userData"},"field":["user"]}]}]},"finding":{"schemaVersion":2,"findings":[{"code":"FLOW_POLICY_VIOLATED","family":"flow","severity":"error","message":"Rule \"userData/no-password-to-client\" is violated: field \"userData.user\" reaches client-response \"http-response\" (established as static).","location":{"kind":"field","capability":{"file":"src/features/user.capability.ts","exportName":"userData"},"field":["user"]},"evidence":[{"model":"policy","id":"userData/no-password-to-client#field:src/features/user.capability.ts#userData.user"},{"model":"flow","id":"reads:field:src/features/user.capability.ts#userData.user->function:src/app/export.ts#exportEverything:@static^field:src/features/user.capability.ts#userData.user"},{"model":"flow","id":"side-effect:function:src/app/export.ts#exportEverything->boundary:boundary:code#http-response:@static^field:src/features/user.capability.ts#userData.user"}]},{"code":"LEAST_DATA_WHOLE_FIELD_TO_CLIENT","family":"flow","severity":"warning","message":"Field \"user\" on \"userData\" is sent whole to the client response \"http-response\" (keys: id, name, email, passwordHash, role) -- send only the keys the client needs.","location":{"kind":"field","capability":{"file":"src/features/user.capability.ts","exportName":"userData"},"field":["user"]},"evidence":[{"model":"flow","id":"field:src/features/user.capability.ts#userData.user"},{"model":"flow","id":"side-effect:function:src/app/export.ts#exportEverything->boundary:boundary:code#http-response:@static^field:src/features/user.capability.ts#userData.user"}]},{"code":"LEAST_DATA_ANALYSIS_INDETERMINATE","family":"flow","severity":"info","message":"Field \"user\" on \"userData\" could not be assessed for unused data at email: that data reaches code the analysis could not follow.","location":{"kind":"field","capability":{"file":"src/features/user.capability.ts","exportName":"userData"},"field":["user"]},"evidence":[{"model":"flow","id":"field:src/features/user.capability.ts#userData.user"}]},{"code":"FLOW_ANALYSIS_INCOMPLETE","family":"flow","severity":"info","message":"The flow analysis could not follow an unresolved call that receives tracked data at src/app/track.ts:11:3 (call target is not a project function); data flows through it are shown as inferred.","location":{"kind":"none"},"evidence":[{"model":"flow","id":"unknown:unresolved-call:src/app/track.ts:11:3"}]}]},"flow":{"schemaVersion":1,"nodes":[{"id":"boundary:boundary#postgres:users","kind":"boundary","scope":"boundary","name":"postgres:users","status":"declared","boundaryKind":"database"},{"id":"boundary:boundary:code#http-response","kind":"boundary","scope":"boundary:code","name":"http-response","status":"static","boundaryKind":"client-response"},{"id":"field:src/features/user.capability.ts#userData.user","kind":"field","scope":"src/features/user.capability.ts","name":"userData.user","status":"static","classification":"confidential","source":{"line":17,"column":5}},{"id":"function:src/app/export.ts#exportEverything","kind":"function","scope":"src/app/export.ts","name":"exportEverything","status":"static","source":{"line":9,"column":1}},{"id":"function:src/app/profile.ts#buildUserProfile","kind":"function","scope":"src/app/profile.ts","name":"buildUserProfile","status":"static","source":{"line":12,"column":1}},{"id":"function:src/app/profile.ts#profileHandler","kind":"function","scope":"src/app/profile.ts","name":"profileHandler","status":"static","source":{"line":20,"column":1}},{"id":"function:src/app/profile.ts#sendProfileToClient","kind":"function","scope":"src/app/profile.ts","name":"sendProfileToClient","status":"static","source":{"line":16,"column":1}},{"id":"function:src/app/track.ts#trackUser","kind":"function","scope":"src/app/track.ts","name":"trackUser","status":"static","source":{"line":10,"column":1}},{"id":"parameter:src/app/export.ts#exportEverything.res","kind":"parameter","scope":"src/app/export.ts","name":"exportEverything.res","status":"static"},{"id":"parameter:src/app/profile.ts#buildUserProfile.user","kind":"parameter","scope":"src/app/profile.ts","name":"buildUserProfile.user","status":"static"},{"id":"parameter:src/app/profile.ts#profileHandler.res","kind":"parameter","scope":"src/app/profile.ts","name":"profileHandler.res","status":"static"},{"id":"parameter:src/app/profile.ts#sendProfileToClient.profile","kind":"parameter","scope":"src/app/profile.ts","name":"sendProfileToClient.profile","status":"static"},{"id":"parameter:src/app/profile.ts#sendProfileToClient.res","kind":"parameter","scope":"src/app/profile.ts","name":"sendProfileToClient.res","status":"static"},{"id":"return:src/app/export.ts#exportEverything#return","kind":"return","scope":"src/app/export.ts","name":"exportEverything#return","status":"static"},{"id":"return:src/app/profile.ts#buildUserProfile#return","kind":"return","scope":"src/app/profile.ts","name":"buildUserProfile#return","status":"static"},{"id":"return:src/app/profile.ts#profileHandler#return","kind":"return","scope":"src/app/profile.ts","name":"profileHandler#return","status":"static"},{"id":"return:src/app/profile.ts#sendProfileToClient#return","kind":"return","scope":"src/app/profile.ts","name":"sendProfileToClient#return","status":"static"},{"id":"return:src/app/track.ts#trackUser#return","kind":"return","scope":"src/app/track.ts","name":"trackUser#return","status":"static"}],"edges":[{"id":"calls:function:src/app/profile.ts#profileHandler->function:src/app/profile.ts#buildUserProfile@static","kind":"calls","from":"function:src/app/profile.ts#profileHandler","to":"function:src/app/profile.ts#buildUserProfile","status":"static","source":{"file":"src/app/profile.ts","line":22,"column":19}},{"id":"calls:function:src/app/profile.ts#profileHandler->function:src/app/profile.ts#sendProfileToClient@static","kind":"calls","from":"function:src/app/profile.ts#profileHandler","to":"function:src/app/profile.ts#sendProfileToClient","status":"static","source":{"file":"src/app/profile.ts","line":23,"column":3}},{"id":"crosses-boundary:boundary:boundary#postgres:users->field:src/features/user.capability.ts#userData.user@declared^field:src/features/user.capability.ts#userData.user","kind":"crosses-boundary","from":"boundary:boundary#postgres:users","to":"field:src/features/user.capability.ts#userData.user","status":"declared","origin":"field:src/features/user.capability.ts#userData.user"},{"id":"discards:function:src/app/profile.ts#buildUserProfile->field:src/features/user.capability.ts#userData.user:passwordHash@static^field:src/features/user.capability.ts#userData.user","kind":"discards","from":"function:src/app/profile.ts#buildUserProfile","to":"field:src/features/user.capability.ts#userData.user","status":"static","path":["passwordHash"],"origin":"field:src/features/user.capability.ts#userData.user"},{"id":"discards:function:src/app/profile.ts#buildUserProfile->field:src/features/user.capability.ts#userData.user:role@static^field:src/features/user.capability.ts#userData.user","kind":"discards","from":"function:src/app/profile.ts#buildUserProfile","to":"field:src/features/user.capability.ts#userData.user","status":"static","path":["role"],"origin":"field:src/features/user.capability.ts#userData.user"},{"id":"discards:function:src/app/track.ts#trackUser->field:src/features/user.capability.ts#userData.user:id@static^field:src/features/user.capability.ts#userData.user","kind":"discards","from":"function:src/app/track.ts#trackUser","to":"field:src/features/user.capability.ts#userData.user","status":"static","path":["id"],"origin":"field:src/features/user.capability.ts#userData.user"},{"id":"discards:function:src/app/track.ts#trackUser->field:src/features/user.capability.ts#userData.user:name@static^field:src/features/user.capability.ts#userData.user","kind":"discards","from":"function:src/app/track.ts#trackUser","to":"field:src/features/user.capability.ts#userData.user","status":"static","path":["name"],"origin":"field:src/features/user.capability.ts#userData.user"},{"id":"discards:function:src/app/track.ts#trackUser->field:src/features/user.capability.ts#userData.user:passwordHash@static^field:src/features/user.capability.ts#userData.user","kind":"discards","from":"function:src/app/track.ts#trackUser","to":"field:src/features/user.capability.ts#userData.user","status":"static","path":["passwordHash"],"origin":"field:src/features/user.capability.ts#userData.user"},{"id":"discards:function:src/app/track.ts#trackUser->field:src/features/user.capability.ts#userData.user:role@static^field:src/features/user.capability.ts#userData.user","kind":"discards","from":"function:src/app/track.ts#trackUser","to":"field:src/features/user.capability.ts#userData.user","status":"static","path":["role"],"origin":"field:src/features/user.capability.ts#userData.user"},{"id":"passes:function:src/app/profile.ts#profileHandler->parameter:src/app/profile.ts#buildUserProfile.user:@static^field:src/features/user.capability.ts#userData.user","kind":"passes","from":"function:src/app/profile.ts#profileHandler","status":"static","path":[],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/profile.ts","line":22,"column":19},"to":"parameter:src/app/profile.ts#buildUserProfile.user"},{"id":"passes:function:src/app/profile.ts#profileHandler->parameter:src/app/profile.ts#sendProfileToClient.profile:email@static^field:src/features/user.capability.ts#userData.user","kind":"passes","from":"function:src/app/profile.ts#profileHandler","status":"static","path":["email"],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/profile.ts","line":23,"column":3},"to":"parameter:src/app/profile.ts#sendProfileToClient.profile"},{"id":"passes:function:src/app/profile.ts#profileHandler->parameter:src/app/profile.ts#sendProfileToClient.profile:id@static^field:src/features/user.capability.ts#userData.user","kind":"passes","from":"function:src/app/profile.ts#profileHandler","status":"static","path":["id"],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/profile.ts","line":23,"column":3},"to":"parameter:src/app/profile.ts#sendProfileToClient.profile"},{"id":"passes:function:src/app/profile.ts#profileHandler->parameter:src/app/profile.ts#sendProfileToClient.profile:name@static^field:src/features/user.capability.ts#userData.user","kind":"passes","from":"function:src/app/profile.ts#profileHandler","status":"static","path":["name"],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/profile.ts","line":23,"column":3},"to":"parameter:src/app/profile.ts#sendProfileToClient.profile"},{"id":"passes:return:src/app/profile.ts#buildUserProfile#return->function:src/app/profile.ts#profileHandler:email@static^field:src/features/user.capability.ts#userData.user","kind":"passes","from":"return:src/app/profile.ts#buildUserProfile#return","to":"function:src/app/profile.ts#profileHandler","status":"static","path":["email"],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/profile.ts","line":23,"column":3}},{"id":"passes:return:src/app/profile.ts#buildUserProfile#return->function:src/app/profile.ts#profileHandler:id@static^field:src/features/user.capability.ts#userData.user","kind":"passes","from":"return:src/app/profile.ts#buildUserProfile#return","to":"function:src/app/profile.ts#profileHandler","status":"static","path":["id"],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/profile.ts","line":23,"column":3}},{"id":"passes:return:src/app/profile.ts#buildUserProfile#return->function:src/app/profile.ts#profileHandler:name@static^field:src/features/user.capability.ts#userData.user","kind":"passes","from":"return:src/app/profile.ts#buildUserProfile#return","to":"function:src/app/profile.ts#profileHandler","status":"static","path":["name"],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/profile.ts","line":23,"column":3}},{"id":"reads:field:src/features/user.capability.ts#userData.user->function:src/app/export.ts#exportEverything:@static^field:src/features/user.capability.ts#userData.user","kind":"reads","from":"field:src/features/user.capability.ts#userData.user","to":"function:src/app/export.ts#exportEverything","status":"static","path":[],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/export.ts","line":10,"column":12}},{"id":"reads:field:src/features/user.capability.ts#userData.user->function:src/app/profile.ts#profileHandler:@static^field:src/features/user.capability.ts#userData.user","kind":"reads","from":"field:src/features/user.capability.ts#userData.user","to":"function:src/app/profile.ts#profileHandler","status":"static","path":[],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/profile.ts","line":21,"column":16}},{"id":"reads:field:src/features/user.capability.ts#userData.user->function:src/app/track.ts#trackUser:@static^field:src/features/user.capability.ts#userData.user","kind":"reads","from":"field:src/features/user.capability.ts#userData.user","to":"function:src/app/track.ts#trackUser","status":"static","path":[],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/track.ts","line":11,"column":27}},{"id":"reads:field:src/features/user.capability.ts#userData.user->function:src/app/track.ts#trackUser:email@static^field:src/features/user.capability.ts#userData.user","kind":"reads","from":"field:src/features/user.capability.ts#userData.user","to":"function:src/app/track.ts#trackUser","status":"static","path":["email"],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/track.ts","line":11,"column":27}},{"id":"reads:parameter:src/app/profile.ts#buildUserProfile.user->function:src/app/profile.ts#buildUserProfile:email@static^field:src/features/user.capability.ts#userData.user","kind":"reads","from":"parameter:src/app/profile.ts#buildUserProfile.user","to":"function:src/app/profile.ts#buildUserProfile","status":"static","path":["email"],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/profile.ts","line":13,"column":49}},{"id":"reads:parameter:src/app/profile.ts#buildUserProfile.user->function:src/app/profile.ts#buildUserProfile:id@static^field:src/features/user.capability.ts#userData.user","kind":"reads","from":"parameter:src/app/profile.ts#buildUserProfile.user","to":"function:src/app/profile.ts#buildUserProfile","status":"static","path":["id"],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/profile.ts","line":13,"column":16}},{"id":"reads:parameter:src/app/profile.ts#buildUserProfile.user->function:src/app/profile.ts#buildUserProfile:name@static^field:src/features/user.capability.ts#userData.user","kind":"reads","from":"parameter:src/app/profile.ts#buildUserProfile.user","to":"function:src/app/profile.ts#buildUserProfile","status":"static","path":["name"],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/profile.ts","line":13,"column":31}},{"id":"reads:parameter:src/app/profile.ts#sendProfileToClient.profile->function:src/app/profile.ts#sendProfileToClient:email@static^field:src/features/user.capability.ts#userData.user","kind":"reads","from":"parameter:src/app/profile.ts#sendProfileToClient.profile","to":"function:src/app/profile.ts#sendProfileToClient","status":"static","path":["email"],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/profile.ts","line":17,"column":3}},{"id":"reads:parameter:src/app/profile.ts#sendProfileToClient.profile->function:src/app/profile.ts#sendProfileToClient:id@static^field:src/features/user.capability.ts#userData.user","kind":"reads","from":"parameter:src/app/profile.ts#sendProfileToClient.profile","to":"function:src/app/profile.ts#sendProfileToClient","status":"static","path":["id"],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/profile.ts","line":17,"column":3}},{"id":"reads:parameter:src/app/profile.ts#sendProfileToClient.profile->function:src/app/profile.ts#sendProfileToClient:name@static^field:src/features/user.capability.ts#userData.user","kind":"reads","from":"parameter:src/app/profile.ts#sendProfileToClient.profile","to":"function:src/app/profile.ts#sendProfileToClient","status":"static","path":["name"],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/profile.ts","line":17,"column":3}},{"id":"returns:function:src/app/profile.ts#buildUserProfile->return:src/app/profile.ts#buildUserProfile#return:email@static^field:src/features/user.capability.ts#userData.user","kind":"returns","from":"function:src/app/profile.ts#buildUserProfile","status":"static","path":["email"],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/profile.ts","line":13,"column":3},"to":"return:src/app/profile.ts#buildUserProfile#return"},{"id":"returns:function:src/app/profile.ts#buildUserProfile->return:src/app/profile.ts#buildUserProfile#return:id@static^field:src/features/user.capability.ts#userData.user","kind":"returns","from":"function:src/app/profile.ts#buildUserProfile","status":"static","path":["id"],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/profile.ts","line":13,"column":3},"to":"return:src/app/profile.ts#buildUserProfile#return"},{"id":"returns:function:src/app/profile.ts#buildUserProfile->return:src/app/profile.ts#buildUserProfile#return:name@static^field:src/features/user.capability.ts#userData.user","kind":"returns","from":"function:src/app/profile.ts#buildUserProfile","status":"static","path":["name"],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/profile.ts","line":13,"column":3},"to":"return:src/app/profile.ts#buildUserProfile#return"},{"id":"side-effect:function:src/app/export.ts#exportEverything->boundary:boundary:code#http-response:@static^field:src/features/user.capability.ts#userData.user","kind":"side-effect","from":"function:src/app/export.ts#exportEverything","status":"static","path":[],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/export.ts","line":10,"column":3},"to":"boundary:boundary:code#http-response"},{"id":"side-effect:function:src/app/profile.ts#sendProfileToClient->boundary:boundary:code#http-response:email@static^field:src/features/user.capability.ts#userData.user","kind":"side-effect","from":"function:src/app/profile.ts#sendProfileToClient","status":"static","path":["email"],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/profile.ts","line":17,"column":3},"to":"boundary:boundary:code#http-response"},{"id":"side-effect:function:src/app/profile.ts#sendProfileToClient->boundary:boundary:code#http-response:id@static^field:src/features/user.capability.ts#userData.user","kind":"side-effect","from":"function:src/app/profile.ts#sendProfileToClient","status":"static","path":["id"],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/profile.ts","line":17,"column":3},"to":"boundary:boundary:code#http-response"},{"id":"side-effect:function:src/app/profile.ts#sendProfileToClient->boundary:boundary:code#http-response:name@static^field:src/features/user.capability.ts#userData.user","kind":"side-effect","from":"function:src/app/profile.ts#sendProfileToClient","status":"static","path":["name"],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/profile.ts","line":17,"column":3},"to":"boundary:boundary:code#http-response"}],"unknowns":[{"id":"unknown:unresolved-call:src/app/track.ts:11:3","reason":"unresolved-call","source":{"file":"src/app/track.ts","line":11,"column":3},"subject":"function:src/app/track.ts#trackUser","detail":"call target is not a project function","data":[{"origin":"field:src/features/user.capability.ts#userData.user","path":["email"]}]}],"coverage":{"functionsAnalyzed":5,"functionsUnanalyzed":0,"edgesUnresolved":0,"unknowns":1,"complete":false}},"policy":{"schemaVersion":1,"rules":[{"id":"userData/no-password-to-client","appliesTo":{"field":"userData.user","path":["passwordHash"],"scope":"src/features/user.capability.ts"},"description":"A password hash never reaches a client response.","forbidDestinations":["client-response"]},{"id":"userData/no-role-to-log","appliesTo":{"field":"userData.user","path":["role"],"scope":"src/features/user.capability.ts"},"description":"A role is authorization data and does not belong in logs.","forbidDestinations":["log"]}],"results":[{"ruleId":"userData/no-password-to-client","subject":"field:src/features/user.capability.ts#userData.user","boundary":"boundary:boundary:code#http-response","outcome":"violated","basis":"static","edges":["reads:field:src/features/user.capability.ts#userData.user->function:src/app/export.ts#exportEverything:@static^field:src/features/user.capability.ts#userData.user","side-effect:function:src/app/export.ts#exportEverything->boundary:boundary:code#http-response:@static^field:src/features/user.capability.ts#userData.user"]},{"ruleId":"userData/no-role-to-log","subject":"field:src/features/user.capability.ts#userData.user","outcome":"satisfied","basis":"static","edges":[]}],"summary":{"satisfied":1,"violated":1,"indeterminate":0}},"observation":{"schemaVersion":1,"scopes":["scenario:debug-export","scenario:profile"],"observations":[{"id":"observation:scenario:debug-export|client-response:http-response|userData.user.email|-","scope":"scenario:debug-export","boundary":{"kind":"client-response","name":"http-response"},"field":"userData.user.email","count":1,"status":"observed"},{"id":"observation:scenario:debug-export|client-response:http-response|userData.user.id|-","scope":"scenario:debug-export","boundary":{"kind":"client-response","name":"http-response"},"field":"userData.user.id","count":1,"status":"observed"},{"id":"observation:scenario:debug-export|client-response:http-response|userData.user.name|-","scope":"scenario:debug-export","boundary":{"kind":"client-response","name":"http-response"},"field":"userData.user.name","count":1,"status":"observed"},{"id":"observation:scenario:debug-export|client-response:http-response|userData.user.passwordHash|-","scope":"scenario:debug-export","boundary":{"kind":"client-response","name":"http-response"},"field":"userData.user.passwordHash","count":1,"status":"observed"},{"id":"observation:scenario:debug-export|client-response:http-response|userData.user.role|-","scope":"scenario:debug-export","boundary":{"kind":"client-response","name":"http-response"},"field":"userData.user.role","count":1,"status":"observed"},{"id":"observation:scenario:profile|client-response:http-response|userData.user.email|-","scope":"scenario:profile","boundary":{"kind":"client-response","name":"http-response"},"field":"userData.user.email","count":1,"status":"observed"},{"id":"observation:scenario:profile|client-response:http-response|userData.user.id|-","scope":"scenario:profile","boundary":{"kind":"client-response","name":"http-response"},"field":"userData.user.id","count":1,"status":"observed"},{"id":"observation:scenario:profile|client-response:http-response|userData.user.name|-","scope":"scenario:profile","boundary":{"kind":"client-response","name":"http-response"},"field":"userData.user.name","count":1,"status":"observed"}],"skipped":0},"claims":{"schemaVersion":1,"claims":[{"id":"claim:field-reaches-boundary:userData.user->client-response:http-response","kind":"field-reaches-boundary","statement":"userData.user reaches client-response http-response","subject":"userData.user","object":"http-response","status":"static","verification":"verified","scope":{"observationScopes":["scenario:debug-export","scenario:profile"],"traceComplete":false},"supporting":[{"model":"flow","id":"reads:field:src/features/user.capability.ts#userData.user->function:src/app/export.ts#exportEverything:@static^field:src/features/user.capability.ts#userData.user"},{"model":"flow","id":"side-effect:function:src/app/export.ts#exportEverything->boundary:boundary:code#http-response:@static^field:src/features/user.capability.ts#userData.user"},{"model":"observation","id":"observation:scenario:debug-export|client-response:http-response|userData.user.email|-"},{"model":"observation","id":"observation:scenario:debug-export|client-response:http-response|userData.user.id|-"},{"model":"observation","id":"observation:scenario:debug-export|client-response:http-response|userData.user.name|-"},{"model":"observation","id":"observation:scenario:debug-export|client-response:http-response|userData.user.passwordHash|-"},{"model":"observation","id":"observation:scenario:debug-export|client-response:http-response|userData.user.role|-"},{"model":"observation","id":"observation:scenario:profile|client-response:http-response|userData.user.email|-"},{"model":"observation","id":"observation:scenario:profile|client-response:http-response|userData.user.id|-"},{"model":"observation","id":"observation:scenario:profile|client-response:http-response|userData.user.name|-"}],"contradicting":[],"derivedFrom":["flow","observation"]},{"id":"claim:field-sourced-from-boundary:userData.user\u003c-database:postgres:users","kind":"field-sourced-from-boundary","statement":"userData.user is sourced from database postgres:users","subject":"userData.user","object":"postgres:users","status":"declared","verification":"unobserved","scope":{"observationScopes":[],"traceComplete":true},"supporting":[{"model":"flow","id":"crosses-boundary:boundary:boundary#postgres:users->field:src/features/user.capability.ts#userData.user@declared^field:src/features/user.capability.ts#userData.user"}],"contradicting":[],"derivedFrom":["flow","observation"]},{"id":"claim:policy-holds:userData/no-password-to-client:userData.user","kind":"policy-holds","statement":"Rule userData/no-password-to-client holds for userData.user","subject":"userData.user","object":"userData/no-password-to-client","status":"static","verification":"contradicted","scope":{"observationScopes":["scenario:debug-export"],"traceComplete":true},"supporting":[{"model":"policy","id":"userData/no-password-to-client#field:src/features/user.capability.ts#userData.user"}],"contradicting":[{"model":"policy","id":"userData/no-password-to-client#field:src/features/user.capability.ts#userData.user"},{"model":"flow","id":"reads:field:src/features/user.capability.ts#userData.user->function:src/app/export.ts#exportEverything:@static^field:src/features/user.capability.ts#userData.user"},{"model":"flow","id":"side-effect:function:src/app/export.ts#exportEverything->boundary:boundary:code#http-response:@static^field:src/features/user.capability.ts#userData.user"},{"model":"observation","id":"observation:scenario:debug-export|client-response:http-response|userData.user.passwordHash|-"}],"derivedFrom":["flow","policy","observation"]},{"id":"claim:policy-holds:userData/no-role-to-log:userData.user","kind":"policy-holds","statement":"Rule userData/no-role-to-log holds for userData.user","subject":"userData.user","object":"userData/no-role-to-log","status":"static","verification":"verified","scope":{"observationScopes":["scenario:debug-export"],"traceComplete":true},"supporting":[{"model":"policy","id":"userData/no-role-to-log#field:src/features/user.capability.ts#userData.user"},{"model":"observation","id":"observation:scenario:debug-export|client-response:http-response|userData.user.role|-"}],"contradicting":[],"derivedFrom":["flow","policy","observation"]}],"summary":{"verified":2,"inferred":0,"unobserved":1,"contradicted":1,"observed-only":0,"indeterminate":0}},"runtimeContract":{"schemaVersion":1,"packageVersion":"0.8.2","policies":[{"key":"getter-concurrency","statement":"A getter's response is discarded if a newer call to the same operation has since started, regardless of completion order (stale-response discard by start order, not completion order).","governingAdr":"0024","module":"src/runtime/capability.ts"},{"key":"mutator-concurrency","statement":"A mutator's response always commits, even if a newer call to the same operation started after it -- whichever call completes last in real time wins, deliberately unlike a getter's start-order discard.","governingAdr":"0025","module":"src/runtime/capability.ts"},{"key":"subscription-sharing","statement":"Concurrent subscribers to the same `subscribe` function identity share one underlying transport connection, ref-counted; the transport tears down only once every subscriber has released, and a late joiner immediately learns the current connection status.","governingAdr":"0026","module":"src/runtime/coordinator.ts"},{"key":"subscription-disconnect-isolation","statement":"A subscription's own disconnect/teardown never mutates `fields` -- only an incoming event, processed through the operation's `processor`, can.","governingAdr":"0029","module":"src/runtime/coordinator.ts"},{"key":"coordinator-dedup-key","statement":"Concurrent calls share one in-flight execution only when both the called function's own identity and their canonicalized params match -- never structural/behavioral equality, and never merely the same operation name.","governingAdr":"0028","module":"src/runtime/coordinator.ts"},{"key":"atomic-commit","statement":"`fields` and `info` are always committed and published as one atomic snapshot -- no code path may update them independently or in separate ticks; a consumer never observes a stale pairing of the two.","governingAdr":"0008","module":"src/runtime/store.ts"},{"key":"authoritative-pending-projection","statement":"Every observable state is `project(authoritativeState, pendingTransitions)`, recomputed fresh on every read, never cached -- authoritative and optimistic-pending state are stored separately and only ever folded together for observation.","governingAdr":"0021","module":"src/runtime/store.ts"},{"key":"no-automatic-rollback","statement":"A failed mutation never automatically reverts a previously-committed value and never invents conflict resolution between concurrent writers -- recovery is always the caller's own responsibility.","governingAdr":"0023","module":"src/runtime/store.ts"},{"key":"data-status-state-machine","statement":"A field's `status` is one of exactly `idle`/`loading`/`success`/`error`/`retrying` -- `retrying` is reserved for a recovering-after-failure attempt, distinct from a field's first-ever `loading` attempt.","governingAdr":"0016","module":"src/core/types.ts"},{"key":"data-error-latest-only","statement":"A field's `error` is always the single latest error from its establishing operation, never a history/array -- it clears on the next successful establishing operation unless a still-newer operation has since set a different one.","governingAdr":"0015","module":"src/core/types.ts"},{"key":"cache-contract","statement":"The optional `./runtime/cache` module caches a complete `DataState` (`fields` + `info`) as one atomic unit, never `fields` alone and never a raw, unvalidated response -- a bounded, least-recently-used-eviction cache keyed by an opaque caller-computed string.","governingAdr":"0035","module":"src/runtime/cache.ts"},{"key":"retry-contract","statement":"The optional `./runtime/retry` module is opt-in and abort-aware: it never retries automatically, never retries past the caller's own `AbortSignal`, never exceeds `maxAttempts`, and never assumes a mutation is idempotent -- the caller's own `shouldRetry` predicate decides what's worth retrying.","governingAdr":"0036","module":"src/runtime/retry.ts"}]}}</script>
+<script type="application/json" id="baseline-evidence">{"schemaVersion":3,"provenance":{"generatedAt":"2026-01-01T00:00:00.000Z","toolVersion":"0.8.2","commit":"0000000000000000000000000000000000000000"},"capability":{"schemaVersion":3,"capabilities":[{"file":"src/features/user.capability.ts","exportName":"userData","kind":"createData","docs":{"name":"user","owner":"identity-team","sensitivity":"confidential","protections":"Session-authenticated access only; passwordHash is never selected for display.","purpose":"Showing a signed-in person their own profile.","legalBasis":"contract","dataResidency":"us","flowPolicy":[{"id":"no-password-to-client","description":"A password hash never reaches a client response.","appliesTo":{"field":"user","path":["passwordHash"]},"forbidDestinations":["client-response"]},{"id":"no-role-to-log","description":"A role is authorization data and does not belong in logs.","appliesTo":{"field":"user","path":["role"]},"forbidDestinations":["log"]}],"fields":{"user":{"description":"The signed-in user's account row.","retention":"Deleted within 30 days of account closure."}},"getters":{"getUser":{"description":"Loads the account row for one user.","endpoints":[{"direction":"input","kind":"database","name":"postgres:users"}]}}},"active":true,"declarationPosition":{"line":29,"column":25},"fields":[{"path":["user"],"docs":{"description":"The signed-in user's account row.","retention":"Deleted within 30 days of account closure."},"owner":{"value":"identity-team","declaredOn":"capability"},"sensitivity":{"value":"confidential","declaredOn":"capability"},"purpose":{"value":"Showing a signed-in person their own profile.","declaredOn":"capability"},"legalBasis":{"value":"contract","declaredOn":"capability"},"dataResidency":{"value":"us","declaredOn":"capability"},"auditRequired":{},"writtenBy":[{"kind":"getter","name":"getUser"}],"shape":{"id":"","name":"","email":"","passwordHash":"","role":""},"declarationPosition":{"line":17,"column":5}}],"getters":[{"kind":"getter","name":"getUser","docs":{"description":"Loads the account row for one user.","endpoints":[{"direction":"input","kind":"database","name":"postgres:users"}]},"writes":[["user"]],"hasProcessor":true,"hasOptimistic":false,"endpoints":[{"direction":"input","kind":"database","name":"postgres:users"}]}],"mutators":[],"subscriptions":[]}],"warnings":[]},"lifecycle":{"schemaVersion":1,"capabilities":[{"file":"src/features/user.capability.ts","exportName":"userData","fields":[{"path":["user"],"retention":"Deleted within 30 days of account closure."}]}],"expiring":[]},"computed":{"dependency":true,"ownership":true,"finding":true,"change":false,"flow":true,"policy":true,"observation":true,"claims":true},"dependency":{"schemaVersion":3,"edges":[{"relationship":"reads-field","from":"src/app/profile.ts","to":{"capability":{"file":"src/features/user.capability.ts","exportName":"userData"},"field":["user"]},"resolution":"resolved","position":{"line":21,"column":16}},{"relationship":"reads-field","from":"src/app/track.ts","to":{"capability":{"file":"src/features/user.capability.ts","exportName":"userData"},"field":["user"]},"resolution":"resolved","position":{"line":11,"column":27}}]},"ownership":{"schemaVersion":2,"entries":[{"owner":"identity-team","capabilities":[{"file":"src/features/user.capability.ts","exportName":"userData"}],"fields":[{"capability":{"file":"src/features/user.capability.ts","exportName":"userData"},"field":["user"]}]}]},"finding":{"schemaVersion":2,"findings":[{"code":"LEAST_DATA_UNUSED_SENSITIVE_PATH","family":"flow","severity":"warning","message":"Path \"passwordHash\" of field \"user\" on \"userData\" (sensitivity \"confidential\") is never read, forwarded or sent anywhere in the analyzed code. It is declared as fetched from \"postgres:users\"; consider projecting it out of that source.","location":{"kind":"field","capability":{"file":"src/features/user.capability.ts","exportName":"userData"},"field":["user","passwordHash"]},"evidence":[{"model":"flow","id":"field:src/features/user.capability.ts#userData.user"}]},{"code":"LEAST_DATA_UNUSED_SENSITIVE_PATH","family":"flow","severity":"warning","message":"Path \"role\" of field \"user\" on \"userData\" (sensitivity \"confidential\") is never read, forwarded or sent anywhere in the analyzed code. It is declared as fetched from \"postgres:users\"; consider projecting it out of that source.","location":{"kind":"field","capability":{"file":"src/features/user.capability.ts","exportName":"userData"},"field":["user","role"]},"evidence":[{"model":"flow","id":"field:src/features/user.capability.ts#userData.user"}]},{"code":"LEAST_DATA_ANALYSIS_INDETERMINATE","family":"flow","severity":"info","message":"Field \"user\" on \"userData\" could not be assessed for unused data at email: that data reaches code the analysis could not follow.","location":{"kind":"field","capability":{"file":"src/features/user.capability.ts","exportName":"userData"},"field":["user"]},"evidence":[{"model":"flow","id":"field:src/features/user.capability.ts#userData.user"}]},{"code":"FLOW_ANALYSIS_INCOMPLETE","family":"flow","severity":"info","message":"The flow analysis could not follow an unresolved call that receives tracked data at src/app/track.ts:11:3 (call target is not a project function); data flows through it are shown as inferred.","location":{"kind":"none"},"evidence":[{"model":"flow","id":"unknown:unresolved-call:src/app/track.ts:11:3"}]}]},"flow":{"schemaVersion":1,"nodes":[{"id":"boundary:boundary#postgres:users","kind":"boundary","scope":"boundary","name":"postgres:users","status":"declared","boundaryKind":"database"},{"id":"boundary:boundary:code#http-response","kind":"boundary","scope":"boundary:code","name":"http-response","status":"static","boundaryKind":"client-response"},{"id":"field:src/features/user.capability.ts#userData.user","kind":"field","scope":"src/features/user.capability.ts","name":"userData.user","status":"static","classification":"confidential","source":{"line":17,"column":5}},{"id":"function:src/app/profile.ts#buildUserProfile","kind":"function","scope":"src/app/profile.ts","name":"buildUserProfile","status":"static","source":{"line":12,"column":1}},{"id":"function:src/app/profile.ts#profileHandler","kind":"function","scope":"src/app/profile.ts","name":"profileHandler","status":"static","source":{"line":20,"column":1}},{"id":"function:src/app/profile.ts#sendProfileToClient","kind":"function","scope":"src/app/profile.ts","name":"sendProfileToClient","status":"static","source":{"line":16,"column":1}},{"id":"function:src/app/track.ts#trackUser","kind":"function","scope":"src/app/track.ts","name":"trackUser","status":"static","source":{"line":10,"column":1}},{"id":"parameter:src/app/profile.ts#buildUserProfile.user","kind":"parameter","scope":"src/app/profile.ts","name":"buildUserProfile.user","status":"static"},{"id":"parameter:src/app/profile.ts#profileHandler.res","kind":"parameter","scope":"src/app/profile.ts","name":"profileHandler.res","status":"static"},{"id":"parameter:src/app/profile.ts#sendProfileToClient.profile","kind":"parameter","scope":"src/app/profile.ts","name":"sendProfileToClient.profile","status":"static"},{"id":"parameter:src/app/profile.ts#sendProfileToClient.res","kind":"parameter","scope":"src/app/profile.ts","name":"sendProfileToClient.res","status":"static"},{"id":"return:src/app/profile.ts#buildUserProfile#return","kind":"return","scope":"src/app/profile.ts","name":"buildUserProfile#return","status":"static"},{"id":"return:src/app/profile.ts#profileHandler#return","kind":"return","scope":"src/app/profile.ts","name":"profileHandler#return","status":"static"},{"id":"return:src/app/profile.ts#sendProfileToClient#return","kind":"return","scope":"src/app/profile.ts","name":"sendProfileToClient#return","status":"static"},{"id":"return:src/app/track.ts#trackUser#return","kind":"return","scope":"src/app/track.ts","name":"trackUser#return","status":"static"}],"edges":[{"id":"calls:function:src/app/profile.ts#profileHandler->function:src/app/profile.ts#buildUserProfile@static","kind":"calls","from":"function:src/app/profile.ts#profileHandler","to":"function:src/app/profile.ts#buildUserProfile","status":"static","source":{"file":"src/app/profile.ts","line":22,"column":19}},{"id":"calls:function:src/app/profile.ts#profileHandler->function:src/app/profile.ts#sendProfileToClient@static","kind":"calls","from":"function:src/app/profile.ts#profileHandler","to":"function:src/app/profile.ts#sendProfileToClient","status":"static","source":{"file":"src/app/profile.ts","line":23,"column":3}},{"id":"crosses-boundary:boundary:boundary#postgres:users->field:src/features/user.capability.ts#userData.user@declared^field:src/features/user.capability.ts#userData.user","kind":"crosses-boundary","from":"boundary:boundary#postgres:users","to":"field:src/features/user.capability.ts#userData.user","status":"declared","origin":"field:src/features/user.capability.ts#userData.user"},{"id":"discards:function:src/app/profile.ts#buildUserProfile->field:src/features/user.capability.ts#userData.user:passwordHash@static^field:src/features/user.capability.ts#userData.user","kind":"discards","from":"function:src/app/profile.ts#buildUserProfile","to":"field:src/features/user.capability.ts#userData.user","status":"static","path":["passwordHash"],"origin":"field:src/features/user.capability.ts#userData.user"},{"id":"discards:function:src/app/profile.ts#buildUserProfile->field:src/features/user.capability.ts#userData.user:role@static^field:src/features/user.capability.ts#userData.user","kind":"discards","from":"function:src/app/profile.ts#buildUserProfile","to":"field:src/features/user.capability.ts#userData.user","status":"static","path":["role"],"origin":"field:src/features/user.capability.ts#userData.user"},{"id":"discards:function:src/app/track.ts#trackUser->field:src/features/user.capability.ts#userData.user:id@static^field:src/features/user.capability.ts#userData.user","kind":"discards","from":"function:src/app/track.ts#trackUser","to":"field:src/features/user.capability.ts#userData.user","status":"static","path":["id"],"origin":"field:src/features/user.capability.ts#userData.user"},{"id":"discards:function:src/app/track.ts#trackUser->field:src/features/user.capability.ts#userData.user:name@static^field:src/features/user.capability.ts#userData.user","kind":"discards","from":"function:src/app/track.ts#trackUser","to":"field:src/features/user.capability.ts#userData.user","status":"static","path":["name"],"origin":"field:src/features/user.capability.ts#userData.user"},{"id":"discards:function:src/app/track.ts#trackUser->field:src/features/user.capability.ts#userData.user:passwordHash@static^field:src/features/user.capability.ts#userData.user","kind":"discards","from":"function:src/app/track.ts#trackUser","to":"field:src/features/user.capability.ts#userData.user","status":"static","path":["passwordHash"],"origin":"field:src/features/user.capability.ts#userData.user"},{"id":"discards:function:src/app/track.ts#trackUser->field:src/features/user.capability.ts#userData.user:role@static^field:src/features/user.capability.ts#userData.user","kind":"discards","from":"function:src/app/track.ts#trackUser","to":"field:src/features/user.capability.ts#userData.user","status":"static","path":["role"],"origin":"field:src/features/user.capability.ts#userData.user"},{"id":"passes:function:src/app/profile.ts#profileHandler->parameter:src/app/profile.ts#buildUserProfile.user:@static^field:src/features/user.capability.ts#userData.user","kind":"passes","from":"function:src/app/profile.ts#profileHandler","status":"static","path":[],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/profile.ts","line":22,"column":19},"to":"parameter:src/app/profile.ts#buildUserProfile.user"},{"id":"passes:function:src/app/profile.ts#profileHandler->parameter:src/app/profile.ts#sendProfileToClient.profile:email@static^field:src/features/user.capability.ts#userData.user","kind":"passes","from":"function:src/app/profile.ts#profileHandler","status":"static","path":["email"],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/profile.ts","line":23,"column":3},"to":"parameter:src/app/profile.ts#sendProfileToClient.profile"},{"id":"passes:function:src/app/profile.ts#profileHandler->parameter:src/app/profile.ts#sendProfileToClient.profile:id@static^field:src/features/user.capability.ts#userData.user","kind":"passes","from":"function:src/app/profile.ts#profileHandler","status":"static","path":["id"],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/profile.ts","line":23,"column":3},"to":"parameter:src/app/profile.ts#sendProfileToClient.profile"},{"id":"passes:function:src/app/profile.ts#profileHandler->parameter:src/app/profile.ts#sendProfileToClient.profile:name@static^field:src/features/user.capability.ts#userData.user","kind":"passes","from":"function:src/app/profile.ts#profileHandler","status":"static","path":["name"],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/profile.ts","line":23,"column":3},"to":"parameter:src/app/profile.ts#sendProfileToClient.profile"},{"id":"passes:return:src/app/profile.ts#buildUserProfile#return->function:src/app/profile.ts#profileHandler:email@static^field:src/features/user.capability.ts#userData.user","kind":"passes","from":"return:src/app/profile.ts#buildUserProfile#return","to":"function:src/app/profile.ts#profileHandler","status":"static","path":["email"],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/profile.ts","line":23,"column":3}},{"id":"passes:return:src/app/profile.ts#buildUserProfile#return->function:src/app/profile.ts#profileHandler:id@static^field:src/features/user.capability.ts#userData.user","kind":"passes","from":"return:src/app/profile.ts#buildUserProfile#return","to":"function:src/app/profile.ts#profileHandler","status":"static","path":["id"],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/profile.ts","line":23,"column":3}},{"id":"passes:return:src/app/profile.ts#buildUserProfile#return->function:src/app/profile.ts#profileHandler:name@static^field:src/features/user.capability.ts#userData.user","kind":"passes","from":"return:src/app/profile.ts#buildUserProfile#return","to":"function:src/app/profile.ts#profileHandler","status":"static","path":["name"],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/profile.ts","line":23,"column":3}},{"id":"reads:field:src/features/user.capability.ts#userData.user->function:src/app/profile.ts#profileHandler:@static^field:src/features/user.capability.ts#userData.user","kind":"reads","from":"field:src/features/user.capability.ts#userData.user","to":"function:src/app/profile.ts#profileHandler","status":"static","path":[],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/profile.ts","line":21,"column":16}},{"id":"reads:field:src/features/user.capability.ts#userData.user->function:src/app/track.ts#trackUser:@static^field:src/features/user.capability.ts#userData.user","kind":"reads","from":"field:src/features/user.capability.ts#userData.user","to":"function:src/app/track.ts#trackUser","status":"static","path":[],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/track.ts","line":11,"column":27}},{"id":"reads:field:src/features/user.capability.ts#userData.user->function:src/app/track.ts#trackUser:email@static^field:src/features/user.capability.ts#userData.user","kind":"reads","from":"field:src/features/user.capability.ts#userData.user","to":"function:src/app/track.ts#trackUser","status":"static","path":["email"],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/track.ts","line":11,"column":27}},{"id":"reads:parameter:src/app/profile.ts#buildUserProfile.user->function:src/app/profile.ts#buildUserProfile:email@static^field:src/features/user.capability.ts#userData.user","kind":"reads","from":"parameter:src/app/profile.ts#buildUserProfile.user","to":"function:src/app/profile.ts#buildUserProfile","status":"static","path":["email"],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/profile.ts","line":13,"column":49}},{"id":"reads:parameter:src/app/profile.ts#buildUserProfile.user->function:src/app/profile.ts#buildUserProfile:id@static^field:src/features/user.capability.ts#userData.user","kind":"reads","from":"parameter:src/app/profile.ts#buildUserProfile.user","to":"function:src/app/profile.ts#buildUserProfile","status":"static","path":["id"],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/profile.ts","line":13,"column":16}},{"id":"reads:parameter:src/app/profile.ts#buildUserProfile.user->function:src/app/profile.ts#buildUserProfile:name@static^field:src/features/user.capability.ts#userData.user","kind":"reads","from":"parameter:src/app/profile.ts#buildUserProfile.user","to":"function:src/app/profile.ts#buildUserProfile","status":"static","path":["name"],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/profile.ts","line":13,"column":31}},{"id":"reads:parameter:src/app/profile.ts#sendProfileToClient.profile->function:src/app/profile.ts#sendProfileToClient:email@static^field:src/features/user.capability.ts#userData.user","kind":"reads","from":"parameter:src/app/profile.ts#sendProfileToClient.profile","to":"function:src/app/profile.ts#sendProfileToClient","status":"static","path":["email"],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/profile.ts","line":17,"column":3}},{"id":"reads:parameter:src/app/profile.ts#sendProfileToClient.profile->function:src/app/profile.ts#sendProfileToClient:id@static^field:src/features/user.capability.ts#userData.user","kind":"reads","from":"parameter:src/app/profile.ts#sendProfileToClient.profile","to":"function:src/app/profile.ts#sendProfileToClient","status":"static","path":["id"],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/profile.ts","line":17,"column":3}},{"id":"reads:parameter:src/app/profile.ts#sendProfileToClient.profile->function:src/app/profile.ts#sendProfileToClient:name@static^field:src/features/user.capability.ts#userData.user","kind":"reads","from":"parameter:src/app/profile.ts#sendProfileToClient.profile","to":"function:src/app/profile.ts#sendProfileToClient","status":"static","path":["name"],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/profile.ts","line":17,"column":3}},{"id":"returns:function:src/app/profile.ts#buildUserProfile->return:src/app/profile.ts#buildUserProfile#return:email@static^field:src/features/user.capability.ts#userData.user","kind":"returns","from":"function:src/app/profile.ts#buildUserProfile","status":"static","path":["email"],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/profile.ts","line":13,"column":3},"to":"return:src/app/profile.ts#buildUserProfile#return"},{"id":"returns:function:src/app/profile.ts#buildUserProfile->return:src/app/profile.ts#buildUserProfile#return:id@static^field:src/features/user.capability.ts#userData.user","kind":"returns","from":"function:src/app/profile.ts#buildUserProfile","status":"static","path":["id"],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/profile.ts","line":13,"column":3},"to":"return:src/app/profile.ts#buildUserProfile#return"},{"id":"returns:function:src/app/profile.ts#buildUserProfile->return:src/app/profile.ts#buildUserProfile#return:name@static^field:src/features/user.capability.ts#userData.user","kind":"returns","from":"function:src/app/profile.ts#buildUserProfile","status":"static","path":["name"],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/profile.ts","line":13,"column":3},"to":"return:src/app/profile.ts#buildUserProfile#return"},{"id":"side-effect:function:src/app/profile.ts#sendProfileToClient->boundary:boundary:code#http-response:email@static^field:src/features/user.capability.ts#userData.user","kind":"side-effect","from":"function:src/app/profile.ts#sendProfileToClient","status":"static","path":["email"],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/profile.ts","line":17,"column":3},"to":"boundary:boundary:code#http-response"},{"id":"side-effect:function:src/app/profile.ts#sendProfileToClient->boundary:boundary:code#http-response:id@static^field:src/features/user.capability.ts#userData.user","kind":"side-effect","from":"function:src/app/profile.ts#sendProfileToClient","status":"static","path":["id"],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/profile.ts","line":17,"column":3},"to":"boundary:boundary:code#http-response"},{"id":"side-effect:function:src/app/profile.ts#sendProfileToClient->boundary:boundary:code#http-response:name@static^field:src/features/user.capability.ts#userData.user","kind":"side-effect","from":"function:src/app/profile.ts#sendProfileToClient","status":"static","path":["name"],"origin":"field:src/features/user.capability.ts#userData.user","source":{"file":"src/app/profile.ts","line":17,"column":3},"to":"boundary:boundary:code#http-response"}],"unknowns":[{"id":"unknown:unresolved-call:src/app/track.ts:11:3","reason":"unresolved-call","source":{"file":"src/app/track.ts","line":11,"column":3},"subject":"function:src/app/track.ts#trackUser","detail":"call target is not a project function","data":[{"origin":"field:src/features/user.capability.ts#userData.user","path":["email"]}]}],"coverage":{"functionsAnalyzed":4,"functionsUnanalyzed":0,"edgesUnresolved":0,"unknowns":1,"complete":false}},"policy":{"schemaVersion":1,"rules":[{"id":"userData/no-password-to-client","appliesTo":{"field":"userData.user","path":["passwordHash"],"scope":"src/features/user.capability.ts"},"description":"A password hash never reaches a client response.","forbidDestinations":["client-response"]},{"id":"userData/no-role-to-log","appliesTo":{"field":"userData.user","path":["role"],"scope":"src/features/user.capability.ts"},"description":"A role is authorization data and does not belong in logs.","forbidDestinations":["log"]}],"results":[{"ruleId":"userData/no-password-to-client","subject":"field:src/features/user.capability.ts#userData.user","outcome":"satisfied","basis":"static","edges":[]},{"ruleId":"userData/no-role-to-log","subject":"field:src/features/user.capability.ts#userData.user","outcome":"satisfied","basis":"static","edges":[]}],"summary":{"satisfied":2,"violated":0,"indeterminate":0}},"observation":{"schemaVersion":1,"scopes":["scenario:profile"],"observations":[{"id":"observation:scenario:profile|client-response:http-response|userData.user.email|-","scope":"scenario:profile","boundary":{"kind":"client-response","name":"http-response"},"field":"userData.user.email","count":1,"status":"observed"},{"id":"observation:scenario:profile|client-response:http-response|userData.user.id|-","scope":"scenario:profile","boundary":{"kind":"client-response","name":"http-response"},"field":"userData.user.id","count":1,"status":"observed"},{"id":"observation:scenario:profile|client-response:http-response|userData.user.name|-","scope":"scenario:profile","boundary":{"kind":"client-response","name":"http-response"},"field":"userData.user.name","count":1,"status":"observed"}],"skipped":0},"claims":{"schemaVersion":1,"claims":[{"id":"claim:field-reaches-boundary:userData.user->client-response:http-response","kind":"field-reaches-boundary","statement":"userData.user reaches client-response http-response","subject":"userData.user","object":"http-response","status":"static","verification":"verified","scope":{"observationScopes":["scenario:profile"],"traceComplete":false},"supporting":[{"model":"flow","id":"reads:field:src/features/user.capability.ts#userData.user->function:src/app/profile.ts#profileHandler:@static^field:src/features/user.capability.ts#userData.user"},{"model":"flow","id":"passes:function:src/app/profile.ts#profileHandler->parameter:src/app/profile.ts#sendProfileToClient.profile:email@static^field:src/features/user.capability.ts#userData.user"},{"model":"flow","id":"reads:parameter:src/app/profile.ts#sendProfileToClient.profile->function:src/app/profile.ts#sendProfileToClient:email@static^field:src/features/user.capability.ts#userData.user"},{"model":"flow","id":"side-effect:function:src/app/profile.ts#sendProfileToClient->boundary:boundary:code#http-response:email@static^field:src/features/user.capability.ts#userData.user"},{"model":"observation","id":"observation:scenario:profile|client-response:http-response|userData.user.email|-"},{"model":"observation","id":"observation:scenario:profile|client-response:http-response|userData.user.id|-"},{"model":"observation","id":"observation:scenario:profile|client-response:http-response|userData.user.name|-"}],"contradicting":[],"derivedFrom":["flow","observation"]},{"id":"claim:field-sourced-from-boundary:userData.user\u003c-database:postgres:users","kind":"field-sourced-from-boundary","statement":"userData.user is sourced from database postgres:users","subject":"userData.user","object":"postgres:users","status":"declared","verification":"unobserved","scope":{"observationScopes":[],"traceComplete":true},"supporting":[{"model":"flow","id":"crosses-boundary:boundary:boundary#postgres:users->field:src/features/user.capability.ts#userData.user@declared^field:src/features/user.capability.ts#userData.user"}],"contradicting":[],"derivedFrom":["flow","observation"]},{"id":"claim:policy-holds:userData/no-password-to-client:userData.user","kind":"policy-holds","statement":"Rule userData/no-password-to-client holds for userData.user","subject":"userData.user","object":"userData/no-password-to-client","status":"static","verification":"unobserved","scope":{"observationScopes":[],"traceComplete":true},"supporting":[{"model":"policy","id":"userData/no-password-to-client#field:src/features/user.capability.ts#userData.user"}],"contradicting":[],"derivedFrom":["flow","policy","observation"]},{"id":"claim:policy-holds:userData/no-role-to-log:userData.user","kind":"policy-holds","statement":"Rule userData/no-role-to-log holds for userData.user","subject":"userData.user","object":"userData/no-role-to-log","status":"static","verification":"unobserved","scope":{"observationScopes":[],"traceComplete":true},"supporting":[{"model":"policy","id":"userData/no-role-to-log#field:src/features/user.capability.ts#userData.user"}],"contradicting":[],"derivedFrom":["flow","policy","observation"]}],"summary":{"verified":1,"inferred":0,"unobserved":3,"contradicted":0,"observed-only":0,"indeterminate":0}},"runtimeContract":{"schemaVersion":1,"packageVersion":"0.8.2","policies":[{"key":"getter-concurrency","statement":"A getter's response is discarded if a newer call to the same operation has since started, regardless of completion order (stale-response discard by start order, not completion order).","governingAdr":"0024","module":"src/runtime/capability.ts"},{"key":"mutator-concurrency","statement":"A mutator's response always commits, even if a newer call to the same operation started after it -- whichever call completes last in real time wins, deliberately unlike a getter's start-order discard.","governingAdr":"0025","module":"src/runtime/capability.ts"},{"key":"subscription-sharing","statement":"Concurrent subscribers to the same `subscribe` function identity share one underlying transport connection, ref-counted; the transport tears down only once every subscriber has released, and a late joiner immediately learns the current connection status.","governingAdr":"0026","module":"src/runtime/coordinator.ts"},{"key":"subscription-disconnect-isolation","statement":"A subscription's own disconnect/teardown never mutates `fields` -- only an incoming event, processed through the operation's `processor`, can.","governingAdr":"0029","module":"src/runtime/coordinator.ts"},{"key":"coordinator-dedup-key","statement":"Concurrent calls share one in-flight execution only when both the called function's own identity and their canonicalized params match -- never structural/behavioral equality, and never merely the same operation name.","governingAdr":"0028","module":"src/runtime/coordinator.ts"},{"key":"atomic-commit","statement":"`fields` and `info` are always committed and published as one atomic snapshot -- no code path may update them independently or in separate ticks; a consumer never observes a stale pairing of the two.","governingAdr":"0008","module":"src/runtime/store.ts"},{"key":"authoritative-pending-projection","statement":"Every observable state is `project(authoritativeState, pendingTransitions)`, recomputed fresh on every read, never cached -- authoritative and optimistic-pending state are stored separately and only ever folded together for observation.","governingAdr":"0021","module":"src/runtime/store.ts"},{"key":"no-automatic-rollback","statement":"A failed mutation never automatically reverts a previously-committed value and never invents conflict resolution between concurrent writers -- recovery is always the caller's own responsibility.","governingAdr":"0023","module":"src/runtime/store.ts"},{"key":"data-status-state-machine","statement":"A field's `status` is one of exactly `idle`/`loading`/`success`/`error`/`retrying` -- `retrying` is reserved for a recovering-after-failure attempt, distinct from a field's first-ever `loading` attempt.","governingAdr":"0016","module":"src/core/types.ts"},{"key":"data-error-latest-only","statement":"A field's `error` is always the single latest error from its establishing operation, never a history/array -- it clears on the next successful establishing operation unless a still-newer operation has since set a different one.","governingAdr":"0015","module":"src/core/types.ts"},{"key":"cache-contract","statement":"The optional `./runtime/cache` module caches a complete `DataState` (`fields` + `info`) as one atomic unit, never `fields` alone and never a raw, unvalidated response -- a bounded, least-recently-used-eviction cache keyed by an opaque caller-computed string.","governingAdr":"0035","module":"src/runtime/cache.ts"},{"key":"retry-contract","statement":"The optional `./runtime/retry` module is opt-in and abort-aware: it never retries automatically, never retries past the caller's own `AbortSignal`, never exceeds `maxAttempts`, and never assumes a mutation is idempotent -- the caller's own `shouldRetry` predicate decides what's worth retrying.","governingAdr":"0036","module":"src/runtime/retry.ts"}]}}</script>
+<script>"use strict";
+(() => {
+  // ../../dist/evidence.js
+  var DataCapError = class extends Error {
+  };
+  var FlowModelError = class extends DataCapError {
+    code = "DATA_CAP_FLOW_MODEL_INVALID";
+    constructor(message) {
+      super(message);
+      this.name = "FlowModelError";
+    }
+  };
+  function flowNodeId(kind, scope, name) {
+    return `${kind}:${scope}#${name}`;
+  }
+  function compareById(a, b) {
+    return [a.id, b.id].sort()[0] === a.id ? -1 : 1;
+  }
+  function isDataEdgeKind(kind) {
+    const dataEdgeKinds = [
+      "reads",
+      "writes",
+      "transforms",
+      "passes",
+      "returns",
+      "crosses-boundary",
+      "side-effect"
+    ];
+    return dataEdgeKinds.includes(kind);
+  }
+  function pathsRelated(a, b) {
+    return a.slice(0, b.length).every((segment, index) => segment === b[index]);
+  }
+  function walk(model, nodesById, start2, options, origin) {
+    const allowed = options.statuses === void 0 ? void 0 : new Set(options.statuses);
+    const { path } = options;
+    const visited = /* @__PURE__ */ new Set([start2]);
+    const traversed = /* @__PURE__ */ new Map();
+    for (const current of visited) {
+      for (const edge of model.edges) {
+        if (!isDataEdgeKind(edge.kind) || edge.from !== current) continue;
+        if (origin !== void 0 && edge.origin !== void 0 && edge.origin !== origin) continue;
+        if (allowed !== void 0 && !allowed.has(edge.status)) continue;
+        if (path !== void 0 && edge.path !== void 0 && !pathsRelated(edge.path, path)) continue;
+        const nextNode = nodesById.get(edge.to);
+        if (nextNode === void 0) continue;
+        if (allowed !== void 0 && !allowed.has(nextNode.status)) continue;
+        traversed.set(edge.id, edge);
+        visited.add(edge.to);
+      }
+    }
+    return { visited, edges: traversed };
+  }
+  function canReach(edges, target) {
+    const reach = /* @__PURE__ */ new Set([target]);
+    for (const id of reach) {
+      for (const edge of edges) {
+        if (edge.to === id) reach.add(edge.from);
+      }
+    }
+    return reach;
+  }
+  function traceFlow(model, start2, direction, options = {}) {
+    const nodesById = new Map(model.nodes.map((node) => [node.id, node]));
+    const startNode = nodesById.get(start2);
+    if (startNode === void 0) {
+      throw new FlowModelError(`Cannot trace from ${start2}: it is not a node of this model.`);
+    }
+    let visited;
+    let traversed;
+    if (direction === "downstream") {
+      const result = walk(
+        model,
+        nodesById,
+        start2,
+        options,
+        startNode.kind === "field" ? start2 : void 0
+      );
+      visited = new Set(result.visited);
+      traversed = new Map(result.edges);
+    } else {
+      visited = /* @__PURE__ */ new Set([start2]);
+      traversed = /* @__PURE__ */ new Map();
+      for (const field of model.nodes.filter((node) => node.kind === "field")) {
+        const forward = walk(model, nodesById, field.id, options, field.id);
+        if (!forward.visited.has(start2)) continue;
+        const leadsToStart = canReach([...forward.edges.values()], start2);
+        for (const edge of forward.edges.values()) {
+          if (!leadsToStart.has(edge.to)) continue;
+          traversed.set(edge.id, edge);
+          visited.add(edge.from);
+        }
+        for (const edge of model.edges) {
+          if (edge.to === field.id && edge.origin === field.id && isDataEdgeKind(edge.kind)) {
+            traversed.set(edge.id, edge);
+            visited.add(edge.from);
+          }
+        }
+      }
+    }
+    const nodes = model.nodes.filter((node) => visited.has(node.id)).sort(compareById);
+    const edges = [...traversed.values()].sort(compareById);
+    const concerned = direction === "downstream" ? startNode.kind === "field" ? /* @__PURE__ */ new Set([start2]) : void 0 : /* @__PURE__ */ new Set([start2, ...[...traversed.values()].map((edge) => edge.origin)]);
+    const visitedSubjects = visited;
+    const unknowns = model.unknowns.filter((unknown) => {
+      if (!visitedSubjects.has(unknown.subject)) return false;
+      if (unknown.data === void 0 || concerned === void 0) return true;
+      return unknown.data.some(
+        (item) => concerned.has(item.origin) && (options.path === void 0 || pathsRelated(item.path, options.path))
+      );
+    });
+    const complete = unknowns.length === 0 && nodes.every((node) => node.status !== "unknown") && edges.every((edge) => edge.status !== "unknown");
+    return { start: start2, direction, nodes, edges, unknowns, complete };
+  }
+  function traceFlowBetween(model, start2, target, options = {}) {
+    const nodesById = new Map(model.nodes.map((node) => [node.id, node]));
+    const startNode = nodesById.get(start2);
+    if (startNode === void 0 || !nodesById.has(target)) {
+      throw new FlowModelError(
+        `Cannot trace from ${start2} to ${target}: both must be nodes of this model.`
+      );
+    }
+    const forward = walk(
+      model,
+      nodesById,
+      start2,
+      options,
+      startNode.kind === "field" ? start2 : void 0
+    );
+    const leadsToTarget = canReach([...forward.edges.values()], target);
+    const reached = forward.visited.has(target);
+    const keep = new Set([...forward.visited].filter((id) => reached && leadsToTarget.has(id)));
+    const edges = [...forward.edges.values()].filter((edge) => keep.has(edge.from) && keep.has(edge.to)).sort(compareById);
+    const nodes = model.nodes.filter((node) => keep.has(node.id)).sort(compareById);
+    const keptSubjects = keep;
+    const unknowns = model.unknowns.filter((unknown) => {
+      if (!keptSubjects.has(unknown.subject)) return false;
+      if (unknown.data === void 0 || startNode.kind !== "field") return true;
+      return unknown.data.some(
+        (item) => item.origin === start2 && (options.path === void 0 || pathsRelated(item.path, options.path))
+      );
+    });
+    const complete = unknowns.length === 0 && nodes.every((node) => node.status !== "unknown") && edges.every((edge) => edge.status !== "unknown");
+    return { start: start2, direction: "downstream", nodes, edges, unknowns, complete };
+  }
+  function indexById(items) {
+    return new Map(items.map((item) => [item.id, item]));
+  }
+  function missingFrom(items, other) {
+    return items.filter((item) => !other.has(item.id));
+  }
+  function diffFlow(before, after) {
+    const beforeNodes = indexById(before.nodes);
+    const afterNodes = indexById(after.nodes);
+    const beforeEdges = indexById(before.edges);
+    const afterEdges = indexById(after.edges);
+    const beforeUnknowns = indexById(before.unknowns);
+    const afterUnknowns = indexById(after.unknowns);
+    const changedNodes = [];
+    for (const node of after.nodes) {
+      const previous = beforeNodes.get(node.id);
+      if (previous !== void 0 && JSON.stringify(previous) !== JSON.stringify(node)) {
+        changedNodes.push({ before: previous, after: node });
+      }
+    }
+    const addedNodes = missingFrom(after.nodes, beforeNodes);
+    const removedNodes = missingFrom(before.nodes, afterNodes);
+    const addedEdges = missingFrom(after.edges, beforeEdges);
+    const removedEdges = missingFrom(before.edges, afterEdges);
+    const addedUnknowns = missingFrom(after.unknowns, beforeUnknowns);
+    const removedUnknowns = missingFrom(before.unknowns, afterUnknowns);
+    return {
+      addedNodes,
+      removedNodes,
+      changedNodes,
+      addedEdges,
+      removedEdges,
+      addedUnknowns,
+      removedUnknowns,
+      unchanged: addedNodes.length + removedNodes.length + changedNodes.length + addedEdges.length + removedEdges.length + addedUnknowns.length + removedUnknowns.length === 0
+    };
+  }
+  function statusStrength(status) {
+    const strength = {
+      static: 0,
+      observed: 0,
+      declared: 1,
+      inferred: 2,
+      unknown: 3
+    };
+    return strength[status];
+  }
+  function weakestStatus(statuses) {
+    let result = "static";
+    for (const status of statuses) {
+      if (statusStrength(status) > statusStrength(result)) result = status;
+    }
+    return result;
+  }
+  function subpathWithin(fieldName, observed) {
+    if (observed === fieldName) return [];
+    return observed.startsWith(`${fieldName}.`) ? observed.slice(fieldName.length + 1).split(".") : void 0;
+  }
+  function observedFlow(flow, observation, scope) {
+    const nodes = /* @__PURE__ */ new Map();
+    const edges = /* @__PURE__ */ new Map();
+    const explained = [];
+    const unexplained = [];
+    for (const item of observation.observations) {
+      if (scope !== void 0 && item.scope !== scope) continue;
+      const fields = flow.nodes.flatMap((node) => {
+        if (node.kind !== "field") return [];
+        const path = subpathWithin(node.name, item.field);
+        return path === void 0 ? [] : [{ field: node, path }];
+      });
+      const boundaries = flow.nodes.filter(
+        (node) => node.kind === "boundary" && node.name === item.boundary.name && (node.boundaryKind === void 0 || node.boundaryKind === item.boundary.kind)
+      );
+      let found = false;
+      for (const { field, path } of fields) {
+        for (const boundary of boundaries) {
+          const route = traceFlowBetween(flow, field.id, boundary.id, { path });
+          if (route.nodes.length === 0) continue;
+          found = true;
+          for (const node of route.nodes) nodes.set(node.id, node);
+          for (const edge of route.edges) edges.set(edge.id, edge);
+        }
+      }
+      (found ? explained : unexplained).push(item);
+    }
+    return {
+      scopes: observation.scopes,
+      nodes: [...nodes.values()].sort(compareById),
+      edges: [...edges.values()].sort(compareById),
+      explained,
+      unexplained
+    };
+  }
+  var FLOW_GRAPH_VIEW_VERSION = 1;
+  function nodeLabel(node) {
+    switch (node.kind) {
+      case "boundary":
+        return `${node.boundaryKind ?? "boundary"}: ${node.name}`;
+      case "parameter":
+        return node.name.slice(node.name.lastIndexOf(".") + 1);
+      case "return":
+        return "return";
+      default:
+        return node.name;
+    }
+  }
+  function distinct(values) {
+    return [...new Set(values)];
+  }
+  function buildFlowGraphView(evidence) {
+    const { flow } = evidence;
+    if (flow === void 0) return void 0;
+    const nodesById = new Map(flow.nodes.map((node) => [node.id, node]));
+    const dataKinds = /* @__PURE__ */ new Set([
+      "reads",
+      "passes",
+      "returns",
+      "transforms",
+      "side-effect",
+      "discards"
+    ]);
+    const nameOf = (id) => nodesById.get(id)?.name ?? id;
+    const ref = (id) => ({ id, name: nameOf(id) });
+    const nodes = flow.nodes.map((node) => ({
+      id: node.id,
+      kind: node.kind,
+      label: nodeLabel(node),
+      name: node.name,
+      scope: node.scope,
+      status: node.status,
+      ...node.classification === void 0 ? {} : { classification: node.classification },
+      ...node.boundaryKind === void 0 ? {} : { boundaryKind: node.boundaryKind },
+      ...node.source === void 0 ? {} : { source: node.source }
+    }));
+    const edges = flow.edges.map((edge) => ({
+      id: edge.id,
+      kind: edge.kind,
+      from: edge.from,
+      to: edge.to,
+      status: edge.status,
+      ...edge.path === void 0 ? {} : { path: edge.path },
+      ...edge.origin === void 0 ? {} : { origin: edge.origin },
+      ...edge.handling === void 0 ? {} : { handling: edge.handling },
+      ...edge.source === void 0 ? {} : { source: edge.source }
+    }));
+    const functions = flow.nodes.filter((node) => node.kind === "function").map((node) => {
+      const outgoing = flow.edges.filter((edge) => edge.from === node.id);
+      const incoming = flow.edges.filter((edge) => edge.to === node.id);
+      const attached = flow.unknowns.filter((unknown) => unknown.subject === node.id);
+      const dataEdges = [...outgoing, ...incoming].filter((edge) => dataKinds.has(edge.kind));
+      const origins = distinct(dataEdges.map((edge) => edge.origin));
+      const reads = incoming.filter((edge) => edge.kind === "reads" || edge.kind === "passes").flatMap((edge) => {
+        const from = nodesById.get(edge.from);
+        const via = from?.kind === "field" ? "field" : from?.kind === "parameter" ? "parameter" : from?.kind === "return" ? "return" : void 0;
+        if (via === void 0 || edge.origin === void 0) return [];
+        return [
+          {
+            origin: edge.origin,
+            field: nameOf(edge.origin),
+            path: edge.path ?? [],
+            via,
+            from: edge.from,
+            status: edge.status
+          }
+        ];
+      });
+      const forwards = outgoing.flatMap(
+        (edge) => (edge.kind === "passes" || edge.kind === "returns" || edge.kind === "transforms") && edge.origin !== void 0 ? [
+          {
+            kind: edge.kind,
+            to: edge.to,
+            toName: nameOf(edge.to),
+            origin: edge.origin,
+            field: nameOf(edge.origin),
+            path: edge.path ?? [],
+            status: edge.status
+          }
+        ] : []
+      );
+      const sideEffects = outgoing.flatMap((edge) => {
+        if (edge.kind !== "side-effect" || edge.origin === void 0) return [];
+        const boundary = nodesById.get(edge.to);
+        return [
+          {
+            boundary: edge.to,
+            boundaryName: nameOf(edge.to),
+            ...boundary?.boundaryKind === void 0 ? {} : { boundaryKind: boundary.boundaryKind },
+            origin: edge.origin,
+            field: nameOf(edge.origin),
+            path: edge.path ?? [],
+            ...edge.handling === void 0 ? {} : { handling: edge.handling },
+            status: edge.status
+          }
+        ];
+      });
+      const discards = outgoing.flatMap(
+        (edge) => edge.kind === "discards" && edge.origin !== void 0 ? [{ origin: edge.origin, field: nameOf(edge.origin), path: edge.path ?? [] }] : []
+      );
+      const classifications = distinct(
+        origins.flatMap((id) => {
+          const classification = nodesById.get(id)?.classification;
+          return classification === void 0 ? [] : [classification];
+        })
+      ).sort();
+      const statuses = dataEdges.map((edge) => edge.status);
+      if (attached.length > 0) statuses.push("inferred");
+      return {
+        id: node.id,
+        name: node.name,
+        scope: node.scope,
+        status: node.status,
+        ...node.source === void 0 ? {} : { source: node.source },
+        inputs: flow.nodes.filter(
+          (candidate) => candidate.kind === "parameter" && candidate.scope === node.scope && candidate.name.startsWith(`${node.name}.`)
+        ).map((candidate) => ref(candidate.id)),
+        ...flow.nodes.some(
+          (candidate) => candidate.kind === "return" && candidate.scope === node.scope && candidate.name === `${node.name}#return`
+        ) ? { output: flowNodeId("return", node.scope, `${node.name}#return`) } : {},
+        reads,
+        forwards,
+        sideEffects,
+        discards,
+        callers: distinct(
+          incoming.filter((edge) => edge.kind === "calls").map((edge) => edge.from)
+        ).map(ref),
+        callees: distinct(
+          outgoing.filter((edge) => edge.kind === "calls").map((edge) => edge.to)
+        ).map(ref),
+        classifications,
+        confidence: statuses.length === 0 ? node.status : weakestStatus(statuses),
+        unknowns: attached.map((unknown) => unknown.id)
+      };
+    });
+    const claims = evidence.claims?.claims ?? [];
+    const fields = flow.nodes.filter((node) => node.kind === "field").map((node) => {
+      const trace = traceFlow(flow, node.id, "downstream");
+      const destinations = trace.nodes.filter((candidate) => candidate.kind === "boundary").map((boundary) => {
+        const carrying = trace.edges.filter(
+          (edge) => edge.to === boundary.id && (edge.kind === "side-effect" || edge.kind === "crosses-boundary")
+        );
+        const keyed = carrying.map((edge) => [
+          (edge.path ?? []).join("."),
+          edge.path ?? []
+        ]);
+        keyed.sort(([a], [b]) => a < b ? -1 : 1);
+        const paths = [...new Map(keyed).values()];
+        return {
+          boundary: boundary.id,
+          boundaryName: boundary.name,
+          ...boundary.boundaryKind === void 0 ? {} : { boundaryKind: boundary.boundaryKind },
+          paths,
+          status: weakestStatus(carrying.map((edge) => edge.status)),
+          handling: distinct(
+            carrying.flatMap((edge) => edge.handling === void 0 ? [] : [edge.handling])
+          ).sort()
+        };
+      });
+      const own = flow.edges.filter((edge) => edge.origin === node.id);
+      return {
+        id: node.id,
+        name: node.name,
+        scope: node.scope,
+        ...node.classification === void 0 ? {} : { classification: node.classification },
+        sources: flow.edges.filter((edge) => edge.kind === "crosses-boundary" && edge.to === node.id).map((edge) => {
+          const boundary = nodesById.get(edge.from);
+          return {
+            boundary: edge.from,
+            boundaryName: nameOf(edge.from),
+            ...boundary?.boundaryKind === void 0 ? {} : { boundaryKind: boundary.boundaryKind },
+            ...edge.handling === void 0 ? {} : { handling: edge.handling },
+            status: edge.status
+          };
+        }),
+        destinations,
+        discardedBy: own.filter((edge) => edge.kind === "discards").map((edge) => ({
+          function: edge.from,
+          functionName: nameOf(edge.from),
+          path: edge.path ?? []
+        })),
+        readers: distinct(
+          own.filter((edge) => edge.kind === "reads" && edge.from === node.id).map((edge) => edge.to)
+        ).map((id) => ({
+          function: id,
+          functionName: nameOf(id)
+        })),
+        claims: claims.filter(
+          (claim) => claim.subject === node.name || claim.subject.startsWith(`${node.name}.`)
+        ).map((claim) => claim.id),
+        complete: trace.complete
+      };
+    });
+    return {
+      schemaVersion: FLOW_GRAPH_VIEW_VERSION,
+      coverage: flow.coverage,
+      nodes,
+      edges,
+      unknowns: flow.unknowns,
+      functions,
+      fields,
+      ...evidence.claims === void 0 ? {} : { claims: evidence.claims.summary },
+      statusLegend: [
+        {
+          status: "declared",
+          meaning: "Asserted by an author in documentData(); not checked against code."
+        },
+        {
+          status: "static",
+          meaning: "Established by the analyzed code under the analysis's stated assumptions."
+        },
+        { status: "observed", meaning: "Witnessed in a specific execution or test." },
+        {
+          status: "inferred",
+          meaning: "Plausible but not established: data assumed to pass through code the analysis could not follow."
+        },
+        {
+          status: "unknown",
+          meaning: "Not analyzable: dynamic behavior, missing source, an unsupported construct, or incomplete coverage."
+        }
+      ]
+    };
+  }
+  function unknownText(reason) {
+    const text2 = {
+      "dynamic-access": "a computed property key on tracked data",
+      "unresolved-call": "an unresolved call that receives tracked data",
+      "unresolved-import": "an import that could not be resolved",
+      "unsupported-construct": "an unsupported construct",
+      "missing-source": "source that is not available",
+      "unanalyzed-function": "a function the analysis did not complete"
+    };
+    return text2[reason];
+  }
+  function pathText(path) {
+    return path.length === 0 ? "(whole)" : path.join(".");
+  }
+  function pathList(paths) {
+    const unique = new Set(paths.map(pathText));
+    const rest = [...unique].filter((path) => path !== "(whole)").sort();
+    return (unique.has("(whole)") ? ["(whole)", ...rest] : rest).join(", ");
+  }
+  function groupBy(items, key) {
+    const ordered = items.map((item) => ({ id: key(item), item })).sort((x, y) => x.id < y.id ? -1 : 1);
+    const groups = /* @__PURE__ */ new Map();
+    for (const { id, item } of ordered) {
+      const group = groups.get(id);
+      if (group === void 0) groups.set(id, { first: item, items: [item] });
+      else group.items.push(item);
+    }
+    return [...groups.values()];
+  }
+  function names(refs) {
+    return refs.length === 0 ? "none" : [...new Set(refs.map((ref) => ref.name))].sort().join(", ");
+  }
+  function locationOf(unknown) {
+    return `${unknown.source.file}:${unknown.source.line}:${unknown.source.column}`;
+  }
+  function functionBlock(fn, unknowns, heading) {
+    const lines = [`${heading} ${fn.name}`, ""];
+    lines.push(`- Confidence: ${fn.confidence}`);
+    if (fn.classifications.length > 0)
+      lines.push(`- Classifications: ${fn.classifications.join(", ")}`);
+    lines.push(
+      `- Inputs: ${fn.inputs.length === 0 ? "none" : fn.inputs.map((input) => input.name.slice(input.name.lastIndexOf(".") + 1)).join(", ")}`
+    );
+    const reads = groupBy(fn.reads, (read) => `${read.field}\0${read.via}`).map(
+      ({ first, items }) => `${first.field}${first.via === "field" ? "" : ` (via ${first.via})`}: ${pathList(items.map((read) => read.path))}`
+    );
+    lines.push(`- Reads: ${reads.length === 0 ? "none" : reads.join("; ")}`);
+    const returned = groupBy(
+      fn.forwards.filter((flow) => flow.kind === "returns"),
+      (flow) => flow.field
+    ).map(({ first, items }) => `${first.field}: ${pathList(items.map((flow) => flow.path))}`);
+    lines.push(`- Returns: ${returned.length === 0 ? "none" : returned.join("; ")}`);
+    const passed = groupBy(
+      fn.forwards.filter((flow) => flow.kind !== "returns"),
+      (flow) => `${flow.to}\0${flow.field}`
+    ).map(
+      ({ first, items }) => `${first.toName} -- ${first.field}: ${pathList(items.map((flow) => flow.path))}`
+    );
+    lines.push(`- Passes on: ${passed.length === 0 ? "none" : passed.join("; ")}`);
+    const effects = groupBy(
+      fn.sideEffects,
+      (effect) => `${effect.boundary}\0${effect.field}`
+    ).map(({ first, items }) => {
+      const handling = [
+        ...new Set(
+          items.flatMap((effect) => effect.handling === void 0 ? [] : [effect.handling])
+        )
+      ];
+      return `${first.boundaryKind ?? "boundary"} ${first.boundaryName}: ${first.field}: ${pathList(items.map((effect) => effect.path))}${handling.length === 0 ? "" : ` (${handling.join(", ")})`}`;
+    });
+    lines.push(`- Side effects: ${effects.length === 0 ? "none" : effects.join("; ")}`);
+    const discards = groupBy(fn.discards, (discard) => discard.field).map(
+      ({ first, items }) => `${first.field}: ${pathList(items.map((discard) => discard.path))}`
+    );
+    lines.push(`- Discards: ${discards.length === 0 ? "none" : discards.join("; ")}`);
+    lines.push(`- Callers: ${names(fn.callers)}`);
+    lines.push(`- Callees: ${names(fn.callees)}`);
+    for (const id of fn.unknowns) {
+      const unknown = unknowns.get(id);
+      if (unknown !== void 0)
+        lines.push(`- Not followed: ${locationOf(unknown)} -- ${unknownText(unknown.reason)}`);
+    }
+    lines.push("");
+    return lines;
+  }
+  function coverageLine(coverage) {
+    const parts = [`${coverage.functionsAnalyzed} function(s) analyzed`];
+    if (coverage.functionsUnanalyzed > 0)
+      parts.push(`${coverage.functionsUnanalyzed} not fully analyzed`);
+    if (coverage.unknowns > 0) parts.push(`${coverage.unknowns} unknown(s)`);
+    return coverage.complete ? `Coverage: ${parts.join(", ")} -- complete.` : `Coverage: ${parts.join(", ")} -- not complete: parts of the program could not be followed, so a flow missing below is not proof that it does not exist.`;
+  }
+  function selectByField(view, wantedField) {
+    if (wantedField === void 0) return { fields: view.fields, functions: view.functions };
+    return {
+      fields: view.fields.filter((field) => field.name === wantedField),
+      functions: view.functions.filter(
+        (fn) => [...fn.reads, ...fn.forwards, ...fn.sideEffects, ...fn.discards].some(
+          (item) => item.field === wantedField
+        )
+      )
+    };
+  }
+  function fieldBlock(field, heading) {
+    const lines = [`${heading} ${field.name}`, ""];
+    if (field.classification !== void 0) lines.push(`- Classification: ${field.classification}`);
+    const sources = field.sources.map(
+      (source) => `${source.boundaryName} (${source.boundaryKind ?? "boundary"}, ${source.status})`
+    );
+    lines.push(`- Fetched from: ${sources.length === 0 ? "none declared" : sources.join("; ")}`);
+    const reaches = field.destinations.map(
+      (destination) => `${destination.boundaryKind ?? "boundary"} ${destination.boundaryName}: ${pathList(destination.paths)} (${destination.status})`
+    );
+    lines.push(
+      `- Reaches: ${reaches.length === 0 ? "nowhere in the analyzed code" : reaches.join("; ")}`
+    );
+    const dropped = groupBy(field.discardedBy, (item) => item.functionName).map(
+      ({ first, items }) => `${first.functionName}: ${pathList(items.map((item) => item.path))}`
+    );
+    lines.push(`- Dropped by: ${dropped.length === 0 ? "none" : dropped.join("; ")}`);
+    lines.push(
+      `- Read by: ${field.readers.length === 0 ? "none" : [...new Set(field.readers.map((reader) => reader.functionName))].sort().join(", ")}`
+    );
+    lines.push(
+      field.complete ? "- Complete: yes" : "- Complete: no -- the analysis could not follow part of this field's flow, so the destinations above may be incomplete.",
+      ""
+    );
+    return lines;
+  }
+  function claimsBlock(evidence, wantedField, heading) {
+    if (evidence.claims === void 0 || wantedField !== void 0) return [];
+    const lines = [`${heading} Claims`, ""];
+    for (const claim of evidence.claims.claims)
+      lines.push(`- [${claim.verification}] ${claim.statement} (${claim.status})`);
+    if (evidence.claims.claims.length === 0) lines.push("None.");
+    lines.push("");
+    return lines;
+  }
+  function unknownsBlock(view, heading) {
+    if (view.unknowns.length === 0) return [];
+    const lines = [`${heading} What the analysis could not follow`, ""];
+    for (const unknown of view.unknowns) {
+      lines.push(
+        `- ${locationOf(unknown)} -- ${unknownText(unknown.reason)}${unknown.detail === void 0 ? "" : ` (${unknown.detail})`}`
+      );
+    }
+    lines.push("");
+    return lines;
+  }
+  function renderFlowText(evidence, options = {}) {
+    const view = buildFlowGraphView(evidence);
+    if (view === void 0) return void 0;
+    const level = Math.max(1, Math.min(4, options.headingLevel ?? 1));
+    const h = (offset) => "#".repeat(level + offset);
+    const lines = [`${h(0)} Data flow`, "", coverageLine(view.coverage), ""];
+    const wantedField = options.field;
+    const { fields, functions } = selectByField(view, wantedField);
+    if (wantedField !== void 0 && fields.length === 0) {
+      lines.push(`No field named ${wantedField} in this evidence.`, "");
+      return `${lines.join("\n").trimEnd()}
+`;
+    }
+    const unknowns = new Map(view.unknowns.map((unknown) => [unknown.id, unknown]));
+    lines.push(`${h(1)} Status legend`, "");
+    for (const entry of view.statusLegend) lines.push(`- **${entry.status}**: ${entry.meaning}`);
+    lines.push("");
+    lines.push(`${h(1)} Functions`, "");
+    for (const fn of functions) lines.push(...functionBlock(fn, unknowns, h(2)));
+    if (functions.length === 0) lines.push("None.", "");
+    lines.push(`${h(1)} Fields`, "");
+    for (const field of fields) lines.push(...fieldBlock(field, h(2)));
+    lines.push(...claimsBlock(evidence, wantedField, h(1)), ...unknownsBlock(view, h(1)));
+    return `${lines.join("\n").trimEnd()}
+`;
+  }
+
+  // scripts/explorer/client.ts
+  var STATUSES = ["declared", "static", "observed", "inferred", "unknown"];
+  var ALL_EXECUTIONS = "__all__";
+  function el(tag, attributes = {}, ...children) {
+    const element = document.createElement(tag);
+    for (const [name, value] of Object.entries(attributes)) element.setAttribute(name, value);
+    for (const child of children) element.append(child);
+    return element;
+  }
+  function required(id) {
+    const found = document.getElementById(id);
+    if (found === null) throw new Error(`The page is missing #${id}`);
+    return found;
+  }
+  function readEvidence(id) {
+    const node = document.getElementById(id);
+    if (node === null || node.textContent === null || node.textContent.trim() === "") return void 0;
+    return JSON.parse(node.textContent);
+  }
+  var pathText2 = (path) => path === void 0 ? "" : path.length === 0 ? "(whole)" : path.join(".");
+  function start() {
+    const evidence = readEvidence("evidence");
+    const flow = evidence?.flow;
+    const live = required("summary");
+    if (evidence === void 0 || flow === void 0) {
+      live.textContent = "This evidence has no flow analysis. Generate it with --flow-evidence.";
+      return;
+    }
+    const view = buildFlowGraphView(evidence);
+    new Explorer(evidence, flow, view).run();
+  }
+  var Explorer = class {
+    constructor(evidence, flow, view) {
+      this.evidence = evidence;
+      this.flow = flow;
+      this.view = view;
+      for (const node of flow.nodes) this.nodes.set(node.id, node);
+      for (const edge of flow.edges) this.edges.set(edge.id, edge);
+      for (const unknown of flow.unknowns) this.unknowns.set(unknown.id, unknown);
+      for (const result of evidence.policy?.results ?? []) {
+        if (result.outcome === "violated") for (const id of result.edges) this.violated.add(id);
+      }
+    }
+    evidence;
+    flow;
+    view;
+    nodes = /* @__PURE__ */ new Map();
+    edges = /* @__PURE__ */ new Map();
+    unknowns = /* @__PURE__ */ new Map();
+    nodeEls = /* @__PURE__ */ new Map();
+    edgeEls = /* @__PURE__ */ new Map();
+    violated = /* @__PURE__ */ new Set();
+    traceFrom;
+    diff;
+    run() {
+      this.indexGraph();
+      this.fillControls();
+      this.bind();
+      this.restoreFromHash();
+      this.apply();
+      const baseline = readEvidence("baseline-evidence");
+      if (baseline?.flow !== void 0) this.compare(baseline, "the revision embedded in this page");
+    }
+    // ----- the graph -------------------------------------------------------------------------------
+    indexGraph() {
+      const graph = required("graph");
+      for (const group of graph.querySelectorAll("g.node")) {
+        const id = group.getAttribute("id");
+        if (id === null) continue;
+        this.nodeEls.set(id, group);
+        group.setAttribute("tabindex", "0");
+        group.setAttribute("role", "button");
+        group.setAttribute("aria-label", this.describeNode(id));
+        const node = this.nodes.get(id);
+        group.classList.add(`status-${node?.status ?? "unknown"}`, `kind-${node?.kind ?? "unknown"}`);
+      }
+      for (const group of graph.querySelectorAll("g.edge")) {
+        const id = group.getAttribute("id");
+        if (id === null) continue;
+        this.edgeEls.set(id, group);
+        group.setAttribute("aria-hidden", "true");
+        group.classList.add(`status-${this.edges.get(id)?.status ?? "unknown"}`);
+        if (this.violated.has(id)) group.classList.add("violation");
+      }
+    }
+    describeNode(id) {
+      const unknown = this.unknowns.get(id);
+      if (unknown !== void 0) return `Not followed: ${unknown.reason} at ${unknown.source.file} line ${unknown.source.line}, status unknown`;
+      const node = this.nodes.get(id);
+      if (node === void 0) return id;
+      const label = this.view.nodes.find((candidate) => candidate.id === id)?.label ?? node.name;
+      const classification = node.classification === void 0 ? "" : `, ${node.classification}`;
+      return `${label}, ${node.kind}, ${node.status}${classification}`;
+    }
+    // ----- controls --------------------------------------------------------------------------------
+    fillControls() {
+      const field = required("field");
+      field.append(el("option", { value: "" }, "All data (no trace)"));
+      for (const item of this.view.fields) field.append(el("option", { value: item.id }, item.name));
+      const classification = required("classification");
+      const classes = [...new Set(this.flow.nodes.flatMap((node) => node.classification === void 0 ? [] : [node.classification]))].sort();
+      for (const value of classes) classification.append(el("option", { value }, value));
+      const execution = required("execution");
+      const scopes = this.evidence.observation?.scopes ?? [];
+      if (scopes.length > 0) execution.append(el("option", { value: ALL_EXECUTIONS }, "Anything observed in any execution"));
+      for (const scope of scopes) execution.append(el("option", { value: scope }, scope));
+      const statuses = required("statuses");
+      for (const status of STATUSES) {
+        const box = el("input", { type: "checkbox", id: `status-${status}`, value: status, checked: "" });
+        statuses.append(el("label", {}, box, ` ${status}`));
+      }
+    }
+    bind() {
+      const rerun = () => this.apply();
+      for (const id of ["field", "direction", "path", "classification", "violations", "search", "execution"]) {
+        required(id).addEventListener(id === "path" || id === "search" ? "input" : "change", () => {
+          if (id === "field") this.traceFrom = void 0;
+          rerun();
+        });
+      }
+      required("statuses").addEventListener("change", rerun);
+      const fit = required("fit");
+      fit.addEventListener("click", () => {
+        const fitted = required("graph").classList.toggle("fit-width");
+        fit.setAttribute("aria-pressed", String(fitted));
+        fit.textContent = fitted ? "Show graph at actual size" : "Fit graph to width (overview)";
+      });
+      required("reset").addEventListener("click", () => {
+        this.traceFrom = void 0;
+        required("field").value = "";
+        required("path").value = "";
+        required("search").value = "";
+        required("execution").value = "";
+        required("classification").value = "";
+        required("violations").checked = false;
+        for (const box of required("statuses").querySelectorAll("input")) box.checked = true;
+        this.apply();
+      });
+      const graph = required("graph");
+      graph.addEventListener("click", (event) => this.inspectFrom(event.target));
+      graph.addEventListener("keydown", (event) => {
+        const group = event.target.closest?.("g.node");
+        if (group === null || group === void 0) return;
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          this.inspectNode(group.getAttribute("id") ?? "");
+        } else if (event.key === "t" || event.key === "T") {
+          event.preventDefault();
+          this.traceFromNode(group.getAttribute("id") ?? "");
+        }
+      });
+      required("baseline").addEventListener("change", (event) => {
+        const file = event.target.files?.[0];
+        if (file === void 0) return;
+        void file.text().then((text) => {
+          try {
+            const parsed = JSON.parse(text);
+            if (parsed.flow === void 0) throw new Error("it has no flow analysis");
+            this.compare(parsed, file.name);
+          } catch (error) {
+            required("diff-result").textContent = `${file.name} could not be used: ${error instanceof Error ? error.message : String(error)}.`;
+          }
+        });
+      });
+    }
+    inspectFrom(target) {
+      const group = target?.closest?.("g.node, g.edge");
+      if (group === null || group === void 0) return;
+      const id = group.getAttribute("id") ?? "";
+      if (group.classList.contains("node")) this.inspectNode(id);
+      else this.inspectEdge(id);
+    }
+    // ----- tracing and filtering -------------------------------------------------------------------
+    traceFromNode(id) {
+      this.traceFrom = id;
+      required("field").value = this.nodes.get(id)?.kind === "field" ? id : "";
+      this.apply();
+    }
+    selection() {
+      const fieldId = required("field").value;
+      const startId = this.traceFrom ?? (fieldId === "" ? void 0 : fieldId);
+      if (startId === void 0 || !this.nodes.has(startId)) return void 0;
+      const direction = required("direction").value === "upstream" ? "upstream" : "downstream";
+      const rawPath = required("path").value.trim();
+      const path = rawPath === "" ? void 0 : rawPath.split(".");
+      const trace = traceFlow(this.flow, startId, direction, path === void 0 ? {} : { path });
+      const unknownIds = trace.unknowns.map((unknown) => unknown.id);
+      return {
+        nodes: /* @__PURE__ */ new Set([...trace.nodes.map((node) => node.id), ...unknownIds]),
+        edges: new Set(trace.edges.map((edge) => edge.id)),
+        complete: trace.complete,
+        label: `${direction} from ${this.nodes.get(startId)?.name ?? startId}${path === void 0 ? "" : `, path ${path.join(".")}`}`
+      };
+    }
+    allowedStatuses() {
+      return new Set([...required("statuses").querySelectorAll("input")].filter((box) => box.checked).map((box) => box.value));
+    }
+    apply() {
+      const selected = this.selection();
+      const statuses = this.allowedStatuses();
+      const classification = required("classification").value;
+      const violationsOnly = required("violations").checked;
+      const query = required("search").value.trim().toLowerCase();
+      const visibleNode = (id) => {
+        const node = this.nodes.get(id);
+        if (node === void 0) return statuses.has("unknown");
+        if (!statuses.has(node.status)) return false;
+        if (classification !== "" && node.classification !== classification) return this.edgeTouches(id, (edge) => this.nodes.get(edge.origin ?? "")?.classification === classification);
+        return true;
+      };
+      const violationNodes = /* @__PURE__ */ new Set();
+      if (violationsOnly) {
+        for (const id of this.violated) {
+          const edge = this.edges.get(id);
+          if (edge !== void 0) violationNodes.add(edge.from).add(edge.to);
+        }
+      }
+      const witnessed = this.witnessed();
+      let shownNodes = 0;
+      let shownEdges = 0;
+      for (const [id, group] of this.nodeEls) {
+        const hidden = !visibleNode(id) || violationsOnly && !violationNodes.has(id);
+        const dim = selected !== void 0 && !selected.nodes.has(id) || witnessed !== void 0 && !witnessed.nodes.has(id) || query !== "" && !this.describeNode(id).toLowerCase().includes(query);
+        group.classList.toggle("filtered", hidden);
+        group.classList.toggle("dim", !hidden && dim);
+        group.classList.toggle("trace", !hidden && !dim && selected !== void 0);
+        if (!hidden && !dim) shownNodes += 1;
+      }
+      for (const [id, group] of this.edgeEls) {
+        const edge = this.edges.get(id);
+        const endpointsHidden = edge !== void 0 && (this.nodeEls.get(edge.from)?.classList.contains("filtered") === true || this.nodeEls.get(edge.to)?.classList.contains("filtered") === true);
+        const hidden = edge === void 0 ? false : endpointsHidden || !statuses.has(edge.status) || violationsOnly && !this.violated.has(id);
+        const dim = selected !== void 0 && !selected.edges.has(id) || witnessed !== void 0 && !witnessed.edges.has(id);
+        group.classList.toggle("filtered", hidden);
+        group.classList.toggle("dim", !hidden && dim);
+        group.classList.toggle("trace", !hidden && !dim && selected !== void 0);
+        if (!hidden && !dim) shownEdges += 1;
+      }
+      const parts = [
+        witnessed !== void 0 ? `Showing what ${witnessed.label} witnessed: ${witnessed.observations} observation(s), ${witnessed.unexplained} not explained by the static flow.` : "",
+        selected === void 0 ? witnessed === void 0 ? "Showing all data." : "" : `Tracing ${selected.label}.`,
+        `${shownNodes} node(s) and ${shownEdges} edge(s) shown.`
+      ].filter((part) => part !== "");
+      if (selected !== void 0 && !selected.complete) parts.push("This trace is NOT complete: part of it reaches code the analysis could not follow.");
+      else if (selected === void 0 && !this.flow.coverage.complete) parts.push("The analysis is NOT complete.");
+      required("summary").textContent = parts.join(" ");
+      required("execution-note").textContent = witnessed === void 0 ? "" : "Lit routes are the routes the static flow offers for what was observed: an observation says that data reached a boundary, not which of several possible routes it took.";
+      this.writeHash();
+    }
+    /** What the selected execution (or any execution) actually witnessed, or `undefined` when not filtering by execution. */
+    witnessed() {
+      const choice = required("execution").value;
+      const observation = this.evidence.observation;
+      if (choice === "" || observation === void 0) return void 0;
+      const result = observedFlow(this.flow, observation, choice === ALL_EXECUTIONS ? void 0 : choice);
+      return {
+        nodes: new Set(result.nodes.map((node) => node.id)),
+        edges: new Set(result.edges.map((edge) => edge.id)),
+        label: choice === ALL_EXECUTIONS ? "every execution" : choice,
+        observations: result.explained.length + result.unexplained.length,
+        unexplained: result.unexplained.length
+      };
+    }
+    /** The state worth sharing: which trace, which filters. Everything else is derived from the evidence. */
+    writeHash() {
+      const params = new URLSearchParams();
+      const field = this.traceFrom ?? required("field").value;
+      if (field !== "") params.set("from", field);
+      const direction = required("direction").value;
+      if (field !== "" && direction !== "downstream") params.set("direction", direction);
+      const path = required("path").value.trim();
+      if (path !== "") params.set("path", path);
+      const classification = required("classification").value;
+      if (classification !== "") params.set("classification", classification);
+      if (required("violations").checked) params.set("violations", "1");
+      const search = required("search").value.trim();
+      if (search !== "") params.set("find", search);
+      const execution = required("execution").value;
+      if (execution !== "") params.set("execution", execution);
+      const hidden = [...required("statuses").querySelectorAll("input")].filter((box) => !box.checked).map((box) => box.value);
+      if (hidden.length > 0) params.set("hide", hidden.join(","));
+      const text = params.toString();
+      history.replaceState(null, "", text === "" ? location.pathname + location.search : `#${text}`);
+    }
+    restoreFromHash() {
+      const params = new URLSearchParams(location.hash.replace(/^#/, ""));
+      const from = params.get("from");
+      if (from !== null && this.nodes.has(from)) {
+        this.traceFrom = from;
+        required("field").value = this.nodes.get(from)?.kind === "field" ? from : "";
+      }
+      if (params.get("direction") === "upstream") required("direction").value = "upstream";
+      required("path").value = params.get("path") ?? "";
+      required("classification").value = [...required("classification").options].some((option) => option.value === params.get("classification")) ? params.get("classification") : "";
+      required("violations").checked = params.get("violations") === "1";
+      required("search").value = params.get("find") ?? "";
+      const execution = required("execution");
+      execution.value = [...execution.options].some((option) => option.value === params.get("execution")) ? params.get("execution") : "";
+      const hidden = new Set((params.get("hide") ?? "").split(",").filter((status) => status !== ""));
+      for (const box of required("statuses").querySelectorAll("input")) box.checked = !hidden.has(box.value);
+    }
+    edgeTouches(nodeId, test) {
+      for (const edge of this.edges.values()) if ((edge.from === nodeId || edge.to === nodeId) && test(edge)) return true;
+      return false;
+    }
+    // ----- drill-down ------------------------------------------------------------------------------
+    show(heading, ...content) {
+      const body = required("detail-body");
+      body.replaceChildren(el("h3", {}, heading), ...content);
+      required("detail").focus();
+    }
+    list(items) {
+      return el("ul", {}, ...items.length === 0 ? [el("li", {}, "none")] : items.map((item) => el("li", {}, item)));
+    }
+    inspectNode(id) {
+      const unknown = this.unknowns.get(id);
+      if (unknown !== void 0) {
+        this.show(
+          `Not followed: ${unknown.reason}`,
+          el("p", {}, `At ${unknown.source.file}:${unknown.source.line}:${unknown.source.column}. Status: unknown -- the analysis assumed the data passes through, approximately.`),
+          el("p", {}, "Data that entered it:"),
+          this.list((unknown.data ?? []).map((item) => `${this.nodes.get(item.origin)?.name ?? item.origin}: ${pathText2(item.path)}`))
+        );
+        return;
+      }
+      const node = this.nodes.get(id);
+      if (node === void 0) return;
+      const fn = this.view.functions.find((candidate) => candidate.id === id);
+      const field = this.view.fields.find((candidate) => candidate.id === id);
+      const blocks = [
+        el("p", {}, `${node.kind} in ${node.scope}${node.source === void 0 ? "" : `:${node.source.line}`}. Status: ${node.status}.${node.classification === void 0 ? "" : ` Classification: ${node.classification}.`}`)
+      ];
+      if (fn !== void 0) {
+        blocks.push(
+          el("p", {}, `Confidence: ${fn.confidence}.`),
+          el("h4", {}, "Reads"),
+          this.list(fn.reads.map((read) => `${read.field}: ${pathText2(read.path)} (via ${read.via})`)),
+          el("h4", {}, "Passes on"),
+          this.list(fn.forwards.map((flow) => `${flow.kind} ${flow.toName}: ${flow.field}: ${pathText2(flow.path)}`)),
+          el("h4", {}, "Side effects"),
+          this.list(fn.sideEffects.map((effect) => `${effect.boundaryKind ?? "boundary"} ${effect.boundaryName}: ${effect.field}: ${pathText2(effect.path)}`)),
+          el("h4", {}, "Discards"),
+          this.list(fn.discards.map((discard) => `${discard.field}: ${pathText2(discard.path)}`)),
+          el("h4", {}, "Callers and callees"),
+          this.list([...fn.callers.map((caller) => `called by ${caller.name}`), ...fn.callees.map((callee) => `calls ${callee.name}`)])
+        );
+      }
+      if (field !== void 0) {
+        blocks.push(
+          el("h4", {}, "Fetched from"),
+          this.list(field.sources.map((source) => `${source.boundaryName} (${source.boundaryKind ?? "boundary"}, ${source.status})`)),
+          el("h4", {}, "Reaches"),
+          this.list(field.destinations.map((destination) => `${destination.boundaryKind ?? "boundary"} ${destination.boundaryName}: ${destination.paths.map(pathText2).join(", ")} (${destination.status})`)),
+          el("h4", {}, "Dropped by"),
+          this.list(field.discardedBy.map((item) => `${item.functionName}: ${pathText2(item.path)}`)),
+          el("p", {}, field.complete ? "Complete: yes." : "Complete: no -- part of this flow reaches code the analysis could not follow.")
+        );
+      }
+      const claims = (this.evidence.claims?.claims ?? []).filter((claim) => claim.subject === node.name || claim.object === node.name || claim.subject.startsWith(`${node.name}.`));
+      if (claims.length > 0) blocks.push(el("h4", {}, "Claims"), this.list(claims.map((claim) => `[${claim.verification}] ${claim.statement}`)));
+      this.show(`${this.view.nodes.find((candidate) => candidate.id === id)?.label ?? node.name}`, ...blocks);
+    }
+    inspectEdge(id) {
+      const edge = this.edges.get(id);
+      if (edge === void 0) return;
+      const where = edge.source === void 0 ? "no source location" : `${edge.source.file}:${edge.source.line}:${edge.source.column}`;
+      this.show(
+        `${edge.kind}${edge.path === void 0 ? "" : ` ${pathText2(edge.path)}`}`,
+        el("p", {}, `From ${this.nodes.get(edge.from)?.name ?? edge.from} to ${this.nodes.get(edge.to)?.name ?? edge.to}.`),
+        el("p", {}, `Status: ${edge.status}. Source: ${where}.${edge.handling === void 0 ? "" : ` Handling: ${edge.handling}.`}`),
+        el("p", {}, `Carries data of ${edge.origin === void 0 ? "no single field" : this.nodes.get(edge.origin)?.name ?? edge.origin}.`),
+        ...this.violated.has(id) ? [el("p", { class: "violation-note" }, "This edge is part of a violated policy rule.")] : []
+      );
+    }
+    // ----- comparing revisions ---------------------------------------------------------------------
+    compare(baseline, name) {
+      const baselineFlow = baseline.flow;
+      this.diff = diffFlow(baselineFlow, this.flow);
+      const { diff } = this;
+      for (const [id, group] of this.nodeEls) group.classList.toggle("added", diff.addedNodes.some((node) => node.id === id) || diff.addedUnknowns.some((unknown) => unknown.id === id));
+      for (const [id, group] of this.edgeEls) group.classList.toggle("added", diff.addedEdges.some((edge) => edge.id === id));
+      const key = (result) => `${result.ruleId}:${result.outcome}:${result.subject ?? ""}`;
+      const before = new Set((baseline.policy?.results ?? []).map(key));
+      const now = new Set((this.evidence.policy?.results ?? []).map(key));
+      const newlyBroken = (this.evidence.policy?.results ?? []).filter((result) => result.outcome === "violated" && !before.has(key(result)));
+      const fixed = (baseline.policy?.results ?? []).filter((result) => result.outcome === "violated" && !now.has(key(result)));
+      const out = required("diff-result");
+      if (diff.unchanged && newlyBroken.length === 0 && fixed.length === 0) {
+        out.replaceChildren(el("p", {}, `No difference from ${name}.`));
+        return;
+      }
+      out.replaceChildren(
+        el("p", {}, diff.unchanged ? `No difference from ${name}.` : `Compared with ${name}: ${diff.addedNodes.length} node(s) added, ${diff.removedNodes.length} removed, ${diff.changedNodes.length} changed; ${diff.addedEdges.length} edge(s) added, ${diff.removedEdges.length} removed; ${diff.addedUnknowns.length} new unknown(s).`),
+        el("h3", {}, "Policy rules newly violated"),
+        this.list(newlyBroken.map((result) => `${result.ruleId}${result.subject === void 0 ? "" : ` for ${this.nodes.get(result.subject)?.name ?? result.subject}`}`)),
+        el("h3", {}, "Policy rules no longer violated"),
+        this.list(fixed.map((result) => result.ruleId)),
+        el("h3", {}, "Added"),
+        this.list(diff.addedNodes.map((node) => `${node.kind} ${node.name}`)),
+        el("h3", {}, "Removed"),
+        this.list(diff.removedNodes.map((node) => `${node.kind} ${node.name}`))
+      );
+    }
+  };
+  function refreshText() {
+    const evidence = readEvidence("evidence");
+    const text = evidence === void 0 ? void 0 : renderFlowText(evidence, { headingLevel: 2 });
+    const target = document.getElementById("text-body");
+    if (text !== void 0 && target !== null && target.textContent?.trim() === "") target.textContent = text;
+  }
+  refreshText();
+  start();
+})();
+</script>
+</body>
+</html>

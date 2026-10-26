@@ -1,0 +1,141 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://maverickcer.github.io/data-cap/schema/observation-model.schema.json",
+  "title": "data-cap Observation Model",
+  "description": "Canonical, versioned runtime observations: which field names were seen at which boundaries in which scopes -- names and paths only, never values (see ADR 0070, ADR 0072). Generated from src/flow/observation-model.ts's ObservationModel type -- never hand-authored.",
+  "$ref": "#/definitions/ObservationModel",
+  "definitions": {
+    "ObservationModel": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "number",
+          "const": 1,
+          "description": "Always `OBSERVATION_MODEL_SCHEMA_VERSION`."
+        },
+        "scopes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Every distinct scope that contributed at least one observation, sorted."
+        },
+        "observations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Observation"
+          },
+          "description": "Every observation, ordered by id."
+        },
+        "skipped": {
+          "type": "number",
+          "description": "Events dropped as malformed -- stated, never silent."
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "scopes",
+        "observations",
+        "skipped"
+      ],
+      "additionalProperties": false,
+      "description": "`data-cap`'s Observation Model."
+    },
+    "Observation": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Content-addressed: `observation:scope|kind:boundary|field|handling-or-dash`."
+        },
+        "scope": {
+          "type": "string"
+        },
+        "boundary": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "$ref": "#/definitions/FlowBoundaryKind"
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "name"
+          ],
+          "additionalProperties": false
+        },
+        "field": {
+          "type": "string",
+          "description": "Capability-qualified dotted field path -- the Flow Model's field-node naming."
+        },
+        "handling": {
+          "$ref": "#/definitions/FlowHandling"
+        },
+        "count": {
+          "type": "number",
+          "description": "How many matching events were recorded."
+        },
+        "status": {
+          "type": "string",
+          "const": "observed",
+          "description": "Always `observed` (ADR 0071)."
+        }
+      },
+      "required": [
+        "id",
+        "scope",
+        "boundary",
+        "field",
+        "count",
+        "status"
+      ],
+      "additionalProperties": false,
+      "description": "One aggregated observation."
+    },
+    "FlowBoundaryKind": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/DataFlowEndpointKind"
+        },
+        {
+          "type": "string",
+          "const": "client-response"
+        },
+        {
+          "type": "string",
+          "const": "log"
+        }
+      ],
+      "description": "What a data-flow rule can name as a destination: the declared endpoint kinds, plus the two destinations only code analysis can see."
+    },
+    "DataFlowEndpointKind": {
+      "type": "string",
+      "enum": [
+        "database",
+        "cache",
+        "storage",
+        "queue",
+        "api",
+        "external-service",
+        "user-input",
+        "computed",
+        "internal"
+      ],
+      "description": "What kind of boundary a declared data-flow endpoint crosses -- a data store (`database`/`cache`/`storage`/`queue`), an external entity (`api`/`external-service`/`user-input`), or something internal to this codebase (`computed`/`internal`)."
+    },
+    "FlowHandling": {
+      "type": "string",
+      "enum": [
+        "plaintext",
+        "masked",
+        "redacted",
+        "hashed",
+        "encrypted"
+      ],
+      "description": "The declared data-safety state of a value at a boundary crossing -- the vocabulary of `DataFlowEndpoint.handling` and of flow policy rules."
+    }
+  }
+}

@@ -1,7 +1,7 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "provenance": {
-    "generatedAt": "2026-10-25T15:24:10.063Z",
+    "generatedAt": "2026-10-25T23:00:46.085Z",
     "toolVersion": "0.8.2"
   },
   "capability": {
@@ -659,7 +659,11 @@
     "dependency": true,
     "ownership": true,
     "finding": true,
-    "change": true
+    "change": true,
+    "flow": false,
+    "policy": false,
+    "observation": false,
+    "claims": false
   },
   "dependency": {
     "schemaVersion": 3,

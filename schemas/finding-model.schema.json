@@ -50,6 +50,13 @@
         "message": {
           "type": "string",
           "description": "Human-readable explanation of the finding."
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/EvidenceRef"
+          },
+          "description": "The records in the Evidence Model this finding rests on -- flow nodes and edges, a policy result, an unknown (ADR 0070). Lets a reader drill from the finding to the analysis behind it, and lets SARIF show the path. Absent for findings derived from declared metadata alone."
         }
       },
       "required": [
@@ -258,7 +265,14 @@
         "UNRESOLVED_CONSUMER",
         "INDETERMINATE_CONSUMER",
         "SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY",
-        "SENSITIVE_FIELD_ENDPOINT_MISSING_HANDLING"
+        "SENSITIVE_FIELD_ENDPOINT_MISSING_HANDLING",
+        "LEAST_DATA_UNUSED_PATH",
+        "LEAST_DATA_UNUSED_SENSITIVE_PATH",
+        "LEAST_DATA_WHOLE_FIELD_TO_CLIENT",
+        "LEAST_DATA_ANALYSIS_INDETERMINATE",
+        "FLOW_POLICY_VIOLATED",
+        "FLOW_POLICY_INDETERMINATE",
+        "FLOW_ANALYSIS_INCOMPLETE"
       ],
       "description": "Every kind of fact a static rule or usage-scan/data-flow pass can report."
     },
@@ -281,6 +295,33 @@
         "error"
       ],
       "description": "How strongly a finding should be treated: `info` never blocks, `warning` blocks only under `--strict*`, `error` always blocks."
+    },
+    "EvidenceRef": {
+      "type": "object",
+      "properties": {
+        "model": {
+          "$ref": "#/definitions/EvidenceRefModel"
+        },
+        "id": {
+          "type": "string",
+          "description": "Flow node/edge id, observation id, or `ruleId#fieldNodeId` for a policy result group."
+        }
+      },
+      "required": [
+        "model",
+        "id"
+      ],
+      "additionalProperties": false,
+      "description": "A pointer to one record inside the Evidence Model."
+    },
+    "EvidenceRefModel": {
+      "type": "string",
+      "enum": [
+        "flow",
+        "policy",
+        "observation"
+      ],
+      "description": "Which sub-model of the Evidence Model a piece of evidence lives in."
     }
   }
 }

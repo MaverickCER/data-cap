@@ -29,6 +29,9 @@ export default [
   { label: "runtime/cache", file: "dist/runtime/cache.js", maxGzipBytes: 1 * 1024 },
   { label: "runtime/retry", file: "dist/runtime/retry.js", maxGzipBytes: 2 * 1024 },
   { label: "helpers", file: "dist/helpers.js", maxGzipBytes: 3 * 1024 },
+  // The runtime-observation recorder (ADR 0072) ships into the consumer's application, so it is budgeted
+  // like the other isomorphic entries. It is a few small functions with no dependencies.
+  { label: "observe", file: "dist/observe.js", maxGzipBytes: 1 * 1024 },
   { label: "build", file: "dist/build.js", maxGzipBytes: 999 * 1024 },
   { label: "eslint-plugin", file: "dist/eslint-plugin/index.js", maxGzipBytes: 999 * 1024 },
   { label: "cli", file: "dist/cli/index.js", maxGzipBytes: 999 * 1024 },

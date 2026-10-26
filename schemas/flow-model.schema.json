@@ -1,0 +1,368 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://maverickcer.github.io/data-cap/schema/flow-model.schema.json",
+  "title": "data-cap Flow Model",
+  "description": "Canonical, versioned function-level, field-sensitive data-flow facts (nodes, edges, explicit unknowns and a coverage summary), each with an epistemic status (see ADR 0070, ADR 0071). Generated from src/flow/flow-model.ts's FlowModel type -- never hand-authored.",
+  "$ref": "#/definitions/FlowModel",
+  "definitions": {
+    "FlowModel": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "number",
+          "const": 1,
+          "description": "Always `FLOW_MODEL_SCHEMA_VERSION`."
+        },
+        "nodes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FlowNode"
+          },
+          "description": "Every node, ordered by id."
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FlowEdge"
+          },
+          "description": "Every edge, ordered by id."
+        },
+        "unknowns": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FlowUnknown"
+          },
+          "description": "Every explicit unknown, ordered by id."
+        },
+        "coverage": {
+          "$ref": "#/definitions/FlowCoverage",
+          "description": "What was and was not analyzed."
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "nodes",
+        "edges",
+        "unknowns",
+        "coverage"
+      ],
+      "additionalProperties": false,
+      "description": "`data-cap`'s Flow Model."
+    },
+    "FlowNode": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "$ref": "#/definitions/FlowNodeKind"
+        },
+        "scope": {
+          "type": "string",
+          "description": "Root-relative POSIX path of the file that declares this node, or a stable namespace for a node with no file (a boundary)."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name unique within `scope` and `kind` (`buildUserProfile`, `buildUserProfile.user`, `User.email`)."
+        },
+        "status": {
+          "$ref": "#/definitions/FlowStatus"
+        },
+        "source": {
+          "$ref": "#/definitions/SourcePosition",
+          "description": "Declaration position within `scope`, when there is one."
+        },
+        "classification": {
+          "type": "string",
+          "description": "Declared or inherited sensitivity classification, when known -- carried verbatim, never inferred here."
+        },
+        "boundaryKind": {
+          "$ref": "#/definitions/FlowBoundaryKind",
+          "description": "What kind of boundary this is; only meaningful (and required by policy evaluation) on a `boundary` node."
+        },
+        "id": {
+          "type": "string",
+          "description": "Content-addressed: `kind:scope#name`."
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "name",
+        "scope",
+        "status"
+      ],
+      "additionalProperties": false,
+      "description": "One node of the Flow Model."
+    },
+    "FlowNodeKind": {
+      "type": "string",
+      "enum": [
+        "function",
+        "parameter",
+        "return",
+        "field",
+        "boundary"
+      ],
+      "description": "What a flow node is."
+    },
+    "FlowStatus": {
+      "type": "string",
+      "enum": [
+        "declared",
+        "static",
+        "observed",
+        "inferred",
+        "unknown"
+      ],
+      "description": "ADR 0071: the five epistemic statuses, shared by every flow fact, claim and finding."
+    },
+    "SourcePosition": {
+      "type": "object",
+      "properties": {
+        "line": {
+          "type": "number"
+        },
+        "column": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "line",
+        "column"
+      ],
+      "additionalProperties": false,
+      "description": "A 1-based line/column within a file already known from context (e.g. `DependencyEdge.from`)."
+    },
+    "FlowBoundaryKind": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/DataFlowEndpointKind"
+        },
+        {
+          "type": "string",
+          "const": "client-response"
+        },
+        {
+          "type": "string",
+          "const": "log"
+        }
+      ],
+      "description": "What a data-flow rule can name as a destination: the declared endpoint kinds, plus the two destinations only code analysis can see."
+    },
+    "DataFlowEndpointKind": {
+      "type": "string",
+      "enum": [
+        "database",
+        "cache",
+        "storage",
+        "queue",
+        "api",
+        "external-service",
+        "user-input",
+        "computed",
+        "internal"
+      ],
+      "description": "What kind of boundary a declared data-flow endpoint crosses -- a data store (`database`/`cache`/`storage`/`queue`), an external entity (`api`/`external-service`/`user-input`), or something internal to this codebase (`computed`/`internal`)."
+    },
+    "FlowEdge": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "$ref": "#/definitions/FlowEdgeKind"
+        },
+        "from": {
+          "type": "string",
+          "description": "Id of the source node."
+        },
+        "to": {
+          "type": "string",
+          "description": "Id of the target node."
+        },
+        "status": {
+          "$ref": "#/definitions/FlowStatus"
+        },
+        "path": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The field path this edge carries, for a field-sensitive edge; absent for an edge about the whole value or about control."
+        },
+        "source": {
+          "$ref": "#/definitions/SourceLocation",
+          "description": "Where in source this edge arises (a call site, a read), when known."
+        },
+        "handling": {
+          "$ref": "#/definitions/FlowHandling",
+          "description": "The data-safety state of the value at this hop, when declared or established -- policy evaluation reads it at boundary crossings."
+        },
+        "origin": {
+          "type": "string",
+          "description": "Id of the `field` node whose data this edge carries. Present on every data-carrying edge the flow pass derives, so a helper shared by several fields does not make each field appear to reach every other field's destinations. Absent on edges that are not about one field's data (a `calls` edge). `path` is expressed in the origin field's frame."
+        },
+        "id": {
+          "type": "string",
+          "description": "Content-addressed: `kind:from->to[:path]@status[^origin]`."
+        }
+      },
+      "required": [
+        "from",
+        "id",
+        "kind",
+        "status",
+        "to"
+      ],
+      "additionalProperties": false,
+      "description": "One edge of the Flow Model."
+    },
+    "FlowEdgeKind": {
+      "type": "string",
+      "enum": [
+        "reads",
+        "writes",
+        "transforms",
+        "discards",
+        "passes",
+        "returns",
+        "calls",
+        "crosses-boundary",
+        "side-effect"
+      ],
+      "description": "What an edge means. Data moves `from` -> `to` along `reads`, `writes`, `transforms`, `passes`, `returns` and `crosses-boundary`; `calls` is control flow and `discards` records that a function received a field and deliberately did not forward it -- neither carries data, so tracing does not follow them. `side-effect` links a function to the boundary it acts on."
+    },
+    "SourceLocation": {
+      "type": "object",
+      "properties": {
+        "line": {
+          "type": "number"
+        },
+        "column": {
+          "type": "number"
+        },
+        "file": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "column",
+        "file",
+        "line"
+      ],
+      "additionalProperties": false,
+      "description": "A `SourcePosition` plus the file it's in, for anywhere the file isn't already implied by the surrounding structure (e.g. a finding's list of candidate sites spanning multiple files)."
+    },
+    "FlowHandling": {
+      "type": "string",
+      "enum": [
+        "plaintext",
+        "masked",
+        "redacted",
+        "hashed",
+        "encrypted"
+      ],
+      "description": "The declared data-safety state of a value at a boundary crossing -- the vocabulary of `DataFlowEndpoint.handling` and of flow policy rules."
+    },
+    "FlowUnknown": {
+      "type": "object",
+      "properties": {
+        "reason": {
+          "$ref": "#/definitions/FlowUnknownReason"
+        },
+        "source": {
+          "$ref": "#/definitions/SourceLocation",
+          "description": "Where the unanalyzable construct is."
+        },
+        "subject": {
+          "type": "string",
+          "description": "The node this unknown prevents us from fully describing, when there is one."
+        },
+        "detail": {
+          "type": "string",
+          "description": "Human-readable detail (never parsed)."
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "origin": {
+                "type": "string",
+                "description": "Id of the `field` node the data comes from."
+              },
+              "path": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Path inside the field; `[]` is the whole field."
+              }
+            },
+            "required": [
+              "origin",
+              "path"
+            ],
+            "additionalProperties": false,
+            "description": "A piece of capability-field data an unknown concerns: the field node and the path inside it."
+          },
+          "description": "The tracked data that entered the part of the program that could not be followed. Absent means \"unknown which data\" -- every trace that reaches the subject must treat itself as incomplete. Present, it lets a trace of a different field or an unrelated path stay complete: an opaque call that only ever saw `email` says nothing about where `passwordHash` went."
+        },
+        "id": {
+          "type": "string",
+          "description": "Content-addressed: `unknown:reason:file:line:column`."
+        }
+      },
+      "required": [
+        "id",
+        "reason",
+        "source"
+      ],
+      "additionalProperties": false,
+      "description": "An explicit record that part of the program could not be analyzed."
+    },
+    "FlowUnknownReason": {
+      "type": "string",
+      "enum": [
+        "dynamic-access",
+        "unresolved-call",
+        "unresolved-import",
+        "unsupported-construct",
+        "missing-source",
+        "unanalyzed-function"
+      ],
+      "description": "Why a part of the program could not be analyzed (ADR 0053 citations apply to each)."
+    },
+    "FlowCoverage": {
+      "type": "object",
+      "properties": {
+        "functionsAnalyzed": {
+          "type": "number",
+          "description": "Function nodes whose status is not `unknown`."
+        },
+        "functionsUnanalyzed": {
+          "type": "number",
+          "description": "Function nodes whose status is `unknown`."
+        },
+        "edgesUnresolved": {
+          "type": "number",
+          "description": "Edges whose status is `unknown`."
+        },
+        "unknowns": {
+          "type": "number",
+          "description": "Number of `FlowUnknown` records."
+        },
+        "complete": {
+          "type": "boolean",
+          "description": "True only when nothing above is non-zero apart from `functionsAnalyzed`."
+        }
+      },
+      "required": [
+        "functionsAnalyzed",
+        "functionsUnanalyzed",
+        "edgesUnresolved",
+        "unknowns",
+        "complete"
+      ],
+      "additionalProperties": false,
+      "description": "What was and was not analyzed -- a projection must not call a graph complete unless `complete`."
+    }
+  }
+}

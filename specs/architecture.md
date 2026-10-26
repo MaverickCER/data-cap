@@ -114,7 +114,9 @@ src/
 │                   data-cap/runtime/retry     (optional, separately tree-shaken)
 ├── helpers/        data-cap/helpers          (optional utilities)
 ├── build/          data-cap/build            (Node-only build tooling, never imports node:fs)
-├── evidence/       data-cap/evidence         (Evidence Model projections)
+├── evidence/       data-cap/evidence         (Evidence Model projections, views and standards adapters)
+├── flow/           (internal)                 (pure flow, policy, observation, claims models and queries; no Node, no compiler)
+├── observe/        data-cap/observe          (runtime observation recorder; names only)
 └── eslint-plugin/  data-cap/eslint-plugin    (lint rules)
 ```
 

@@ -1,0 +1,32 @@
+{
+  "name": "data-cap-example-flow-explorer",
+  "private": true,
+  "type": "module",
+  "description": "Tier 4 -- a data-flow explorer. One evidence file (docs/data.evidence.json) is the only input; a devDependency renderer (@viz-js/viz) and a few lines of browser code turn it into an interactive, keyboard-operable, accessible view. Also writes every standards-based export (Mermaid, DOT, PROV, SARIF, OSCAL, OpenTelemetry) and is the end-to-end regression test for the flow analysis.",
+  "scripts": {
+    "start": "tsx src/main.ts",
+    "typecheck": "tsc --noEmit",
+    "docs": "tsx scripts/build.ts",
+    "build": "npm run docs",
+    "check": "tsx scripts/check.ts",
+    "test": "node --import tsx --test test/*.test.ts"
+  },
+  "dependencies": {
+    "analytics-sdk": "file:./vendor/analytics-sdk",
+    "data-cap": "file:../.."
+  },
+  "devDependencies": {
+    "@types/jsdom": "^21.1.7",
+    "@types/node": "^20.0.0",
+    "@viz-js/viz": "^3.11.0",
+    "ajv": "^8.20.0",
+    "ajv-draft-04": "^1.0.0",
+    "ajv-formats": "^3.0.1",
+    "axe-core": "^4.10.0",
+    "esbuild": "^0.28.1",
+    "jsdom": "^26.0.0",
+    "mermaid": "^12.2.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.5.0"
+  }
+}

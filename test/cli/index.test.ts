@@ -1,16 +1,21 @@
 import { realpathSync } from "node:fs"
 import path from "node:path"
 import { fileURLToPath, pathToFileURL } from "node:url"
-import { afterEach, describe, expect, it, vi } from "vitest"
+import fsPromises from "node:fs/promises"
+import os from "node:os"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import {
   helpText,
   directRunUrl,
   formatFieldPath,
   parseArgs,
+  readObservationsFile,
+  readRulesFile,
   resolveOptions,
   writeCheckSummary,
   writeFindings,
   writeGenerationSummary,
+  writeRulesSummary,
 } from "../../src/cli/index.js"
 import type { ParsedArgs } from "../../src/cli/index.js"
 import type { CheckArtifactsResult, ReportResult } from "../../src/build/index.js"
@@ -40,6 +45,7 @@ function baseArgs(overrides: Partial<ParsedArgs> = {}): ParsedArgs {
     strictDocs: false,
     strictOwnership: false,
     strictFlow: false,
+    flowEvidence: false,
     json: false,
     check: false,
     help: false,
@@ -131,6 +137,14 @@ describe("parseArgs", () => {
     expect(() => parseArgs(["--evidence"])).toThrow(/requires a value/)
     expect(() => parseArgs(["--include"])).toThrow(/requires a value/)
     expect(() => parseArgs(["--root"])).toThrow(/requires a value/)
+    expect(() => parseArgs(["--observations"])).toThrow(/requires a value/)
+    expect(() => parseArgs(["--rules"])).toThrow(/requires a value/)
+  })
+
+  it("leaves flowEvidence false and observations undefined when neither flag is given", () => {
+    const args = parseArgs(["--evidence", "e.json"])
+    expect(args.flowEvidence).toBe(false)
+    expect(args.observations).toBeUndefined()
   })
 
   it("parses with --evidence absent -- parseArgs itself never enforces requiredness, main() does", () => {
@@ -199,6 +213,8 @@ describe("parseArgs -- every flag sets exactly its own field", () => {
     expect(parseArgs(["--root", "/r"]).root).toBe("/r")
     expect(parseArgs(["--tsconfig", "tsc.json"]).tsconfig).toBe("tsc.json")
     expect(parseArgs(["--evidence", "e.json"]).evidence).toBe("e.json")
+    expect(parseArgs(["--observations", "obs.json"]).observations).toBe("obs.json")
+    expect(parseArgs(["--rules", "rules.json"]).rules).toBe("rules.json")
   })
 
   it("repeatable value flags accumulate in order", () => {
@@ -213,6 +229,7 @@ describe("parseArgs -- every flag sets exactly its own field", () => {
     expect(parseArgs(["--strict-docs"]).strictDocs).toBe(true)
     expect(parseArgs(["--strict-ownership"]).strictOwnership).toBe(true)
     expect(parseArgs(["--strict-flow"]).strictFlow).toBe(true)
+    expect(parseArgs(["--flow-evidence"]).flowEvidence).toBe(true)
     expect(parseArgs(["--json"]).json).toBe(true)
     expect(parseArgs(["--check"]).check).toBe(true)
     expect(parseArgs(["--help"]).help).toBe(true)
@@ -247,6 +264,9 @@ describe("helpText", () => {
       "--strict-docs",
       "--strict-ownership",
       "--strict-flow",
+      "--flow-evidence",
+      "--observations",
+      "--rules",
       "--json",
       "--check",
       "--help",
@@ -269,10 +289,21 @@ describe("helpText", () => {
   it("shows an example, groups the flags by what they are for, and names no decision record", () => {
     const text = helpText()
     expect(text).toContain("\nExamples:\n")
-    for (const heading of ["Where to look:", "What to write:", "What counts as an error:"]) {
+    for (const heading of [
+      "Where to look:",
+      "What to analyze:",
+      "What to write:",
+      "What counts as an error:",
+    ]) {
       expect(text).toContain(`\n${heading}\n`)
     }
     expect(text).not.toMatch(/ADR \d+/)
+  })
+
+  it("describes --strict-flow as meaningful with --flow-evidence, not as a no-op", () => {
+    const text = helpText()
+    expect(text).not.toContain("a no-op for this CLI")
+    expect(text).toMatch(/--strict-flow[^\n]*flow/)
   })
 
   it("lists the init subcommand", () => {
@@ -386,6 +417,211 @@ describe("resolveOptions (direct)", () => {
 
   it("defaults root to process.cwd() when --root is absent", () => {
     expect(resolveOptions(baseArgs()).root).toBe(process.cwd())
+  })
+
+  it("passes flowEvidence through only when --flow-evidence was given", () => {
+    expect(resolveOptions(baseArgs({ flowEvidence: true })).flowEvidence).toBe(true)
+    expect(resolveOptions(baseArgs())).not.toHaveProperty("flowEvidence")
+  })
+})
+
+describe("readObservationsFile", () => {
+  let dir: string
+
+  beforeEach(async () => {
+    dir = await fsPromises.mkdtemp(path.join(os.tmpdir(), "data-cap-obs-"))
+  })
+
+  afterEach(async () => {
+    await fsPromises.rm(dir, { recursive: true, force: true })
+  })
+
+  const event = { scope: "s", boundary: { kind: "api", name: "x" }, field: "a.b" }
+
+  it("reads a JSON array of observation events", async () => {
+    const file = path.join(dir, "obs.json")
+    await fsPromises.writeFile(file, JSON.stringify([event]), "utf8")
+    expect(await readObservationsFile(file)).toEqual([event])
+  })
+
+  it("reads an empty array (observations were collected and there were none)", async () => {
+    const file = path.join(dir, "obs.json")
+    await fsPromises.writeFile(file, "[]", "utf8")
+    expect(await readObservationsFile(file)).toEqual([])
+  })
+
+  it("rejects a file that is not valid JSON, naming the file", async () => {
+    const file = path.join(dir, "obs.json")
+    await fsPromises.writeFile(file, "{not json", "utf8")
+    await expect(readObservationsFile(file)).rejects.toThrow(
+      /--observations .*obs\.json.*not valid JSON/,
+    )
+  })
+
+  it("rejects JSON that is not an array", async () => {
+    const file = path.join(dir, "obs.json")
+    await fsPromises.writeFile(file, JSON.stringify({ events: [event] }), "utf8")
+    await expect(readObservationsFile(file)).rejects.toThrow(/JSON array of observation events/)
+  })
+
+  it("rejects a file that cannot be read, naming the file", async () => {
+    await expect(readObservationsFile(path.join(dir, "missing.json"))).rejects.toThrow(
+      /--observations .*missing\.json.*could not be read/,
+    )
+  })
+})
+
+describe("readRulesFile", () => {
+  let dir: string
+  beforeEach(async () => {
+    dir = await fsPromises.mkdtemp(path.join(os.tmpdir(), "data-cap-rules-"))
+  })
+  afterEach(async () => {
+    await fsPromises.rm(dir, { recursive: true, force: true })
+  })
+
+  it("reads and validates a rules file", async () => {
+    const file = path.join(dir, "rules.json")
+    await fsPromises.writeFile(
+      file,
+      JSON.stringify({ noPolicyViolations: true, maxUnknowns: 2 }),
+      "utf8",
+    )
+    expect(await readRulesFile(file)).toEqual({ noPolicyViolations: true, maxUnknowns: 2 })
+  })
+
+  it("rejects an invalid rules file with every problem listed and the file named", async () => {
+    const file = path.join(dir, "rules.json")
+    await fsPromises.writeFile(
+      file,
+      JSON.stringify({ noPolicyViolation: true, maxUnknowns: -1 }),
+      "utf8",
+    )
+    await expect(readRulesFile(file)).rejects.toThrow(
+      /--rules .*rules\.json[\s\S]*noPolicyViolation[\s\S]*maxUnknowns/,
+    )
+  })
+
+  it("rejects a file that cannot be read, naming the file", async () => {
+    await expect(readRulesFile(path.join(dir, "missing.json"))).rejects.toThrow(
+      /--rules .*missing\.json.*could not be read/,
+    )
+  })
+})
+
+describe("writeRulesSummary", () => {
+  it("says how many rules were evaluated and that all were satisfied", () => {
+    const out = captureStdout(() => {
+      writeRulesSummary({
+        ok: true,
+        evaluated: ["noPolicyViolations", "maxUnknowns"],
+        violations: [],
+      })
+    })
+    expect(out).toBe("Evidence rules: 2 evaluated, all satisfied.\n")
+  })
+
+  it("lists each violation under a count", () => {
+    const out = captureStdout(() => {
+      writeRulesSummary({
+        ok: false,
+        evaluated: ["noPolicyViolations", "maxUnknowns"],
+        violations: [
+          { rule: "noPolicyViolations", message: "Rule a/b is violated.", evidence: [] },
+        ],
+      })
+    })
+    expect(out).toContain("Evidence rules: 2 evaluated, 1 violation(s):")
+    expect(out).toContain("  - [noPolicyViolations] Rule a/b is violated.")
+  })
+})
+
+describe("writeGenerationSummary -- flow analysis (direct)", () => {
+  const flowResult = {
+    manifest: undefined,
+    documentation: undefined,
+    usage: undefined,
+    flow: undefined,
+    findings: [],
+    warnings: [],
+    evidence: {
+      flow: {
+        coverage: {
+          functionsAnalyzed: 9,
+          functionsUnanalyzed: 1,
+          edgesUnresolved: 0,
+          unknowns: 2,
+          complete: false,
+        },
+      },
+      policy: { summary: { satisfied: 3, violated: 1, indeterminate: 2 } },
+      observation: { scopes: ["a", "b"], observations: [{}, {}, {}], skipped: 1 },
+      claims: {
+        summary: {
+          verified: 4,
+          inferred: 0,
+          unobserved: 5,
+          contradicted: 1,
+          "observed-only": 0,
+          indeterminate: 2,
+        },
+      },
+    },
+  } as unknown as ReportResult
+
+  it("summarizes coverage, policy outcomes, observations and claims", () => {
+    const out = captureStdout(() => {
+      writeGenerationSummary({}, flowResult)
+    })
+    expect(out).toContain(
+      "Flow analysis: 9 function(s) analyzed, 1 not fully analyzed, 2 unknown(s) -- not complete.",
+    )
+    expect(out).toContain("Policy: 3 satisfied, 1 violated, 2 indeterminate.")
+    expect(out).toContain("Observations: 3 across 2 scope(s), 1 skipped as malformed.")
+    expect(out).toContain("Claims: 4 verified, 5 unobserved, 1 contradicted, 2 indeterminate.")
+  })
+
+  it("says complete only when the model is complete, and omits zero-count claim categories", () => {
+    const complete = {
+      ...flowResult,
+      evidence: {
+        flow: {
+          coverage: {
+            functionsAnalyzed: 3,
+            functionsUnanalyzed: 0,
+            edgesUnresolved: 0,
+            unknowns: 0,
+            complete: true,
+          },
+        },
+        claims: {
+          summary: {
+            verified: 1,
+            inferred: 0,
+            unobserved: 0,
+            contradicted: 0,
+            "observed-only": 0,
+            indeterminate: 0,
+          },
+        },
+      },
+    } as unknown as ReportResult
+    const out = captureStdout(() => {
+      writeGenerationSummary({}, complete)
+    })
+    expect(out).toContain("Flow analysis: 3 function(s) analyzed -- complete.")
+    expect(out).toContain("Claims: 1 verified.")
+    expect(out).not.toContain("Policy:")
+    expect(out).not.toContain("Observations:")
+  })
+
+  it("prints nothing about flow when the evidence has no flow, policy, observation or claims", () => {
+    const none = { ...flowResult, evidence: {} } as unknown as ReportResult
+    expect(
+      captureStdout(() => {
+        writeGenerationSummary({}, none)
+      }),
+    ).toBe("")
   })
 })
 

@@ -103,6 +103,10 @@
           ],
           "additionalProperties": false,
           "description": "Present only when invoked with --check. Governs --check's own pass/fail exit code, independent of this envelope's top-level `ok` (which keeps its existing, unrelated meaning: \"did generation complete without throwing\")."
+        },
+        "evidenceRules": {
+          "$ref": "#/definitions/EvidenceRulesResult",
+          "description": "Present only when invoked with --rules: the verdict of the rules enforced over this run's evidence."
         }
       },
       "required": [
@@ -420,6 +424,13 @@
           "$ref": "#/definitions/SourcePosition",
           "description": "Position of the declaration site (capability's own call, or field's own key) this finding is anchored to, when one is available -- see ADR 0052. Additive: absent for findings with no single declaration-site anchor (e.g. a usage-scan finding whose subject is a consuming file, not a declaration)."
         },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/EvidenceRef"
+          },
+          "description": "The records in the Evidence Model this finding rests on -- flow nodes and edges, a policy result, an unknown (ADR 0070). Lets a reader drill from the finding to the analysis behind it, and lets SARIF show the path. Absent for findings derived from declared metadata alone."
+        },
         "indeterminateSites": {
           "type": "array",
           "items": {
@@ -460,7 +471,14 @@
         "UNRESOLVED_CONSUMER",
         "INDETERMINATE_CONSUMER",
         "SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY",
-        "SENSITIVE_FIELD_ENDPOINT_MISSING_HANDLING"
+        "SENSITIVE_FIELD_ENDPOINT_MISSING_HANDLING",
+        "LEAST_DATA_UNUSED_PATH",
+        "LEAST_DATA_UNUSED_SENSITIVE_PATH",
+        "LEAST_DATA_WHOLE_FIELD_TO_CLIENT",
+        "LEAST_DATA_ANALYSIS_INDETERMINATE",
+        "FLOW_POLICY_VIOLATED",
+        "FLOW_POLICY_INDETERMINATE",
+        "FLOW_ANALYSIS_INCOMPLETE"
       ],
       "description": "Every kind of fact a static rule or usage-scan/data-flow pass can report."
     },
@@ -500,6 +518,33 @@
       ],
       "additionalProperties": false,
       "description": "A 1-based line/column within a file already known from context (e.g. `DependencyEdge.from`)."
+    },
+    "EvidenceRef": {
+      "type": "object",
+      "properties": {
+        "model": {
+          "$ref": "#/definitions/EvidenceRefModel"
+        },
+        "id": {
+          "type": "string",
+          "description": "Flow node/edge id, observation id, or `ruleId#fieldNodeId` for a policy result group."
+        }
+      },
+      "required": [
+        "model",
+        "id"
+      ],
+      "additionalProperties": false,
+      "description": "A pointer to one record inside the Evidence Model."
+    },
+    "EvidenceRefModel": {
+      "type": "string",
+      "enum": [
+        "flow",
+        "policy",
+        "observation"
+      ],
+      "description": "Which sub-model of the Evidence Model a piece of evidence lives in."
     },
     "SourceLocation": {
       "type": "object",
@@ -748,7 +793,7 @@
       "properties": {
         "schemaVersion": {
           "type": "number",
-          "const": 2,
+          "const": 3,
           "description": "Always `EVIDENCE_MODEL_SCHEMA_VERSION`."
         },
         "provenance": {
@@ -782,6 +827,22 @@
         "change": {
           "$ref": "#/definitions/ChangeModel",
           "description": "Change Model, or `undefined` when no manifest diff was available -- see `computed.change` before reading absence as \"nothing changed.\" Not a diffable input across two `EvidenceModel`s the way the other five project-varying fields conceptually are -- it already IS a diff."
+        },
+        "flow": {
+          "$ref": "#/definitions/FlowModel",
+          "description": "Flow Model, or `undefined` when no flow pass ran -- see `computed.flow` before reading absence as \"no flows.\""
+        },
+        "policy": {
+          "$ref": "#/definitions/PolicyModel",
+          "description": "Policy Model, or `undefined` when no rules were evaluated -- see `computed.policy`."
+        },
+        "observation": {
+          "$ref": "#/definitions/ObservationModel",
+          "description": "Observation Model, or `undefined` when no observations were ingested -- see `computed.observation` before reading absence as \"nothing was observed.\""
+        },
+        "claims": {
+          "$ref": "#/definitions/ClaimsModel",
+          "description": "Claims Model, derived by `buildEvidenceModel` from `flow` (plus `policy` and `observation` when present), never supplied by a caller -- one derivation path, so the claims can never disagree with the facts they cite. `undefined` exactly when `flow` is."
         },
         "runtimeContract": {
           "$ref": "#/definitions/RuntimeContractModel",
@@ -1053,6 +1114,13 @@
           "type": "object",
           "additionalProperties": {},
           "description": "Free-form extension bag for anything data-cap itself has no named concept for -- opaque, never inspected or validated by any code path in this package (e.g. jurisdiction-specific regulatory classification: `{ regulatory: \"GDPR,PCI-DSS\" }`). Once a concept matters enough for data-cap to reason about, it gets its own named field above (as `purpose`/`legalBasis`/`dataResidency`/`transferSafeguard`/`auditRequired` did); everything else stays here."
+        },
+        "flowPolicy": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FlowPolicyDocs"
+          },
+          "description": "Declared data-flow rules for this capability's fields, evaluated against the Flow Model (see `FlowPolicyDocs`)."
         }
       }
     },
@@ -1211,14 +1279,7 @@
           "description": "A literal, trackable location for this endpoint -- a URL, a route path, a `table:column` reference. Distinct from `name` (a short label): this is meant to be compared/matched across capabilities (e.g. flagging two capabilities that declare the same URL as likely-duplicate fetches), not just read by a person."
         },
         "handling": {
-          "type": "string",
-          "enum": [
-            "plaintext",
-            "masked",
-            "redacted",
-            "hashed",
-            "encrypted"
-          ],
+          "$ref": "#/definitions/FlowHandling",
           "description": "The declared data-safety state of this field's value AT this specific boundary crossing -- e.g. a field that arrives `\"encrypted\"` on an `\"input\"` endpoint and is sent back out `\"redacted\"` on an `\"output\"` endpoint. Declared only, same presence-only discipline as every other field in this vocabulary: this records what a developer states about handling at this crossing, never that data-cap has verified the field's actual runtime value matches the claim."
         }
       },
@@ -1253,6 +1314,17 @@
       ],
       "description": "What kind of boundary a declared data-flow endpoint crosses -- a data store (`database`/`cache`/`storage`/`queue`), an external entity (`api`/`external-service`/`user-input`), or something internal to this codebase (`computed`/`internal`)."
     },
+    "FlowHandling": {
+      "type": "string",
+      "enum": [
+        "plaintext",
+        "masked",
+        "redacted",
+        "hashed",
+        "encrypted"
+      ],
+      "description": "The declared data-safety state of a value at a boundary crossing -- the vocabulary of `DataFlowEndpoint.handling` and of flow policy rules."
+    },
     "Loosen<EvidenceFieldDocs>": {
       "type": "object",
       "properties": {
@@ -1266,6 +1338,95 @@
       },
       "additionalProperties": false,
       "description": "Every property here is always assigned (never conditionally omitted -- see extractCapabilityDocs()/extractOperationDocsMap()/ extractEvidenceFieldsMap() below), just sometimes with an `undefined` value when the AST literal didn't declare it. exactOptionalPropertyTypes distinguishes \"key absent\" from \"key present holding undefined\"; widening every property to explicitly include `| undefined` (rather than routing every assignment through a conditional-spread \"omit if absent\" instead) matches what this type actually represents: a raw, unconstrained parse result, not a validated CapabilityDocs."
+    },
+    "FlowPolicyDocs": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique within this capability."
+        },
+        "description": {
+          "type": "string",
+          "description": "Why the rule exists."
+        },
+        "appliesTo": {
+          "$ref": "#/definitions/FlowPolicyAppliesToDocs",
+          "description": "Which fields the rule governs."
+        },
+        "forbidDestinations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FlowBoundaryKind"
+          },
+          "description": "Destinations the governed data must never reach."
+        },
+        "allowedDestinations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FlowBoundaryKind"
+          },
+          "description": "If set, the only destinations the governed data may reach."
+        },
+        "allowedHandling": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FlowHandling"
+          },
+          "description": "Handling that exempts a crossing from `forbidDestinations`/`allowedDestinations`."
+        },
+        "requireHandling": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FlowHandling"
+          },
+          "description": "If set, every crossing of the governed data must declare one of these handlings."
+        }
+      },
+      "required": [
+        "id",
+        "appliesTo"
+      ],
+      "additionalProperties": false,
+      "description": "One declared data-flow rule: which of this capability's fields it governs, and what must hold wherever their data goes. Evaluated against the Flow Model at build time; a rule is a declaration, never a runtime check, and a result is only as complete as the analysis behind it (see the Policy Model's `indeterminate` outcome). At least one of `forbidDestinations`, `allowedDestinations` and `requireHandling` is required."
+    },
+    "FlowPolicyAppliesToDocs": {
+      "type": "object",
+      "properties": {
+        "classification": {
+          "type": "string",
+          "description": "Every field of this capability whose resolved `sensitivity` equals this value."
+        },
+        "field": {
+          "type": "string",
+          "description": "One field of this capability, by its top-level key."
+        },
+        "path": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Narrows the rule to one path inside each governed field (for example `[\"passwordHash\"]`)."
+        }
+      },
+      "additionalProperties": false,
+      "description": "Which fields a data-flow rule governs; every supplied criterion must match, and `classification` or `field` is required."
+    },
+    "FlowBoundaryKind": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/DataFlowEndpointKind"
+        },
+        {
+          "type": "string",
+          "const": "client-response"
+        },
+        {
+          "type": "string",
+          "const": "log"
+        }
+      ],
+      "description": "What a data-flow rule can name as a destination: the declared endpoint kinds, plus the two destinations only code analysis can see."
     },
     "FieldNode": {
       "type": "object",
@@ -1774,13 +1935,33 @@
         "change": {
           "type": "boolean",
           "description": "Whether a manifest diff was available and produced a Change Model this run."
+        },
+        "flow": {
+          "type": "boolean",
+          "description": "Whether a flow pass ran and produced a Flow Model this run."
+        },
+        "policy": {
+          "type": "boolean",
+          "description": "Whether policy rules were evaluated and produced a Policy Model this run."
+        },
+        "observation": {
+          "type": "boolean",
+          "description": "Whether runtime observations were ingested and produced an Observation Model this run."
+        },
+        "claims": {
+          "type": "boolean",
+          "description": "Whether claims were derived this run -- true exactly when `flow` was computed."
         }
       },
       "required": [
         "dependency",
         "ownership",
         "finding",
-        "change"
+        "change",
+        "flow",
+        "policy",
+        "observation",
+        "claims"
       ],
       "additionalProperties": false,
       "description": "Which project-varying sub-models this particular run actually computed (OUT-04).\n\nWithout this, a persisted `data.evidence.json` is ambiguous in exactly the way a governance artifact must never be: an absent `dependency` could mean \"nothing in this project depends on anything\" (a real, reportable finding) or \"this run never scanned for dependencies\" (no finding at all, just an un-run pass). Those are opposite conclusions and the JSON looked identical either way.\n\nenv-cap solves the same ambiguity by always computing all six sub-models, so absence never happens. `data-cap` deliberately does not follow that: the usage scan is the expensive pass here, and `--docs` alone is supposed to stay cheap. So instead of forcing every run to pay for a full dependency scan, each sub-model's presence is stated explicitly.\n\n`capability`, `lifecycle`, and `runtimeContract` have no flag -- they are always populated by construction, so a flag could only ever read `true`.\n\nA pass that ran and found nothing is `true` with an empty result, never `false`: \"we looked and found none\" is a genuine finding, and collapsing it into \"we didn't look\" is precisely the confusion this field exists to prevent."
@@ -1947,6 +2128,13 @@
         "message": {
           "type": "string",
           "description": "Human-readable explanation of the finding."
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/EvidenceRef"
+          },
+          "description": "The records in the Evidence Model this finding rests on -- flow nodes and edges, a policy result, an unknown (ADR 0070). Lets a reader drill from the finding to the analysis behind it, and lets SARIF show the path. Absent for findings derived from declared metadata alone."
         }
       },
       "required": [
@@ -2175,6 +2363,741 @@
       "additionalProperties": false,
       "description": "One added-field/removed-field pair correlated into a single rename via the current declaration's `renamedFrom` (EVD-05)."
     },
+    "FlowModel": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "number",
+          "const": 1,
+          "description": "Always `FLOW_MODEL_SCHEMA_VERSION`."
+        },
+        "nodes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FlowNode"
+          },
+          "description": "Every node, ordered by id."
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FlowEdge"
+          },
+          "description": "Every edge, ordered by id."
+        },
+        "unknowns": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FlowUnknown"
+          },
+          "description": "Every explicit unknown, ordered by id."
+        },
+        "coverage": {
+          "$ref": "#/definitions/FlowCoverage",
+          "description": "What was and was not analyzed."
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "nodes",
+        "edges",
+        "unknowns",
+        "coverage"
+      ],
+      "additionalProperties": false,
+      "description": "`data-cap`'s Flow Model."
+    },
+    "FlowNode": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "$ref": "#/definitions/FlowNodeKind"
+        },
+        "scope": {
+          "type": "string",
+          "description": "Root-relative POSIX path of the file that declares this node, or a stable namespace for a node with no file (a boundary)."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name unique within `scope` and `kind` (`buildUserProfile`, `buildUserProfile.user`, `User.email`)."
+        },
+        "status": {
+          "$ref": "#/definitions/FlowStatus"
+        },
+        "source": {
+          "$ref": "#/definitions/SourcePosition",
+          "description": "Declaration position within `scope`, when there is one."
+        },
+        "classification": {
+          "type": "string",
+          "description": "Declared or inherited sensitivity classification, when known -- carried verbatim, never inferred here."
+        },
+        "boundaryKind": {
+          "$ref": "#/definitions/FlowBoundaryKind",
+          "description": "What kind of boundary this is; only meaningful (and required by policy evaluation) on a `boundary` node."
+        },
+        "id": {
+          "type": "string",
+          "description": "Content-addressed: `kind:scope#name`."
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "name",
+        "scope",
+        "status"
+      ],
+      "additionalProperties": false,
+      "description": "One node of the Flow Model."
+    },
+    "FlowNodeKind": {
+      "type": "string",
+      "enum": [
+        "function",
+        "parameter",
+        "return",
+        "field",
+        "boundary"
+      ],
+      "description": "What a flow node is."
+    },
+    "FlowStatus": {
+      "type": "string",
+      "enum": [
+        "declared",
+        "static",
+        "observed",
+        "inferred",
+        "unknown"
+      ],
+      "description": "ADR 0071: the five epistemic statuses, shared by every flow fact, claim and finding."
+    },
+    "FlowEdge": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "$ref": "#/definitions/FlowEdgeKind"
+        },
+        "from": {
+          "type": "string",
+          "description": "Id of the source node."
+        },
+        "to": {
+          "type": "string",
+          "description": "Id of the target node."
+        },
+        "status": {
+          "$ref": "#/definitions/FlowStatus"
+        },
+        "path": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The field path this edge carries, for a field-sensitive edge; absent for an edge about the whole value or about control."
+        },
+        "source": {
+          "$ref": "#/definitions/SourceLocation",
+          "description": "Where in source this edge arises (a call site, a read), when known."
+        },
+        "handling": {
+          "$ref": "#/definitions/FlowHandling",
+          "description": "The data-safety state of the value at this hop, when declared or established -- policy evaluation reads it at boundary crossings."
+        },
+        "origin": {
+          "type": "string",
+          "description": "Id of the `field` node whose data this edge carries. Present on every data-carrying edge the flow pass derives, so a helper shared by several fields does not make each field appear to reach every other field's destinations. Absent on edges that are not about one field's data (a `calls` edge). `path` is expressed in the origin field's frame."
+        },
+        "id": {
+          "type": "string",
+          "description": "Content-addressed: `kind:from->to[:path]@status[^origin]`."
+        }
+      },
+      "required": [
+        "from",
+        "id",
+        "kind",
+        "status",
+        "to"
+      ],
+      "additionalProperties": false,
+      "description": "One edge of the Flow Model."
+    },
+    "FlowEdgeKind": {
+      "type": "string",
+      "enum": [
+        "reads",
+        "writes",
+        "transforms",
+        "discards",
+        "passes",
+        "returns",
+        "calls",
+        "crosses-boundary",
+        "side-effect"
+      ],
+      "description": "What an edge means. Data moves `from` -> `to` along `reads`, `writes`, `transforms`, `passes`, `returns` and `crosses-boundary`; `calls` is control flow and `discards` records that a function received a field and deliberately did not forward it -- neither carries data, so tracing does not follow them. `side-effect` links a function to the boundary it acts on."
+    },
+    "FlowUnknown": {
+      "type": "object",
+      "properties": {
+        "reason": {
+          "$ref": "#/definitions/FlowUnknownReason"
+        },
+        "source": {
+          "$ref": "#/definitions/SourceLocation",
+          "description": "Where the unanalyzable construct is."
+        },
+        "subject": {
+          "type": "string",
+          "description": "The node this unknown prevents us from fully describing, when there is one."
+        },
+        "detail": {
+          "type": "string",
+          "description": "Human-readable detail (never parsed)."
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "origin": {
+                "type": "string",
+                "description": "Id of the `field` node the data comes from."
+              },
+              "path": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Path inside the field; `[]` is the whole field."
+              }
+            },
+            "required": [
+              "origin",
+              "path"
+            ],
+            "additionalProperties": false,
+            "description": "A piece of capability-field data an unknown concerns: the field node and the path inside it."
+          },
+          "description": "The tracked data that entered the part of the program that could not be followed. Absent means \"unknown which data\" -- every trace that reaches the subject must treat itself as incomplete. Present, it lets a trace of a different field or an unrelated path stay complete: an opaque call that only ever saw `email` says nothing about where `passwordHash` went."
+        },
+        "id": {
+          "type": "string",
+          "description": "Content-addressed: `unknown:reason:file:line:column`."
+        }
+      },
+      "required": [
+        "id",
+        "reason",
+        "source"
+      ],
+      "additionalProperties": false,
+      "description": "An explicit record that part of the program could not be analyzed."
+    },
+    "FlowUnknownReason": {
+      "type": "string",
+      "enum": [
+        "dynamic-access",
+        "unresolved-call",
+        "unresolved-import",
+        "unsupported-construct",
+        "missing-source",
+        "unanalyzed-function"
+      ],
+      "description": "Why a part of the program could not be analyzed (ADR 0053 citations apply to each)."
+    },
+    "FlowCoverage": {
+      "type": "object",
+      "properties": {
+        "functionsAnalyzed": {
+          "type": "number",
+          "description": "Function nodes whose status is not `unknown`."
+        },
+        "functionsUnanalyzed": {
+          "type": "number",
+          "description": "Function nodes whose status is `unknown`."
+        },
+        "edgesUnresolved": {
+          "type": "number",
+          "description": "Edges whose status is `unknown`."
+        },
+        "unknowns": {
+          "type": "number",
+          "description": "Number of `FlowUnknown` records."
+        },
+        "complete": {
+          "type": "boolean",
+          "description": "True only when nothing above is non-zero apart from `functionsAnalyzed`."
+        }
+      },
+      "required": [
+        "functionsAnalyzed",
+        "functionsUnanalyzed",
+        "edgesUnresolved",
+        "unknowns",
+        "complete"
+      ],
+      "additionalProperties": false,
+      "description": "What was and was not analyzed -- a projection must not call a graph complete unless `complete`."
+    },
+    "PolicyModel": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "number",
+          "const": 1,
+          "description": "Always `POLICY_MODEL_SCHEMA_VERSION`."
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FlowPolicyRule"
+          },
+          "description": "The declared rules, ordered by id."
+        },
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PolicyResult"
+          },
+          "description": "Every evaluation result, ordered by rule, subject, boundary."
+        },
+        "summary": {
+          "$ref": "#/definitions/PolicySummary",
+          "description": "Counts by outcome."
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "rules",
+        "results",
+        "summary"
+      ],
+      "additionalProperties": false,
+      "description": "`data-cap`'s Policy Model."
+    },
+    "FlowPolicyRule": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique, stable identifier."
+        },
+        "appliesTo": {
+          "$ref": "#/definitions/FlowPolicyAppliesTo",
+          "description": "Which fields this rule governs."
+        },
+        "forbidDestinations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FlowBoundaryKind"
+          },
+          "description": "Boundary kinds the governed fields must never reach."
+        },
+        "allowedDestinations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FlowBoundaryKind"
+          },
+          "description": "If set, the only boundary kinds the governed fields may reach."
+        },
+        "allowedHandling": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FlowHandling"
+          },
+          "description": "Handling that exempts a crossing from `forbidDestinations`/`allowedDestinations`."
+        },
+        "requireHandling": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FlowHandling"
+          },
+          "description": "If set, every boundary crossing of a governed field must declare one of these handlings."
+        },
+        "description": {
+          "type": "string",
+          "description": "Free-text rationale, carried through verbatim."
+        }
+      },
+      "required": [
+        "id",
+        "appliesTo"
+      ],
+      "additionalProperties": false,
+      "description": "One declared data-flow rule. At least one constraint must be set."
+    },
+    "FlowPolicyAppliesTo": {
+      "type": "object",
+      "properties": {
+        "classification": {
+          "type": "string",
+          "description": "Exact match against a field node's `classification`."
+        },
+        "field": {
+          "type": "string",
+          "description": "Exact match against a field node's `name` (for example `User.email`)."
+        },
+        "scope": {
+          "type": "string",
+          "description": "Restricts the rule to fields declared in this file (a root-relative path); never sufficient on its own."
+        },
+        "path": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Narrows the rule to one path inside each matching field (for example `[\"passwordHash\"]`): only flow of that path, or of the whole field, counts."
+        }
+      },
+      "additionalProperties": false,
+      "description": "Which fields a rule applies to; every supplied criterion must match, and at least one is required."
+    },
+    "PolicyResult": {
+      "type": "object",
+      "properties": {
+        "ruleId": {
+          "type": "string"
+        },
+        "subject": {
+          "type": "string",
+          "description": "Id of the field node the rule was evaluated for; absent only for `rule-matches-nothing`."
+        },
+        "boundary": {
+          "type": "string",
+          "description": "Id of the boundary node this result concerns; absent when none was reached or the result is about the trace as a whole."
+        },
+        "outcome": {
+          "$ref": "#/definitions/PolicyOutcome"
+        },
+        "reason": {
+          "$ref": "#/definitions/PolicyIndeterminateReason",
+          "description": "Present exactly when `outcome` is `indeterminate`."
+        },
+        "basis": {
+          "$ref": "#/definitions/FlowStatus",
+          "description": "The weakest epistemic status of the edges the result rests on (`unknown` for an indeterminate result)."
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Ids of the edges on the path that justifies this result."
+        }
+      },
+      "required": [
+        "ruleId",
+        "outcome",
+        "basis",
+        "edges"
+      ],
+      "additionalProperties": false,
+      "description": "One evaluation result."
+    },
+    "PolicyOutcome": {
+      "type": "string",
+      "enum": [
+        "satisfied",
+        "violated",
+        "indeterminate"
+      ],
+      "description": "How a rule fared against one field (and, when relevant, one boundary)."
+    },
+    "PolicyIndeterminateReason": {
+      "type": "string",
+      "enum": [
+        "rule-matches-nothing",
+        "trace-incomplete",
+        "handling-not-declared",
+        "boundary-kind-unknown"
+      ],
+      "description": "Why a result is `indeterminate`."
+    },
+    "PolicySummary": {
+      "type": "object",
+      "properties": {
+        "satisfied": {
+          "type": "number"
+        },
+        "violated": {
+          "type": "number"
+        },
+        "indeterminate": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "satisfied",
+        "violated",
+        "indeterminate"
+      ],
+      "additionalProperties": false,
+      "description": "Counts by outcome."
+    },
+    "ObservationModel": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "number",
+          "const": 1,
+          "description": "Always `OBSERVATION_MODEL_SCHEMA_VERSION`."
+        },
+        "scopes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Every distinct scope that contributed at least one observation, sorted."
+        },
+        "observations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Observation"
+          },
+          "description": "Every observation, ordered by id."
+        },
+        "skipped": {
+          "type": "number",
+          "description": "Events dropped as malformed -- stated, never silent."
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "scopes",
+        "observations",
+        "skipped"
+      ],
+      "additionalProperties": false,
+      "description": "`data-cap`'s Observation Model."
+    },
+    "Observation": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Content-addressed: `observation:scope|kind:boundary|field|handling-or-dash`."
+        },
+        "scope": {
+          "type": "string"
+        },
+        "boundary": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "$ref": "#/definitions/FlowBoundaryKind"
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "name"
+          ],
+          "additionalProperties": false
+        },
+        "field": {
+          "type": "string",
+          "description": "Capability-qualified dotted field path -- the Flow Model's field-node naming."
+        },
+        "handling": {
+          "$ref": "#/definitions/FlowHandling"
+        },
+        "count": {
+          "type": "number",
+          "description": "How many matching events were recorded."
+        },
+        "status": {
+          "type": "string",
+          "const": "observed",
+          "description": "Always `observed` (ADR 0071)."
+        }
+      },
+      "required": [
+        "id",
+        "scope",
+        "boundary",
+        "field",
+        "count",
+        "status"
+      ],
+      "additionalProperties": false,
+      "description": "One aggregated observation."
+    },
+    "ClaimsModel": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "number",
+          "const": 1,
+          "description": "Always `CLAIMS_MODEL_SCHEMA_VERSION`."
+        },
+        "claims": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Claim"
+          },
+          "description": "Every claim, ordered by id."
+        },
+        "summary": {
+          "$ref": "#/definitions/ClaimsSummary"
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "claims",
+        "summary"
+      ],
+      "additionalProperties": false,
+      "description": "`data-cap`'s Claims Model."
+    },
+    "Claim": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Content-addressed."
+        },
+        "kind": {
+          "$ref": "#/definitions/ClaimKind"
+        },
+        "statement": {
+          "type": "string",
+          "description": "Human-readable statement, derived from the structured fields and never parsed."
+        },
+        "subject": {
+          "type": "string",
+          "description": "Capability-qualified dotted field name."
+        },
+        "object": {
+          "type": "string",
+          "description": "Boundary name (`field-reaches-boundary`) or rule id (`policy-holds`)."
+        },
+        "status": {
+          "$ref": "#/definitions/FlowStatus",
+          "description": "Epistemic status of the underlying fact: the weakest status along the static path, or `observed` for an observation-only claim."
+        },
+        "verification": {
+          "$ref": "#/definitions/ClaimVerification"
+        },
+        "scope": {
+          "$ref": "#/definitions/ClaimScope"
+        },
+        "supporting": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/EvidenceRef"
+          }
+        },
+        "contradicting": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/EvidenceRef"
+          }
+        },
+        "derivedFrom": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/EvidenceRefModel"
+          },
+          "description": "Which sub-models this claim was derived from."
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "statement",
+        "subject",
+        "object",
+        "status",
+        "verification",
+        "scope",
+        "supporting",
+        "contradicting",
+        "derivedFrom"
+      ],
+      "additionalProperties": false,
+      "description": "One claim."
+    },
+    "ClaimKind": {
+      "type": "string",
+      "enum": [
+        "field-reaches-boundary",
+        "field-sourced-from-boundary",
+        "policy-holds"
+      ],
+      "description": "What a claim asserts."
+    },
+    "ClaimVerification": {
+      "type": "string",
+      "enum": [
+        "verified",
+        "inferred",
+        "unobserved",
+        "contradicted",
+        "observed-only",
+        "indeterminate"
+      ],
+      "description": "How the evidence lines up for a claim."
+    },
+    "ClaimScope": {
+      "type": "object",
+      "properties": {
+        "observationScopes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Every observation scope that contributed to the claim, sorted; empty when none were run or none matched."
+        },
+        "traceComplete": {
+          "type": "boolean",
+          "description": "False when the static trace behind the claim touched an `unknown` fact: the real picture may be larger."
+        }
+      },
+      "required": [
+        "observationScopes",
+        "traceComplete"
+      ],
+      "additionalProperties": false,
+      "description": "What a claim covers and how completely."
+    },
+    "ClaimsSummary": {
+      "type": "object",
+      "properties": {
+        "verified": {
+          "type": "number"
+        },
+        "inferred": {
+          "type": "number"
+        },
+        "unobserved": {
+          "type": "number"
+        },
+        "contradicted": {
+          "type": "number"
+        },
+        "observed-only": {
+          "type": "number"
+        },
+        "indeterminate": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "verified",
+        "inferred",
+        "unobserved",
+        "contradicted",
+        "observed-only",
+        "indeterminate"
+      ],
+      "additionalProperties": false,
+      "description": "Claim counts by verification status."
+    },
     "RuntimeContractModel": {
       "type": "object",
       "properties": {
@@ -2231,6 +3154,85 @@
       ],
       "additionalProperties": false,
       "description": "One documented runtime guarantee, traced to the ADR that governs it."
+    },
+    "EvidenceRulesResult": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "description": "True exactly when there are no violations."
+        },
+        "evaluated": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "noPolicyViolations",
+              "noIndeterminatePolicies",
+              "maxContradictedClaims",
+              "maxUnknowns",
+              "requireComplete",
+              "maxUnusedSensitivePaths",
+              "maxWholeFieldToClient",
+              "requireObservations",
+              "minVerifiedClaims",
+              "requireVerified"
+            ]
+          },
+          "description": "The rules that were evaluated, in order."
+        },
+        "violations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/EvidenceRuleViolation"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "evaluated",
+        "violations"
+      ],
+      "additionalProperties": false,
+      "description": "The verdict."
+    },
+    "EvidenceRuleViolation": {
+      "type": "object",
+      "properties": {
+        "rule": {
+          "type": "string",
+          "enum": [
+            "noPolicyViolations",
+            "noIndeterminatePolicies",
+            "maxContradictedClaims",
+            "maxUnknowns",
+            "requireComplete",
+            "maxUnusedSensitivePaths",
+            "maxWholeFieldToClient",
+            "requireObservations",
+            "minVerifiedClaims",
+            "requireVerified"
+          ],
+          "description": "Which rule."
+        },
+        "message": {
+          "type": "string"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/EvidenceRef"
+          },
+          "description": "The records in the evidence this rests on, for drill-down."
+        }
+      },
+      "required": [
+        "rule",
+        "message",
+        "evidence"
+      ],
+      "additionalProperties": false,
+      "description": "One reason the gate did not pass."
     },
     "JsonErrorPayload": {
       "type": "object",

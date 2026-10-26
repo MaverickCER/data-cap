@@ -63,12 +63,20 @@ interface ExpectedEvidence {
     readonly ownership: boolean
     readonly finding: boolean
     readonly change: boolean
+    readonly flow: boolean
+    readonly policy: boolean
+    readonly observation: boolean
+    readonly claims: boolean
   }
   readonly capability: { readonly capabilities: readonly { readonly file: string; readonly exportName: string }[] }
   readonly dependency: unknown
   readonly ownership: unknown
   readonly finding: unknown
   readonly change: unknown
+  readonly flow: unknown
+  readonly policy: unknown
+  readonly observation: unknown
+  readonly claims: unknown
 }
 
 interface ExpectedSourceLocation {
@@ -214,11 +222,16 @@ describe.skipIf(!runnable)("example: enterprise-platform report scripts", () => 
         ownership: true,
         finding: true,
         change: true,
+        // This run does not ask for the flow pass (ADR 0070), and the evidence says so rather than staying silent.
+        flow: false,
+        policy: false,
+        observation: false,
+        claims: false,
       })
     })
 
     it("keeps every `computed` flag consistent with whether that sub-model is actually present", () => {
-      for (const key of ["dependency", "ownership", "finding", "change"] as const) {
+      for (const key of ["dependency", "ownership", "finding", "change", "flow", "policy", "observation", "claims"] as const) {
         expect(evidence.computed[key]).toBe(evidence[key] !== undefined)
       }
     })

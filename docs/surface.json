@@ -46,7 +46,13 @@
       "source": "src/evidence/",
       "environment": "isomorphic, zero deps",
       "tier": "Stable",
-      "purpose": "`defineEvidenceProjection` \u2014 the schema-object projection definer with a read-only membrane and per-output-field provenance. Imports `EvidenceModel` with `import type` only, so it never pulls in `node:fs` or the TypeScript compiler API; `./build` re-exports it for backward compatibility."
+      "purpose": "`defineEvidenceProjection` \u2014 the schema-object projection definer with a read-only membrane and per-output-field provenance. Imports `EvidenceModel` with `import type` only, so it never pulls in `node:fs` or the TypeScript compiler API; `./build` re-exports it for backward compatibility. Experimental additions (ADR 0070\u20130073), every one a pure function of the one Evidence Model: `traceFlow`/`traceFlowBetween`/`filterFlow`/`diffFlow`/`observedFlow`, `buildFlowGraphView`, `renderFlowText`/`renderFlowDot`/`renderFlowMermaid`, `buildProvDocument`, `buildOscalAssessmentResults`, `observationsToOtlp`/`observationsFromOtlp`, `analyzeLeastData`, `evaluateEvidenceRules`/`parseEvidenceRules`."
+    },
+    "./observe": {
+      "source": "src/observe/",
+      "environment": "isomorphic, zero deps",
+      "tier": "Experimental",
+      "purpose": "`observeBoundary`, `createMemorySink` \u2014 record which field NAMES crossed which boundary, into a sink you supply; never values, never I/O of its own (ADR 0072)."
     },
     "./eslint-plugin": {
       "source": "src/eslint-plugin/",

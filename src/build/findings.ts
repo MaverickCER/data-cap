@@ -8,6 +8,7 @@
  * `specs/architecture.md`'s Phase B.5 model section.
  */
 
+import type { EvidenceRef } from "../flow/claims-model.js"
 import type { SourceLocation, SourcePosition } from "./source-position.js"
 
 /** How strongly a finding should be treated: `info` never blocks, `warning` blocks only under `--strict*`, `error` always blocks. */
@@ -40,7 +41,7 @@ export type ReportFindingFamily =
   | "usage"
   /** A developer-supplied `dynamicAccess` citation's own current integrity (`citation-verification.ts`). */
   | "citation"
-  /** Declared data-flow boundary crossings for sensitive fields (`flow-graph.ts`). */
+  /** Data-flow boundary crossings for sensitive fields (`flow-graph.ts`), and everything the flow pass derives: declared flow policies, least-data analysis, and what the analysis could not follow (ADR 0070). */
   | "flow"
 
 /** Every kind of fact a static rule or usage-scan/data-flow pass can report. */
@@ -66,6 +67,13 @@ export type ReportFindingCode =
   | "INDETERMINATE_CONSUMER"
   | "SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY"
   | "SENSITIVE_FIELD_ENDPOINT_MISSING_HANDLING"
+  | "LEAST_DATA_UNUSED_PATH"
+  | "LEAST_DATA_UNUSED_SENSITIVE_PATH"
+  | "LEAST_DATA_WHOLE_FIELD_TO_CLIENT"
+  | "LEAST_DATA_ANALYSIS_INDETERMINATE"
+  | "FLOW_POLICY_VIOLATED"
+  | "FLOW_POLICY_INDETERMINATE"
+  | "FLOW_ANALYSIS_INCOMPLETE"
 
 /**
  * One reportable fact about the discovered capability graph. `severity` is
@@ -100,6 +108,12 @@ export interface ReportFinding {
   readonly source?: string
   /** Position of the declaration site (capability's own call, or field's own key) this finding is anchored to, when one is available -- see ADR 0052. Additive: absent for findings with no single declaration-site anchor (e.g. a usage-scan finding whose subject is a consuming file, not a declaration). */
   readonly position?: SourcePosition
+  /**
+   * The records in the Evidence Model this finding rests on -- flow nodes and edges, a policy result, an unknown
+   * (ADR 0070). Lets a reader drill from the finding to the analysis behind it, and lets SARIF show the path.
+   * Absent for findings derived from declared metadata alone.
+   */
+  readonly evidence?: readonly EvidenceRef[]
   /** Every candidate access site a `"FIELD_ACCESS_INDETERMINATE"` finding could actually be about -- populated only for that code. Spans potentially multiple consuming files, so each entry carries its own `file` (`SourceLocation`, not just `SourcePosition`). */
   readonly indeterminateSites?: readonly SourceLocation[]
 }

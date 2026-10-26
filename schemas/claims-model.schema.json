@@ -1,0 +1,218 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://maverickcer.github.io/data-cap/schema/claims-model.schema.json",
+  "title": "data-cap Claims Model",
+  "description": "Canonical, versioned claims with supporting and contradicting evidence, scope and a derived verification status (see ADR 0070, ADR 0071). Generated from src/flow/claims-model.ts's ClaimsModel type -- never hand-authored.",
+  "$ref": "#/definitions/ClaimsModel",
+  "definitions": {
+    "ClaimsModel": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "number",
+          "const": 1,
+          "description": "Always `CLAIMS_MODEL_SCHEMA_VERSION`."
+        },
+        "claims": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Claim"
+          },
+          "description": "Every claim, ordered by id."
+        },
+        "summary": {
+          "$ref": "#/definitions/ClaimsSummary"
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "claims",
+        "summary"
+      ],
+      "additionalProperties": false,
+      "description": "`data-cap`'s Claims Model."
+    },
+    "Claim": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Content-addressed."
+        },
+        "kind": {
+          "$ref": "#/definitions/ClaimKind"
+        },
+        "statement": {
+          "type": "string",
+          "description": "Human-readable statement, derived from the structured fields and never parsed."
+        },
+        "subject": {
+          "type": "string",
+          "description": "Capability-qualified dotted field name."
+        },
+        "object": {
+          "type": "string",
+          "description": "Boundary name (`field-reaches-boundary`) or rule id (`policy-holds`)."
+        },
+        "status": {
+          "$ref": "#/definitions/FlowStatus",
+          "description": "Epistemic status of the underlying fact: the weakest status along the static path, or `observed` for an observation-only claim."
+        },
+        "verification": {
+          "$ref": "#/definitions/ClaimVerification"
+        },
+        "scope": {
+          "$ref": "#/definitions/ClaimScope"
+        },
+        "supporting": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/EvidenceRef"
+          }
+        },
+        "contradicting": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/EvidenceRef"
+          }
+        },
+        "derivedFrom": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/EvidenceRefModel"
+          },
+          "description": "Which sub-models this claim was derived from."
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "statement",
+        "subject",
+        "object",
+        "status",
+        "verification",
+        "scope",
+        "supporting",
+        "contradicting",
+        "derivedFrom"
+      ],
+      "additionalProperties": false,
+      "description": "One claim."
+    },
+    "ClaimKind": {
+      "type": "string",
+      "enum": [
+        "field-reaches-boundary",
+        "field-sourced-from-boundary",
+        "policy-holds"
+      ],
+      "description": "What a claim asserts."
+    },
+    "FlowStatus": {
+      "type": "string",
+      "enum": [
+        "declared",
+        "static",
+        "observed",
+        "inferred",
+        "unknown"
+      ],
+      "description": "ADR 0071: the five epistemic statuses, shared by every flow fact, claim and finding."
+    },
+    "ClaimVerification": {
+      "type": "string",
+      "enum": [
+        "verified",
+        "inferred",
+        "unobserved",
+        "contradicted",
+        "observed-only",
+        "indeterminate"
+      ],
+      "description": "How the evidence lines up for a claim."
+    },
+    "ClaimScope": {
+      "type": "object",
+      "properties": {
+        "observationScopes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Every observation scope that contributed to the claim, sorted; empty when none were run or none matched."
+        },
+        "traceComplete": {
+          "type": "boolean",
+          "description": "False when the static trace behind the claim touched an `unknown` fact: the real picture may be larger."
+        }
+      },
+      "required": [
+        "observationScopes",
+        "traceComplete"
+      ],
+      "additionalProperties": false,
+      "description": "What a claim covers and how completely."
+    },
+    "EvidenceRef": {
+      "type": "object",
+      "properties": {
+        "model": {
+          "$ref": "#/definitions/EvidenceRefModel"
+        },
+        "id": {
+          "type": "string",
+          "description": "Flow node/edge id, observation id, or `ruleId#fieldNodeId` for a policy result group."
+        }
+      },
+      "required": [
+        "model",
+        "id"
+      ],
+      "additionalProperties": false,
+      "description": "A pointer to one record inside the Evidence Model."
+    },
+    "EvidenceRefModel": {
+      "type": "string",
+      "enum": [
+        "flow",
+        "policy",
+        "observation"
+      ],
+      "description": "Which sub-model of the Evidence Model a piece of evidence lives in."
+    },
+    "ClaimsSummary": {
+      "type": "object",
+      "properties": {
+        "verified": {
+          "type": "number"
+        },
+        "inferred": {
+          "type": "number"
+        },
+        "unobserved": {
+          "type": "number"
+        },
+        "contradicted": {
+          "type": "number"
+        },
+        "observed-only": {
+          "type": "number"
+        },
+        "indeterminate": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "verified",
+        "inferred",
+        "unobserved",
+        "contradicted",
+        "observed-only",
+        "indeterminate"
+      ],
+      "additionalProperties": false,
+      "description": "Claim counts by verification status."
+    }
+  }
+}

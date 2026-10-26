@@ -5,9 +5,9 @@ description: Load when a task creates or edits a data-cap capability (a schema w
 
 # data-cap
 
-data-cap gives each capability (a feature or package) an analyzable data contract: the fields it owns and the getters, mutators and subscriptions that acquire, change or observe them.
+data-cap gives each capability (a feature or package) an analyzable data contract: the fields it owns and the getters, mutators and subscriptions that change or observe them.
 
-Not for: fetching data or holding UI state. It declares and checks ownership; your own functions do the I/O.
+Not for: fetching data or holding UI state. It declares and checks ownership; your functions do the I/O.
 
 ## Use it
 
@@ -60,23 +60,25 @@ From `examples/team-service/src/capabilities/member.capability.ts`.
 | `data-cap/runtime/cache` | `createDataCache`, optional |
 | `data-cap/runtime/retry` | `withRetry`, `isStillDefault`, optional |
 | `data-cap/helpers` | `processors`, `identity`, `canonicalize`, `shape` |
-| `data-cap/build` | Node only: discovery, the models, and generating manifests, docs and reports |
-| `data-cap/node` | Node only: `nodeBuildFileSystem`, the file system a build script hands to `/build` |
-| `data-cap/evidence` | `defineEvidenceProjection`, projections over the evidence model |
+| `data-cap/build` | Node only: discovery, models, and generating manifests, docs and reports |
+| `data-cap/node` | Node only: `nodeBuildFileSystem`, for `/build` |
+| `data-cap/evidence` | `defineEvidenceProjection`, projections over the evidence model, and (experimental) the flow views |
+| `data-cap/observe` | Experimental: `observeBoundary` records field names crossing a boundary, never values |
 | `data-cap/eslint-plugin` | Lint rules: `stable-operation-reference`, `no-raw-external-io`, `no-fields-escape`, `no-node-fs` |
-| `data-cap/schema` | The JSON Schemas for `data-cap --json` output |
+| `data-cap/schema` | JSON Schemas for `data-cap --json` output |
 
 ## Rules
 
-- Declare the schema once as a literal and pass that object to `createData(schema)` and `documentData(schema, docs)`, which follows it in the example's file.
-- Give every getter and subscription a `writes` map naming the fields it may write. A mutator without one may write the whole declared schema.
-- Keep `execute` and `subscribe` references stable. Sharing and dedupe are by function identity, so a fresh arrow per render defeats them.
-- Import only from the exports in package.json; `/build` and `/node` are Node-only.
+- Declare the schema once as a literal and pass it to `createData(schema)` and `documentData(schema, docs)`, as the example does.
+- Give every getter and subscription a `writes` map naming the fields it may write; a mutator without one may write the whole schema.
+- Keep `execute` and `subscribe` references stable: sharing and dedupe are by function identity, so a fresh arrow per render defeats them.
+- Import only from package.json exports; `/build` and `/node` are Node-only.
+- To govern where a field's data may go, add `flowPolicy` to `documentData`; run the CLI with `--flow-evidence`.
 
 ## Rely on
 
-- A newer getter call discards an older in-flight getter commit. A mutator commit is never discarded: each folds onto the current authoritative state as it finishes.
-- A thrown processor fails the whole operation; one invalid field resets to its default and its valid siblings survive.
+- A newer getter call discards an older in-flight getter commit. A mutator commit is never discarded.
+- A thrown processor fails the whole operation; an invalid field resets to its default and valid siblings survive.
 
 ## Common mistakes
 
@@ -88,13 +90,13 @@ From `examples/team-service/src/capabilities/member.capability.ts`.
 ## Verify
 
 1. Run the type check and tests.
-2. Update the `documentData()` entry, run the project's data-cap script, and commit generated files only if the project does.
+2. Update the `documentData()` entry and run the project's data-cap script.
 
 Report any check you could not run, and any assumption you made.
 
 ## Go deeper
 
-- [Every option of the generators and the CLI](https://github.com/MaverickCER/data-cap/blob/main/GUIDE.md)
+- [Every option of the generators and CLI, and flow policies](https://github.com/MaverickCER/data-cap/blob/main/GUIDE.md)
 - [Every public signature](https://github.com/MaverickCER/data-cap/blob/main/skills/data-cap/references/api.md)
 
 ## Authority

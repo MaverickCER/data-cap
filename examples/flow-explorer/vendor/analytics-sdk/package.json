@@ -1,0 +1,9 @@
+{
+  "name": "analytics-sdk",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A stand-in for a third-party SDK: code the data-flow analysis cannot see into, because it is a package rather than a project file.",
+  "type": "module",
+  "main": "index.js",
+  "types": "index.d.ts"
+}

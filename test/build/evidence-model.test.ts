@@ -12,6 +12,9 @@ import { buildChangeModel } from "../../src/build/change-model.js"
 import type { CapabilityInventory } from "../../src/build/inventory.js"
 import type { EvidenceProvenance } from "../../src/build/evidence-model.js"
 import type { LifecycleModel } from "../../src/build/lifecycle-model.js"
+import { buildFlowModel, flowNodeId } from "../../src/flow/flow-model.js"
+import { buildObservationModel } from "../../src/flow/observation-model.js"
+import { buildPolicyModel } from "../../src/flow/policy-model.js"
 
 function inventory(): CapabilityInventory {
   return { schemaVersion: CAPABILITY_MODEL_SCHEMA_VERSION, capabilities: [], warnings: [] }
@@ -116,6 +119,10 @@ describe("buildEvidenceModel -- computed flags (OUT-04)", () => {
       ownership: false,
       finding: false,
       change: false,
+      flow: false,
+      policy: false,
+      observation: false,
+      claims: false,
     })
   })
 
@@ -139,6 +146,10 @@ describe("buildEvidenceModel -- computed flags (OUT-04)", () => {
       ownership: true,
       finding: true,
       change: true,
+      flow: false,
+      policy: false,
+      observation: false,
+      claims: false,
     })
   })
 
@@ -176,6 +187,10 @@ describe("buildEvidenceModel -- computed flags (OUT-04)", () => {
       ownership: true,
       finding: false,
       change: false,
+      flow: false,
+      policy: false,
+      observation: false,
+      claims: false,
     })
   })
 
@@ -188,7 +203,16 @@ describe("buildEvidenceModel -- computed flags (OUT-04)", () => {
       },
       provenance(),
     )
-    for (const key of ["dependency", "ownership", "finding", "change"] as const) {
+    for (const key of [
+      "dependency",
+      "ownership",
+      "finding",
+      "change",
+      "flow",
+      "policy",
+      "observation",
+      "claims",
+    ] as const) {
       expect(model.computed[key]).toBe(model[key] !== undefined)
     }
   })
@@ -200,9 +224,110 @@ describe("buildEvidenceModel -- computed flags (OUT-04)", () => {
     )
     expect(Object.keys(model.computed).sort()).toEqual([
       "change",
+      "claims",
       "dependency",
       "finding",
+      "flow",
+      "observation",
       "ownership",
+      "policy",
     ])
+  })
+})
+
+describe("buildEvidenceModel -- flow, policy, observation and claims (ADR 0070)", () => {
+  const FILE = "src/user.ts"
+  const flow = buildFlowModel({
+    nodes: [
+      {
+        kind: "field",
+        scope: FILE,
+        name: "userData.email",
+        status: "static",
+        classification: "pii",
+      },
+      {
+        kind: "boundary",
+        scope: "boundary",
+        name: "http-response",
+        status: "declared",
+        boundaryKind: "client-response",
+      },
+    ],
+    edges: [
+      {
+        kind: "side-effect",
+        from: flowNodeId("field", FILE, "userData.email"),
+        to: flowNodeId("boundary", "boundary", "http-response"),
+        status: "static",
+      },
+    ],
+    unknowns: [],
+  })
+  const base = { capability: inventory(), lifecycle: lifecycleOf(inventory()) }
+
+  it("is schema version 3", () => {
+    expect(EVIDENCE_MODEL_SCHEMA_VERSION).toBe(3)
+  })
+
+  it("leaves flow, policy, observation and claims undefined when not supplied", () => {
+    const model = buildEvidenceModel(base, provenance())
+    expect(model.flow).toBeUndefined()
+    expect(model.policy).toBeUndefined()
+    expect(model.observation).toBeUndefined()
+    expect(model.claims).toBeUndefined()
+  })
+
+  it("carries a supplied flow model through and derives claims from it", () => {
+    const model = buildEvidenceModel({ ...base, flow }, provenance())
+    expect(model.flow).toBe(flow)
+    expect(model.computed.flow).toBe(true)
+    expect(model.computed.claims).toBe(true)
+    expect(model.claims?.claims.map((c) => c.kind)).toEqual(["field-reaches-boundary"])
+  })
+
+  it("derives claims from flow plus policy plus observation, never from caller-supplied claims", () => {
+    const policy = buildPolicyModel(flow, [
+      { id: "pii", appliesTo: { classification: "pii" }, forbidDestinations: ["client-response"] },
+    ])
+    const observation = buildObservationModel([
+      {
+        scope: "test:a",
+        boundary: { kind: "client-response", name: "http-response" },
+        field: "userData.email",
+      },
+    ])
+    const model = buildEvidenceModel({ ...base, flow, policy, observation }, provenance())
+    expect(model.computed).toMatchObject({
+      flow: true,
+      policy: true,
+      observation: true,
+      claims: true,
+    })
+    expect(model.claims?.summary.verified).toBe(1)
+    expect(model.claims?.summary.contradicted).toBe(1)
+  })
+
+  it("does not compute claims without a flow model, even if observations were supplied", () => {
+    const model = buildEvidenceModel(
+      { ...base, observation: buildObservationModel([]) },
+      provenance(),
+    )
+    expect(model.computed.observation).toBe(true)
+    expect(model.computed.claims).toBe(false)
+    expect(model.claims).toBeUndefined()
+  })
+
+  it("rejects policy supplied without a flow model it could have been evaluated against", () => {
+    const policy = buildPolicyModel(flow, [])
+    expect(() => buildEvidenceModel({ ...base, policy }, provenance())).toThrow(/flow/)
+  })
+
+  it("is JSON-round-trippable with the new sub-models present", () => {
+    const model = buildEvidenceModel({ ...base, flow }, provenance())
+    expect(JSON.parse(JSON.stringify(model))).toEqual(JSON.parse(JSON.stringify(model)))
+    expect(
+      (JSON.parse(JSON.stringify(model)) as { flow: { nodes: unknown[] } }).flow.nodes,
+    ).toHaveLength(2)
   })
 })

@@ -8,6 +8,7 @@
 - [evidence](evidence.md)
 - [helpers](helpers.md)
 - [node](node.md)
+- [observe](observe.md)
 - [runtime](runtime.md)
 - [runtime/cache](runtime/cache.md)
 - [runtime/retry](runtime/retry.md)

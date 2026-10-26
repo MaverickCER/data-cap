@@ -10,6 +10,10 @@ export type {
   DataFlowEndpoint,
   DataFlowEndpointKind,
   FieldDocs,
+  FlowBoundaryKind,
+  FlowHandling,
+  FlowPolicyAppliesToDocs,
+  FlowPolicyDocs,
   OperationDocs,
 } from "./document.js"
 

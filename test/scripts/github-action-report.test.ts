@@ -158,6 +158,113 @@ describe("renderMarkdownSummary", () => {
     expect(renderMarkdownSummary({ findings: [] })).not.toContain("## Inventory")
   })
 
+  it("renders a data-flow section from the evidence when flow analysis ran: coverage, policy, observations and claims", () => {
+    const markdown = renderMarkdownSummary({
+      ok: true,
+      findings: [],
+      evidence: {
+        capability: { capabilities: [] },
+        flow: {
+          coverage: {
+            functionsAnalyzed: 9,
+            functionsUnanalyzed: 1,
+            edgesUnresolved: 0,
+            unknowns: 2,
+            complete: false,
+          },
+        },
+        policy: { summary: { satisfied: 3, violated: 1, indeterminate: 2 } },
+        observation: { scopes: ["a", "b"], observations: [{}, {}, {}], skipped: 0 },
+        claims: {
+          summary: {
+            verified: 4,
+            inferred: 0,
+            unobserved: 5,
+            contradicted: 1,
+            "observed-only": 0,
+            indeterminate: 2,
+          },
+        },
+      },
+    } as unknown as ReportResult)
+    expect(markdown).toContain("## Data flow")
+    expect(markdown).toContain(
+      "- Coverage: 9 function(s) analyzed, 1 not fully analyzed, 2 unknown(s) -- **not complete**; a flow missing from the evidence is not proof that it does not exist.",
+    )
+    expect(markdown).toContain("- Policy: 3 satisfied, 1 violated, 2 indeterminate.")
+    expect(markdown).toContain("- Observations: 3 across 2 scope(s).")
+    expect(markdown).toContain(
+      "- Claims: 4 verified, 5 unobserved, 1 contradicted, 2 indeterminate.",
+    )
+  })
+
+  it("says complete only when the flow is complete, and omits lines for sub-models that were not computed", () => {
+    const markdown = renderMarkdownSummary({
+      ok: true,
+      findings: [],
+      evidence: {
+        capability: { capabilities: [] },
+        flow: {
+          coverage: {
+            functionsAnalyzed: 3,
+            functionsUnanalyzed: 0,
+            edgesUnresolved: 0,
+            unknowns: 0,
+            complete: true,
+          },
+        },
+      },
+    })
+    expect(markdown).toContain("- Coverage: 3 function(s) analyzed -- complete.")
+    expect(markdown).not.toContain("- Policy:")
+    expect(markdown).not.toContain("- Observations:")
+    expect(markdown).not.toContain("- Claims:")
+  })
+
+  it("has no data-flow section when the flow analysis did not run", () => {
+    expect(
+      renderMarkdownSummary({
+        ok: true,
+        findings: [],
+        evidence: { capability: { capabilities: [] } },
+      }),
+    ).not.toContain("## Data flow")
+  })
+
+  it("renders the evidence-rules verdict: satisfied, or a table of violations", () => {
+    const ok = renderMarkdownSummary({
+      ok: true,
+      findings: [],
+      evidenceRules: { ok: true, evaluated: ["a", "b"], violations: [] },
+    })
+    expect(ok).toContain("## Evidence rules")
+    expect(ok).toContain("All 2 rule(s) satisfied.")
+    const bad = renderMarkdownSummary({
+      ok: true,
+      findings: [],
+      evidenceRules: {
+        ok: false,
+        evaluated: ["x", "y"],
+        violations: [{ rule: "x", message: "Rule a/b is violated.", evidence: [] }],
+      },
+    } as unknown as ReportResult)
+    expect(bad).toContain("1 of 2 rule(s) violated:")
+    expect(bad).toContain("| x | Rule a/b is violated. |")
+  })
+
+  it("keeps a violation's message from breaking the table", () => {
+    const bad = renderMarkdownSummary({
+      ok: true,
+      findings: [],
+      evidenceRules: {
+        ok: false,
+        evaluated: ["x"],
+        violations: [{ rule: "x", message: "a | b\nc", evidence: [] }],
+      },
+    } as unknown as ReportResult)
+    expect(bad).toContain("| x | a \\| b c |")
+  })
+
   it("renders the drift-check section, up-to-date and stale variants", () => {
     const upToDate = renderMarkdownSummary({
       findings: [],

@@ -29,6 +29,33 @@ interface FindingLike {
 interface EvidenceLike {
   readonly capability?: { readonly capabilities?: readonly unknown[] }
   readonly dependency?: { readonly edges?: readonly unknown[] }
+  readonly flow?: {
+    readonly coverage: {
+      readonly functionsAnalyzed: number
+      readonly functionsUnanalyzed: number
+      readonly edgesUnresolved: number
+      readonly unknowns: number
+      readonly complete: boolean
+    }
+  }
+  readonly policy?: {
+    readonly summary: {
+      readonly satisfied: number
+      readonly violated: number
+      readonly indeterminate: number
+    }
+  }
+  readonly observation?: {
+    readonly scopes: readonly string[]
+    readonly observations: readonly unknown[]
+  }
+  readonly claims?: { readonly summary: Readonly<Record<string, number>> }
+}
+
+interface EvidenceRulesLike {
+  readonly ok: boolean
+  readonly evaluated: readonly string[]
+  readonly violations: readonly { readonly rule: string; readonly message: string }[]
 }
 
 interface CheckResultLike {
@@ -49,6 +76,7 @@ export interface ReportResult {
   readonly findings?: readonly FindingLike[]
   readonly evidence?: EvidenceLike
   readonly checkResult?: CheckResultLike
+  readonly evidenceRules?: EvidenceRulesLike
   readonly error?: ErrorSectionLike
 }
 

@@ -101,6 +101,66 @@ export function renderMarkdownSummary(result) {
     )
   }
 
+  // The flow pass (ADR 0070): only when it ran, one line per sub-model it computed. Coverage first, and plain about it:
+  // a flow missing from incomplete evidence is not proof of absence.
+  const flow = result?.evidence?.flow
+  if (flow) {
+    const { coverage } = flow
+    const parts = [`${coverage.functionsAnalyzed} function(s) analyzed`]
+    if (coverage.functionsUnanalyzed > 0)
+      parts.push(`${coverage.functionsUnanalyzed} not fully analyzed`)
+    if (coverage.unknowns > 0) parts.push(`${coverage.unknowns} unknown(s)`)
+    lines.push("## Data flow", "")
+    lines.push(
+      coverage.complete
+        ? `- Coverage: ${parts.join(", ")} -- complete.`
+        : `- Coverage: ${parts.join(", ")} -- **not complete**; a flow missing from the evidence is not proof that it does not exist.`,
+    )
+    const policy = result.evidence.policy
+    if (policy) {
+      lines.push(
+        `- Policy: ${policy.summary.satisfied} satisfied, ${policy.summary.violated} violated, ${policy.summary.indeterminate} indeterminate.`,
+      )
+    }
+    const observation = result.evidence.observation
+    if (observation) {
+      lines.push(
+        `- Observations: ${observation.observations.length} across ${observation.scopes.length} scope(s).`,
+      )
+    }
+    const claims = result.evidence.claims
+    if (claims) {
+      const counts = Object.entries(claims.summary).filter(([, count]) => count > 0)
+      lines.push(
+        `- Claims: ${counts.length === 0 ? "none" : counts.map(([name, count]) => `${count} ${name}`).join(", ")}.`,
+      )
+    }
+    lines.push("")
+  }
+
+  const rules = result?.evidenceRules
+  if (rules) {
+    lines.push("## Evidence rules", "")
+    if (rules.ok) {
+      lines.push(`All ${rules.evaluated.length} rule(s) satisfied.`, "")
+    } else {
+      lines.push(
+        `${new Set(rules.violations.map((v) => v.rule)).size} of ${rules.evaluated.length} rule(s) violated:`,
+        "",
+        "| Rule | Violation |",
+        "|---|---|",
+      )
+      for (const violation of rules.violations) {
+        lines.push(
+          `| ${violation.rule} | ${String(violation.message)
+            .replace(/\|/g, "\\|")
+            .replace(/\s*\n\s*/g, " ")} |`,
+        )
+      }
+      lines.push("")
+    }
+  }
+
   if (result?.checkResult) {
     lines.push(
       "## Drift check",

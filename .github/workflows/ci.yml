@@ -400,7 +400,17 @@ jobs:
           npm ci
           npm run typecheck
 
-      # Not a fourth tier -- see examples/README.md's "Framework integration"
+      # Tier 4. Besides installing and typechecking, the `npx vitest run test/examples/` step below runs its
+      # end-to-end tests: the explorer's behaviour and accessibility, and every exported standard against
+      # that standard's own tools. Its devDependencies (a Graphviz renderer, jsdom, axe-core, a Mermaid
+      # parser) are why this example is a separate project and not part of the package.
+      - name: flow-explorer
+        working-directory: examples/flow-explorer
+        run: |
+          npm ci
+          npm run typecheck
+
+      # Not a fifth example tier -- see examples/README.md's "Framework integration"
       # section. `npm run build` (which chains `docs` -> `next build`) is the
       # real assertion: it exercises `useSyncExternalStore`'s SSR path and
       # the globalThis-keyed session secret this example's own README

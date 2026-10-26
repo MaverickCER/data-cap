@@ -1,0 +1,1266 @@
+{
+  "schemaVersion": 1,
+  "coverage": {
+    "functionsAnalyzed": 5,
+    "functionsUnanalyzed": 0,
+    "edgesUnresolved": 0,
+    "unknowns": 1,
+    "complete": false
+  },
+  "nodes": [
+    {
+      "id": "boundary:boundary#postgres:users",
+      "kind": "boundary",
+      "label": "database: postgres:users",
+      "name": "postgres:users",
+      "scope": "boundary",
+      "status": "declared",
+      "boundaryKind": "database"
+    },
+    {
+      "id": "boundary:boundary:code#http-response",
+      "kind": "boundary",
+      "label": "client-response: http-response",
+      "name": "http-response",
+      "scope": "boundary:code",
+      "status": "static",
+      "boundaryKind": "client-response"
+    },
+    {
+      "id": "field:src/features/user.capability.ts#userData.user",
+      "kind": "field",
+      "label": "userData.user",
+      "name": "userData.user",
+      "scope": "src/features/user.capability.ts",
+      "status": "static",
+      "classification": "confidential",
+      "source": {
+        "line": 17,
+        "column": 5
+      }
+    },
+    {
+      "id": "function:src/app/export.ts#exportEverything",
+      "kind": "function",
+      "label": "exportEverything",
+      "name": "exportEverything",
+      "scope": "src/app/export.ts",
+      "status": "static",
+      "source": {
+        "line": 9,
+        "column": 1
+      }
+    },
+    {
+      "id": "function:src/app/profile.ts#buildUserProfile",
+      "kind": "function",
+      "label": "buildUserProfile",
+      "name": "buildUserProfile",
+      "scope": "src/app/profile.ts",
+      "status": "static",
+      "source": {
+        "line": 12,
+        "column": 1
+      }
+    },
+    {
+      "id": "function:src/app/profile.ts#profileHandler",
+      "kind": "function",
+      "label": "profileHandler",
+      "name": "profileHandler",
+      "scope": "src/app/profile.ts",
+      "status": "static",
+      "source": {
+        "line": 20,
+        "column": 1
+      }
+    },
+    {
+      "id": "function:src/app/profile.ts#sendProfileToClient",
+      "kind": "function",
+      "label": "sendProfileToClient",
+      "name": "sendProfileToClient",
+      "scope": "src/app/profile.ts",
+      "status": "static",
+      "source": {
+        "line": 16,
+        "column": 1
+      }
+    },
+    {
+      "id": "function:src/app/track.ts#trackUser",
+      "kind": "function",
+      "label": "trackUser",
+      "name": "trackUser",
+      "scope": "src/app/track.ts",
+      "status": "static",
+      "source": {
+        "line": 10,
+        "column": 1
+      }
+    },
+    {
+      "id": "parameter:src/app/export.ts#exportEverything.res",
+      "kind": "parameter",
+      "label": "res",
+      "name": "exportEverything.res",
+      "scope": "src/app/export.ts",
+      "status": "static"
+    },
+    {
+      "id": "parameter:src/app/profile.ts#buildUserProfile.user",
+      "kind": "parameter",
+      "label": "user",
+      "name": "buildUserProfile.user",
+      "scope": "src/app/profile.ts",
+      "status": "static"
+    },
+    {
+      "id": "parameter:src/app/profile.ts#profileHandler.res",
+      "kind": "parameter",
+      "label": "res",
+      "name": "profileHandler.res",
+      "scope": "src/app/profile.ts",
+      "status": "static"
+    },
+    {
+      "id": "parameter:src/app/profile.ts#sendProfileToClient.profile",
+      "kind": "parameter",
+      "label": "profile",
+      "name": "sendProfileToClient.profile",
+      "scope": "src/app/profile.ts",
+      "status": "static"
+    },
+    {
+      "id": "parameter:src/app/profile.ts#sendProfileToClient.res",
+      "kind": "parameter",
+      "label": "res",
+      "name": "sendProfileToClient.res",
+      "scope": "src/app/profile.ts",
+      "status": "static"
+    },
+    {
+      "id": "return:src/app/export.ts#exportEverything#return",
+      "kind": "return",
+      "label": "return",
+      "name": "exportEverything#return",
+      "scope": "src/app/export.ts",
+      "status": "static"
+    },
+    {
+      "id": "return:src/app/profile.ts#buildUserProfile#return",
+      "kind": "return",
+      "label": "return",
+      "name": "buildUserProfile#return",
+      "scope": "src/app/profile.ts",
+      "status": "static"
+    },
+    {
+      "id": "return:src/app/profile.ts#profileHandler#return",
+      "kind": "return",
+      "label": "return",
+      "name": "profileHandler#return",
+      "scope": "src/app/profile.ts",
+      "status": "static"
+    },
+    {
+      "id": "return:src/app/profile.ts#sendProfileToClient#return",
+      "kind": "return",
+      "label": "return",
+      "name": "sendProfileToClient#return",
+      "scope": "src/app/profile.ts",
+      "status": "static"
+    },
+    {
+      "id": "return:src/app/track.ts#trackUser#return",
+      "kind": "return",
+      "label": "return",
+      "name": "trackUser#return",
+      "scope": "src/app/track.ts",
+      "status": "static"
+    }
+  ],
+  "edges": [
+    {
+      "id": "calls:function:src/app/profile.ts#profileHandler->function:src/app/profile.ts#buildUserProfile@static",
+      "kind": "calls",
+      "from": "function:src/app/profile.ts#profileHandler",
+      "to": "function:src/app/profile.ts#buildUserProfile",
+      "status": "static",
+      "source": {
+        "file": "src/app/profile.ts",
+        "line": 22,
+        "column": 19
+      }
+    },
+    {
+      "id": "calls:function:src/app/profile.ts#profileHandler->function:src/app/profile.ts#sendProfileToClient@static",
+      "kind": "calls",
+      "from": "function:src/app/profile.ts#profileHandler",
+      "to": "function:src/app/profile.ts#sendProfileToClient",
+      "status": "static",
+      "source": {
+        "file": "src/app/profile.ts",
+        "line": 23,
+        "column": 3
+      }
+    },
+    {
+      "id": "crosses-boundary:boundary:boundary#postgres:users->field:src/features/user.capability.ts#userData.user@declared^field:src/features/user.capability.ts#userData.user",
+      "kind": "crosses-boundary",
+      "from": "boundary:boundary#postgres:users",
+      "to": "field:src/features/user.capability.ts#userData.user",
+      "status": "declared",
+      "origin": "field:src/features/user.capability.ts#userData.user"
+    },
+    {
+      "id": "discards:function:src/app/profile.ts#buildUserProfile->field:src/features/user.capability.ts#userData.user:passwordHash@static^field:src/features/user.capability.ts#userData.user",
+      "kind": "discards",
+      "from": "function:src/app/profile.ts#buildUserProfile",
+      "to": "field:src/features/user.capability.ts#userData.user",
+      "status": "static",
+      "path": [
+        "passwordHash"
+      ],
+      "origin": "field:src/features/user.capability.ts#userData.user"
+    },
+    {
+      "id": "discards:function:src/app/profile.ts#buildUserProfile->field:src/features/user.capability.ts#userData.user:role@static^field:src/features/user.capability.ts#userData.user",
+      "kind": "discards",
+      "from": "function:src/app/profile.ts#buildUserProfile",
+      "to": "field:src/features/user.capability.ts#userData.user",
+      "status": "static",
+      "path": [
+        "role"
+      ],
+      "origin": "field:src/features/user.capability.ts#userData.user"
+    },
+    {
+      "id": "discards:function:src/app/track.ts#trackUser->field:src/features/user.capability.ts#userData.user:id@static^field:src/features/user.capability.ts#userData.user",
+      "kind": "discards",
+      "from": "function:src/app/track.ts#trackUser",
+      "to": "field:src/features/user.capability.ts#userData.user",
+      "status": "static",
+      "path": [
+        "id"
+      ],
+      "origin": "field:src/features/user.capability.ts#userData.user"
+    },
+    {
+      "id": "discards:function:src/app/track.ts#trackUser->field:src/features/user.capability.ts#userData.user:name@static^field:src/features/user.capability.ts#userData.user",
+      "kind": "discards",
+      "from": "function:src/app/track.ts#trackUser",
+      "to": "field:src/features/user.capability.ts#userData.user",
+      "status": "static",
+      "path": [
+        "name"
+      ],
+      "origin": "field:src/features/user.capability.ts#userData.user"
+    },
+    {
+      "id": "discards:function:src/app/track.ts#trackUser->field:src/features/user.capability.ts#userData.user:passwordHash@static^field:src/features/user.capability.ts#userData.user",
+      "kind": "discards",
+      "from": "function:src/app/track.ts#trackUser",
+      "to": "field:src/features/user.capability.ts#userData.user",
+      "status": "static",
+      "path": [
+        "passwordHash"
+      ],
+      "origin": "field:src/features/user.capability.ts#userData.user"
+    },
+    {
+      "id": "discards:function:src/app/track.ts#trackUser->field:src/features/user.capability.ts#userData.user:role@static^field:src/features/user.capability.ts#userData.user",
+      "kind": "discards",
+      "from": "function:src/app/track.ts#trackUser",
+      "to": "field:src/features/user.capability.ts#userData.user",
+      "status": "static",
+      "path": [
+        "role"
+      ],
+      "origin": "field:src/features/user.capability.ts#userData.user"
+    },
+    {
+      "id": "passes:function:src/app/profile.ts#profileHandler->parameter:src/app/profile.ts#buildUserProfile.user:@static^field:src/features/user.capability.ts#userData.user",
+      "kind": "passes",
+      "from": "function:src/app/profile.ts#profileHandler",
+      "to": "parameter:src/app/profile.ts#buildUserProfile.user",
+      "status": "static",
+      "path": [],
+      "origin": "field:src/features/user.capability.ts#userData.user",
+      "source": {
+        "file": "src/app/profile.ts",
+        "line": 22,
+        "column": 19
+      }
+    },
+    {
+      "id": "passes:function:src/app/profile.ts#profileHandler->parameter:src/app/profile.ts#sendProfileToClient.profile:email@static^field:src/features/user.capability.ts#userData.user",
+      "kind": "passes",
+      "from": "function:src/app/profile.ts#profileHandler",
+      "to": "parameter:src/app/profile.ts#sendProfileToClient.profile",
+      "status": "static",
+      "path": [
+        "email"
+      ],
+      "origin": "field:src/features/user.capability.ts#userData.user",
+      "source": {
+        "file": "src/app/profile.ts",
+        "line": 23,
+        "column": 3
+      }
+    },
+    {
+      "id": "passes:function:src/app/profile.ts#profileHandler->parameter:src/app/profile.ts#sendProfileToClient.profile:id@static^field:src/features/user.capability.ts#userData.user",
+      "kind": "passes",
+      "from": "function:src/app/profile.ts#profileHandler",
+      "to": "parameter:src/app/profile.ts#sendProfileToClient.profile",
+      "status": "static",
+      "path": [
+        "id"
+      ],
+      "origin": "field:src/features/user.capability.ts#userData.user",
+      "source": {
+        "file": "src/app/profile.ts",
+        "line": 23,
+        "column": 3
+      }
+    },
+    {
+      "id": "passes:function:src/app/profile.ts#profileHandler->parameter:src/app/profile.ts#sendProfileToClient.profile:name@static^field:src/features/user.capability.ts#userData.user",
+      "kind": "passes",
+      "from": "function:src/app/profile.ts#profileHandler",
+      "to": "parameter:src/app/profile.ts#sendProfileToClient.profile",
+      "status": "static",
+      "path": [
+        "name"
+      ],
+      "origin": "field:src/features/user.capability.ts#userData.user",
+      "source": {
+        "file": "src/app/profile.ts",
+        "line": 23,
+        "column": 3
+      }
+    },
+    {
+      "id": "passes:return:src/app/profile.ts#buildUserProfile#return->function:src/app/profile.ts#profileHandler:email@static^field:src/features/user.capability.ts#userData.user",
+      "kind": "passes",
+      "from": "return:src/app/profile.ts#buildUserProfile#return",
+      "to": "function:src/app/profile.ts#profileHandler",
+      "status": "static",
+      "path": [
+        "email"
+      ],
+      "origin": "field:src/features/user.capability.ts#userData.user",
+      "source": {
+        "file": "src/app/profile.ts",
+        "line": 23,
+        "column": 3
+      }
+    },
+    {
+      "id": "passes:return:src/app/profile.ts#buildUserProfile#return->function:src/app/profile.ts#profileHandler:id@static^field:src/features/user.capability.ts#userData.user",
+      "kind": "passes",
+      "from": "return:src/app/profile.ts#buildUserProfile#return",
+      "to": "function:src/app/profile.ts#profileHandler",
+      "status": "static",
+      "path": [
+        "id"
+      ],
+      "origin": "field:src/features/user.capability.ts#userData.user",
+      "source": {
+        "file": "src/app/profile.ts",
+        "line": 23,
+        "column": 3
+      }
+    },
+    {
+      "id": "passes:return:src/app/profile.ts#buildUserProfile#return->function:src/app/profile.ts#profileHandler:name@static^field:src/features/user.capability.ts#userData.user",
+      "kind": "passes",
+      "from": "return:src/app/profile.ts#buildUserProfile#return",
+      "to": "function:src/app/profile.ts#profileHandler",
+      "status": "static",
+      "path": [
+        "name"
+      ],
+      "origin": "field:src/features/user.capability.ts#userData.user",
+      "source": {
+        "file": "src/app/profile.ts",
+        "line": 23,
+        "column": 3
+      }
+    },
+    {
+      "id": "reads:field:src/features/user.capability.ts#userData.user->function:src/app/export.ts#exportEverything:@static^field:src/features/user.capability.ts#userData.user",
+      "kind": "reads",
+      "from": "field:src/features/user.capability.ts#userData.user",
+      "to": "function:src/app/export.ts#exportEverything",
+      "status": "static",
+      "path": [],
+      "origin": "field:src/features/user.capability.ts#userData.user",
+      "source": {
+        "file": "src/app/export.ts",
+        "line": 10,
+        "column": 12
+      }
+    },
+    {
+      "id": "reads:field:src/features/user.capability.ts#userData.user->function:src/app/profile.ts#profileHandler:@static^field:src/features/user.capability.ts#userData.user",
+      "kind": "reads",
+      "from": "field:src/features/user.capability.ts#userData.user",
+      "to": "function:src/app/profile.ts#profileHandler",
+      "status": "static",
+      "path": [],
+      "origin": "field:src/features/user.capability.ts#userData.user",
+      "source": {
+        "file": "src/app/profile.ts",
+        "line": 21,
+        "column": 16
+      }
+    },
+    {
+      "id": "reads:field:src/features/user.capability.ts#userData.user->function:src/app/track.ts#trackUser:@static^field:src/features/user.capability.ts#userData.user",
+      "kind": "reads",
+      "from": "field:src/features/user.capability.ts#userData.user",
+      "to": "function:src/app/track.ts#trackUser",
+      "status": "static",
+      "path": [],
+      "origin": "field:src/features/user.capability.ts#userData.user",
+      "source": {
+        "file": "src/app/track.ts",
+        "line": 11,
+        "column": 27
+      }
+    },
+    {
+      "id": "reads:field:src/features/user.capability.ts#userData.user->function:src/app/track.ts#trackUser:email@static^field:src/features/user.capability.ts#userData.user",
+      "kind": "reads",
+      "from": "field:src/features/user.capability.ts#userData.user",
+      "to": "function:src/app/track.ts#trackUser",
+      "status": "static",
+      "path": [
+        "email"
+      ],
+      "origin": "field:src/features/user.capability.ts#userData.user",
+      "source": {
+        "file": "src/app/track.ts",
+        "line": 11,
+        "column": 27
+      }
+    },
+    {
+      "id": "reads:parameter:src/app/profile.ts#buildUserProfile.user->function:src/app/profile.ts#buildUserProfile:email@static^field:src/features/user.capability.ts#userData.user",
+      "kind": "reads",
+      "from": "parameter:src/app/profile.ts#buildUserProfile.user",
+      "to": "function:src/app/profile.ts#buildUserProfile",
+      "status": "static",
+      "path": [
+        "email"
+      ],
+      "origin": "field:src/features/user.capability.ts#userData.user",
+      "source": {
+        "file": "src/app/profile.ts",
+        "line": 13,
+        "column": 49
+      }
+    },
+    {
+      "id": "reads:parameter:src/app/profile.ts#buildUserProfile.user->function:src/app/profile.ts#buildUserProfile:id@static^field:src/features/user.capability.ts#userData.user",
+      "kind": "reads",
+      "from": "parameter:src/app/profile.ts#buildUserProfile.user",
+      "to": "function:src/app/profile.ts#buildUserProfile",
+      "status": "static",
+      "path": [
+        "id"
+      ],
+      "origin": "field:src/features/user.capability.ts#userData.user",
+      "source": {
+        "file": "src/app/profile.ts",
+        "line": 13,
+        "column": 16
+      }
+    },
+    {
+      "id": "reads:parameter:src/app/profile.ts#buildUserProfile.user->function:src/app/profile.ts#buildUserProfile:name@static^field:src/features/user.capability.ts#userData.user",
+      "kind": "reads",
+      "from": "parameter:src/app/profile.ts#buildUserProfile.user",
+      "to": "function:src/app/profile.ts#buildUserProfile",
+      "status": "static",
+      "path": [
+        "name"
+      ],
+      "origin": "field:src/features/user.capability.ts#userData.user",
+      "source": {
+        "file": "src/app/profile.ts",
+        "line": 13,
+        "column": 31
+      }
+    },
+    {
+      "id": "reads:parameter:src/app/profile.ts#sendProfileToClient.profile->function:src/app/profile.ts#sendProfileToClient:email@static^field:src/features/user.capability.ts#userData.user",
+      "kind": "reads",
+      "from": "parameter:src/app/profile.ts#sendProfileToClient.profile",
+      "to": "function:src/app/profile.ts#sendProfileToClient",
+      "status": "static",
+      "path": [
+        "email"
+      ],
+      "origin": "field:src/features/user.capability.ts#userData.user",
+      "source": {
+        "file": "src/app/profile.ts",
+        "line": 17,
+        "column": 3
+      }
+    },
+    {
+      "id": "reads:parameter:src/app/profile.ts#sendProfileToClient.profile->function:src/app/profile.ts#sendProfileToClient:id@static^field:src/features/user.capability.ts#userData.user",
+      "kind": "reads",
+      "from": "parameter:src/app/profile.ts#sendProfileToClient.profile",
+      "to": "function:src/app/profile.ts#sendProfileToClient",
+      "status": "static",
+      "path": [
+        "id"
+      ],
+      "origin": "field:src/features/user.capability.ts#userData.user",
+      "source": {
+        "file": "src/app/profile.ts",
+        "line": 17,
+        "column": 3
+      }
+    },
+    {
+      "id": "reads:parameter:src/app/profile.ts#sendProfileToClient.profile->function:src/app/profile.ts#sendProfileToClient:name@static^field:src/features/user.capability.ts#userData.user",
+      "kind": "reads",
+      "from": "parameter:src/app/profile.ts#sendProfileToClient.profile",
+      "to": "function:src/app/profile.ts#sendProfileToClient",
+      "status": "static",
+      "path": [
+        "name"
+      ],
+      "origin": "field:src/features/user.capability.ts#userData.user",
+      "source": {
+        "file": "src/app/profile.ts",
+        "line": 17,
+        "column": 3
+      }
+    },
+    {
+      "id": "returns:function:src/app/profile.ts#buildUserProfile->return:src/app/profile.ts#buildUserProfile#return:email@static^field:src/features/user.capability.ts#userData.user",
+      "kind": "returns",
+      "from": "function:src/app/profile.ts#buildUserProfile",
+      "to": "return:src/app/profile.ts#buildUserProfile#return",
+      "status": "static",
+      "path": [
+        "email"
+      ],
+      "origin": "field:src/features/user.capability.ts#userData.user",
+      "source": {
+        "file": "src/app/profile.ts",
+        "line": 13,
+        "column": 3
+      }
+    },
+    {
+      "id": "returns:function:src/app/profile.ts#buildUserProfile->return:src/app/profile.ts#buildUserProfile#return:id@static^field:src/features/user.capability.ts#userData.user",
+      "kind": "returns",
+      "from": "function:src/app/profile.ts#buildUserProfile",
+      "to": "return:src/app/profile.ts#buildUserProfile#return",
+      "status": "static",
+      "path": [
+        "id"
+      ],
+      "origin": "field:src/features/user.capability.ts#userData.user",
+      "source": {
+        "file": "src/app/profile.ts",
+        "line": 13,
+        "column": 3
+      }
+    },
+    {
+      "id": "returns:function:src/app/profile.ts#buildUserProfile->return:src/app/profile.ts#buildUserProfile#return:name@static^field:src/features/user.capability.ts#userData.user",
+      "kind": "returns",
+      "from": "function:src/app/profile.ts#buildUserProfile",
+      "to": "return:src/app/profile.ts#buildUserProfile#return",
+      "status": "static",
+      "path": [
+        "name"
+      ],
+      "origin": "field:src/features/user.capability.ts#userData.user",
+      "source": {
+        "file": "src/app/profile.ts",
+        "line": 13,
+        "column": 3
+      }
+    },
+    {
+      "id": "side-effect:function:src/app/export.ts#exportEverything->boundary:boundary:code#http-response:@static^field:src/features/user.capability.ts#userData.user",
+      "kind": "side-effect",
+      "from": "function:src/app/export.ts#exportEverything",
+      "to": "boundary:boundary:code#http-response",
+      "status": "static",
+      "path": [],
+      "origin": "field:src/features/user.capability.ts#userData.user",
+      "source": {
+        "file": "src/app/export.ts",
+        "line": 10,
+        "column": 3
+      }
+    },
+    {
+      "id": "side-effect:function:src/app/profile.ts#sendProfileToClient->boundary:boundary:code#http-response:email@static^field:src/features/user.capability.ts#userData.user",
+      "kind": "side-effect",
+      "from": "function:src/app/profile.ts#sendProfileToClient",
+      "to": "boundary:boundary:code#http-response",
+      "status": "static",
+      "path": [
+        "email"
+      ],
+      "origin": "field:src/features/user.capability.ts#userData.user",
+      "source": {
+        "file": "src/app/profile.ts",
+        "line": 17,
+        "column": 3
+      }
+    },
+    {
+      "id": "side-effect:function:src/app/profile.ts#sendProfileToClient->boundary:boundary:code#http-response:id@static^field:src/features/user.capability.ts#userData.user",
+      "kind": "side-effect",
+      "from": "function:src/app/profile.ts#sendProfileToClient",
+      "to": "boundary:boundary:code#http-response",
+      "status": "static",
+      "path": [
+        "id"
+      ],
+      "origin": "field:src/features/user.capability.ts#userData.user",
+      "source": {
+        "file": "src/app/profile.ts",
+        "line": 17,
+        "column": 3
+      }
+    },
+    {
+      "id": "side-effect:function:src/app/profile.ts#sendProfileToClient->boundary:boundary:code#http-response:name@static^field:src/features/user.capability.ts#userData.user",
+      "kind": "side-effect",
+      "from": "function:src/app/profile.ts#sendProfileToClient",
+      "to": "boundary:boundary:code#http-response",
+      "status": "static",
+      "path": [
+        "name"
+      ],
+      "origin": "field:src/features/user.capability.ts#userData.user",
+      "source": {
+        "file": "src/app/profile.ts",
+        "line": 17,
+        "column": 3
+      }
+    }
+  ],
+  "unknowns": [
+    {
+      "id": "unknown:unresolved-call:src/app/track.ts:11:3",
+      "reason": "unresolved-call",
+      "source": {
+        "file": "src/app/track.ts",
+        "line": 11,
+        "column": 3
+      },
+      "subject": "function:src/app/track.ts#trackUser",
+      "detail": "call target is not a project function",
+      "data": [
+        {
+          "origin": "field:src/features/user.capability.ts#userData.user",
+          "path": [
+            "email"
+          ]
+        }
+      ]
+    }
+  ],
+  "functions": [
+    {
+      "id": "function:src/app/export.ts#exportEverything",
+      "name": "exportEverything",
+      "scope": "src/app/export.ts",
+      "status": "static",
+      "source": {
+        "line": 9,
+        "column": 1
+      },
+      "inputs": [
+        {
+          "id": "parameter:src/app/export.ts#exportEverything.res",
+          "name": "exportEverything.res"
+        }
+      ],
+      "output": "return:src/app/export.ts#exportEverything#return",
+      "reads": [
+        {
+          "origin": "field:src/features/user.capability.ts#userData.user",
+          "field": "userData.user",
+          "path": [],
+          "via": "field",
+          "from": "field:src/features/user.capability.ts#userData.user",
+          "status": "static"
+        }
+      ],
+      "forwards": [],
+      "sideEffects": [
+        {
+          "boundary": "boundary:boundary:code#http-response",
+          "boundaryName": "http-response",
+          "boundaryKind": "client-response",
+          "origin": "field:src/features/user.capability.ts#userData.user",
+          "field": "userData.user",
+          "path": [],
+          "status": "static"
+        }
+      ],
+      "discards": [],
+      "callers": [],
+      "callees": [],
+      "classifications": [
+        "confidential"
+      ],
+      "confidence": "static",
+      "unknowns": []
+    },
+    {
+      "id": "function:src/app/profile.ts#buildUserProfile",
+      "name": "buildUserProfile",
+      "scope": "src/app/profile.ts",
+      "status": "static",
+      "source": {
+        "line": 12,
+        "column": 1
+      },
+      "inputs": [
+        {
+          "id": "parameter:src/app/profile.ts#buildUserProfile.user",
+          "name": "buildUserProfile.user"
+        }
+      ],
+      "output": "return:src/app/profile.ts#buildUserProfile#return",
+      "reads": [
+        {
+          "origin": "field:src/features/user.capability.ts#userData.user",
+          "field": "userData.user",
+          "path": [
+            "email"
+          ],
+          "via": "parameter",
+          "from": "parameter:src/app/profile.ts#buildUserProfile.user",
+          "status": "static"
+        },
+        {
+          "origin": "field:src/features/user.capability.ts#userData.user",
+          "field": "userData.user",
+          "path": [
+            "id"
+          ],
+          "via": "parameter",
+          "from": "parameter:src/app/profile.ts#buildUserProfile.user",
+          "status": "static"
+        },
+        {
+          "origin": "field:src/features/user.capability.ts#userData.user",
+          "field": "userData.user",
+          "path": [
+            "name"
+          ],
+          "via": "parameter",
+          "from": "parameter:src/app/profile.ts#buildUserProfile.user",
+          "status": "static"
+        }
+      ],
+      "forwards": [
+        {
+          "kind": "returns",
+          "to": "return:src/app/profile.ts#buildUserProfile#return",
+          "toName": "buildUserProfile#return",
+          "origin": "field:src/features/user.capability.ts#userData.user",
+          "field": "userData.user",
+          "path": [
+            "email"
+          ],
+          "status": "static"
+        },
+        {
+          "kind": "returns",
+          "to": "return:src/app/profile.ts#buildUserProfile#return",
+          "toName": "buildUserProfile#return",
+          "origin": "field:src/features/user.capability.ts#userData.user",
+          "field": "userData.user",
+          "path": [
+            "id"
+          ],
+          "status": "static"
+        },
+        {
+          "kind": "returns",
+          "to": "return:src/app/profile.ts#buildUserProfile#return",
+          "toName": "buildUserProfile#return",
+          "origin": "field:src/features/user.capability.ts#userData.user",
+          "field": "userData.user",
+          "path": [
+            "name"
+          ],
+          "status": "static"
+        }
+      ],
+      "sideEffects": [],
+      "discards": [
+        {
+          "origin": "field:src/features/user.capability.ts#userData.user",
+          "field": "userData.user",
+          "path": [
+            "passwordHash"
+          ]
+        },
+        {
+          "origin": "field:src/features/user.capability.ts#userData.user",
+          "field": "userData.user",
+          "path": [
+            "role"
+          ]
+        }
+      ],
+      "callers": [
+        {
+          "id": "function:src/app/profile.ts#profileHandler",
+          "name": "profileHandler"
+        }
+      ],
+      "callees": [],
+      "classifications": [
+        "confidential"
+      ],
+      "confidence": "static",
+      "unknowns": []
+    },
+    {
+      "id": "function:src/app/profile.ts#profileHandler",
+      "name": "profileHandler",
+      "scope": "src/app/profile.ts",
+      "status": "static",
+      "source": {
+        "line": 20,
+        "column": 1
+      },
+      "inputs": [
+        {
+          "id": "parameter:src/app/profile.ts#profileHandler.res",
+          "name": "profileHandler.res"
+        }
+      ],
+      "output": "return:src/app/profile.ts#profileHandler#return",
+      "reads": [
+        {
+          "origin": "field:src/features/user.capability.ts#userData.user",
+          "field": "userData.user",
+          "path": [
+            "email"
+          ],
+          "via": "return",
+          "from": "return:src/app/profile.ts#buildUserProfile#return",
+          "status": "static"
+        },
+        {
+          "origin": "field:src/features/user.capability.ts#userData.user",
+          "field": "userData.user",
+          "path": [
+            "id"
+          ],
+          "via": "return",
+          "from": "return:src/app/profile.ts#buildUserProfile#return",
+          "status": "static"
+        },
+        {
+          "origin": "field:src/features/user.capability.ts#userData.user",
+          "field": "userData.user",
+          "path": [
+            "name"
+          ],
+          "via": "return",
+          "from": "return:src/app/profile.ts#buildUserProfile#return",
+          "status": "static"
+        },
+        {
+          "origin": "field:src/features/user.capability.ts#userData.user",
+          "field": "userData.user",
+          "path": [],
+          "via": "field",
+          "from": "field:src/features/user.capability.ts#userData.user",
+          "status": "static"
+        }
+      ],
+      "forwards": [
+        {
+          "kind": "passes",
+          "to": "parameter:src/app/profile.ts#buildUserProfile.user",
+          "toName": "buildUserProfile.user",
+          "origin": "field:src/features/user.capability.ts#userData.user",
+          "field": "userData.user",
+          "path": [],
+          "status": "static"
+        },
+        {
+          "kind": "passes",
+          "to": "parameter:src/app/profile.ts#sendProfileToClient.profile",
+          "toName": "sendProfileToClient.profile",
+          "origin": "field:src/features/user.capability.ts#userData.user",
+          "field": "userData.user",
+          "path": [
+            "email"
+          ],
+          "status": "static"
+        },
+        {
+          "kind": "passes",
+          "to": "parameter:src/app/profile.ts#sendProfileToClient.profile",
+          "toName": "sendProfileToClient.profile",
+          "origin": "field:src/features/user.capability.ts#userData.user",
+          "field": "userData.user",
+          "path": [
+            "id"
+          ],
+          "status": "static"
+        },
+        {
+          "kind": "passes",
+          "to": "parameter:src/app/profile.ts#sendProfileToClient.profile",
+          "toName": "sendProfileToClient.profile",
+          "origin": "field:src/features/user.capability.ts#userData.user",
+          "field": "userData.user",
+          "path": [
+            "name"
+          ],
+          "status": "static"
+        }
+      ],
+      "sideEffects": [],
+      "discards": [],
+      "callers": [],
+      "callees": [
+        {
+          "id": "function:src/app/profile.ts#buildUserProfile",
+          "name": "buildUserProfile"
+        },
+        {
+          "id": "function:src/app/profile.ts#sendProfileToClient",
+          "name": "sendProfileToClient"
+        }
+      ],
+      "classifications": [
+        "confidential"
+      ],
+      "confidence": "static",
+      "unknowns": []
+    },
+    {
+      "id": "function:src/app/profile.ts#sendProfileToClient",
+      "name": "sendProfileToClient",
+      "scope": "src/app/profile.ts",
+      "status": "static",
+      "source": {
+        "line": 16,
+        "column": 1
+      },
+      "inputs": [
+        {
+          "id": "parameter:src/app/profile.ts#sendProfileToClient.profile",
+          "name": "sendProfileToClient.profile"
+        },
+        {
+          "id": "parameter:src/app/profile.ts#sendProfileToClient.res",
+          "name": "sendProfileToClient.res"
+        }
+      ],
+      "output": "return:src/app/profile.ts#sendProfileToClient#return",
+      "reads": [
+        {
+          "origin": "field:src/features/user.capability.ts#userData.user",
+          "field": "userData.user",
+          "path": [
+            "email"
+          ],
+          "via": "parameter",
+          "from": "parameter:src/app/profile.ts#sendProfileToClient.profile",
+          "status": "static"
+        },
+        {
+          "origin": "field:src/features/user.capability.ts#userData.user",
+          "field": "userData.user",
+          "path": [
+            "id"
+          ],
+          "via": "parameter",
+          "from": "parameter:src/app/profile.ts#sendProfileToClient.profile",
+          "status": "static"
+        },
+        {
+          "origin": "field:src/features/user.capability.ts#userData.user",
+          "field": "userData.user",
+          "path": [
+            "name"
+          ],
+          "via": "parameter",
+          "from": "parameter:src/app/profile.ts#sendProfileToClient.profile",
+          "status": "static"
+        }
+      ],
+      "forwards": [],
+      "sideEffects": [
+        {
+          "boundary": "boundary:boundary:code#http-response",
+          "boundaryName": "http-response",
+          "boundaryKind": "client-response",
+          "origin": "field:src/features/user.capability.ts#userData.user",
+          "field": "userData.user",
+          "path": [
+            "email"
+          ],
+          "status": "static"
+        },
+        {
+          "boundary": "boundary:boundary:code#http-response",
+          "boundaryName": "http-response",
+          "boundaryKind": "client-response",
+          "origin": "field:src/features/user.capability.ts#userData.user",
+          "field": "userData.user",
+          "path": [
+            "id"
+          ],
+          "status": "static"
+        },
+        {
+          "boundary": "boundary:boundary:code#http-response",
+          "boundaryName": "http-response",
+          "boundaryKind": "client-response",
+          "origin": "field:src/features/user.capability.ts#userData.user",
+          "field": "userData.user",
+          "path": [
+            "name"
+          ],
+          "status": "static"
+        }
+      ],
+      "discards": [],
+      "callers": [
+        {
+          "id": "function:src/app/profile.ts#profileHandler",
+          "name": "profileHandler"
+        }
+      ],
+      "callees": [],
+      "classifications": [
+        "confidential"
+      ],
+      "confidence": "static",
+      "unknowns": []
+    },
+    {
+      "id": "function:src/app/track.ts#trackUser",
+      "name": "trackUser",
+      "scope": "src/app/track.ts",
+      "status": "static",
+      "source": {
+        "line": 10,
+        "column": 1
+      },
+      "inputs": [],
+      "output": "return:src/app/track.ts#trackUser#return",
+      "reads": [
+        {
+          "origin": "field:src/features/user.capability.ts#userData.user",
+          "field": "userData.user",
+          "path": [],
+          "via": "field",
+          "from": "field:src/features/user.capability.ts#userData.user",
+          "status": "static"
+        },
+        {
+          "origin": "field:src/features/user.capability.ts#userData.user",
+          "field": "userData.user",
+          "path": [
+            "email"
+          ],
+          "via": "field",
+          "from": "field:src/features/user.capability.ts#userData.user",
+          "status": "static"
+        }
+      ],
+      "forwards": [],
+      "sideEffects": [],
+      "discards": [
+        {
+          "origin": "field:src/features/user.capability.ts#userData.user",
+          "field": "userData.user",
+          "path": [
+            "id"
+          ]
+        },
+        {
+          "origin": "field:src/features/user.capability.ts#userData.user",
+          "field": "userData.user",
+          "path": [
+            "name"
+          ]
+        },
+        {
+          "origin": "field:src/features/user.capability.ts#userData.user",
+          "field": "userData.user",
+          "path": [
+            "passwordHash"
+          ]
+        },
+        {
+          "origin": "field:src/features/user.capability.ts#userData.user",
+          "field": "userData.user",
+          "path": [
+            "role"
+          ]
+        }
+      ],
+      "callers": [],
+      "callees": [],
+      "classifications": [
+        "confidential"
+      ],
+      "confidence": "inferred",
+      "unknowns": [
+        "unknown:unresolved-call:src/app/track.ts:11:3"
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "id": "field:src/features/user.capability.ts#userData.user",
+      "name": "userData.user",
+      "scope": "src/features/user.capability.ts",
+      "classification": "confidential",
+      "sources": [
+        {
+          "boundary": "boundary:boundary#postgres:users",
+          "boundaryName": "postgres:users",
+          "boundaryKind": "database",
+          "status": "declared"
+        }
+      ],
+      "destinations": [
+        {
+          "boundary": "boundary:boundary:code#http-response",
+          "boundaryName": "http-response",
+          "boundaryKind": "client-response",
+          "paths": [
+            [],
+            [
+              "email"
+            ],
+            [
+              "id"
+            ],
+            [
+              "name"
+            ]
+          ],
+          "status": "static",
+          "handling": []
+        }
+      ],
+      "discardedBy": [
+        {
+          "function": "function:src/app/profile.ts#buildUserProfile",
+          "functionName": "buildUserProfile",
+          "path": [
+            "passwordHash"
+          ]
+        },
+        {
+          "function": "function:src/app/profile.ts#buildUserProfile",
+          "functionName": "buildUserProfile",
+          "path": [
+            "role"
+          ]
+        },
+        {
+          "function": "function:src/app/track.ts#trackUser",
+          "functionName": "trackUser",
+          "path": [
+            "id"
+          ]
+        },
+        {
+          "function": "function:src/app/track.ts#trackUser",
+          "functionName": "trackUser",
+          "path": [
+            "name"
+          ]
+        },
+        {
+          "function": "function:src/app/track.ts#trackUser",
+          "functionName": "trackUser",
+          "path": [
+            "passwordHash"
+          ]
+        },
+        {
+          "function": "function:src/app/track.ts#trackUser",
+          "functionName": "trackUser",
+          "path": [
+            "role"
+          ]
+        }
+      ],
+      "readers": [
+        {
+          "function": "function:src/app/export.ts#exportEverything",
+          "functionName": "exportEverything"
+        },
+        {
+          "function": "function:src/app/profile.ts#profileHandler",
+          "functionName": "profileHandler"
+        },
+        {
+          "function": "function:src/app/track.ts#trackUser",
+          "functionName": "trackUser"
+        }
+      ],
+      "claims": [
+        "claim:field-reaches-boundary:userData.user->client-response:http-response",
+        "claim:field-sourced-from-boundary:userData.user<-database:postgres:users",
+        "claim:policy-holds:userData/no-password-to-client:userData.user",
+        "claim:policy-holds:userData/no-role-to-log:userData.user"
+      ],
+      "complete": false
+    }
+  ],
+  "claims": {
+    "verified": 2,
+    "inferred": 0,
+    "unobserved": 1,
+    "contradicted": 1,
+    "observed-only": 0,
+    "indeterminate": 0
+  },
+  "statusLegend": [
+    {
+      "status": "declared",
+      "meaning": "Asserted by an author in documentData(); not checked against code."
+    },
+    {
+      "status": "static",
+      "meaning": "Established by the analyzed code under the analysis's stated assumptions."
+    },
+    {
+      "status": "observed",
+      "meaning": "Witnessed in a specific execution or test."
+    },
+    {
+      "status": "inferred",
+      "meaning": "Plausible but not established: data assumed to pass through code the analysis could not follow."
+    },
+    {
+      "status": "unknown",
+      "meaning": "Not analyzable: dynamic behavior, missing source, an unsupported construct, or incomplete coverage."
+    }
+  ]
+}
