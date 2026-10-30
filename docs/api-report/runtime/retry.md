@@ -9,7 +9,7 @@
 ##### delayMs?
 
 ```ts
-readonly optional delayMs?: (attempt) => number;
+readonly delayMs?: (attempt) => number;
 ```
 
 Delay (ms) before a given 1-indexed retry attempt. Defaults to capped exponential backoff.
@@ -27,7 +27,7 @@ Delay (ms) before a given 1-indexed retry attempt. Defaults to capped exponentia
 ##### maxAttempts?
 
 ```ts
-readonly optional maxAttempts?: number;
+readonly maxAttempts?: number;
 ```
 
 Maximum retry attempts after the initial call (not counting the first attempt itself). Defaults to 3.
@@ -35,7 +35,7 @@ Maximum retry attempts after the initial call (not counting the first attempt it
 ##### shouldRetry?
 
 ```ts
-readonly optional shouldRetry?: (error, attempt) => boolean;
+readonly shouldRetry?: (error, attempt) => boolean;
 ```
 
 Whether `error` (from the given 1-indexed attempt) is worth retrying at all. Defaults to retrying every error -- callers should narrow this for real use.
