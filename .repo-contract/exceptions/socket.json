@@ -321,6 +321,26 @@
       "whyPreferable": "Accepting the alert and recording why is preferable to the alternatives above, each of which costs more than the alert does: Ship the ESLint plugin as a separate package so this package carries no `eslint` tree at all; until then the only alternative is dropping the plugin."
     },
     {
+      "id": "socket:minimatch@10.2.6:mediumCVE",
+      "version": 2,
+      "justification": "Reaches the package score only through the optional `eslint` peer dependency's own dependency tree: eslint -> minimatch@10.2.6. data-cap ships an ESLint plugin that cannot function without `eslint`, so removing this code means removing the plugin, a published part of the package. minimatch 10.2.6 carries advisory GHSA-g3hv-75wg-m249 (denial of service through globparts amplification, fixed in 11.0.1).",
+      "alternatives": "Ship the ESLint plugin as a separate package so this package carries no `eslint` tree at all; until then the only alternative is dropping the plugin.",
+      "attempted": "Checked for a patched release: minimatch 11.0.1 and later is a new major version, and eslint, @eslint/config-array and @typescript-eslint/typescript-estree all depend on minimatch ^10, so no eslint release resolves it yet. Forcing 11.x with an override would run those tools against a major version they were not published for.",
+      "constraint": "data-cap ships an ESLint plugin that cannot function without `eslint`, and eslint pins minimatch to the 10.x line.",
+      "exceptionType": "required-for-package-to-exist",
+      "expires": "",
+      "method": "independent-human-review",
+      "package": "minimatch",
+      "packageVersion": "10.2.6",
+      "remediation": "Revisit when eslint (or @eslint/config-array) accepts minimatch 11.0.1 or later, or when the ESLint plugin is split into its own package; the alert then leaves this package's score.",
+      "residualRisk": "Exploiting it needs an attacker to control a glob pattern that minimatch expands. ESLint matches only the globs in the consuming project's own configuration, never patterns from untrusted input; the `mediumCVE` alert stays on the package's Socket score until the remediation below happens.",
+      "revisitWhen": "eslint depends on minimatch 11.0.1 or later, or the ESLint plugin is split into its own package.",
+      "ruleBroken": "The package's Socket score carries a middle `mediumCVE` alert on minimatch@10.2.6, and the standard wants no alert left unexplained.",
+      "severity": "middle",
+      "type": "mediumCVE",
+      "whyPreferable": "Accepting the alert and recording why is preferable to the alternatives: dropping the ESLint plugin removes a published feature, and overriding minimatch to 11.x runs eslint against a major version it was not tested with, a larger risk than a glob-expansion DoS that needs attacker-controlled patterns."
+    },
+    {
       "id": "socket:path-exists@4.0.0:filesystemAccess",
       "version": 2,
       "justification": "Reaches the package score only through the optional `eslint` peer dependency's own dependency tree. data-cap ships an ESLint plugin that cannot function without `eslint`, so removing this code means removing the plugin, a published part of the package.",
