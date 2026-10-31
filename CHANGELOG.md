@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.3
+
+### Patch Changes
+
+- e04d47e: Bump `internal-package-contract` to v0.13.3.
+
 ## 0.8.2
 
 ### Patch Changes
