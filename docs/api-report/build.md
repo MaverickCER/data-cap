@@ -42,7 +42,7 @@ new DataProjectGenerationError(findings): DataProjectGenerationError;
 ##### cause?
 
 ```ts
-optional cause?: unknown;
+cause?: unknown;
 ```
 
 ###### Inherited from
@@ -92,7 +92,7 @@ name: string;
 ##### stack?
 
 ```ts
-optional stack?: string;
+stack?: string;
 ```
 
 ###### Inherited from
@@ -661,7 +661,7 @@ readonly exportName: string;
 ##### fields?
 
 ```ts
-readonly optional fields?: readonly {
+readonly fields?: readonly {
   docs?: {
      renamedFrom?: string;
   };
@@ -863,7 +863,7 @@ Options for [computeSourceFingerprint](#computesourcefingerprint).
 ##### exclude?
 
 ```ts
-readonly optional exclude?: readonly string[];
+readonly exclude?: readonly string[];
 ```
 
 Discovery exclusion globs.
@@ -879,7 +879,7 @@ The filesystem capability -- `./build` never imports `node:fs` (ADR 0058).
 ##### include?
 
 ```ts
-readonly optional include?: readonly string[];
+readonly include?: readonly string[];
 ```
 
 Discovery globs. Defaults to the same globs as `discoverCapabilityFiles`.
@@ -887,7 +887,7 @@ Discovery globs. Defaults to the same globs as `discoverCapabilityFiles`.
 ##### packages?
 
 ```ts
-readonly optional packages?: readonly string[];
+readonly packages?: readonly string[];
 ```
 
 Allow-listed package names whose own resolved schema files also feed the fingerprint.
@@ -990,7 +990,7 @@ Root-relative POSIX path of the file declaring the capability -- the same value 
 ###### field?
 
 ```ts
-readonly optional field?: readonly string[];
+readonly field?: readonly string[];
 ```
 
 The specific field path being read, when `relationship` is `"reads-field"`.
@@ -998,7 +998,7 @@ The specific field path being read, when `relationship` is `"reads-field"`.
 ###### operation?
 
 ```ts
-readonly optional operation?: string;
+readonly operation?: string;
 ```
 
 The specific operation name being called, when `relationship` is `"calls-getter"`/`"calls-mutator"`/`"calls-subscription"`.
@@ -1229,7 +1229,7 @@ Options for `discoverCapabilityFiles`.
 ##### exclude?
 
 ```ts
-readonly optional exclude?: readonly string[];
+readonly exclude?: readonly string[];
 ```
 
 Glob patterns (relative to `root`) that prune a file or directory regardless of `include`.
@@ -1245,7 +1245,7 @@ The filesystem capability -- `./build` never imports `node:fs` (ADR 0058).
 ##### include?
 
 ```ts
-readonly optional include?: readonly string[];
+readonly include?: readonly string[];
 ```
 
 Glob patterns (relative to `root`) a file must match at least one of to be included. Defaults to every `.ts`/`.tsx` file.
@@ -1339,7 +1339,7 @@ Capability Model -- the base every other model is derived from or indexed agains
 ##### change?
 
 ```ts
-readonly optional change?: ChangeModel;
+readonly change?: ChangeModel;
 ```
 
 Change Model, when a previous manifest snapshot was available to diff against.
@@ -1347,7 +1347,7 @@ Change Model, when a previous manifest snapshot was available to diff against.
 ##### dependency?
 
 ```ts
-readonly optional dependency?: DependencyModel;
+readonly dependency?: DependencyModel;
 ```
 
 Dependency Model, when a usage scan was run.
@@ -1355,7 +1355,7 @@ Dependency Model, when a usage scan was run.
 ##### finding?
 
 ```ts
-readonly optional finding?: FindingModel;
+readonly finding?: FindingModel;
 ```
 
 Finding Model, when at least one rule/scan pass ran.
@@ -1377,7 +1377,7 @@ the contents, never the availability.
 ##### ownership?
 
 ```ts
-readonly optional ownership?: OwnershipModel;
+readonly ownership?: OwnershipModel;
 ```
 
 Ownership Model, when a usage scan was run.
@@ -1689,7 +1689,7 @@ Options for `computeDataArtifacts`/`generateDataArtifacts`/`checkArtifacts`.
 ##### commit?
 
 ```ts
-readonly optional commit?: string;
+readonly commit?: string;
 ```
 
 The commit SHA this run's evidence was generated against, stamped onto `EvidenceModel.provenance.commit`. Caller-supplied only -- `data-cap` never shells out to `git` itself, so omitting this records a stated absence, never a guess.
@@ -1697,7 +1697,7 @@ The commit SHA this run's evidence was generated against, stamped onto `Evidence
 ##### docs?
 
 ```ts
-readonly optional docs?: string;
+readonly docs?: string;
 ```
 
 Output path for the Markdown documentation catalog.
@@ -1705,7 +1705,7 @@ Output path for the Markdown documentation catalog.
 ##### evidence?
 
 ```ts
-readonly optional evidence?: string;
+readonly evidence?: string;
 ```
 
 Output path for the composed Evidence Model (ADR 0050), as JSON -- see `ReportResult.evidence`, which is always computed regardless of this option; this only controls whether it's additionally written to disk.
@@ -1713,7 +1713,7 @@ Output path for the composed Evidence Model (ADR 0050), as JSON -- see `ReportRe
 ##### exclude?
 
 ```ts
-readonly optional exclude?: readonly string[];
+readonly exclude?: readonly string[];
 ```
 
 Glob patterns (relative to `root`) that prune a file or directory regardless of `include`.
@@ -1721,7 +1721,7 @@ Glob patterns (relative to `root`) that prune a file or directory regardless of 
 ##### expiringWithinDays?
 
 ```ts
-readonly optional expiringWithinDays?: number;
+readonly expiringWithinDays?: number;
 ```
 
 How many days out counts as "expiring soon" for the Lifecycle Model and the documentation catalog's own expiring section. Defaults to `DEFAULT_EXPIRING_WITHIN_DAYS`.
@@ -1729,7 +1729,7 @@ How many days out counts as "expiring soon" for the Lifecycle Model and the docu
 ##### flow?
 
 ```ts
-readonly optional flow?: string;
+readonly flow?: string;
 ```
 
 Output directory for the Data Flow Diagram + Security Data-Flow Review set.
@@ -1745,7 +1745,7 @@ The filesystem capability, shared across every requested pass -- `./build` never
 ##### generatedAt?
 
 ```ts
-readonly optional generatedAt?: Date;
+readonly generatedAt?: Date;
 ```
 
 The single instant every time-sensitive computation in this run shares (`EvidenceModel.provenance.generatedAt`, Lifecycle Model's `daysRemaining`), so none of them can disagree about "now". Defaults to the wall clock at the moment this function is called.
@@ -1753,7 +1753,7 @@ The single instant every time-sensitive computation in this run shares (`Evidenc
 ##### include?
 
 ```ts
-readonly optional include?: readonly string[];
+readonly include?: readonly string[];
 ```
 
 Glob patterns (relative to `root`) a file must match at least one of to be discovered. Defaults to every `.ts`/`.tsx` file.
@@ -1761,7 +1761,7 @@ Glob patterns (relative to `root`) a file must match at least one of to be disco
 ##### location?
 
 ```ts
-readonly optional location?: string;
+readonly location?: string;
 ```
 
 Output path for the generated manifest `.ts` file. Omit to skip manifest generation (the inventory is still built and static rules still run).
@@ -1769,7 +1769,7 @@ Output path for the generated manifest `.ts` file. Omit to skip manifest generat
 ##### ownership?
 
 ```ts
-readonly optional ownership?: string;
+readonly ownership?: string;
 ```
 
 Output path for the Dependency & Ownership report.
@@ -1777,7 +1777,7 @@ Output path for the Dependency & Ownership report.
 ##### packages?
 
 ```ts
-readonly optional packages?: readonly string[];
+readonly packages?: readonly string[];
 ```
 
 Explicit cross-package schema discovery allowlist -- see `resolve-package-schema.ts`.
@@ -1793,7 +1793,7 @@ Directory discovery/linking resolves against.
 ##### strict?
 
 ```ts
-readonly optional strict?: boolean;
+readonly strict?: boolean;
 ```
 
 Escalate every pass's `warning` findings to `error` (never `info`).
@@ -1801,7 +1801,7 @@ Escalate every pass's `warning` findings to `error` (never `info`).
 ##### strictDocs?
 
 ```ts
-readonly optional strictDocs?: boolean;
+readonly strictDocs?: boolean;
 ```
 
 Escalate static (ownership/sensitivity/duplication) findings to `error`.
@@ -1809,7 +1809,7 @@ Escalate static (ownership/sensitivity/duplication) findings to `error`.
 ##### strictFlow?
 
 ```ts
-readonly optional strictFlow?: boolean;
+readonly strictFlow?: boolean;
 ```
 
 Escalate `SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY`/`SENSITIVE_FIELD_ENDPOINT_MISSING_HANDLING` findings to `error` -- every finding `buildFlowGraph` produces.
@@ -1817,7 +1817,7 @@ Escalate `SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY`/`SENSITIVE_FIELD_ENDPOINT_MI
 ##### strictOwnership?
 
 ```ts
-readonly optional strictOwnership?: boolean;
+readonly strictOwnership?: boolean;
 ```
 
 Escalate proven usage findings (abandoned capabilities, unconsumed owned fields) to `error` -- never escalates unresolved-consumer or indeterminate findings.
@@ -1825,7 +1825,7 @@ Escalate proven usage findings (abandoned capabilities, unconsumed owned fields)
 ##### tsconfig?
 
 ```ts
-readonly optional tsconfig?: string | false;
+readonly tsconfig?: string | false;
 ```
 
 Explicit `tsconfig.json` path override, or `false` to disable alias resolution -- see `LinkOptions.tsconfig`.
@@ -1841,7 +1841,7 @@ Options for `generateDocumentation`.
 ##### changes?
 
 ```ts
-readonly optional changes?: ManifestChangeReport;
+readonly changes?: ManifestChangeReport;
 ```
 
 Manifest changes since the last report, rendered as a "changes since last report" section when present.
@@ -1849,7 +1849,7 @@ Manifest changes since the last report, rendered as a "changes since last report
 ##### edges?
 
 ```ts
-readonly optional edges?: readonly DependencyEdge[];
+readonly edges?: readonly DependencyEdge[];
 ```
 
 Proven usage edges, when the caller already ran the usage scan (`--ownership`/`--flow`) -- renders exact `file:line:column` consumption sites per field when supplied. Omit when no usage scan ran; the catalog still renders, just without that column populated.
@@ -1857,7 +1857,7 @@ Proven usage edges, when the caller already ran the usage scan (`--ownership`/`-
 ##### evidencePath?
 
 ```ts
-readonly optional evidencePath?: string;
+readonly evidencePath?: string;
 ```
 
 This same run's own `--evidence` output path, when requested -- named in the generated banner's Evidence Model note.
@@ -1865,7 +1865,7 @@ This same run's own `--evidence` output path, when requested -- named in the gen
 ##### expiringWithinDays?
 
 ```ts
-readonly optional expiringWithinDays?: number;
+readonly expiringWithinDays?: number;
 ```
 
 How many days out counts as "expiring soon" in the rendered Lifecycle
@@ -1875,7 +1875,7 @@ env-cap's own default.
 ##### generatedAt?
 
 ```ts
-readonly optional generatedAt?: Date;
+readonly generatedAt?: Date;
 ```
 
 The instant `daysRemaining` is measured from. Defaults to the wall clock
@@ -1974,7 +1974,7 @@ Options for `generateFlow`.
 ##### additionalFindings?
 
 ```ts
-readonly optional additionalFindings?: readonly ReportFinding[];
+readonly additionalFindings?: readonly ReportFinding[];
 ```
 
 Findings from other passes (C2's static rules, C6's usage scan) to fold into the Security Data-Flow Review -- optional, so `--flow` alone still produces a meaningful review of just its own findings.
@@ -1990,7 +1990,7 @@ Proven consumer edges from a usage scan, used to derive in-repo flow paths.
 ##### evidencePath?
 
 ```ts
-readonly optional evidencePath?: string;
+readonly evidencePath?: string;
 ```
 
 This same run's own `--evidence` output path, when requested -- named in the generated banner's Evidence Model note.
@@ -2158,7 +2158,7 @@ Options for `generateUsage`.
 ##### evidencePath?
 
 ```ts
-readonly optional evidencePath?: string;
+readonly evidencePath?: string;
 ```
 
 This same run's own `--evidence` output path, when requested -- named in the generated banner's Evidence Model note.
@@ -2268,7 +2268,7 @@ guess at for where a project keeps this.
 ##### commit?
 
 ```ts
-readonly optional commit?: string;
+readonly commit?: string;
 ```
 
 The commit SHA this run's evidence was generated against, stamped onto `EvidenceModel.provenance.commit`. Caller-supplied only -- `data-cap` never shells out to `git` itself, so omitting this records a stated absence, never a guess.
@@ -2280,7 +2280,7 @@ The commit SHA this run's evidence was generated against, stamped onto `Evidence
 ##### docs?
 
 ```ts
-readonly optional docs?: string;
+readonly docs?: string;
 ```
 
 Output path for the Markdown documentation catalog.
@@ -2304,7 +2304,7 @@ Where the persisted evidence artifact (and its `.fingerprint` sidecar) live, e.g
 ##### exclude?
 
 ```ts
-readonly optional exclude?: readonly string[];
+readonly exclude?: readonly string[];
 ```
 
 Glob patterns (relative to `root`) that prune a file or directory regardless of `include`.
@@ -2316,7 +2316,7 @@ Glob patterns (relative to `root`) that prune a file or directory regardless of 
 ##### expiringWithinDays?
 
 ```ts
-readonly optional expiringWithinDays?: number;
+readonly expiringWithinDays?: number;
 ```
 
 How many days out counts as "expiring soon" for the Lifecycle Model and the documentation catalog's own expiring section. Defaults to `DEFAULT_EXPIRING_WITHIN_DAYS`.
@@ -2328,7 +2328,7 @@ How many days out counts as "expiring soon" for the Lifecycle Model and the docu
 ##### flow?
 
 ```ts
-readonly optional flow?: string;
+readonly flow?: string;
 ```
 
 Output directory for the Data Flow Diagram + Security Data-Flow Review set.
@@ -2352,7 +2352,7 @@ The filesystem capability, shared across every requested pass -- `./build` never
 ##### generatedAt?
 
 ```ts
-readonly optional generatedAt?: Date;
+readonly generatedAt?: Date;
 ```
 
 The single instant every time-sensitive computation in this run shares (`EvidenceModel.provenance.generatedAt`, Lifecycle Model's `daysRemaining`), so none of them can disagree about "now". Defaults to the wall clock at the moment this function is called.
@@ -2364,7 +2364,7 @@ The single instant every time-sensitive computation in this run shares (`Evidenc
 ##### include?
 
 ```ts
-readonly optional include?: readonly string[];
+readonly include?: readonly string[];
 ```
 
 Glob patterns (relative to `root`) a file must match at least one of to be discovered. Defaults to every `.ts`/`.tsx` file.
@@ -2376,7 +2376,7 @@ Glob patterns (relative to `root`) a file must match at least one of to be disco
 ##### location?
 
 ```ts
-readonly optional location?: string;
+readonly location?: string;
 ```
 
 Output path for the generated manifest `.ts` file. Omit to skip manifest generation (the inventory is still built and static rules still run).
@@ -2388,7 +2388,7 @@ Output path for the generated manifest `.ts` file. Omit to skip manifest generat
 ##### ownership?
 
 ```ts
-readonly optional ownership?: string;
+readonly ownership?: string;
 ```
 
 Output path for the Dependency & Ownership report.
@@ -2400,7 +2400,7 @@ Output path for the Dependency & Ownership report.
 ##### packages?
 
 ```ts
-readonly optional packages?: readonly string[];
+readonly packages?: readonly string[];
 ```
 
 Explicit cross-package schema discovery allowlist -- see `resolve-package-schema.ts`.
@@ -2424,7 +2424,7 @@ Directory discovery/linking resolves against.
 ##### strict?
 
 ```ts
-readonly optional strict?: boolean;
+readonly strict?: boolean;
 ```
 
 Escalate every pass's `warning` findings to `error` (never `info`).
@@ -2436,7 +2436,7 @@ Escalate every pass's `warning` findings to `error` (never `info`).
 ##### strictDocs?
 
 ```ts
-readonly optional strictDocs?: boolean;
+readonly strictDocs?: boolean;
 ```
 
 Escalate static (ownership/sensitivity/duplication) findings to `error`.
@@ -2448,7 +2448,7 @@ Escalate static (ownership/sensitivity/duplication) findings to `error`.
 ##### strictFlow?
 
 ```ts
-readonly optional strictFlow?: boolean;
+readonly strictFlow?: boolean;
 ```
 
 Escalate `SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY`/`SENSITIVE_FIELD_ENDPOINT_MISSING_HANDLING` findings to `error` -- every finding `buildFlowGraph` produces.
@@ -2460,7 +2460,7 @@ Escalate `SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY`/`SENSITIVE_FIELD_ENDPOINT_MI
 ##### strictOwnership?
 
 ```ts
-readonly optional strictOwnership?: boolean;
+readonly strictOwnership?: boolean;
 ```
 
 Escalate proven usage findings (abandoned capabilities, unconsumed owned fields) to `error` -- never escalates unresolved-consumer or indeterminate findings.
@@ -2472,7 +2472,7 @@ Escalate proven usage findings (abandoned capabilities, unconsumed owned fields)
 ##### tsconfig?
 
 ```ts
-readonly optional tsconfig?: string | false;
+readonly tsconfig?: string | false;
 ```
 
 Explicit `tsconfig.json` path override, or `false` to disable alias resolution -- see `LinkOptions.tsconfig`.
@@ -2756,7 +2756,7 @@ The filesystem capability -- `./build` never imports `node:fs` (ADR 0058).
 ##### packages?
 
 ```ts
-readonly optional packages?: readonly string[];
+readonly packages?: readonly string[];
 ```
 
 Explicit cross-package schema discovery allowlist -- see `resolve-package-schema.ts`.
@@ -2772,7 +2772,7 @@ Directory import specifiers/tsconfig auto-detection resolve against.
 ##### tsconfig?
 
 ```ts
-readonly optional tsconfig?: string | false;
+readonly tsconfig?: string | false;
 ```
 
 Explicit `tsconfig.json` path override, or `false` to disable alias resolution. Defaults to auto-detecting `root/tsconfig.json`.
@@ -2949,7 +2949,7 @@ Whether the capability was active at snapshot time.
 ##### citationSnapshots?
 
 ```ts
-readonly optional citationSnapshots?: Readonly<Record<string, readonly CitationSnapshotEntry[]>>;
+readonly citationSnapshots?: Readonly<Record<string, readonly CitationSnapshotEntry[]>>;
 ```
 
 Per-field citation integrity snapshots for declared `evidence.fields[key].dynamicAccess` entries, keyed by field name -- only present for a field that declares at least one citation that resolved to a real file at snapshot time (see `citation-verification.ts`).
@@ -3674,7 +3674,7 @@ claims more than "documented" vs. "not documented."
 ##### capability?
 
 ```ts
-readonly optional capability?: {
+readonly capability?: {
   exportName: string;
   file: string;
 };
@@ -3717,7 +3717,7 @@ Which analysis pass produced this finding -- see `ReportFindingFamily`.
 ##### field?
 
 ```ts
-readonly optional field?: readonly string[];
+readonly field?: readonly string[];
 ```
 
 The field path this finding is about, if any.
@@ -3725,7 +3725,7 @@ The field path this finding is about, if any.
 ##### indeterminateSites?
 
 ```ts
-readonly optional indeterminateSites?: readonly SourceLocation[];
+readonly indeterminateSites?: readonly SourceLocation[];
 ```
 
 Every candidate access site a `"FIELD_ACCESS_INDETERMINATE"` finding could actually be about -- populated only for that code. Spans potentially multiple consuming files, so each entry carries its own `file` (`SourceLocation`, not just `SourcePosition`).
@@ -3741,7 +3741,7 @@ Human-readable explanation of the finding.
 ##### operation?
 
 ```ts
-readonly optional operation?: string;
+readonly operation?: string;
 ```
 
 The operation name this finding is about, if any.
@@ -3749,7 +3749,7 @@ The operation name this finding is about, if any.
 ##### position?
 
 ```ts
-readonly optional position?: SourcePosition;
+readonly position?: SourcePosition;
 ```
 
 Position of the declaration site (capability's own call, or field's own key) this finding is anchored to, when one is available -- see ADR 0052. Additive: absent for findings with no single declaration-site anchor (e.g. a usage-scan finding whose subject is a consuming file, not a declaration).
@@ -3765,7 +3765,7 @@ How strongly this finding should be treated.
 ##### source?
 
 ```ts
-readonly optional source?: string;
+readonly source?: string;
 ```
 
 The consuming file, for usage-scan-derived findings only.
@@ -4084,7 +4084,7 @@ The filesystem capability -- `./build` never imports `node:fs` (ADR 0058).
 ##### packages?
 
 ```ts
-readonly optional packages?: readonly string[];
+readonly packages?: readonly string[];
 ```
 
 Explicit cross-package schema discovery allowlist -- see `resolve-package-schema.ts`.
@@ -4100,7 +4100,7 @@ Directory import specifiers resolve against.
 ##### tsconfig?
 
 ```ts
-readonly optional tsconfig?: string | false;
+readonly tsconfig?: string | false;
 ```
 
 Explicit `tsconfig.json` path override, or `false` to disable alias resolution -- same meaning as `LinkOptions.tsconfig`.
@@ -4407,7 +4407,7 @@ readonly field: readonly string[];
 ###### indeterminateSites?
 
 ```ts
-readonly optional indeterminateSites?: readonly SourceLocation[];
+readonly indeterminateSites?: readonly SourceLocation[];
 ```
 
 Every candidate access site a `"FIELD_ACCESS_INDETERMINATE"` finding
@@ -4427,7 +4427,7 @@ readonly kind: "field";
 ###### position?
 
 ```ts
-readonly optional position?: SourcePosition;
+readonly position?: SourcePosition;
 ```
 
 ***

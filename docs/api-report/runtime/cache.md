@@ -88,7 +88,7 @@ set(key, state): void;
 ##### maxEntries?
 
 ```ts
-readonly optional maxEntries?: number;
+readonly maxEntries?: number;
 ```
 
 Maximum number of entries retained; least-recently-used entries are evicted first. Defaults to 100.

@@ -40,7 +40,7 @@ new UnknownGetterError(getterName): UnknownGetterError;
 ##### cause?
 
 ```ts
-optional cause?: unknown;
+cause?: unknown;
 ```
 
 ###### Inherited from
@@ -90,7 +90,7 @@ name: string;
 ##### stack?
 
 ```ts
-optional stack?: string;
+stack?: string;
 ```
 
 ###### Inherited from
@@ -328,7 +328,7 @@ Options for [createData](#createdata).
 ##### coordinator?
 
 ```ts
-readonly optional coordinator?: Coordinator;
+readonly coordinator?: Coordinator;
 ```
 
 Overrides `defaultCoordinator` -- an explicit, isolated coordination domain (ADR 0027), e.g. per-tenant on a server.
@@ -336,7 +336,7 @@ Overrides `defaultCoordinator` -- an explicit, isolated coordination domain (ADR
 ##### maxOperationHistory?
 
 ```ts
-readonly optional maxOperationHistory?: number;
+readonly maxOperationHistory?: number;
 ```
 
 Bounds how many distinct canonicalized-params entries are retained per
@@ -573,7 +573,7 @@ One operation's current execution state, keyed by canonicalized params in `opera
 ##### error?
 
 ```ts
-readonly optional error?: DataError;
+readonly error?: DataError;
 ```
 
 The error this call settled with, if it failed.
@@ -581,7 +581,7 @@ The error this call settled with, if it failed.
 ##### optimistic?
 
 ```ts
-readonly optional optimistic?: boolean;
+readonly optimistic?: boolean;
 ```
 
 True while a mutator's optimistic transition for this call is still pending.
@@ -589,7 +589,7 @@ True while a mutator's optimistic transition for this call is still pending.
 ##### settledAt?
 
 ```ts
-readonly optional settledAt?: number;
+readonly settledAt?: number;
 ```
 
 When this call settled (success or error), as epoch ms.
@@ -597,7 +597,7 @@ When this call settled (success or error), as epoch ms.
 ##### startedAt?
 
 ```ts
-readonly optional startedAt?: number;
+readonly startedAt?: number;
 ```
 
 When this call started, as epoch ms.
@@ -605,7 +605,7 @@ When this call started, as epoch ms.
 ##### status?
 
 ```ts
-readonly optional status?: DataStatus;
+readonly status?: DataStatus;
 ```
 
 This call's current lifecycle status.
@@ -613,7 +613,7 @@ This call's current lifecycle status.
 ##### subscription?
 
 ```ts
-readonly optional subscription?: SubscriptionInfo;
+readonly subscription?: SubscriptionInfo;
 ```
 
 Populated only for subscription operations.
@@ -629,7 +629,7 @@ Options for `runGetters`.
 ##### signal?
 
 ```ts
-readonly optional signal?: AbortSignal;
+readonly signal?: AbortSignal;
 ```
 
 Aborts every getter this call started that hasn't already settled.
