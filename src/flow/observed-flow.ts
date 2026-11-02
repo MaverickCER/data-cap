@@ -15,9 +15,9 @@
 
 import { compareById } from "./flow-model.js"
 import type { FlowEdge, FlowModel, FlowNode } from "./flow-model.js"
-import { traceFlowBetween } from "./flow-projections.js"
+import { flowIndex, traceFlowBetween } from "./flow-projections.js"
 import type { Observation, ObservationModel } from "./observation-model.js"
-import { subpathWithin } from "./observation-model.js"
+import { nameAndAncestors, subpathWithin } from "./observation-model.js"
 
 /** What was witnessed. */
 export interface ObservedFlow {
@@ -33,6 +33,17 @@ export interface ObservedFlow {
   readonly unexplained: readonly Observation[]
 }
 
+/** Fields whose name is `observed` or one of its ancestors. */
+function candidateFields(
+  fieldsByName: ReadonlyMap<string, readonly FlowNode[]>,
+  observed: string,
+): FlowNode[] {
+  return nameAndAncestors(observed).flatMap((name) => {
+    // Stryker disable next-line ArrayDeclaration: equivalent -- a stand-in node has no name, so no observation is inside it and it adds nothing.
+    return fieldsByName.get(name) ?? []
+  })
+}
+
 /** The witnessed part of `flow`, for one execution (`scope`) or for all of them. */
 export function observedFlow(
   flow: FlowModel,
@@ -44,18 +55,35 @@ export function observedFlow(
   const explained: Observation[] = []
   const unexplained: Observation[] = []
 
+  // Fields by name and boundaries by name, once, so each observation looks up only the nodes it can be about.
+  const fieldsByName = new Map<string, FlowNode[]>()
+  for (const node of flowIndex(flow).fields) {
+    const list = fieldsByName.get(node.name)
+    if (list === undefined) fieldsByName.set(node.name, [node])
+    else list.push(node)
+  }
+  const boundariesByName = new Map<string, FlowNode[]>()
+  for (const node of flow.nodes) {
+    if (node.kind !== "boundary") continue
+    const list = boundariesByName.get(node.name)
+    if (list === undefined) boundariesByName.set(node.name, [node])
+    else list.push(node)
+  }
+
   for (const item of observation.observations) {
     if (scope !== undefined && item.scope !== scope) continue
-    const fields = flow.nodes.flatMap((node) => {
-      if (node.kind !== "field") return []
+    const fields = candidateFields(fieldsByName, item.field).flatMap((node) => {
       const path = subpathWithin(node.name, item.field)
+      // Stryker disable next-line ConditionalExpression,ArrayDeclaration: equivalent -- the candidates are the observed name and its ancestors, so each one contains it and `path` is always found.
       return path === undefined ? [] : [{ field: node, path }]
     })
-    const boundaries = flow.nodes.filter(
-      (node) =>
-        node.kind === "boundary" &&
-        node.name === item.boundary.name &&
-        (node.boundaryKind === undefined || node.boundaryKind === item.boundary.kind),
+    const named = boundariesByName.get(item.boundary.name)
+    if (named === undefined) {
+      unexplained.push(item)
+      continue
+    }
+    const boundaries = named.filter(
+      (node) => node.boundaryKind === undefined || node.boundaryKind === item.boundary.kind,
     )
     let found = false
     for (const { field, path } of fields) {

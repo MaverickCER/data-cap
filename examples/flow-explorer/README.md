@@ -6,19 +6,22 @@ everywhere it goes -- and does the page tell me when it could not tell?"**
 One file, `docs/data.evidence.json`, is the only input. Everything else in `docs/`
 is a pure projection of it, and none of it reads a source file.
 
-| File                    | What it is                                                                                                  |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `data.evidence.json`    | The Evidence Model: the flow, the declared policy and its results, the observations, and the claims.        |
-| `explorer.html`         | The interactive page. Open it. Self-contained: no network, works without JavaScript for reading.            |
-| `flow.md`               | The same facts as text (and a Mermaid diagram), for a pull request or a screen reader.                      |
-| `flow.dot`, `flow.svg`  | Graphviz DOT, and the SVG a devDependency (`@viz-js/viz`) draws from it.                                    |
-| `flow.mmd`              | Mermaid.                                                                                                    |
-| `flow.graph-view.json`  | The stable graph model any renderer reads (per-function inputs, reads, forwards, discards, callers, ...).   |
-| `flow.prov.json`        | W3C PROV-JSON lineage.                                                                                      |
-| `flow.sarif.json`       | SARIF 2.1.0: the leak anchored at the exact line, with the path the data took.                              |
-| `flow.oscal.json`       | NIST OSCAL assessment-results, with control ids _you_ supply.                                               |
-| `flow.otlp.json`        | OpenTelemetry (OTLP/JSON) spans, one per observation: names, never values.                                  |
-| `observations.json`     | What `data-cap/observe` recorded while the handlers ran.                                                    |
+| File                     | What it is                                                                                                                                            |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `data.evidence.json`     | The Evidence Model: the flow, the declared policy and its results, the observations, and the claims.                                                  |
+| `explorer.html`          | The interactive page. Open it. Self-contained: no network, works without JavaScript for reading.                                                      |
+| `flow.md`                | The same facts as text (and a Mermaid diagram), for a pull request or a screen reader.                                                                |
+| `flow.dot`, `flow.svg`   | Graphviz DOT, and the SVG a devDependency (`@viz-js/viz`) draws from it.                                                                              |
+| `flow.mmd`               | Mermaid.                                                                                                                                              |
+| `flow.graph-view.json`   | The stable graph model any renderer reads (per-function inputs, reads, forwards, discards, callers, ...).                                             |
+| `flow.prov.json`         | W3C PROV-JSON lineage.                                                                                                                                |
+| `flow.sarif.json`        | SARIF 2.1.0: the leak anchored at the exact line, with the path the data took.                                                                        |
+| `flow.oscal.json`        | NIST OSCAL assessment-results, with control ids _you_ supply.                                                                                         |
+| `flow.otlp.json`         | OpenTelemetry (OTLP/JSON) spans, one per observation: names, never values.                                                                            |
+| `flow.cdx.json`          | CycloneDX 1.6: one service per boundary and per capability-owning file, `data[]` flows with their status, unknowns and policy results as annotations. |
+| `baseline.evidence.json` | The evidence of the earlier revision (before the debug endpoint existed): load it in the explorer to compare.                                         |
+| `flow.diff.md`           | The comparison of that revision with this one as plain text: added and removed edges, changed policy results, ...                                     |
+| `observations.json`      | What `data-cap/observe` recorded while the handlers ran.                                                                                              |
 
 ## The scenario
 
@@ -46,8 +49,12 @@ open docs/explorer.html
 In the page: choose `userData.user`, type `passwordHash` as the path, and the one route it takes
 (to the debug endpoint, and out to the client) lights up in red while everything else dims. Press
 **T** on any node to trace from it. Tab moves between nodes; Enter inspects. The page opens
-already comparing with the revision before the debug endpoint existed, and names the rule that
-revision newly violates. The URL records the trace, so a link shares it.
+already comparing with the revision before the debug endpoint existed (`docs/baseline.evidence.json`; load that or
+any other commit's `data.evidence.json` with the file input). The comparison lists Added edges, Removed edges, Changed
+policy results, and added, removed and changed nodes and unknowns as a plain list; every item is a button that opens its
+details and source location, and the same changes are outlined in the graph (green: new, amber: changed) and named in each
+node's accessible name. "Dim everything that did not change" leaves only the difference lit. The URL records the trace and
+the comparison (`compare=off`, `changes=1`, `change=...`), so a link shares them; a file you loaded cannot be put in a link.
 
 ## What is tested
 

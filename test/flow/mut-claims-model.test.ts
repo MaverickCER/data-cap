@@ -271,6 +271,9 @@ describe("buildClaimsModel: claims joined to observations", () => {
       ],
       contradicting: [],
       derivedFrom: ["flow", "observation"],
+      // Additive path metadata (W8): the observed names, and the whole-field observation covers the static "name" path.
+      observedPaths: ["userData.user", "userData.user.name"],
+      pathCoverage: "whole",
     })
   })
 

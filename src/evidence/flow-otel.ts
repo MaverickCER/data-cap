@@ -37,6 +37,8 @@ export interface OtlpSpan {
   readonly traceId: string
   readonly spanId: string
   readonly name: string
+  /** Present on a scope's observation spans when `scopeRoots` is on: the root span of that scope. */
+  readonly parentSpanId?: string
   /** `1` is SPAN_KIND_INTERNAL. */
   readonly kind: 1
   readonly startTimeUnixNano: string
@@ -61,12 +63,25 @@ export interface OtlpTraces {
 export interface OtlpOptions {
   /** `service.name` of the resource (default `data-cap`). */
   readonly serviceName?: string | undefined
+  /**
+   * Also emit one root span per scope (`data_cap.scope.root = "true"`, spanning the scope's first..last seen when the
+   * scope carried times) and point each observation span of that scope at it with `parentSpanId`. Off by default so
+   * the flat output stays byte-identical. The reader skips roots without counting them.
+   */
+  readonly scopeRoots?: boolean | undefined
 }
 
 /** Options for `observationsFromOtlp`. */
 export interface OtlpReadOptions {
   /** The most events one span's `data_cap.count` may expand to (default 10 000), so a hostile or buggy count cannot exhaust memory. */
   readonly maxEventsPerSpan?: number | undefined
+  /**
+   * Also take `startTimeUnixNano`/`endTimeUnixNano` from spans NOT marked `data_cap.timed` (default false: such a
+   * span's stamp is usually the exporter's own instant, not an observation time). The first event of a span gets the
+   * start, the others the end. Only spans that carry the `data_cap.*` attributes are read at all. Invalid times are
+   * ignored and counted in `ignoredTimes`.
+   */
+  readonly trustForeignTimes?: boolean | undefined
 }
 
 /** What `observationsFromOtlp` read. */
@@ -74,6 +89,8 @@ export interface OtlpReadResult {
   readonly events: readonly ObservationEvent[]
   /** Spans that had some `data_cap.*` attributes but not a usable set, or a payload that was not OTLP traces at all. */
   readonly skipped: number
+  /** Start/end times that were read (the span was timed, or `trustForeignTimes` was set) but missing or not a decimal-nanosecond string; absent when none. */
+  readonly ignoredTimes?: number
 }
 
 /** What the mapping reads from the Evidence Model. */
@@ -101,7 +118,33 @@ export function observationsToOtlp(
   if (observation === undefined) return undefined
   const time = nanos(evidence.provenance.generatedAt)
 
-  const spans: OtlpSpan[] = observation.observations.map((item) => {
+  const rooted = options.scopeRoots === true
+  const rootIds = new Map(
+    observation.scopes.map((scope) => [scope, hex(deterministicUuid(`span|root|${scope}`), 16)]),
+  )
+  const roots: OtlpSpan[] = rooted
+    ? observation.scopes.map((scope) => {
+        const times = observation.scopeTimes?.find((candidate) => candidate.scope === scope)
+        return {
+          traceId: hex(deterministicUuid(`trace|${scope}`), 32),
+          spanId: hex(deterministicUuid(`span|root|${scope}`), 16),
+          name: "data-cap.scope",
+          kind: 1,
+          startTimeUnixNano: times === undefined ? time : nanos(times.firstSeen),
+          endTimeUnixNano: times === undefined ? time : nanos(times.lastSeen),
+          attributes: [
+            str("data_cap.scope", scope),
+            str("data_cap.scope.root", "true"),
+            ...(times === undefined ? [] : [str("data_cap.timed", "true")]),
+          ],
+          status: { code: 1 },
+        }
+      })
+    : []
+
+  const children: OtlpSpan[] = observation.observations.map((item) => {
+    const timed = item.firstSeen !== undefined && item.lastSeen !== undefined
+    const parent = rooted ? rootIds.get(item.scope) : undefined
     // Listed in key order, so the output is deterministic without a sort.
     const attributes: readonly OtlpAttribute[] = [
       str("data_cap.boundary.kind", item.boundary.kind),
@@ -110,18 +153,21 @@ export function observationsToOtlp(
       str("data_cap.field", item.field),
       ...(item.handling === undefined ? [] : [str("data_cap.handling", item.handling)]),
       str("data_cap.scope", item.scope),
+      ...(timed ? [str("data_cap.timed", "true")] : []),
     ]
     return {
       traceId: hex(deterministicUuid(`trace|${item.scope}`), 32),
       spanId: hex(deterministicUuid(`span|${item.id}`), 16),
+      ...(parent === undefined ? {} : { parentSpanId: parent }),
       name: "data-cap.boundary.crossing",
       kind: 1,
-      startTimeUnixNano: time,
-      endTimeUnixNano: time,
+      startTimeUnixNano: item.firstSeen === undefined ? time : nanos(item.firstSeen),
+      endTimeUnixNano: item.lastSeen === undefined ? time : nanos(item.lastSeen),
       attributes,
       status: { code: 1 },
     }
   })
+  const spans = [...roots, ...children]
 
   return {
     resourceSpans: [
@@ -173,6 +219,12 @@ function* spansOf(resourceSpans: readonly unknown[]): Generator<Record<string, u
   }
 }
 
+/** A span's `startTimeUnixNano`/`endTimeUnixNano` (a decimal string) as epoch ms; `undefined` for anything else. */
+function millisOfNanos(value: unknown): number | undefined {
+  if (typeof value !== "string" || !/^\d+$/.test(value)) return undefined
+  return Number(BigInt(value) / 1_000_000n)
+}
+
 /** The observation scope of a span: its `data_cap.scope`, else its trace id. */
 function scopeOfSpan(
   span: Record<string, unknown>,
@@ -184,11 +236,22 @@ function scopeOfSpan(
   return typeof traceId === "string" && traceId.length > 0 ? traceId : undefined
 }
 
+/** What reading one span gave: its events and the times it could not use, or why it gave none. */
+type SpanRead =
+  | { readonly events: readonly ObservationEvent[]; readonly ignoredTimes: number }
+  | "skipped"
+  | "root"
+
+/** A span time: the instant (epoch ms) when valid, else `"ignored"`. */
+function spanTime(span: Record<string, unknown>, key: string): number | "ignored" {
+  return millisOfNanos(span[key]) ?? "ignored"
+}
+
 /**
  * Reads one span: its events (none when it carries no `data_cap.*` attribute, so it is not data-cap's),
- * or `"skipped"` when it has some of them but not a usable set.
+ * `"root"` for a scope root (carries no observation), or `"skipped"` when it has some of the attributes but not a usable set.
  */
-function eventsOfSpan(span: Record<string, unknown>, max: number): ObservationEvent[] | "skipped" {
+function eventsOfSpan(span: Record<string, unknown>, max: number, trust: boolean): SpanRead {
   const handlings: readonly FlowHandling[] = [
     "plaintext",
     "masked",
@@ -197,7 +260,10 @@ function eventsOfSpan(span: Record<string, unknown>, max: number): ObservationEv
     "encrypted",
   ]
   const attributes = attributeMap(span)
-  if (![...attributes.keys()].some((key) => key.startsWith("data_cap."))) return []
+  if (![...attributes.keys()].some((key) => key.startsWith("data_cap."))) {
+    return { events: [], ignoredTimes: 0 }
+  }
+  if (text(attributes.get("data_cap.scope.root")) === "true") return "root"
   const field = text(attributes.get("data_cap.field"))
   const kindText = text(attributes.get("data_cap.boundary.kind"))
   const kind = flowBoundaryKinds().find((candidate) => candidate === kindText)
@@ -213,7 +279,38 @@ function eventsOfSpan(span: Record<string, unknown>, max: number): ObservationEv
     field,
     ...(handling === undefined ? {} : { handling }),
   }
-  return Array.from({ length: count(attributes.get("data_cap.count"), max) }, () => event)
+  // Real times only on spans this mapping marked as timed (or when the caller trusts foreign ones); an untimed
+  // span's stamp is the generation instant, not an observation time.
+  if (!trust && text(attributes.get("data_cap.timed")) !== "true") {
+    return { events: repeated(event, attributes, max, undefined, undefined), ignoredTimes: 0 }
+  }
+  const start = spanTime(span, "startTimeUnixNano")
+  const end = spanTime(span, "endTimeUnixNano")
+  const ignoredTimes = [start, end].filter((time) => time === "ignored").length
+  return {
+    events: repeated(
+      event,
+      attributes,
+      max,
+      start === "ignored" ? undefined : start,
+      end === "ignored" ? undefined : end,
+    ),
+    ignoredTimes,
+  }
+}
+
+/** `data_cap.count` copies of `event`: the first stamped with `start`, the rest with `end`. */
+function repeated(
+  event: ObservationEvent,
+  attributes: ReadonlyMap<string, Record<string, unknown>>,
+  max: number,
+  start: number | undefined,
+  end: number | undefined,
+): ObservationEvent[] {
+  return Array.from({ length: count(attributes.get("data_cap.count"), max) }, (_, index) => {
+    const at = index === 0 ? start : end
+    return at === undefined ? event : { ...event, at }
+  })
 }
 
 /** Reads the `data_cap.*` attributes off any OTLP/JSON traces payload. Spans that carry none are not data-cap's and are ignored. */
@@ -226,11 +323,15 @@ export function observationsFromOtlp(
   const max = Math.max(1, options.maxEventsPerSpan ?? 10_000)
   const events: ObservationEvent[] = []
   let skipped = 0
+  let ignoredTimes = 0
 
   for (const span of spansOf(payload["resourceSpans"])) {
-    const read = eventsOfSpan(span, max)
+    const read = eventsOfSpan(span, max, options.trustForeignTimes === true)
     if (read === "skipped") skipped += 1
-    else for (const event of read) events.push(event)
+    else if (read !== "root") {
+      for (const event of read.events) events.push(event)
+      ignoredTimes += read.ignoredTimes
+    }
   }
-  return { events, skipped }
+  return { events, skipped, ...(ignoredTimes === 0 ? {} : { ignoredTimes }) }
 }

@@ -21,6 +21,7 @@ import {
   traceFlow,
 } from "data-cap/evidence"
 import { recordScenario } from "./instrumentation.js"
+import { compareEvidence } from "../scripts/explorer/compare.js"
 import { runPipeline } from "../scripts/lib/pipeline.js"
 
 const observations = await recordScenario()
@@ -92,5 +93,15 @@ assert.equal(evaluateEvidenceRules(evidence, { maxUnknowns: 1 }).ok, true)
 const text = renderFlowText(evidence)
 assert.ok(text?.includes("- Discards: userData.user: passwordHash, role"))
 assert.ok(text?.includes("not complete"))
+
+// ---- 8. Two revisions compared: the commit that introduced the leak ---------------------------------
+const earlier = await runPipeline({ observations: observations.filter((event) => event.scope !== "scenario:debug-export"), exclude: ["src/app/export.ts"] })
+const changes = compareEvidence(earlier.evidence, evidence)
+const listed = (group: string) => changes.sections.find((section) => section.group === group)?.items.map((item) => item.label) ?? []
+assert.equal(listed("added-edges").length, 2, "the debug endpoint adds a read and a send to the client")
+assert.deepEqual(listed("removed-edges"), [])
+assert.equal(listed("changed-policy").length, 1, "and the password rule goes from satisfied to violated")
+assert.match(listed("changed-policy")[0] ?? "", /satisfied, static before, violated reaching http-response, static now/)
+assert.equal(compareEvidence(evidence, evidence).unchanged, true)
 
 console.log("flow-explorer: all assertions passed")

@@ -303,19 +303,24 @@ describe("flow-scan: method and builtin tables", () => {
       expect(input.unknowns).toEqual([])
     })
 
-    it.each([
-      "Object.assign",
-      "Object.freeze",
-      "Object.seal",
-      "Promise.resolve",
-      "Promise.all",
-      "Promise.allSettled",
-      "Promise.race",
-    ])("%s keeps the data exactly", async (callee) => {
-      const input = await scanBody(`  res.json(${callee}(${EMAIL}))`)
-      expect(effects(input)).toEqual(["email|static"])
-      expect(input.unknowns).toEqual([])
-    })
+    it.each(["Object.assign", "Object.freeze", "Object.seal", "Promise.resolve"])(
+      "%s keeps the data exactly",
+      async (callee) => {
+        const input = await scanBody(`  res.json(${callee}(${EMAIL}))`)
+        expect(effects(input)).toEqual(["email|static"])
+        expect(input.unknowns).toEqual([])
+      },
+    )
+
+    // The argument of these is an iterable of promises: what is read off it is an element of the data it holds.
+    it.each(["Promise.all", "Promise.allSettled", "Promise.race", "Promise.any"])(
+      "%s keeps the data exactly, as an element of the iterable it was given",
+      async (callee) => {
+        const input = await scanBody(`  res.json(${callee}(${EMAIL}))`)
+        expect(effects(input)).toEqual(["email.[]|static"])
+        expect(input.unknowns).toEqual([])
+      },
+    )
 
     it.each([
       "Object.keys",

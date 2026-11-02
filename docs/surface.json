@@ -34,7 +34,7 @@
       "source": "src/build/",
       "environment": "Node-only",
       "tier": "Stable",
-      "purpose": "`discoverCapabilityFiles`/`parseCapabilityFile`/`linkCapabilityFiles`/`evaluateLiteral` (discovery), `buildInventory` (the `CapabilityInventory` model), the other canonical models (`buildLifecycleModel`/`buildDependencyModel`/`buildOwnershipModel`/`buildFindingModel`/`buildChangeModel`/`buildEvidenceModel`), the evidence cache (`getEvidenceModel`/`computeSourceFingerprint`), the report generators (`generateManifest`/`generateDocumentation`/`generateUsage`/`generateFlow`), and the orchestrator (`generateDataArtifacts`/`checkArtifacts`)"
+      "purpose": "`discoverCapabilityFiles`/`parseCapabilityFile`/`linkCapabilityFiles`/`evaluateLiteral` (discovery), `buildInventory` (the `CapabilityInventory` model), the other canonical models (`buildLifecycleModel`/`buildDependencyModel`/`buildOwnershipModel`/`buildFindingModel`/`buildChangeModel`/`buildEvidenceModel`), the evidence cache (`getEvidenceModel`/`computeSourceFingerprint`), the report generators (`generateManifest`/`generateDocumentation`/`generateUsage`/`generateFlow`), and the orchestrator (`generateDataArtifacts`/`checkArtifacts`); and, Experimental (ADR 0070\u20130075), the field-level flow pass (`flowEvidence`, `flowSinks`, `flowSummaries`/`FlowSummary` to declare what a package call does, `scanFlow`) with the same projections `./evidence` exports (including `buildSarifLog`, `buildCycloneDxBom`, `analyzeRedundantTransforms`)"
     },
     "./node": {
       "source": "src/node/",
@@ -46,13 +46,13 @@
       "source": "src/evidence/",
       "environment": "isomorphic, zero deps",
       "tier": "Stable",
-      "purpose": "`defineEvidenceProjection` \u2014 the schema-object projection definer with a read-only membrane and per-output-field provenance. Imports `EvidenceModel` with `import type` only, so it never pulls in `node:fs` or the TypeScript compiler API; `./build` re-exports it for backward compatibility. Experimental additions (ADR 0070\u20130073), every one a pure function of the one Evidence Model: `traceFlow`/`traceFlowBetween`/`filterFlow`/`diffFlow`/`observedFlow`, `buildFlowGraphView`, `renderFlowText`/`renderFlowDot`/`renderFlowMermaid`, `buildProvDocument`, `buildOscalAssessmentResults`, `observationsToOtlp`/`observationsFromOtlp`, `analyzeLeastData`, `evaluateEvidenceRules`/`parseEvidenceRules`."
+      "purpose": "`defineEvidenceProjection` \u2014 the schema-object projection definer with a read-only membrane and per-output-field provenance. Imports `EvidenceModel` with `import type` only, so it never pulls in `node:fs` or the TypeScript compiler API; `./build` re-exports it for backward compatibility. Experimental additions (ADR 0070\u20130075), every one a pure function of the one Evidence Model: `traceFlow`/`traceFlowBetween`/`filterFlow`/`diffFlow`/`observedFlow`, `buildFlowGraphView`, `renderFlowText`/`renderFlowDot`/`renderFlowMermaid`, `buildProvDocument`, `buildOscalAssessmentResults`, `observationsToOtlp`/`observationsFromOtlp`, `buildCycloneDxBom`/`renderFlowCycloneDx` (CycloneDX 1.6), `analyzeLeastData`, `analyzeRedundantTransforms`/`redundantTransformFindings` (ADR 0075), `evaluateEvidenceRules`/`parseEvidenceRules`."
     },
     "./observe": {
       "source": "src/observe/",
       "environment": "isomorphic, zero deps",
       "tier": "Experimental",
-      "purpose": "`observeBoundary`, `createMemorySink` \u2014 record which field NAMES crossed which boundary, into a sink you supply; never values, never I/O of its own (ADR 0072)."
+      "purpose": "`observeBoundary`, `observeValue`, `observeSink`, `instrumentBoundary`, `observeResponse`, `createMemorySink` \u2014 record which field NAMES crossed which boundary (auto-walking a value, wrapping a method, cloning a response body), into a sink you supply; never values, never I/O of its own, no clock unless you pass one; what the walker leaves out is reported through `onSkip`/`sink.skip`, not hidden (ADR 0072)."
     },
     "./eslint-plugin": {
       "source": "src/eslint-plugin/",

@@ -98,6 +98,9 @@ describe("flow-scan: targeted behaviours", () => {
         ),
       ).toMatchInlineSnapshot(`
         "N function app/p.ts p0 static bk= cl= src=4:1
+        N function app/p.ts <module>>anonymous@2:32 static bk= cl= src=2:32
+        N parameter app/p.ts <module>>anonymous@2:32.v static bk= cl= src=
+        N return app/p.ts <module>>anonymous@2:32#return static bk= cl= src=
         N boundary boundary:code b0 static bk=log cl= src=
         N function app/p.ts p1 static bk= cl= src=7:1
         N function app/p.ts Number static bk= cl= src=3:16
@@ -110,13 +113,14 @@ describe("flow-scan: targeted behaviours", () => {
         N parameter app/p.ts p1.res static bk= cl= src=
         N parameter app/p.ts p1.key static bk= cl= src=
         N return app/p.ts p1#return static bk= cl= src=
-        N function app/p.ts <module>>anonymous@2:32 static bk= cl= src=2:32
-        N parameter app/p.ts <module>>anonymous@2:32.v static bk= cl= src=
-        N return app/p.ts <module>>anonymous@2:32#return static bk= cl= src=
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#p0 p= static o=field:features/user/user.ts#userData.user h= @app/p.ts:5:26
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#p0 p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:5:26
-        E reads field:features/user/user.ts#userData.user->function:app/p.ts#p0 p=id inferred o=field:features/user/user.ts#userData.user h= @app/p.ts:5:3
-        E side-effect function:app/p.ts#p0->boundary:boundary:code#b0 p=id inferred o=field:features/user/user.ts#userData.user h= @app/p.ts:5:3
+        E calls function:app/p.ts#p0->function:app/p.ts#<module>>anonymous@2:32 p=- static o= h= @app/p.ts:5:11
+        E passes function:app/p.ts#p0->parameter:app/p.ts#<module>>anonymous@2:32.v p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:5:11
+        E reads parameter:app/p.ts#<module>>anonymous@2:32.v->function:app/p.ts#<module>>anonymous@2:32 p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:2:44
+        E returns function:app/p.ts#<module>>anonymous@2:32->return:app/p.ts#<module>>anonymous@2:32#return p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:2:44
+        E passes return:app/p.ts#<module>>anonymous@2:32#return->function:app/p.ts#p0 p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:5:3
+        E side-effect function:app/p.ts#p0->boundary:boundary:code#b0 p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:5:3
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#p1 p= static o=field:features/user/user.ts#userData.user h= @app/p.ts:8:18
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#p1 p=name static o=field:features/user/user.ts#userData.user h= @app/p.ts:8:18
         E calls function:app/p.ts#p1->function:app/p.ts#Number p=- static o= h= @app/p.ts:8:11
@@ -124,8 +128,7 @@ describe("flow-scan: targeted behaviours", () => {
         E reads parameter:app/p.ts#Number.v->function:app/p.ts#Number p=name.email static o=field:features/user/user.ts#userData.user h= @app/p.ts:3:28
         E returns function:app/p.ts#Number->return:app/p.ts#Number#return p=name.email static o=field:features/user/user.ts#userData.user h= @app/p.ts:3:28
         E passes return:app/p.ts#Number#return->function:app/p.ts#p1 p=name.email static o=field:features/user/user.ts#userData.user h= @app/p.ts:8:3
-        E side-effect function:app/p.ts#p1->boundary:boundary:code#b1 p=name.email static o=field:features/user/user.ts#userData.user h= @app/p.ts:8:3
-        U unresolved-call app/p.ts:5:11 subject=function:app/p.ts#p0 detail=call target is not a project function data=field:features/user/user.ts#userData.user/id"
+        E side-effect function:app/p.ts#p1->boundary:boundary:code#b1 p=name.email static o=field:features/user/user.ts#userData.user h= @app/p.ts:8:3"
       `)
     })
 
@@ -264,7 +267,8 @@ describe("flow-scan: targeted behaviours", () => {
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#p1 p= static o=field:features/user/user.ts#userData.user h= @app/p.ts:9:11
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#p1 p=name static o=field:features/user/user.ts#userData.user h= @app/p.ts:9:11
         E reads field:features/user/user.ts#userData.tags->function:app/p.ts#p2 p= static o=field:features/user/user.ts#userData.tags h= @app/p.ts:14:15
-        E reads field:features/user/user.ts#userData.tags->function:app/p.ts#p2 p=[] static o=field:features/user/user.ts#userData.tags h= @app/p.ts:14:3"
+        E reads field:features/user/user.ts#userData.tags->function:app/p.ts#p2 p=[] static o=field:features/user/user.ts#userData.tags h= @app/p.ts:14:3
+        U unsupported-construct app/p.ts:4:3 subject=function:app/p.ts#p0 detail=assignment target is not a variable data=field:features/user/user.ts#userData.user/id"
       `)
     })
 
@@ -447,7 +451,7 @@ describe("flow-scan: targeted behaviours", () => {
   })
 
   describe("exports and imports", () => {
-    it("only a function with an export modifier is exported, whatever other modifiers it has", async () => {
+    it("only a function with an export modifier is exported, whatever other modifiers it has; a default export is exported as `default` and not by its own name", async () => {
       expect(
         await files({
           "app/util.ts": `export async function exp(v: any) { return v.id }\nasync function priv(v: any) { return v.name }\nexport default function dflt(v: any) { return v.email }\nexport const arrowExp = async (v: any) => v.role\nconst arrowPriv = async (v: any) => v.id\n`,
@@ -460,9 +464,6 @@ describe("flow-scan: targeted behaviours", () => {
         N return app/util.ts exp#return static bk= cl= src=
         N boundary boundary:code b0 static bk=log cl= src=
         N boundary boundary:code b1 static bk=log cl= src=
-        N function app/util.ts dflt static bk= cl= src=3:1
-        N parameter app/util.ts dflt.v static bk= cl= src=
-        N return app/util.ts dflt#return static bk= cl= src=
         N boundary boundary:code b2 static bk=log cl= src=
         N function app/util.ts arrowExp static bk= cl= src=4:25
         N parameter app/util.ts arrowExp.v static bk= cl= src=
@@ -474,6 +475,9 @@ describe("flow-scan: targeted behaviours", () => {
         N function app/util.ts priv static bk= cl= src=2:1
         N parameter app/util.ts priv.v static bk= cl= src=
         N return app/util.ts priv#return static bk= cl= src=
+        N function app/util.ts dflt static bk= cl= src=3:1
+        N parameter app/util.ts dflt.v static bk= cl= src=
+        N return app/util.ts dflt#return static bk= cl= src=
         N function app/util.ts arrowPriv static bk= cl= src=5:19
         N parameter app/util.ts arrowPriv.v static bk= cl= src=
         N return app/util.ts arrowPriv#return static bk= cl= src=
@@ -486,12 +490,7 @@ describe("flow-scan: targeted behaviours", () => {
         E side-effect function:app/p.ts#h->boundary:boundary:code#b0 p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:4:3
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#h p= inferred o=field:features/user/user.ts#userData.user h= @app/p.ts:5:3
         E side-effect function:app/p.ts#h->boundary:boundary:code#b1 p= inferred o=field:features/user/user.ts#userData.user h= @app/p.ts:5:3
-        E calls function:app/p.ts#h->function:app/util.ts#dflt p=- static o= h= @app/p.ts:6:11
-        E passes function:app/p.ts#h->parameter:app/util.ts#dflt.v p= static o=field:features/user/user.ts#userData.user h= @app/p.ts:6:11
-        E reads parameter:app/util.ts#dflt.v->function:app/util.ts#dflt p=email static o=field:features/user/user.ts#userData.user h= @app/util.ts:3:47
-        E returns function:app/util.ts#dflt->return:app/util.ts#dflt#return p=email static o=field:features/user/user.ts#userData.user h= @app/util.ts:3:40
-        E passes return:app/util.ts#dflt#return->function:app/p.ts#h p=email static o=field:features/user/user.ts#userData.user h= @app/p.ts:6:3
-        E side-effect function:app/p.ts#h->boundary:boundary:code#b2 p=email static o=field:features/user/user.ts#userData.user h= @app/p.ts:6:3
+        E side-effect function:app/p.ts#h->boundary:boundary:code#b2 p= inferred o=field:features/user/user.ts#userData.user h= @app/p.ts:6:3
         E calls function:app/p.ts#h->function:app/util.ts#arrowExp p=- static o= h= @app/p.ts:7:11
         E passes function:app/p.ts#h->parameter:app/util.ts#arrowExp.v p= static o=field:features/user/user.ts#userData.user h= @app/p.ts:7:11
         E reads parameter:app/util.ts#arrowExp.v->function:app/util.ts#arrowExp p=role static o=field:features/user/user.ts#userData.user h= @app/util.ts:4:43
@@ -500,6 +499,7 @@ describe("flow-scan: targeted behaviours", () => {
         E side-effect function:app/p.ts#h->boundary:boundary:code#b3 p=role static o=field:features/user/user.ts#userData.user h= @app/p.ts:7:3
         E side-effect function:app/p.ts#h->boundary:boundary:code#b4 p= inferred o=field:features/user/user.ts#userData.user h= @app/p.ts:8:3
         U unresolved-call app/p.ts:5:11 subject=function:app/p.ts#h detail=call target is not a project function data=field:features/user/user.ts#userData.user/
+        U unresolved-call app/p.ts:6:11 subject=function:app/p.ts#h detail=call target is not a project function data=field:features/user/user.ts#userData.user/
         U unresolved-call app/p.ts:8:11 subject=function:app/p.ts#h detail=call target is not a project function data=field:features/user/user.ts#userData.user/"
       `)
     })
@@ -533,7 +533,7 @@ describe("flow-scan: targeted behaviours", () => {
       `)
     })
 
-    it("an export aliased to default is only reachable through a default import when it is named", async () => {
+    it("an export aliased to default is reachable through a default import and through `{ default as x }`", async () => {
       expect(
         await files({
           "app/d.ts": `function d(v: any) { return v.id }\nexport { d as default }\n`,
@@ -541,19 +541,21 @@ describe("flow-scan: targeted behaviours", () => {
         }),
       ).toMatchInlineSnapshot(`
         "N function app/p.ts h static bk= cl= src=4:1
-        N boundary boundary:code b0 static bk=log cl= src=
-        N boundary boundary:code b1 static bk=log cl= src=
         N function app/d.ts d static bk= cl= src=1:1
         N parameter app/d.ts d.v static bk= cl= src=
         N return app/d.ts d#return static bk= cl= src=
+        N boundary boundary:code b0 static bk=log cl= src=
+        N boundary boundary:code b1 static bk=log cl= src=
         N parameter app/p.ts h.res static bk= cl= src=
         N return app/p.ts h#return static bk= cl= src=
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#h p= static o=field:features/user/user.ts#userData.user h= @app/p.ts:5:14
-        E reads field:features/user/user.ts#userData.user->function:app/p.ts#h p= inferred o=field:features/user/user.ts#userData.user h= @app/p.ts:5:3
-        E side-effect function:app/p.ts#h->boundary:boundary:code#b0 p= inferred o=field:features/user/user.ts#userData.user h= @app/p.ts:5:3
-        E side-effect function:app/p.ts#h->boundary:boundary:code#b1 p= inferred o=field:features/user/user.ts#userData.user h= @app/p.ts:6:3
-        U unresolved-call app/p.ts:5:11 subject=function:app/p.ts#h detail=call target is not a project function data=field:features/user/user.ts#userData.user/
-        U unresolved-call app/p.ts:6:11 subject=function:app/p.ts#h detail=call target is not a project function data=field:features/user/user.ts#userData.user/"
+        E calls function:app/p.ts#h->function:app/d.ts#d p=- static o= h= @app/p.ts:5:11
+        E passes function:app/p.ts#h->parameter:app/d.ts#d.v p= static o=field:features/user/user.ts#userData.user h= @app/p.ts:5:11
+        E reads parameter:app/d.ts#d.v->function:app/d.ts#d p=id static o=field:features/user/user.ts#userData.user h= @app/d.ts:1:29
+        E returns function:app/d.ts#d->return:app/d.ts#d#return p=id static o=field:features/user/user.ts#userData.user h= @app/d.ts:1:22
+        E passes return:app/d.ts#d#return->function:app/p.ts#h p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:5:3
+        E side-effect function:app/p.ts#h->boundary:boundary:code#b0 p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:5:3
+        E side-effect function:app/p.ts#h->boundary:boundary:code#b1 p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:6:3"
       `)
     })
 
@@ -615,7 +617,7 @@ describe("flow-scan: targeted behaviours", () => {
       `)
     })
 
-    it("a star re-export and a name that does not exist are not functions", async () => {
+    it("a star re-export is followed and a name that does not exist is not a function", async () => {
       expect(
         await files({
           "app/a.ts": `export function real(v: any) { return v.id }\n`,
@@ -641,9 +643,8 @@ describe("flow-scan: targeted behaviours", () => {
         E side-effect function:app/p.ts#h->boundary:boundary:code#b0 p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:5:3
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#h p= inferred o=field:features/user/user.ts#userData.user h= @app/p.ts:6:3
         E side-effect function:app/p.ts#h->boundary:boundary:code#b1 p= inferred o=field:features/user/user.ts#userData.user h= @app/p.ts:6:3
-        E side-effect function:app/p.ts#h->boundary:boundary:code#b2 p= inferred o=field:features/user/user.ts#userData.user h= @app/p.ts:7:3
-        U unresolved-call app/p.ts:6:11 subject=function:app/p.ts#h detail=call target is not a project function data=field:features/user/user.ts#userData.user/
-        U unresolved-call app/p.ts:7:11 subject=function:app/p.ts#h detail=call target is not a project function data=field:features/user/user.ts#userData.user/"
+        E side-effect function:app/p.ts#h->boundary:boundary:code#b2 p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:7:3
+        U unresolved-call app/p.ts:6:11 subject=function:app/p.ts#h detail=call target is not a project function data=field:features/user/user.ts#userData.user/"
       `)
     })
   })
@@ -660,16 +661,17 @@ describe("flow-scan: targeted behaviours", () => {
       ).toMatchInlineSnapshot(`
         "N function app/p.ts p0 static bk= cl= src=2:1
         N boundary boundary:code b0 static bk=log cl= src=
-        N function app/p.ts p3 static bk= cl= src=15:1
-        N boundary boundary:code b4 static bk=log cl= src=
+        N function app/p.ts p1 static bk= cl= src=6:1
         N function app/p.ts p1>m@7:15 static bk= cl= src=7:15
         N return app/p.ts p1>m@7:15#return static bk= cl= src=
+        N boundary boundary:code b1 static bk=log cl= src=
+        N function app/p.ts p3 static bk= cl= src=15:1
+        N boundary boundary:code b4 static bk=log cl= src=
         N function app/p.ts p2>anonymous@11:15 static bk= cl= src=11:15
         N return app/p.ts p2>anonymous@11:15#return static bk= cl= src=
         N parameter app/p.ts p0.res static bk= cl= src=
         N parameter app/p.ts p0.key static bk= cl= src=
         N return app/p.ts p0#return static bk= cl= src=
-        N function app/p.ts p1 static bk= cl= src=6:1
         N parameter app/p.ts p1.res static bk= cl= src=
         N parameter app/p.ts p1.key static bk= cl= src=
         N return app/p.ts p1#return static bk= cl= src=
@@ -684,16 +686,20 @@ describe("flow-scan: targeted behaviours", () => {
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#p0 p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:3:19
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#p0 p=id inferred o=field:features/user/user.ts#userData.user h= @app/p.ts:4:3
         E side-effect function:app/p.ts#p0->boundary:boundary:code#b0 p=id inferred o=field:features/user/user.ts#userData.user h= @app/p.ts:4:3
+        E calls function:app/p.ts#p1->function:app/p.ts#p1>m@7:15 p=- static o= h= @app/p.ts:8:11
+        E reads field:features/user/user.ts#userData.user->function:app/p.ts#p1>m@7:15 p= static o=field:features/user/user.ts#userData.user h= @app/p.ts:7:28
+        E reads field:features/user/user.ts#userData.user->function:app/p.ts#p1>m@7:15 p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:7:28
+        E returns function:app/p.ts#p1>m@7:15->return:app/p.ts#p1>m@7:15#return p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:7:21
+        E passes return:app/p.ts#p1>m@7:15#return->function:app/p.ts#p1 p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:8:3
+        E side-effect function:app/p.ts#p1->boundary:boundary:code#b1 p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:8:3
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#p3 p= static o=field:features/user/user.ts#userData.user h= @app/p.ts:16:25
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#p3 p=email static o=field:features/user/user.ts#userData.user h= @app/p.ts:16:25
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#p3 p=role static o=field:features/user/user.ts#userData.user h= @app/p.ts:16:70
         E side-effect function:app/p.ts#p3->boundary:boundary:code#b4 p=email static o=field:features/user/user.ts#userData.user h= @app/p.ts:17:3
-        E reads field:features/user/user.ts#userData.user->function:app/p.ts#p1>m@7:15 p= static o=field:features/user/user.ts#userData.user h= @app/p.ts:7:28
-        E reads field:features/user/user.ts#userData.user->function:app/p.ts#p1>m@7:15 p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:7:28
-        E returns function:app/p.ts#p1>m@7:15->return:app/p.ts#p1>m@7:15#return p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:7:21
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#p2>anonymous@11:15 p= static o=field:features/user/user.ts#userData.user h= @app/p.ts:11:32
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#p2>anonymous@11:15 p=name static o=field:features/user/user.ts#userData.user h= @app/p.ts:11:32
-        E returns function:app/p.ts#p2>anonymous@11:15->return:app/p.ts#p2>anonymous@11:15#return p=name static o=field:features/user/user.ts#userData.user h= @app/p.ts:11:25"
+        E returns function:app/p.ts#p2>anonymous@11:15->return:app/p.ts#p2>anonymous@11:15#return p=name static o=field:features/user/user.ts#userData.user h= @app/p.ts:11:25
+        U unanalyzed-function app/p.ts:11:15 subject=function:app/p.ts#p2>anonymous@11:15 detail=closure returns tracked data but nothing in the project calls it data=field:features/user/user.ts#userData.user/name"
       `)
     })
 
@@ -706,7 +712,7 @@ describe("flow-scan: targeted behaviours", () => {
       `)
     })
 
-    it("a closure created in two contexts keeps the environment of the first", async () => {
+    it("a closure created in two contexts keeps the environment of its own", async () => {
       expect(
         await run(
           [
@@ -719,18 +725,28 @@ describe("flow-scan: targeted behaviours", () => {
         N function app/p.ts mk static bk= cl= src=2:1
         N parameter app/p.ts mk.v static bk= cl= src=
         N function app/p.ts mk>anonymous@2:30 static bk= cl= src=2:30
+        N return app/p.ts mk>anonymous@2:30#return static bk= cl= src=
+        N boundary boundary:code b0 static bk=log cl= src=
+        N boundary boundary:code b1 static bk=log cl= src=
         N return app/p.ts mk#return static bk= cl= src=
         N parameter app/p.ts p0.res static bk= cl= src=
         N parameter app/p.ts p0.key static bk= cl= src=
         N return app/p.ts p0#return static bk= cl= src=
-        N return app/p.ts mk>anonymous@2:30#return static bk= cl= src=
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#p0 p= static o=field:features/user/user.ts#userData.user h= @app/p.ts:4:16
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#p0 p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:4:16
         E calls function:app/p.ts#p0->function:app/p.ts#mk p=- static o= h= @app/p.ts:4:13
         E passes function:app/p.ts#p0->parameter:app/p.ts#mk.v p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:4:13
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#p0 p=name static o=field:features/user/user.ts#userData.user h= @app/p.ts:5:16
         E passes function:app/p.ts#p0->parameter:app/p.ts#mk.v p=name static o=field:features/user/user.ts#userData.user h= @app/p.ts:5:13
-        E calls function:app/p.ts#p0->function:app/p.ts#mk>anonymous@2:30 p=- static o= h= @app/p.ts:6:11"
+        E calls function:app/p.ts#p0->function:app/p.ts#mk>anonymous@2:30 p=- static o= h= @app/p.ts:6:11
+        E reads parameter:app/p.ts#mk.v->function:app/p.ts#mk>anonymous@2:30 p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:2:36
+        E returns function:app/p.ts#mk>anonymous@2:30->return:app/p.ts#mk>anonymous@2:30#return p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:2:36
+        E passes return:app/p.ts#mk>anonymous@2:30#return->function:app/p.ts#p0 p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:6:3
+        E side-effect function:app/p.ts#p0->boundary:boundary:code#b0 p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:6:3
+        E reads parameter:app/p.ts#mk.v->function:app/p.ts#mk>anonymous@2:30 p=name static o=field:features/user/user.ts#userData.user h= @app/p.ts:2:36
+        E returns function:app/p.ts#mk>anonymous@2:30->return:app/p.ts#mk>anonymous@2:30#return p=name static o=field:features/user/user.ts#userData.user h= @app/p.ts:2:36
+        E passes return:app/p.ts#mk>anonymous@2:30#return->function:app/p.ts#p0 p=name static o=field:features/user/user.ts#userData.user h= @app/p.ts:7:3
+        E side-effect function:app/p.ts#p0->boundary:boundary:code#b1 p=name static o=field:features/user/user.ts#userData.user h= @app/p.ts:7:3"
       `)
     })
 
@@ -848,23 +864,19 @@ describe("flow-scan: targeted behaviours", () => {
         ]),
       ).toMatchInlineSnapshot(`
         "N function app/p.ts p0 static bk= cl= src=2:1
-        N function app/p.ts p1 static bk= cl= src=6:1
-        N function app/p.ts p2 static bk= cl= src=10:1
         N parameter app/p.ts p0.res static bk= cl= src=
         N parameter app/p.ts p0.key static bk= cl= src=
         N return app/p.ts p0#return static bk= cl= src=
+        N function app/p.ts p1 static bk= cl= src=6:1
         N parameter app/p.ts p1.res static bk= cl= src=
         N parameter app/p.ts p1.key static bk= cl= src=
         N return app/p.ts p1#return static bk= cl= src=
+        N function app/p.ts p2 static bk= cl= src=10:1
         N parameter app/p.ts p2.res static bk= cl= src=
         N parameter app/p.ts p2.key static bk= cl= src=
         N return app/p.ts p2#return static bk= cl= src=
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#p0 p= static o=field:features/user/user.ts#userData.user h= @app/p.ts:4:13
-        E reads field:features/user/user.ts#userData.user->function:app/p.ts#p0 p=name static o=field:features/user/user.ts#userData.user h= @app/p.ts:4:13
-        E reads field:features/user/user.ts#userData.user->function:app/p.ts#p1 p= static o=field:features/user/user.ts#userData.user h= @app/p.ts:8:7
-        E reads field:features/user/user.ts#userData.user->function:app/p.ts#p1 p=email static o=field:features/user/user.ts#userData.user h= @app/p.ts:8:7
-        E reads field:features/user/user.ts#userData.user->function:app/p.ts#p2 p= static o=field:features/user/user.ts#userData.user h= @app/p.ts:12:12
-        E reads field:features/user/user.ts#userData.user->function:app/p.ts#p2 p=role static o=field:features/user/user.ts#userData.user h= @app/p.ts:12:12"
+        E reads field:features/user/user.ts#userData.user->function:app/p.ts#p0 p=name static o=field:features/user/user.ts#userData.user h= @app/p.ts:4:13"
       `)
     })
 
@@ -937,7 +949,8 @@ describe("flow-scan: targeted behaviours", () => {
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#p0>anonymous@5:13 p= static o=field:features/user/user.ts#userData.user h= @app/p.ts:5:19
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#p0>anonymous@5:13 p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:5:19
         E returns function:app/p.ts#p0>anonymous@5:13->return:app/p.ts#p0>anonymous@5:13#return p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:5:19
-        U unresolved-call app/p.ts:6:3 subject=function:app/p.ts#p0 detail=call target is not a project function data=field:features/user/user.ts#userData.user/name"
+        U unresolved-call app/p.ts:6:3 subject=function:app/p.ts#p0 detail=call target is not a project function data=field:features/user/user.ts#userData.user/name
+        U unanalyzed-function app/p.ts:5:13 subject=function:app/p.ts#p0>anonymous@5:13 detail=closure returns tracked data but nothing in the project calls it data=field:features/user/user.ts#userData.user/id"
       `)
     })
   })

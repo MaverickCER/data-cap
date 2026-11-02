@@ -251,15 +251,17 @@ describe("flow-scan: statements, bindings and expressions", () => {
         "N function app/p.ts h static bk= cl= src=2:1
         N boundary boundary:code b0 static bk=log cl= src=
         N boundary boundary:code b1 static bk=log cl= src=
+        N return app/p.ts h#return static bk= cl= src=
         N parameter app/p.ts h.res static bk= cl= src=
         N parameter app/p.ts h.key static bk= cl= src=
-        N return app/p.ts h#return static bk= cl= src=
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#h p= static o=field:features/user/user.ts#userData.user h= @app/p.ts:3:20
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#h p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:3:20
         E side-effect function:app/p.ts#h->boundary:boundary:code#b0 p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:3:12
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#h p=name static o=field:features/user/user.ts#userData.user h= @app/p.ts:4:13
         E side-effect function:app/p.ts#h->boundary:boundary:code#b1 p=name static o=field:features/user/user.ts#userData.user h= @app/p.ts:4:5
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#h p=email static o=field:features/user/user.ts#userData.user h= @app/p.ts:5:28
+        E reads field:features/user/user.ts#userData.user->function:app/p.ts#h p=email inferred o=field:features/user/user.ts#userData.user h= @app/p.ts:5:12
+        E returns function:app/p.ts#h->return:app/p.ts#h#return p=email inferred o=field:features/user/user.ts#userData.user h= @app/p.ts:5:12
         U unresolved-call app/p.ts:5:18 subject=function:app/p.ts#h detail=call target is not a project function data=field:features/user/user.ts#userData.user/email"
       `)
     })
@@ -548,6 +550,12 @@ describe("flow-scan: statements, bindings and expressions", () => {
       ["/", "inferred"],
       ["%", "inferred"],
       ["**", "inferred"],
+      ["&", "inferred"],
+      ["|", "inferred"],
+      ["^", "inferred"],
+      ["<<", "inferred"],
+      [">>", "inferred"],
+      [">>>", "inferred"],
     ])("%s merges both sides (%s)", async (operator, status) => {
       expect(await run(`${USER}.id ${operator} ${USER}.name`)).toEqual([
         `id|${status}`,
@@ -555,32 +563,18 @@ describe("flow-scan: statements, bindings and expressions", () => {
       ])
     })
 
-    it.each([
-      "==",
-      "===",
-      "!=",
-      "!==",
-      "<",
-      ">",
-      "<=",
-      ">=",
-      "&",
-      "|",
-      "^",
-      "<<",
-      ">>",
-      ">>>",
-      "instanceof",
-      "in",
-    ])("%s carries no data", async (operator) => {
-      const input = (
-        await h.scanDistinct(handler(`  res.json(${USER}.id ${operator} ${USER}.name as any)`))
-      ).input
-      expect(input.edges.filter((e) => e.kind === "side-effect")).toEqual([])
-    })
+    it.each(["==", "===", "!=", "!==", "<", ">", "<=", ">=", "instanceof", "in"])(
+      "%s carries no data",
+      async (operator) => {
+        const input = (
+          await h.scanDistinct(handler(`  res.json(${USER}.id ${operator} ${USER}.name as any)`))
+        ).input
+        expect(input.edges.filter((e) => e.kind === "side-effect")).toEqual([])
+      },
+    )
 
-    it("the comma operator carries no data", async () => {
-      expect(await run(`(${USER}.id, ${USER}.name)`)).toEqual([])
+    it("the comma operator yields its right operand and drops the left one", async () => {
+      expect(await run(`(${USER}.id, ${USER}.name)`)).toEqual(["name|static"])
     })
 
     it.each([
@@ -648,13 +642,14 @@ describe("flow-scan: statements, bindings and expressions", () => {
       `)
     })
 
-    it("unary operators read their operand and carry nothing", async () => {
+    it("unary operators read their operand; only the numeric ones (-, +, ~) carry it, approximately", async () => {
       expect(
         await lines(
           `  let n: any = ${USER}.id\n  res.json(!${USER}.name)\n  res.json(-${USER}.email)\n  n++\n  --n\n  res.json(typeof ${USER}.role)\n  res.json(void ${USER}.id)\n  delete (${USER} as any).name\n  res.json(n)`,
         ),
       ).toMatchInlineSnapshot(`
         "N function app/p.ts h static bk= cl= src=2:1
+        N boundary boundary:code b1 static bk=log cl= src=
         N boundary boundary:code b4 static bk=log cl= src=
         N parameter app/p.ts h.res static bk= cl= src=
         N parameter app/p.ts h.key static bk= cl= src=
@@ -663,6 +658,8 @@ describe("flow-scan: statements, bindings and expressions", () => {
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#h p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:3:16
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#h p=name static o=field:features/user/user.ts#userData.user h= @app/p.ts:4:12
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#h p=email static o=field:features/user/user.ts#userData.user h= @app/p.ts:5:12
+        E reads field:features/user/user.ts#userData.user->function:app/p.ts#h p=email inferred o=field:features/user/user.ts#userData.user h= @app/p.ts:5:3
+        E side-effect function:app/p.ts#h->boundary:boundary:code#b1 p=email inferred o=field:features/user/user.ts#userData.user h= @app/p.ts:5:3
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#h p=role static o=field:features/user/user.ts#userData.user h= @app/p.ts:8:18
         E side-effect function:app/p.ts#h->boundary:boundary:code#b4 p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:11:3"
       `)
@@ -677,11 +674,11 @@ describe("flow-scan: statements, bindings and expressions", () => {
       ).toMatchInlineSnapshot(`
         "N function app/p.ts h static bk= cl= src=3:1
         N boundary boundary:code b0 static bk=log cl= src=
-        N boundary boundary:code b1 static bk=log cl= src=
         N function app/p.ts tag static bk= cl= src=2:13
-        N parameter app/p.ts tag.s static bk= cl= src=
         N parameter app/p.ts tag.v static bk= cl= src=
         N return app/p.ts tag#return static bk= cl= src=
+        N boundary boundary:code b1 static bk=log cl= src=
+        N parameter app/p.ts tag.s static bk= cl= src=
         N parameter app/p.ts h.res static bk= cl= src=
         N parameter app/p.ts h.key static bk= cl= src=
         N return app/p.ts h#return static bk= cl= src=
@@ -693,8 +690,12 @@ describe("flow-scan: statements, bindings and expressions", () => {
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#h p=name inferred o=field:features/user/user.ts#userData.user h= @app/p.ts:4:3
         E side-effect function:app/p.ts#h->boundary:boundary:code#b0 p=name inferred o=field:features/user/user.ts#userData.user h= @app/p.ts:4:3
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#h p=email static o=field:features/user/user.ts#userData.user h= @app/p.ts:5:19
-        E reads field:features/user/user.ts#userData.user->function:app/p.ts#h p=email inferred o=field:features/user/user.ts#userData.user h= @app/p.ts:5:3
-        E side-effect function:app/p.ts#h->boundary:boundary:code#b1 p=email inferred o=field:features/user/user.ts#userData.user h= @app/p.ts:5:3"
+        E calls function:app/p.ts#h->function:app/p.ts#tag p=- static o= h= @app/p.ts:5:11
+        E passes function:app/p.ts#h->parameter:app/p.ts#tag.v p=email static o=field:features/user/user.ts#userData.user h= @app/p.ts:5:11
+        E reads parameter:app/p.ts#tag.v->function:app/p.ts#tag p=email static o=field:features/user/user.ts#userData.user h= @app/p.ts:2:38
+        E returns function:app/p.ts#tag->return:app/p.ts#tag#return p=email static o=field:features/user/user.ts#userData.user h= @app/p.ts:2:38
+        E passes return:app/p.ts#tag#return->function:app/p.ts#h p=email static o=field:features/user/user.ts#userData.user h= @app/p.ts:5:3
+        E side-effect function:app/p.ts#h->boundary:boundary:code#b1 p=email static o=field:features/user/user.ts#userData.user h= @app/p.ts:5:3"
       `)
     })
 
@@ -759,9 +760,10 @@ describe("flow-scan: statements, bindings and expressions", () => {
         N parameter app/p.ts h.key static bk= cl= src=
         N return app/p.ts h#return static bk= cl= src=
         E reads field:features/user/user.ts#userData.tags->function:app/p.ts#h p= static o=field:features/user/user.ts#userData.tags h= @app/p.ts:3:15
+        E reads field:features/user/user.ts#userData.tags->function:app/p.ts#h p=[] static o=field:features/user/user.ts#userData.tags h= @app/p.ts:3:12
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#h p= static o=field:features/user/user.ts#userData.user h= @app/p.ts:3:51
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#h p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:3:51
-        E side-effect function:app/p.ts#h->boundary:boundary:code#b0 p= static o=field:features/user/user.ts#userData.tags h= @app/p.ts:3:3
+        E side-effect function:app/p.ts#h->boundary:boundary:code#b0 p=[] static o=field:features/user/user.ts#userData.tags h= @app/p.ts:3:3
         E side-effect function:app/p.ts#h->boundary:boundary:code#b0 p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:3:3
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#h p=name static o=field:features/user/user.ts#userData.user h= @app/p.ts:4:59
         E side-effect function:app/p.ts#h->boundary:boundary:code#b1 p= static o=field:features/user/user.ts#userData.user h= @app/p.ts:4:3
@@ -817,6 +819,8 @@ describe("flow-scan: statements, bindings and expressions", () => {
         N parameter app/p.ts h.res static bk= cl= src=
         N parameter app/p.ts h.key static bk= cl= src=
         N return app/p.ts h#return static bk= cl= src=
+        N function app/p.ts h>g@5:302 static bk= cl= src=5:302
+        N return app/p.ts h>g@5:302#return static bk= cl= src=
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#h p= static o=field:features/user/user.ts#userData.user h= @app/p.ts:3:14
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#h p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:3:14
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#h p=name static o=field:features/user/user.ts#userData.user h= @app/p.ts:5:24
@@ -850,7 +854,8 @@ describe("flow-scan: statements, bindings and expressions", () => {
         E side-effect function:app/p.ts#h->boundary:boundary:code#b5 p=nothing static o=field:features/user/user.ts#userData.user h= @app/p.ts:11:3
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#h>m@5:158 p= static o=field:features/user/user.ts#userData.user h= @app/p.ts:5:171
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#h>m@5:158 p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:5:171
-        E returns function:app/p.ts#h>m@5:158->return:app/p.ts#h>m@5:158#return p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:5:164"
+        E returns function:app/p.ts#h>m@5:158->return:app/p.ts#h>m@5:158#return p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:5:164
+        U unanalyzed-function app/p.ts:5:158 subject=function:app/p.ts#h>m@5:158 detail=closure returns tracked data but nothing in the project calls it data=field:features/user/user.ts#userData.user/id"
       `)
     })
 
@@ -866,16 +871,17 @@ describe("flow-scan: statements, bindings and expressions", () => {
     it("a method with a computed name is analyzed but not stored", async () => {
       expect(await lines(`  const o = { [key]() { return ${USER}.id } }\n  res.json(o)`))
         .toMatchInlineSnapshot(`
-        "N function app/p.ts h>anonymous@3:15 static bk= cl= src=3:15
-        N return app/p.ts h>anonymous@3:15#return static bk= cl= src=
-        N function app/p.ts h static bk= cl= src=2:1
-        N parameter app/p.ts h.res static bk= cl= src=
-        N parameter app/p.ts h.key static bk= cl= src=
-        N return app/p.ts h#return static bk= cl= src=
-        E reads field:features/user/user.ts#userData.user->function:app/p.ts#h>anonymous@3:15 p= static o=field:features/user/user.ts#userData.user h= @app/p.ts:3:32
-        E reads field:features/user/user.ts#userData.user->function:app/p.ts#h>anonymous@3:15 p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:3:32
-        E returns function:app/p.ts#h>anonymous@3:15->return:app/p.ts#h>anonymous@3:15#return p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:3:25"
-      `)
+          "N function app/p.ts h>anonymous@3:15 static bk= cl= src=3:15
+          N return app/p.ts h>anonymous@3:15#return static bk= cl= src=
+          N function app/p.ts h static bk= cl= src=2:1
+          N parameter app/p.ts h.res static bk= cl= src=
+          N parameter app/p.ts h.key static bk= cl= src=
+          N return app/p.ts h#return static bk= cl= src=
+          E reads field:features/user/user.ts#userData.user->function:app/p.ts#h>anonymous@3:15 p= static o=field:features/user/user.ts#userData.user h= @app/p.ts:3:32
+          E reads field:features/user/user.ts#userData.user->function:app/p.ts#h>anonymous@3:15 p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:3:32
+          E returns function:app/p.ts#h>anonymous@3:15->return:app/p.ts#h>anonymous@3:15#return p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:3:25
+          U unanalyzed-function app/p.ts:3:15 subject=function:app/p.ts#h>anonymous@3:15 detail=closure returns tracked data but nothing in the project calls it data=field:features/user/user.ts#userData.user/id"
+        `)
     })
 
     it("element access with a string literal, a number and a computed key", async () => {
@@ -932,6 +938,9 @@ describe("flow-scan: statements, bindings and expressions", () => {
         "N function app/p.ts h static bk= cl= src=2:1
         N boundary boundary:code b0 static bk=log cl= src=
         N boundary boundary:code b1 static bk=log cl= src=
+        N boundary boundary:code b2 static bk=log cl= src=
+        N boundary boundary:code b3 static bk=log cl= src=
+        N boundary boundary:code b4 static bk=log cl= src=
         N boundary boundary:code b5 static bk=log cl= src=
         N parameter app/p.ts h.res static bk= cl= src=
         N parameter app/p.ts h.key static bk= cl= src=
@@ -943,9 +952,14 @@ describe("flow-scan: statements, bindings and expressions", () => {
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#h p=role static o=field:features/user/user.ts#userData.user h= @app/p.ts:7:15
         E side-effect function:app/p.ts#h->boundary:boundary:code#b0 p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:10:3
         E side-effect function:app/p.ts#h->boundary:boundary:code#b1 p=name static o=field:features/user/user.ts#userData.user h= @app/p.ts:11:3
+        E side-effect function:app/p.ts#h->boundary:boundary:code#b2 p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:12:3
+        E side-effect function:app/p.ts#h->boundary:boundary:code#b3 p=name static o=field:features/user/user.ts#userData.user h= @app/p.ts:13:3
+        E side-effect function:app/p.ts#h->boundary:boundary:code#b4 p=role static o=field:features/user/user.ts#userData.user h= @app/p.ts:14:3
         E side-effect function:app/p.ts#h->boundary:boundary:code#b5 p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:15:3
         E side-effect function:app/p.ts#h->boundary:boundary:code#b5 p=name static o=field:features/user/user.ts#userData.user h= @app/p.ts:15:3
-        E side-effect function:app/p.ts#h->boundary:boundary:code#b5 p=email static o=field:features/user/user.ts#userData.user h= @app/p.ts:15:3"
+        E side-effect function:app/p.ts#h->boundary:boundary:code#b5 p=email static o=field:features/user/user.ts#userData.user h= @app/p.ts:15:3
+        E side-effect function:app/p.ts#h->boundary:boundary:code#b5 p=role static o=field:features/user/user.ts#userData.user h= @app/p.ts:15:3
+        U dynamic-access app/p.ts:6:3 subject=function:app/p.ts#h detail=computed property key on a store of tracked data data=field:features/user/user.ts#userData.user/email"
       `)
     })
 
@@ -992,7 +1006,7 @@ describe("flow-scan: statements, bindings and expressions", () => {
       `)
     })
 
-    it("an assignment through a non-identifier base stores nothing", async () => {
+    it("an assignment through a non-identifier base is reported as unsupported", async () => {
       expect(
         await lines(
           `  const a: any = {}\n  f().x = ${USER}.id\n  res.json(a)`,
@@ -1006,7 +1020,9 @@ describe("flow-scan: statements, bindings and expressions", () => {
         N parameter app/p.ts h.key static bk= cl= src=
         N return app/p.ts h#return static bk= cl= src=
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#h p= static o=field:features/user/user.ts#userData.user h= @app/p.ts:5:11
-        E reads field:features/user/user.ts#userData.user->function:app/p.ts#h p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:5:11"
+        E reads field:features/user/user.ts#userData.user->function:app/p.ts#h p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:5:11
+        E calls function:app/p.ts#h->function:app/p.ts#f p=- static o= h= @app/p.ts:5:3
+        U unsupported-construct app/p.ts:5:3 subject=function:app/p.ts#h detail=assignment target is not a variable data=field:features/user/user.ts#userData.user/id"
       `)
     })
   })

@@ -1,7 +1,7 @@
 /**
  * The explorer's browser code. It reads ONE thing -- the Evidence Model embedded
  * in the page -- and uses data-cap's own isomorphic functions (`traceFlow`,
- * `diffFlow`, `buildFlowGraphView`, `renderFlowText`) for every question it
+ * `diffFlow` (via the comparison), `buildFlowGraphView`, `renderFlowText`) for every question it
  * answers, so what the page says about a flow is, by construction, what the
  * build says. Nothing here re-derives a fact.
  *
@@ -14,14 +14,19 @@
  *   - Filters by status, classification, policy violation and execution (what a
  *     given test or run actually witnessed); a text search.
  *   - Coverage is always on screen, and an unknown is drawn like any other node.
- *   - A second revision's evidence can be loaded to see what changed.
+ *   - A second revision's evidence (embedded in the page, or loaded from a file) is compared with the one on
+ *     screen: lists of added and removed edges, nodes and unknowns and of changed policy results, each item a
+ *     button that opens its details and source location, the same changes outlined in the graph, and an option to
+ *     dim everything that did not change. The comparison is part of the link (`compare`, `changes`, `change`).
  *
  * Every change of state is announced in a polite live region, and everything the
  * graph shows is also in the text equivalent below it.
  */
-import { buildFlowGraphView, diffFlow, observedFlow, renderFlowText, traceFlow } from "data-cap/evidence"
+import { buildFlowGraphView, observedFlow, renderFlowText, traceFlow } from "data-cap/evidence"
 import type { FlowEdge, FlowGraphView, FlowModel, FlowNode, FlowStatus, FlowUnknown } from "data-cap/evidence"
 import type { EvidenceModel } from "data-cap/build"
+import { compareEvidence, renderComparisonHtml } from "./compare.js"
+import type { ChangeItem, Comparison } from "./compare.js"
 
 const STATUSES: readonly FlowStatus[] = ["declared", "static", "observed", "inferred", "unknown"]
 const ALL_EXECUTIONS = "__all__"
@@ -69,7 +74,12 @@ class Explorer {
   private readonly edgeEls = new Map<string, Element>()
   private readonly violated = new Set<string>()
   private traceFrom: string | undefined
-  private diff: ReturnType<typeof diffFlow> | undefined
+  private comparison: Comparison | undefined
+  private embeddedBaseline: EvidenceModel | undefined
+  private compareOff = false
+  private onlyChanges = false
+  private selectedChange: string | undefined
+  private quiet = false
 
   constructor(
     private readonly evidence: EvidenceModel,
@@ -88,10 +98,17 @@ class Explorer {
     this.indexGraph()
     this.fillControls()
     this.bind()
+    this.embeddedBaseline = readEvidence("baseline-evidence")
     this.restoreFromHash()
+    if (!this.compareOff && this.embeddedBaseline?.flow !== undefined) this.setComparison(this.embeddedBaseline, "the revision embedded in this page")
     this.apply()
-    const baseline = readEvidence("baseline-evidence")
-    if (baseline?.flow !== undefined) this.compare(baseline, "the revision embedded in this page")
+    const wanted = this.selectedChange
+    const item = this.changeItems().find((candidate) => candidate.key === wanted)
+    if (item !== undefined) this.inspectChange(item, false)
+    else if (wanted !== undefined) {
+      this.selectedChange = undefined
+      this.apply()
+    }
   }
 
   // ----- the graph -------------------------------------------------------------------------------
@@ -121,12 +138,14 @@ class Explorer {
 
   private describeNode(id: string): string {
     const unknown = this.unknowns.get(id)
-    if (unknown !== undefined) return `Not followed: ${unknown.reason} at ${unknown.source.file} line ${unknown.source.line}, status unknown`
+    const unknownSince = this.comparison?.added.nodes.has(id) ? ", added since the compared revision" : ""
+    if (unknown !== undefined) return `Not followed: ${unknown.reason} at ${unknown.source.file} line ${unknown.source.line}, status unknown${unknownSince}`
     const node = this.nodes.get(id)
     if (node === undefined) return id
     const label = this.view.nodes.find((candidate) => candidate.id === id)?.label ?? node.name
     const classification = node.classification === undefined ? "" : `, ${node.classification}`
-    return `${label}, ${node.kind}, ${node.status}${classification}`
+    const since = this.comparison?.added.nodes.has(id) ? ", added since the compared revision" : this.comparison?.changed.nodes.has(id) ? ", changed since the compared revision" : ""
+    return `${label}, ${node.kind}, ${node.status}${classification}${since}`
   }
 
   // ----- controls --------------------------------------------------------------------------------
@@ -161,6 +180,25 @@ class Explorer {
       })
     }
     required<HTMLElement>("statuses").addEventListener("change", rerun)
+    required<HTMLInputElement>("only-changes").addEventListener("change", () => {
+      this.onlyChanges = required<HTMLInputElement>("only-changes").checked
+      rerun()
+    })
+    required<HTMLButtonElement>("compare-off").addEventListener("click", () => {
+      this.compareOff = true
+      this.clearComparison()
+    })
+    required<HTMLButtonElement>("compare-embedded").addEventListener("click", () => {
+      const embedded = this.embeddedBaseline
+      if (embedded?.flow === undefined) return
+      this.compareOff = false
+      this.compare(embedded, "the revision embedded in this page")
+    })
+    required<HTMLElement>("diff-result").addEventListener("click", (event) => {
+      const button = (event.target as Element).closest?.("button[data-change]")
+      const item = this.changeItems().find((candidate) => candidate.key === button?.getAttribute("data-change"))
+      if (item !== undefined) this.inspectChange(item, true)
+    })
     const fit = required<HTMLButtonElement>("fit")
     fit.addEventListener("click", () => {
       const fitted = required<HTMLElement>("graph").classList.toggle("fit-width")
@@ -175,6 +213,8 @@ class Explorer {
       required<HTMLSelectElement>("execution").value = ""
       required<HTMLSelectElement>("classification").value = ""
       required<HTMLInputElement>("violations").checked = false
+      this.onlyChanges = false
+      required<HTMLInputElement>("only-changes").checked = false
       for (const box of required<HTMLElement>("statuses").querySelectorAll("input")) box.checked = true
       this.apply()
     })
@@ -200,9 +240,12 @@ class Explorer {
         try {
           const parsed = JSON.parse(text) as EvidenceModel
           if (parsed.flow === undefined) throw new Error("it has no flow analysis")
+          this.compareOff = false
           this.compare(parsed, file.name)
         } catch (error) {
-          required<HTMLElement>("diff-result").textContent = `${file.name} could not be used: ${error instanceof Error ? error.message : String(error)}.`
+          const out = required<HTMLElement>("diff-result")
+          out.querySelector("#diff-error")?.remove()
+          out.prepend(el("p", { id: "diff-error", role: "alert" }, `${file.name} could not be used: ${error instanceof Error ? error.message : String(error)}.`))
         }
       })
     })
@@ -268,6 +311,7 @@ class Explorer {
     }
 
     const witnessed = this.witnessed()
+    const changesOnly = this.onlyChanges && this.comparison !== undefined
     let shownNodes = 0
     let shownEdges = 0
     for (const [id, group] of this.nodeEls) {
@@ -275,6 +319,7 @@ class Explorer {
       const dim =
         (selected !== undefined && !selected.nodes.has(id)) ||
         (witnessed !== undefined && !witnessed.nodes.has(id)) ||
+        (changesOnly && !this.comparison?.added.nodes.has(id) && !this.comparison?.changed.nodes.has(id)) ||
         (query !== "" && !this.describeNode(id).toLowerCase().includes(query))
       group.classList.toggle("filtered", hidden)
       group.classList.toggle("dim", !hidden && dim)
@@ -285,7 +330,7 @@ class Explorer {
       const edge = this.edges.get(id)
       const endpointsHidden = edge !== undefined && (this.nodeEls.get(edge.from)?.classList.contains("filtered") === true || this.nodeEls.get(edge.to)?.classList.contains("filtered") === true)
       const hidden = edge === undefined ? false : endpointsHidden || !statuses.has(edge.status) || (violationsOnly && !this.violated.has(id))
-      const dim = (selected !== undefined && !selected.edges.has(id)) || (witnessed !== undefined && !witnessed.edges.has(id))
+      const dim = (selected !== undefined && !selected.edges.has(id)) || (witnessed !== undefined && !witnessed.edges.has(id)) || (changesOnly && !this.comparison?.added.edges.has(id) && !this.comparison?.changed.edges.has(id))
       group.classList.toggle("filtered", hidden)
       group.classList.toggle("dim", !hidden && dim)
       group.classList.toggle("trace", !hidden && !dim && selected !== undefined)
@@ -295,6 +340,7 @@ class Explorer {
     const parts = [
       witnessed !== undefined ? `Showing what ${witnessed.label} witnessed: ${witnessed.observations} observation(s), ${witnessed.unexplained} not explained by the static flow.` : "",
       selected === undefined ? (witnessed === undefined ? "Showing all data." : "") : `Tracing ${selected.label}.`,
+      changesOnly ? "Showing only what changed since the compared revision." : "",
       `${shownNodes} node(s) and ${shownEdges} edge(s) shown.`,
     ].filter((part) => part !== "")
     if (selected !== undefined && !selected.complete) parts.push("This trace is NOT complete: part of it reaches code the analysis could not follow.")
@@ -342,6 +388,10 @@ class Explorer {
     if (execution !== "") params.set("execution", execution)
     const hidden = [...required<HTMLElement>("statuses").querySelectorAll("input")].filter((box) => !box.checked).map((box) => box.value)
     if (hidden.length > 0) params.set("hide", hidden.join(","))
+    if (this.compareOff) params.set("compare", "off")
+    if (this.onlyChanges && this.comparison !== undefined) params.set("changes", "1")
+    const selected = this.selectedChange
+    if (selected !== undefined && this.changeItems().some((item) => item.key === selected)) params.set("change", selected)
     const text = params.toString()
     history.replaceState(null, "", text === "" ? location.pathname + location.search : `#${text}`)
   }
@@ -360,6 +410,10 @@ class Explorer {
     required<HTMLInputElement>("search").value = params.get("find") ?? ""
     const execution = required<HTMLSelectElement>("execution")
     execution.value = [...execution.options].some((option) => option.value === params.get("execution")) ? (params.get("execution") as string) : ""
+    this.compareOff = params.get("compare") === "off"
+    this.onlyChanges = params.get("changes") === "1"
+    required<HTMLInputElement>("only-changes").checked = this.onlyChanges
+    this.selectedChange = params.get("change") ?? undefined
     const hidden = new Set((params.get("hide") ?? "").split(",").filter((status) => status !== ""))
     for (const box of required<HTMLElement>("statuses").querySelectorAll("input")) box.checked = !hidden.has(box.value)
   }
@@ -374,7 +428,7 @@ class Explorer {
   private show(heading: string, ...content: Child[]): void {
     const body = required<HTMLElement>("detail-body")
     body.replaceChildren(el("h3", {}, heading), ...content)
-    required<HTMLElement>("detail").focus()
+    if (!this.quiet) required<HTMLElement>("detail").focus()
   }
 
   private list(items: readonly string[]): HTMLElement {
@@ -445,35 +499,86 @@ class Explorer {
 
   // ----- comparing revisions ---------------------------------------------------------------------
 
+  private changeItems(): readonly ChangeItem[] {
+    return this.comparison === undefined ? [] : this.comparison.sections.flatMap((section) => section.items)
+  }
+
+  /** Compares the revision on screen with `baseline`: lists, outlines in the graph, accessible names. */
   private compare(baseline: EvidenceModel, name: string): void {
-    const baselineFlow = baseline.flow as FlowModel
-    this.diff = diffFlow(baselineFlow, this.flow)
-    const { diff } = this
-    for (const [id, group] of this.nodeEls) group.classList.toggle("added", diff.addedNodes.some((node) => node.id === id) || diff.addedUnknowns.some((unknown) => unknown.id === id))
-    for (const [id, group] of this.edgeEls) group.classList.toggle("added", diff.addedEdges.some((edge) => edge.id === id))
+    this.selectedChange = undefined
+    this.setComparison(baseline, name)
+    this.apply()
+  }
 
-    const key = (result: { ruleId: string; outcome: string; subject?: string | undefined }): string => `${result.ruleId}:${result.outcome}:${result.subject ?? ""}`
-    const before = new Set((baseline.policy?.results ?? []).map(key))
-    const now = new Set((this.evidence.policy?.results ?? []).map(key))
-    const newlyBroken = (this.evidence.policy?.results ?? []).filter((result) => result.outcome === "violated" && !before.has(key(result)))
-    const fixed = (baseline.policy?.results ?? []).filter((result) => result.outcome === "violated" && !now.has(key(result)))
+  private setComparison(baseline: EvidenceModel, name: string): void {
+    this.comparison = compareEvidence(baseline, this.evidence)
+    required<HTMLElement>("diff-result").innerHTML = renderComparisonHtml(this.comparison, name, true)
+    this.markChanges()
+  }
 
-    const out = required<HTMLElement>("diff-result")
-    if (diff.unchanged && newlyBroken.length === 0 && fixed.length === 0) {
-      out.replaceChildren(el("p", {}, `No difference from ${name}.`))
-      return
+  private clearComparison(): void {
+    this.comparison = undefined
+    this.selectedChange = undefined
+    required<HTMLElement>("diff-result").innerHTML = '<p id="diff-summary" role="status">Not comparing with another revision. Load an evidence file, or compare with the embedded revision.</p>'
+    this.markChanges()
+    this.apply()
+  }
+
+  /** Outlines what is new or different, says so in each node's accessible name, and enables the dimming option only when there is something to dim by. */
+  private markChanges(): void {
+    const comparison = this.comparison
+    for (const [id, group] of this.nodeEls) {
+      group.classList.toggle("added", comparison?.added.nodes.has(id) === true)
+      group.classList.toggle("changed", comparison?.changed.nodes.has(id) === true)
+      group.setAttribute("aria-label", this.describeNode(id))
     }
-    out.replaceChildren(
-      el("p", {}, diff.unchanged ? `No difference from ${name}.` : `Compared with ${name}: ${diff.addedNodes.length} node(s) added, ${diff.removedNodes.length} removed, ${diff.changedNodes.length} changed; ${diff.addedEdges.length} edge(s) added, ${diff.removedEdges.length} removed; ${diff.addedUnknowns.length} new unknown(s).`),
-      el("h3", {}, "Policy rules newly violated"),
-      this.list(newlyBroken.map((result) => `${result.ruleId}${result.subject === undefined ? "" : ` for ${this.nodes.get(result.subject)?.name ?? result.subject}`}`)),
-      el("h3", {}, "Policy rules no longer violated"),
-      this.list(fixed.map((result) => result.ruleId)),
-      el("h3", {}, "Added"),
-      this.list(diff.addedNodes.map((node) => `${node.kind} ${node.name}`)),
-      el("h3", {}, "Removed"),
-      this.list(diff.removedNodes.map((node) => `${node.kind} ${node.name}`)),
-    )
+    for (const [id, group] of this.edgeEls) {
+      group.classList.toggle("added", comparison?.added.edges.has(id) === true)
+      group.classList.toggle("changed", comparison?.changed.edges.has(id) === true)
+    }
+    required<HTMLInputElement>("only-changes").disabled = comparison === undefined
+  }
+
+  private changeStatement(item: ChangeItem): string {
+    switch (item.group) {
+      case "added-edges":
+      case "added-nodes":
+      case "new-unknowns":
+        return "Added in this revision."
+      case "removed-edges":
+      case "removed-nodes":
+      case "resolved-unknowns":
+        return "Only in the revision compared against: it is not in this revision, so it is not drawn in the graph."
+      case "changed-nodes":
+        return "Changed between the revisions."
+      case "changed-policy":
+        return item.side === "before" ? "Policy result changed: it is no longer evaluated in this revision." : "Policy result changed."
+    }
+  }
+
+  /** Opens one listed change: what it is, which revision it is in, and where in the source it arises. */
+  private inspectChange(item: ChangeItem, focus: boolean): void {
+    this.selectedChange = item.key
+    for (const button of required<HTMLElement>("diff-result").querySelectorAll("button[data-change]")) {
+      if (button.getAttribute("data-change") === item.key) button.setAttribute("aria-current", "true")
+      else button.removeAttribute("aria-current")
+    }
+    const blocks: Child[] = [
+      el("p", {}, this.changeStatement(item)),
+      el("p", {}, `Source: ${item.location ?? "the evidence records no location for this"}.`),
+    ]
+    if (item.side === "now" && item.kind !== "policy") {
+      const open = el("button", { type: "button", id: "change-open" }, "Open its full details")
+      open.addEventListener("click", () => {
+        if (item.kind === "edge") this.inspectEdge(item.id)
+        else this.inspectNode(item.id)
+      })
+      blocks.push(el("p", {}, open))
+    }
+    this.quiet = !focus
+    this.show(item.label, ...blocks)
+    this.quiet = false
+    this.writeHash()
   }
 }
 

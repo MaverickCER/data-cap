@@ -1,0 +1,366 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:e5917243-fe22-553a-a144-d158ed860c2b",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-01-01T00:00:00.000Z",
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "bom-ref": "data-cap-tool-68d1e6b7-d9b8-5631-8520-e1fe57bd1032",
+          "name": "data-cap",
+          "version": "0.8.2"
+        }
+      ]
+    },
+    "component": {
+      "type": "application",
+      "bom-ref": "data-cap-subject-addf272d-e45e-5115-b010-a2eff10dde8a",
+      "name": "Profile service: data flows"
+    },
+    "properties": [
+      {
+        "name": "data-cap:coverage.complete",
+        "value": "false"
+      },
+      {
+        "name": "data-cap:coverage.functionsAnalyzed",
+        "value": "5"
+      },
+      {
+        "name": "data-cap:coverage.functionsUnanalyzed",
+        "value": "0"
+      },
+      {
+        "name": "data-cap:coverage.edgesUnresolved",
+        "value": "0"
+      },
+      {
+        "name": "data-cap:coverage.unknowns",
+        "value": "1"
+      },
+      {
+        "name": "data-cap:commit",
+        "value": "0000000000000000000000000000000000000000"
+      },
+      {
+        "name": "data-cap:policy.satisfied",
+        "value": "1"
+      },
+      {
+        "name": "data-cap:policy.violated",
+        "value": "1"
+      },
+      {
+        "name": "data-cap:policy.indeterminate",
+        "value": "0"
+      },
+      {
+        "name": "data-cap:claims.verified",
+        "value": "2"
+      },
+      {
+        "name": "data-cap:claims.inferred",
+        "value": "0"
+      },
+      {
+        "name": "data-cap:claims.unobserved",
+        "value": "1"
+      },
+      {
+        "name": "data-cap:claims.contradicted",
+        "value": "1"
+      },
+      {
+        "name": "data-cap:claims.observed-only",
+        "value": "0"
+      },
+      {
+        "name": "data-cap:claims.indeterminate",
+        "value": "0"
+      },
+      {
+        "name": "data-cap:observation.scopes",
+        "value": "2"
+      },
+      {
+        "name": "data-cap:observation.skipped",
+        "value": "0"
+      }
+    ]
+  },
+  "services": [
+    {
+      "bom-ref": "data-cap-boundary-c00f3124-7bf6-52ab-bc4e-7f63220cde0a",
+      "name": "http-response",
+      "description": "Data boundary (client-response).",
+      "data": [
+        {
+          "flow": "inbound",
+          "classification": "confidential",
+          "name": "userData.user",
+          "description": "status: static; paths: (whole), email, id, name; 4 edge(s)",
+          "governance": {
+            "owners": [
+              {
+                "organization": {
+                  "name": "identity-team"
+                }
+              }
+            ]
+          },
+          "source": [
+            "urn:cdx:e5917243-fe22-553a-a144-d158ed860c2b/1#data-cap-component-b1a8d0c7-a5e5-5012-a0ac-abba7a4d0848"
+          ]
+        },
+        {
+          "flow": "unknown",
+          "classification": "confidential",
+          "name": "userData.user",
+          "description": "status: observed; paths: email, id, name, passwordHash, role; observed 8 time(s) in scenario:debug-export, scenario:profile",
+          "governance": {
+            "owners": [
+              {
+                "organization": {
+                  "name": "identity-team"
+                }
+              }
+            ]
+          },
+          "destination": [
+            "urn:cdx:e5917243-fe22-553a-a144-d158ed860c2b/1#data-cap-component-b1a8d0c7-a5e5-5012-a0ac-abba7a4d0848"
+          ]
+        }
+      ],
+      "properties": [
+        {
+          "name": "data-cap:node-kind",
+          "value": "boundary"
+        },
+        {
+          "name": "data-cap:status",
+          "value": "static"
+        },
+        {
+          "name": "data-cap:node-id",
+          "value": "boundary:boundary:code#http-response"
+        },
+        {
+          "name": "data-cap:boundary-kind",
+          "value": "client-response"
+        },
+        {
+          "name": "data-cap:data-flow",
+          "value": "{\"field\":\"userData.user\",\"flow\":\"inbound\",\"peer\":\"src/features/user.capability.ts\",\"status\":\"static\",\"paths\":[\"(whole)\",\"email\",\"id\",\"name\"],\"handling\":[],\"edges\":4}"
+        },
+        {
+          "name": "data-cap:data-flow",
+          "value": "{\"field\":\"userData.user\",\"flow\":\"unknown\",\"peer\":\"src/features/user.capability.ts\",\"status\":\"observed\",\"paths\":[\"email\",\"id\",\"name\",\"passwordHash\",\"role\"],\"handling\":[],\"scopes\":[\"scenario:debug-export\",\"scenario:profile\"],\"count\":8}"
+        }
+      ]
+    },
+    {
+      "bom-ref": "data-cap-boundary-c511189b-9614-5dc9-ad8c-cf1b7107e7a0",
+      "name": "postgres:users",
+      "description": "Data boundary (database).",
+      "data": [
+        {
+          "flow": "outbound",
+          "classification": "confidential",
+          "name": "userData.user",
+          "description": "status: declared; paths: (whole); 1 edge(s)",
+          "governance": {
+            "owners": [
+              {
+                "organization": {
+                  "name": "identity-team"
+                }
+              }
+            ]
+          },
+          "destination": [
+            "urn:cdx:e5917243-fe22-553a-a144-d158ed860c2b/1#data-cap-component-b1a8d0c7-a5e5-5012-a0ac-abba7a4d0848"
+          ]
+        }
+      ],
+      "properties": [
+        {
+          "name": "data-cap:node-kind",
+          "value": "boundary"
+        },
+        {
+          "name": "data-cap:status",
+          "value": "declared"
+        },
+        {
+          "name": "data-cap:node-id",
+          "value": "boundary:boundary#postgres:users"
+        },
+        {
+          "name": "data-cap:boundary-kind",
+          "value": "database"
+        },
+        {
+          "name": "data-cap:data-flow",
+          "value": "{\"field\":\"userData.user\",\"flow\":\"outbound\",\"peer\":\"src/features/user.capability.ts\",\"status\":\"declared\",\"paths\":[\"(whole)\"],\"handling\":[],\"edges\":1}"
+        }
+      ]
+    },
+    {
+      "bom-ref": "data-cap-component-b1a8d0c7-a5e5-5012-a0ac-abba7a4d0848",
+      "name": "src/features/user.capability.ts",
+      "description": "Capability-owning component: declares the fields listed in data-cap:field.",
+      "data": [
+        {
+          "flow": "inbound",
+          "classification": "confidential",
+          "name": "userData.user",
+          "description": "status: declared; paths: (whole); 1 edge(s)",
+          "governance": {
+            "owners": [
+              {
+                "organization": {
+                  "name": "identity-team"
+                }
+              }
+            ]
+          },
+          "source": [
+            "urn:cdx:e5917243-fe22-553a-a144-d158ed860c2b/1#data-cap-boundary-c511189b-9614-5dc9-ad8c-cf1b7107e7a0"
+          ]
+        },
+        {
+          "flow": "outbound",
+          "classification": "confidential",
+          "name": "userData.user",
+          "description": "status: static; paths: (whole), email, id, name; 4 edge(s)",
+          "governance": {
+            "owners": [
+              {
+                "organization": {
+                  "name": "identity-team"
+                }
+              }
+            ]
+          },
+          "destination": [
+            "urn:cdx:e5917243-fe22-553a-a144-d158ed860c2b/1#data-cap-boundary-c00f3124-7bf6-52ab-bc4e-7f63220cde0a"
+          ]
+        },
+        {
+          "flow": "unknown",
+          "classification": "confidential",
+          "name": "userData.user",
+          "description": "status: observed; paths: email, id, name, passwordHash, role; observed 8 time(s) in scenario:debug-export, scenario:profile",
+          "governance": {
+            "owners": [
+              {
+                "organization": {
+                  "name": "identity-team"
+                }
+              }
+            ]
+          },
+          "destination": [
+            "urn:cdx:e5917243-fe22-553a-a144-d158ed860c2b/1#data-cap-boundary-c00f3124-7bf6-52ab-bc4e-7f63220cde0a"
+          ]
+        }
+      ],
+      "properties": [
+        {
+          "name": "data-cap:node-kind",
+          "value": "component"
+        },
+        {
+          "name": "data-cap:status",
+          "value": "static"
+        },
+        {
+          "name": "data-cap:node-id",
+          "value": "src/features/user.capability.ts"
+        },
+        {
+          "name": "data-cap:field",
+          "value": "userData.user"
+        },
+        {
+          "name": "data-cap:data-flow",
+          "value": "{\"field\":\"userData.user\",\"flow\":\"inbound\",\"peer\":\"postgres:users\",\"status\":\"declared\",\"paths\":[\"(whole)\"],\"handling\":[],\"edges\":1}"
+        },
+        {
+          "name": "data-cap:data-flow",
+          "value": "{\"field\":\"userData.user\",\"flow\":\"outbound\",\"peer\":\"http-response\",\"status\":\"static\",\"paths\":[\"(whole)\",\"email\",\"id\",\"name\"],\"handling\":[],\"edges\":4}"
+        },
+        {
+          "name": "data-cap:data-flow",
+          "value": "{\"field\":\"userData.user\",\"flow\":\"unknown\",\"peer\":\"http-response\",\"status\":\"observed\",\"paths\":[\"email\",\"id\",\"name\",\"passwordHash\",\"role\"],\"handling\":[],\"scopes\":[\"scenario:debug-export\",\"scenario:profile\"],\"count\":8}"
+        }
+      ]
+    }
+  ],
+  "annotations": [
+    {
+      "bom-ref": "data-cap-annotation-35e8716c-feb3-59fa-bf84-0e60ed837bef",
+      "subjects": [
+        "data-cap-component-b1a8d0c7-a5e5-5012-a0ac-abba7a4d0848"
+      ],
+      "annotator": {
+        "component": {
+          "type": "application",
+          "name": "data-cap",
+          "version": "0.8.2"
+        }
+      },
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "text": "claim contradicted: Rule userData/no-password-to-client holds for userData.user (data-cap:status=static; trace complete)"
+    },
+    {
+      "bom-ref": "data-cap-annotation-07f8fd62-3c22-59ca-887c-e49c02112c01",
+      "subjects": [
+        "data-cap-component-b1a8d0c7-a5e5-5012-a0ac-abba7a4d0848"
+      ],
+      "annotator": {
+        "component": {
+          "type": "application",
+          "name": "data-cap",
+          "version": "0.8.2"
+        }
+      },
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "text": "claim unobserved: userData.user is sourced from database postgres:users (data-cap:status=declared; trace complete)"
+    },
+    {
+      "bom-ref": "data-cap-annotation-8f46cef0-9291-5da0-9a13-0a1f3950c92a",
+      "subjects": [
+        "data-cap-boundary-c00f3124-7bf6-52ab-bc4e-7f63220cde0a",
+        "data-cap-component-b1a8d0c7-a5e5-5012-a0ac-abba7a4d0848"
+      ],
+      "annotator": {
+        "component": {
+          "type": "application",
+          "name": "data-cap",
+          "version": "0.8.2"
+        }
+      },
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "text": "policy violated: userData/no-password-to-client for userData.user reaching http-response (data-cap:status=static)"
+    },
+    {
+      "bom-ref": "data-cap-annotation-81e66b2c-c956-5730-9779-a794aaa179d3",
+      "subjects": [
+        "data-cap-component-b1a8d0c7-a5e5-5012-a0ac-abba7a4d0848"
+      ],
+      "annotator": {
+        "component": {
+          "type": "application",
+          "name": "data-cap",
+          "version": "0.8.2"
+        }
+      },
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "text": "unknown: unresolved-call at src/app/track.ts:11:3 (data-cap:status=unknown) -- call target is not a project function. Data that entered it: userData.user: email."
+    }
+  ]
+}

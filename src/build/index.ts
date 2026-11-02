@@ -265,7 +265,7 @@ export type {
   FlowView,
 } from "../flow/flow-projections.js"
 export { DEFAULT_FLOW_SINKS, scanFlow } from "./flow-scan.js"
-export type { FlowSinkPattern, ScanFlowOptions, ScanFlowResult } from "./flow-scan.js"
+export type { FlowSinkPattern, FlowSummary, ScanFlowOptions, ScanFlowResult } from "./flow-scan.js"
 export {
   buildPolicyModel,
   collectFlowPolicyRules,
@@ -313,8 +313,16 @@ export type {
   WholeFieldToClient,
 } from "../flow/least-data.js"
 export { flowAnalysisFindings, policyFindings } from "../flow/flow-findings.js"
+export {
+  analyzeRedundantTransforms,
+  MIN_FORWARDING_HOPS,
+  redundantTransformFindings,
+} from "../flow/redundant-transform.js"
+export type { RedundantTransform, RedundantTransformKind } from "../flow/redundant-transform.js"
+export type { FlowEdgeTag, FlowEdgeTagInput, FlowVia } from "../flow/flow-model.js"
 // The isomorphic projections and standards adapters, re-exported so one import covers a build script.
 export {
+  buildCycloneDxBom,
   buildFlowGraphView,
   buildOscalAssessmentResults,
   buildProvDocument,
@@ -324,11 +332,14 @@ export {
   observationsFromOtlp,
   observationsToOtlp,
   parseEvidenceRules,
+  renderFlowCycloneDx,
   renderFlowDot,
   renderFlowMermaid,
   renderFlowText,
 } from "../evidence/index.js"
 export type {
+  CycloneDxBom,
+  CycloneDxOptions,
   EvidenceRules,
   EvidenceRulesResult,
   EvidenceRuleViolation,

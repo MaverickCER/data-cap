@@ -509,26 +509,26 @@ whole to a client, a sensitive path nothing uses.
 `--expiring-within-days <n>` sets how many days out counts as "expiring
 soon" in the Evidence Model's Lifecycle Model (default: 30).
 
-| Flag                         | Meaning                                                                                                                                                        |
-| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--evidence <path>`          | Required. Write the composed Evidence Model (ADR 0050) as JSON at this path.                                                                                   |
-| `--root <path>`              | Directory that globs resolve from (default: the current directory).                                                                                            |
-| `--include <glob>`           | Discovery glob. Repeatable. Default: every `.ts` and `.tsx` file.                                                                                              |
-| `--exclude <glob>`           | Glob to exclude from discovery. Repeatable.                                                                                                                    |
-| `--package <name>`           | Installed package to also discover a capability from, through its `dataCap.schema` `package.json` field. Repeatable.                                           |
-| `--tsconfig <path>`          | `tsconfig.json` (relative to root) whose `paths` and `baseUrl` resolve aliased imports during static analysis. Default: the `tsconfig.json` found at the root. |
-| `--no-tsconfig`              | Turn path-alias resolution off entirely.                                                                                                                       |
-| `--expiring-within-days <n>` | How many days out counts as "expiring soon" in the Lifecycle Model (default: 30).                                                                              |
-| `--strict`                   | Escalate every warning-severity finding to a hard error. Info findings never escalate.                                                                         |
-| `--strict-docs`              | Escalate only static findings (ownership, sensitivity, duplication).                                                                                           |
-| `--strict-ownership`         | Escalate only proven usage findings (abandoned capabilities, unconsumed owned fields); unresolved-consumer and indeterminate findings never escalate.          |
-| `--strict-flow`              | Escalate data-flow warnings: a sensitive field crossing a boundary, an undecided policy rule, a field sent whole to a client, an unused sensitive path.        |
-| `--flow-evidence`            | Trace each capability field through your functions, evaluate the `flowPolicy` rules your capabilities declare, and add the result to the evidence.             |
-| `--observations <path>`      | A JSON array of runtime observations (from `data-cap/observe`) to add to the evidence and compare with the static findings.                                    |
-| `--rules <path>`             | A JSON file of rules enforced over the evidence. Exits `1` if any is violated; a rule whose analysis did not run is a violation.                               |
-| `--json`                     | Emit a machine-readable report instead of formatted text.                                                                                                      |
-| `--check`                    | Verify the evidence artifact is up to date without writing anything. Exits `1` if it is stale or missing.                                                      |
-| `--help`, `-h`               | Show the help text.                                                                                                                                            |
+| Flag                         | Meaning                                                                                                                                                                        |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `--evidence <path>`          | Required. Write the composed Evidence Model (ADR 0050) as JSON at this path.                                                                                                   |
+| `--root <path>`              | Directory that globs resolve from (default: the current directory).                                                                                                            |
+| `--include <glob>`           | Discovery glob. Repeatable. Default: every `.ts` and `.tsx` file.                                                                                                              |
+| `--exclude <glob>`           | Glob to exclude from discovery. Repeatable.                                                                                                                                    |
+| `--package <name>`           | Installed package to also discover a capability from, through its `dataCap.schema` `package.json` field. Repeatable.                                                           |
+| `--tsconfig <path>`          | `tsconfig.json` (relative to root) whose `paths` and `baseUrl` resolve aliased imports during static analysis. Default: the `tsconfig.json` found at the root.                 |
+| `--no-tsconfig`              | Turn path-alias resolution off entirely.                                                                                                                                       |
+| `--expiring-within-days <n>` | How many days out counts as "expiring soon" in the Lifecycle Model (default: 30).                                                                                              |
+| `--strict`                   | Escalate every warning-severity finding to a hard error. Info findings never escalate.                                                                                         |
+| `--strict-docs`              | Escalate only static findings (ownership, sensitivity, duplication).                                                                                                           |
+| `--strict-ownership`         | Escalate only proven usage findings (abandoned capabilities, unconsumed owned fields); unresolved-consumer and indeterminate findings never escalate.                          |
+| `--strict-flow`              | Escalate data-flow warnings: a sensitive field crossing a boundary, an undecided policy rule, a field sent whole to a client, an unused sensitive path.                        |
+| `--flow-evidence`            | Trace each capability field through your functions, evaluate the `flowPolicy` rules your capabilities declare, and add the result to the evidence.                             |
+| `--observations <path>`      | Runtime observations (from `data-cap/observe`): a JSON array of events, or `{ "events": [...], "skips": [...] }`. Added to the evidence and compared with the static findings. |
+| `--rules <path>`             | A JSON file of rules enforced over the evidence. Exits `1` if any is violated; a rule whose analysis did not run is a violation.                                               |
+| `--json`                     | Emit a machine-readable report instead of formatted text.                                                                                                                      |
+| `--check`                    | Verify the evidence artifact is up to date without writing anything. Exits `1` if it is stale or missing.                                                                      |
+| `--help`, `-h`               | Show the help text.                                                                                                                                                            |
 
 ### Data flow
 
@@ -583,11 +583,98 @@ received `email` makes questions about `email` incomplete, not questions
 about `passwordHash`. A missing flow is never proof of absence unless the
 picture says it is complete.
 
-Limits worth knowing: classes and `this`, generators, default exports, barrel
-`export *` re-exports, and dynamic `import()` are not followed (they surface as
-unknowns when tracked data reaches them); operation bodies inside
-`createData`/`buildData` stay opaque by design; the analysis is syntactic, with
-no type checker, so a call whose target depends on a value's type is unresolved.
+##### What the scan follows
+
+Beyond the plain cases above, the scan follows classes (`this`, fields,
+inheritance, `super`, instances made per call), default exports and imports,
+barrel `export *` re-exports, dynamic `import("literal")`, generators (`yield`
+and what `next(x)` sends), `Map`, `Set`, `Promise` (including `resolve`/`reject`
+called later), `Reflect`, `bind`, `Object.groupBy`/`Map.groupBy`, constructor
+functions with prototypes, CommonJS `require`/`module.exports`, decorators, and
+closures and classes made per evaluation. Aliasing is followed through
+allocation sites with shared cells: a store through one name into an object
+another name holds is seen by the other, so `{ list: a.list }`, a shallow copy
+and a shared prototype all see it. Where a model approximates, it
+over-approximates (an extra flow), never misses one; each approximation is
+stated in [ADR 0074](https://github.com/MaverickCER/data-cap/blob/main/specs/decisions/0074-flow-scan-non-goals-and-irreducible-limits.md).
+Standing rules: a whole capability value handed to a sink or to an unknown
+takes every field; a closure that nothing calls but that returns tracked data
+is an `unanalyzed-function` unknown; module-state chains are re-analyzed for at
+most 6 rounds, and a project still moving data at the cap gets an unknown that
+makes every trace incomplete. The post-scan analysis is linear in the size of
+the flow, and a project of 600 files and 3000 functions is analyzed in about 7
+seconds (`test/build/flow-scale.test.ts`).
+
+The headline guarantee is **never silently safe**: a leak the scan cannot
+follow surfaces as an incomplete trace, never as a complete trace with no flow.
+`test/flow/never-silently-safe.test.ts` pins it with a 335-row catalog of ways
+to leak one field of a record, plus a property test that swaps the field for
+its sibling. Every row must end in one of three outcomes: followed to the sink
+(with the sibling clean), an honest `unknown` that names the data, or the whole
+record sent. A complete trace that misses the leak fails the suite.
+
+##### What it deliberately does not follow
+
+The scan is a **data-flow** analysis, not an information-flow one. Branching
+on tracked data (`if`, a ternary condition, a loop bound) moves none of it, and
+a comparison, `!`, `typeof`, `instanceof`, `in` and `delete` produce a value
+that carries no data: `res.json(user.email === "a@b.c")` sends a boolean. The
+keys of a tracked object are field names, which are public in the report, and
+`Object.keys` and friends answer with names, not data. These are decisions, not
+gaps, and each is pinned by a test.
+
+Some forms cannot be followed by reading source: `eval`, `new Function`,
+`new Proxy`, `with`, `setTimeout(string)`, and `import()`/`require()` of a
+computed specifier. When tracked data reaches one the result is an explicit
+`unknown` and the trace is incomplete; when none does, the scan says nothing.
+Package calls without a summary (next section) are explicit unknowns too.
+Also by design: operation bodies inside `createData`/`buildData` stay opaque,
+and the analysis is syntactic with no type checker, so a call whose target
+depends on a value's type is unresolved. The remaining honest limits (context
+insensitivity inside one evaluation, identity by allocation site, order per
+round) are listed in ADR 0074.
+
+#### Declaring package behaviour
+
+The scan reads project source only, so a call into a package that receives
+tracked data is an `unresolved-call` unknown. The only sound way past it is for
+you to say what the call does, with `flowSummaries` (`ScanFlowOptions.summaries`
+for `scanFlow`):
+
+```ts
+await generateDataArtifacts({
+  // ...
+  flowEvidence: true,
+  flowSummaries: [
+    { module: "lodash", export: "cloneDeep", effect: "pass-through" },
+    { module: "lodash", export: "pick", effect: "returns-arg", arg: 0, approximate: true },
+    {
+      module: "@acme/analytics",
+      export: "track",
+      effect: "sink",
+      boundary: { kind: "external-service", name: "analytics" },
+    },
+    { module: "validator", export: "escape", effect: "sanitizes" },
+  ],
+})
+```
+
+A `FlowSummary` is `{ module, export }` plus one effect: `pass-through` (the
+result holds everything the arguments hold), `returns-arg` with `arg` (the result
+holds what that argument holds), `sink` with a `boundary` and optional
+`handling` (the arguments leave through it), `sanitizes` (the result holds none
+of it) or `ignores` (the call neither carries nor sends data). `approximate: true`
+marks `pass-through` and `returns-arg` as an over-approximation. `export` is the
+imported name, `default`, or a dotted member such as `z.object`; the first
+matching summary wins, and a function your project defines is never replaced.
+
+Everything the scan learns from a summary has status `declared`, because it is
+your word about code the scan has not read, and it stays `declared` on every
+later hop. No summaries ship with the package: a wrong one makes the evidence
+wrong in the dangerous direction. The summaries are part of the evidence cache
+key, so changing one makes an existing evidence file stale. A summary describes
+a function, not an object it returns, so `createClient().send(user)` stays an
+unknown.
 
 #### Declaring where data must never go
 
@@ -632,31 +719,81 @@ and, per function, what it received and discarded. A path is "used" only by
 evidence specific to it, or by the whole value reaching a boundary -- handing
 the whole value to another function is not a use of every key. Each key is
 judged on its own, and one an unknown concerns is reported as not assessed.
-Redundant transformations are not detected.
 
-#### Runtime observation
+#### Recording runtime observations
 
-```ts
-import { createMemorySink, observeBoundary } from "data-cap/observe"
+Static analysis says what the code can do; observation says what a real
+execution did. `data-cap/observe` records which **field names** crossed which
+boundary -- never values, never I/O of its own (it writes to a sink you
+supply), never throwing into the code it observes. The loop, end to end:
 
-observeBoundary(sink, {
-  scope: "test:profile",
-  boundary: { kind: "client-response", name: "http-response" },
-  capability: "userData",
-  fields: [
-    ["user", "id"],
-    ["user", "email"],
-  ],
-})
-```
+1. **Record** in your tests. Wrap the call that crosses a boundary and give it
+   a scope (the test name) and a `clock`, so each event carries an `at` time:
 
-`data-cap/observe` records which **field names** crossed which boundary during
-an execution or test -- never values, never I/O of its own (it writes to a sink
-you supply), never throwing into the code it observes. Hand the events to
-`--observations` (a JSON array) or `observations:` and they are aggregated into
-the evidence and joined to the static facts as **claims**, each with supporting
-and contradicting evidence, a scope, whether its trace was complete, and a
-verification status:
+   ```ts
+   // vitest.setup.ts
+   import { afterAll, beforeAll, expect } from "vitest"
+   import { writeFileSync } from "node:fs"
+   import { createMemorySink, instrumentBoundary } from "data-cap/observe"
+
+   const memory = createMemorySink()
+   let restore = () => {}
+   beforeAll(() => {
+     restore = instrumentBoundary(
+       httpClient, // the object that owns the method
+       "respond",
+       {
+         scope: () => expect.getState().currentTestName ?? "unknown",
+         boundary: { kind: "client-response", name: "http-response" },
+         capability: "userData",
+         observe: "args",
+         clock: Date.now, // yours: the recorder never reads a clock itself
+       },
+       memory.sink,
+     )
+   })
+   afterAll(() => {
+     restore()
+     writeFileSync(
+       "observations.json",
+       JSON.stringify({ events: memory.events(), skips: memory.skips() }),
+     )
+   })
+   ```
+
+   The same shape works in jest (`afterAll`) and `node:test` (`after`): collect
+   with `createMemorySink`, write one file at the end.
+
+2. **Join** it: `data-cap --evidence docs/data.evidence.json --flow-evidence
+--observations observations.json`. The file is either a JSON array of events
+   or an object `{ "events": [...], "skips": [...] }`; the object form carries
+   what the recorder knowingly left out (below).
+
+3. **Gate** it with the CI rules (`maxContradictedClaims`,
+   `requireVerified`, `maxObservationAgeDays`, ...).
+
+The recording functions, all names-only:
+
+| Function                                             | Records                                                                                                                                                               |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `observeBoundary(sink, input)`                       | The field paths you list, once each. The primitive the others call.                                                                                                   |
+| `observeValue(sink, context, value, options?)`       | Walks a JSON-like value and records every path in it; returns `value`, so it wraps a call: `res.json(observeValue(sink, ctx, body))`.                                 |
+| `observeSink(sink, context)`                         | A one-argument pass-through that observes and returns its argument.                                                                                                   |
+| `instrumentBoundary(target, method, context, sink)`  | Wraps `target[method]` and observes its first argument, its result, or both (`context.observe`: `"args"`, `"result"`, `"both"`); returns a function that restores it. |
+| `observeResponse(sink, context, response, options?)` | The JSON body of a web `Response`/`Request`, read from a clone; never consumes the caller's body.                                                                     |
+
+The walker is bounded (`maxDepth`, `maxNodes`) and skips keys that are empty or
+contain a dot, cycles, and anything past its bounds -- but never silently. Each
+skip (reason `dotted-key`, `max-depth`, `max-nodes` or `cycle`) goes to
+`options.onSkip(reason, path)` and to `sink.skip`, and the memory sink exposes
+them as `skips()`. Time is caller-supplied (`clock` on the context), so the
+recorder stays deterministic; `ObservationEvent.at` is present only when you
+gave one.
+
+The events are aggregated into the evidence's Observation Model (first and last
+seen per scope, and `truncations`/`truncatedScopes` from the skips) and joined
+to the static facts as **claims**, each with supporting and contradicting
+evidence, a scope, whether its trace was complete, and a verification status:
 
 | Verification    | Meaning                                                                            |
 | --------------- | ---------------------------------------------------------------------------------- |
@@ -665,7 +802,15 @@ verification status:
 | `unobserved`    | Static or declared, and no observation covers it (or none were run).               |
 | `contradicted`  | An observation conflicts with a complete static trace, or a policy is violated.    |
 | `observed-only` | Seen at runtime with no static counterpart, where the static trace was incomplete. |
-| `indeterminate` | A policy could not be decided.                                                     |
+| `indeterminate` | A policy could not be decided, or the evidence near the field was truncated.       |
+
+A claim also lists `observedPaths` and a `pathCoverage` (`whole` when an
+observation covers the claim's whole path, `partial` when only narrower paths
+were seen) and `lastObservedAt`. Observing `email` neither verifies nor
+contradicts a claim scoped to `passwordHash`. A claim that would be `verified`
+becomes `indeterminate` when a contributing scope was truncated at or around its
+field (`scope.truncatedScopes` names them): absence of evidence in a cut-off
+value is not evidence.
 
 Observed behavior is evidence about the executions that ran. It does not prove
 that every static path is safe, and `unobserved` is the honest state for most
@@ -687,35 +832,54 @@ of a real system.
 }
 ```
 
-The rules are `noPolicyViolations`, `noIndeterminatePolicies`,
-`maxContradictedClaims`, `maxUnknowns`, `requireComplete`,
-`maxUnusedSensitivePaths`, `maxWholeFieldToClient`, `requireObservations`,
-`minVerifiedClaims` and `requireVerified`. A gate fails closed: a rule that
-needs analysis which did not run is a violation that says so, never a pass. A
-misspelled or mistyped rule, and a rule file with no rules, is rejected by name
-before anything runs. The same evaluator is exported as `evaluateEvidenceRules`
-and runs anywhere (it is isomorphic), so a dashboard can apply the rules to a
-stored evidence file. The GitHub Action's pull request comment reports the
-coverage, policy, claims and rule verdict whenever they are present.
+The rules, in the order they are evaluated:
 
-#### Views and standards, all projections of the evidence
+| Rule                      | Fails when                                                                                                     |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `noPolicyViolations`      | A declared policy rule is violated.                                                                            |
+| `noIndeterminatePolicies` | A declared policy rule could not be decided.                                                                   |
+| `maxContradictedClaims`   | More claims are contradicted by an observation than allowed.                                                   |
+| `maxUnknowns`             | More unknowns than allowed.                                                                                    |
+| `requireComplete`         | The flow analysis is not complete (anything was left unfollowed).                                              |
+| `maxUnusedSensitivePaths` | More sensitive paths nothing uses than allowed.                                                                |
+| `maxWholeFieldToClient`   | More multi-key fields are sent whole to a client than allowed.                                                 |
+| `requireObservations`     | No observations were ingested.                                                                                 |
+| `minVerifiedClaims`       | Fewer claims are verified than required.                                                                       |
+| `requireVerified`         | A named policy rule (`capability/rule`) has a claim that is not verified.                                      |
+| `maxRedundantTransforms`  | More redundant transformations (below) than allowed.                                                           |
+| `maxObservationAgeDays`   | A verified claim's `lastObservedAt` is older than this many days before `provenance.generatedAt`, or has none. |
+
+A gate fails closed: a rule that
+needs analysis which did not run is a violation that says so, never a pass.
+`maxObservationAgeDays` compares against the evidence's own generation time and
+never reads a clock; a verified claim with no observation time (the recorder
+had no `clock`) fails it. A misspelled or mistyped rule, and a rule file with no
+rules, is rejected by name before anything runs. The same evaluator is exported
+as `evaluateEvidenceRules` and runs anywhere (it is isomorphic), so a dashboard
+can apply the rules to a stored evidence file. The GitHub Action's pull request
+comment reports the coverage, policy, claims and rule verdict whenever they are
+present.
+
+#### Standards exports and views, all projections of the evidence
 
 Everything below is a pure function of the evidence, exported from
 `data-cap/evidence` (isomorphic: a browser, an edge function and CI run the
 same code; also re-exported from `data-cap/build`). The package draws nothing
 interactively: a renderer is yours to choose.
 
-| Function                                                                  | Produces                                                                                                                                                                                       |
-| ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `traceFlow`, `traceFlowBetween`, `filterFlow`, `diffFlow`, `observedFlow` | Trace a field upstream or downstream (optionally one path, or only the routes to one boundary); filter; compare two revisions; the part of the flow an execution actually witnessed' evidence. |
-| `buildFlowGraphView`                                                      | A stable, library-independent graph model: per-function inputs, reads, forwards, side effects, discards, callers, confidence.                                                                  |
-| `renderFlowText`                                                          | The textual equivalent of the graph, as Markdown a screen reader or a code review can read.                                                                                                    |
-| `renderFlowDot`, `renderFlowMermaid`                                      | Graphviz DOT and Mermaid; status in text as well as colour, unknowns drawn as nodes, violated policies in red.                                                                                 |
-| `buildProvDocument`                                                       | W3C PROV-JSON: lineage, with the path and status on every relation.                                                                                                                            |
-| `buildSarifLog` (`data-cap/build`)                                        | SARIF 2.1.0 results anchored at the exact code, with a `codeFlow` for a policy violation.                                                                                                      |
-| `buildOscalAssessmentResults`                                             | NIST OSCAL assessment-results. Control ids are supplied by you, never inferred; an unmapped rule is listed, not dropped.                                                                       |
-| `observationsToOtlp`/`observationsFromOtlp`                               | OpenTelemetry (OTLP/JSON) spans carrying `data_cap.*` attributes, and the reverse. No OpenTelemetry dependency.                                                                                |
-| `analyzeLeastData`                                                        | The unused-path and whole-field analysis above.                                                                                                                                                |
+| Function                                                                  | Produces                                                                                                                                                                                                                                                                                                                                                     |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `traceFlow`, `traceFlowBetween`, `filterFlow`, `diffFlow`, `observedFlow` | Trace a field upstream or downstream (optionally one path, or only the routes to one boundary); filter; compare two revisions; the part of the flow an execution actually witnessed' evidence.                                                                                                                                                               |
+| `buildFlowGraphView`                                                      | A stable, library-independent graph model: per-function inputs, reads, forwards, side effects, discards, callers, confidence.                                                                                                                                                                                                                                |
+| `renderFlowText`                                                          | The textual equivalent of the graph, as Markdown a screen reader or a code review can read.                                                                                                                                                                                                                                                                  |
+| `renderFlowDot`, `renderFlowMermaid`                                      | Graphviz DOT and Mermaid; status in text as well as colour, unknowns drawn as nodes, violated policies in red.                                                                                                                                                                                                                                               |
+| `buildProvDocument`                                                       | W3C PROV-JSON: lineage, with the path and status on every relation.                                                                                                                                                                                                                                                                                          |
+| `buildSarifLog` (`data-cap/build`)                                        | SARIF 2.1.0 results anchored at the exact code, with a `codeFlow` for a policy violation.                                                                                                                                                                                                                                                                    |
+| `buildOscalAssessmentResults`                                             | NIST OSCAL assessment-results. Control ids are supplied by you, never inferred; an unmapped rule is listed, not dropped.                                                                                                                                                                                                                                     |
+| `observationsToOtlp`/`observationsFromOtlp`                               | OpenTelemetry (OTLP/JSON) spans carrying `data_cap.*` attributes, and the reverse. Timed observations become timed spans (`data_cap.timed`); `scopeRoots` adds one root span per scope. `trustForeignTimes` lets `observationsFromOtlp` read times from spans not marked timed; unreadable times are counted in `ignoredTimes`. No OpenTelemetry dependency. |
+| `buildCycloneDxBom`, `renderFlowCycloneDx`                                | CycloneDX 1.6: one `service` per boundary and per capability-owning file, `data[]` flows with classification, status in the description and as a property; unknowns, violated policies and unverified claims as annotations. Deterministic ids. `undefined` when no flow was computed.                                                                       |
+| `analyzeRedundantTransforms`, `redundantTransformFindings`                | The redundant-transformation analysis below.                                                                                                                                                                                                                                                                                                                 |
+| `analyzeLeastData`                                                        | The unused-path and whole-field analysis above.                                                                                                                                                                                                                                                                                                              |
 
 To embed the graph in generated documentation, write the text and a diagram into one Markdown file (GitHub,
 GitLab and most documentation sites render the `mermaid` fence):
@@ -731,6 +895,29 @@ await fs.writeFile("docs/FLOW.md", `${text}\n\`\`\`mermaid\n${diagram}\`\`\`\n`)
 Every finding carries `evidence` references (flow edges, a policy result, an
 unknown), so a reader can drill from a finding to the analysis behind it.
 
+#### Redundant transformations
+
+Separate from leaks and from unused data: data that is handled more than it
+needs to be. `analyzeRedundantTransforms(flow)` is a pure function of the Flow
+Model and reports three kinds (`RedundantTransformKind`):
+
+- `round-trip`: `JSON.parse(JSON.stringify(x))`, `Object.fromEntries(Object.entries(x))`,
+  or a second copy of a value that is already a fresh copy. A single defensive
+  copy is not reported.
+- `forwarding-hop`: a chain of at least `MIN_FORWARDING_HOPS` (3) functions that
+  only receive a path and hand it to one callee.
+- `dead-derivation`: a value computed from a field and bound to a name nothing
+  reads.
+
+`redundantTransformFindings(items, flow)` turns them into
+`LEAST_DATA_REDUNDANT_TRANSFORM` findings: family `flow`, severity `info`, never
+escalated by `--strict-flow`. A finding is withheld when an unknown concerns the
+same data, so its absence is not proof that nothing is redundant. The scanner
+records what the edges cannot say as the optional `edgeTags` list of the Flow
+Model (`FlowEdgeTag`, with `FlowVia`: `copy`, `serialize-roundtrip`, `derive`);
+edge kinds and ids are unchanged. Cap the count with `maxRedundantTransforms`.
+See [ADR 0075](https://github.com/MaverickCER/data-cap/blob/main/specs/decisions/0075-redundant-transformations.md).
+
 #### The explorer
 
 [`examples/flow-explorer/`](https://github.com/MaverickCER/data-cap/tree/main/examples/flow-explorer) turns one evidence file
@@ -741,7 +928,11 @@ uses a devDependency (`@viz-js/viz`, Graphviz as WebAssembly) to draw the
 graph; the interactive layer calls `traceFlow`/`diffFlow`/`renderFlowText` from
 `data-cap/evidence` itself. It is a keyboard-operable, screen-reader-checked
 page with WCAG AA contrast, and it states on screen when the analysis is not
-complete. The example is also this feature's end-to-end regression test.
+complete. Given a baseline evidence file it compares revisions: added, removed and changed
+edges, nodes, unknowns and policy results as a list, each opening its details and source location,
+with the changes outlined in the graph. It also writes `flow.cdx.json` (CycloneDX) and
+`flow.diff.md`. The example is also this feature's end-to-end regression test, and
+`test/examples/flow-corpus.test.ts` runs the scan over all four consumer examples.
 
 ### Programmatic orchestration
 

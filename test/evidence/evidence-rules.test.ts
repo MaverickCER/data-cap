@@ -52,6 +52,8 @@ describe("parseEvidenceRules", () => {
     expect([...EVIDENCE_RULE_NAMES].sort()).toEqual(
       [
         "maxContradictedClaims",
+        "maxObservationAgeDays",
+        "maxRedundantTransforms",
         "maxUnknowns",
         "maxUnusedSensitivePaths",
         "maxWholeFieldToClient",

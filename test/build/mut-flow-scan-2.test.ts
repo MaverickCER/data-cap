@@ -262,7 +262,7 @@ describe("flow-scan: registration and indexing", () => {
       `)
     })
 
-    it("a default import is never resolved to a function", async () => {
+    it("a default import is resolved to the default-exported function", async () => {
       expect(
         await lines({
           "app/d.ts": `export default function d(v: any) { return v }\n`,
@@ -274,21 +274,24 @@ describe("flow-scan: registration and indexing", () => {
         N field features/user/user.ts userData.tags static bk= cl= src=
         N field features/user/user.ts userData.empty static bk= cl= src=
         N function app/p.ts h static bk= cl= src=3:1
-        N boundary boundary:code b0 static bk=log cl= src=
         N function app/d.ts d static bk= cl= src=1:1
         N parameter app/d.ts d.v static bk= cl= src=
         N return app/d.ts d#return static bk= cl= src=
+        N boundary boundary:code b0 static bk=log cl= src=
         N parameter app/p.ts h.res static bk= cl= src=
         N return app/p.ts h#return static bk= cl= src=
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#h p= static o=field:features/user/user.ts#userData.user h= @app/p.ts:4:13
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#h p=email static o=field:features/user/user.ts#userData.user h= @app/p.ts:4:13
-        E reads field:features/user/user.ts#userData.user->function:app/p.ts#h p=email inferred o=field:features/user/user.ts#userData.user h= @app/p.ts:4:3
-        E side-effect function:app/p.ts#h->boundary:boundary:code#b0 p=email inferred o=field:features/user/user.ts#userData.user h= @app/p.ts:4:3
+        E calls function:app/p.ts#h->function:app/d.ts#d p=- static o= h= @app/p.ts:4:11
+        E passes function:app/p.ts#h->parameter:app/d.ts#d.v p=email static o=field:features/user/user.ts#userData.user h= @app/p.ts:4:11
+        E reads parameter:app/d.ts#d.v->function:app/d.ts#d p=email static o=field:features/user/user.ts#userData.user h= @app/d.ts:1:37
+        E returns function:app/d.ts#d->return:app/d.ts#d#return p=email static o=field:features/user/user.ts#userData.user h= @app/d.ts:1:37
+        E passes return:app/d.ts#d#return->function:app/p.ts#h p=email static o=field:features/user/user.ts#userData.user h= @app/p.ts:4:3
+        E side-effect function:app/p.ts#h->boundary:boundary:code#b0 p=email static o=field:features/user/user.ts#userData.user h= @app/p.ts:4:3
         E discards function:app/p.ts#h->field:features/user/user.ts#userData.user p=id static o=field:features/user/user.ts#userData.user h= @
         E discards function:app/p.ts#h->field:features/user/user.ts#userData.user p=name static o=field:features/user/user.ts#userData.user h= @
         E discards function:app/p.ts#h->field:features/user/user.ts#userData.user p=passwordHash static o=field:features/user/user.ts#userData.user h= @
-        E discards function:app/p.ts#h->field:features/user/user.ts#userData.user p=role static o=field:features/user/user.ts#userData.user h= @
-        U unresolved-call app/p.ts:4:11 subject=function:app/p.ts#h detail=call target is not a project function data=field:features/user/user.ts#userData.user/email"
+        E discards function:app/p.ts#h->field:features/user/user.ts#userData.user p=role static o=field:features/user/user.ts#userData.user h= @"
       `)
     })
 
@@ -351,7 +354,7 @@ describe("flow-scan: registration and indexing", () => {
       `)
     })
 
-    it("a namespace import resolves members and a missing member is an unresolved call", async () => {
+    it("a namespace import resolves members, also as a value, and a missing member is an unresolved call", async () => {
       expect(
         await lines({
           "app/util.ts": `export function pick(v: any) { return v.name }\n`,
@@ -380,13 +383,12 @@ describe("flow-scan: registration and indexing", () => {
         E side-effect function:app/p.ts#h->boundary:boundary:code#b0 p=name static o=field:features/user/user.ts#userData.user h= @app/p.ts:4:3
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#h p= inferred o=field:features/user/user.ts#userData.user h= @app/p.ts:5:3
         E side-effect function:app/p.ts#h->boundary:boundary:code#b1 p= inferred o=field:features/user/user.ts#userData.user h= @app/p.ts:5:3
-        E side-effect function:app/p.ts#h->boundary:boundary:code#b2 p= inferred o=field:features/user/user.ts#userData.user h= @app/p.ts:7:3
+        E side-effect function:app/p.ts#h->boundary:boundary:code#b2 p=name static o=field:features/user/user.ts#userData.user h= @app/p.ts:7:3
         E discards function:app/util.ts#pick->field:features/user/user.ts#userData.user p=id static o=field:features/user/user.ts#userData.user h= @
         E discards function:app/util.ts#pick->field:features/user/user.ts#userData.user p=email static o=field:features/user/user.ts#userData.user h= @
         E discards function:app/util.ts#pick->field:features/user/user.ts#userData.user p=passwordHash static o=field:features/user/user.ts#userData.user h= @
         E discards function:app/util.ts#pick->field:features/user/user.ts#userData.user p=role static o=field:features/user/user.ts#userData.user h= @
-        U unresolved-call app/p.ts:5:11 subject=function:app/p.ts#h detail=call target is not a project function data=field:features/user/user.ts#userData.user/
-        U unresolved-call app/p.ts:7:11 subject=function:app/p.ts#h detail=call target is not a project function data=field:features/user/user.ts#userData.user/"
+        U unresolved-call app/p.ts:5:11 subject=function:app/p.ts#h detail=call target is not a project function data=field:features/user/user.ts#userData.user/"
       `)
     })
   })
@@ -563,7 +565,7 @@ describe("flow-scan: registration and indexing", () => {
       `)
     })
 
-    it("a star re-export and a namespace re-export are not followed", async () => {
+    it("a star re-export is followed to the function it re-exports", async () => {
       expect(
         await lines({
           "app/a.ts": `export function real(v: any) { return v.id }\n`,
@@ -576,16 +578,23 @@ describe("flow-scan: registration and indexing", () => {
         N field features/user/user.ts userData.tags static bk= cl= src=
         N field features/user/user.ts userData.empty static bk= cl= src=
         N function app/p.ts h static bk= cl= src=3:1
-        N boundary boundary:code b0 static bk=log cl= src=
         N function app/a.ts real static bk= cl= src=1:1
         N parameter app/a.ts real.v static bk= cl= src=
         N return app/a.ts real#return static bk= cl= src=
+        N boundary boundary:code b0 static bk=log cl= src=
         N parameter app/p.ts h.res static bk= cl= src=
         N return app/p.ts h#return static bk= cl= src=
         E reads field:features/user/user.ts#userData.user->function:app/p.ts#h p= static o=field:features/user/user.ts#userData.user h= @app/p.ts:4:16
-        E reads field:features/user/user.ts#userData.user->function:app/p.ts#h p= inferred o=field:features/user/user.ts#userData.user h= @app/p.ts:4:3
-        E side-effect function:app/p.ts#h->boundary:boundary:code#b0 p= inferred o=field:features/user/user.ts#userData.user h= @app/p.ts:4:3
-        U unresolved-call app/p.ts:4:11 subject=function:app/p.ts#h detail=call target is not a project function data=field:features/user/user.ts#userData.user/"
+        E calls function:app/p.ts#h->function:app/a.ts#real p=- static o= h= @app/p.ts:4:11
+        E passes function:app/p.ts#h->parameter:app/a.ts#real.v p= static o=field:features/user/user.ts#userData.user h= @app/p.ts:4:11
+        E reads parameter:app/a.ts#real.v->function:app/a.ts#real p=id static o=field:features/user/user.ts#userData.user h= @app/a.ts:1:39
+        E returns function:app/a.ts#real->return:app/a.ts#real#return p=id static o=field:features/user/user.ts#userData.user h= @app/a.ts:1:32
+        E passes return:app/a.ts#real#return->function:app/p.ts#h p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:4:3
+        E side-effect function:app/p.ts#h->boundary:boundary:code#b0 p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:4:3
+        E discards function:app/a.ts#real->field:features/user/user.ts#userData.user p=name static o=field:features/user/user.ts#userData.user h= @
+        E discards function:app/a.ts#real->field:features/user/user.ts#userData.user p=email static o=field:features/user/user.ts#userData.user h= @
+        E discards function:app/a.ts#real->field:features/user/user.ts#userData.user p=passwordHash static o=field:features/user/user.ts#userData.user h= @
+        E discards function:app/a.ts#real->field:features/user/user.ts#userData.user p=role static o=field:features/user/user.ts#userData.user h= @"
       `)
     })
 

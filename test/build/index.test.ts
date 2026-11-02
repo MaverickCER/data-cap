@@ -116,6 +116,8 @@ describe("build public barrel exports", () => {
       "renderFlowMermaid",
       "buildProvDocument",
       "buildOscalAssessmentResults",
+      "buildCycloneDxBom",
+      "renderFlowCycloneDx",
       "observationsToOtlp",
       "observationsFromOtlp",
       "evaluateEvidenceRules",

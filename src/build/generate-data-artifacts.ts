@@ -45,16 +45,20 @@ import { DEFAULT_EXPIRING_WITHIN_DAYS } from "./expiring-window.js"
 import { buildLifecycleModel } from "./lifecycle-model.js"
 import { buildEvidenceModel } from "./evidence-model.js"
 import { analyzeLeastData, leastDataFindings } from "../flow/least-data.js"
+import {
+  analyzeRedundantTransforms,
+  redundantTransformFindings,
+} from "../flow/redundant-transform.js"
 import { flowAnalysisFindings, policyFindings } from "../flow/flow-findings.js"
 import { buildFlowModel } from "../flow/flow-model.js"
 import type { FlowModel } from "../flow/flow-model.js"
 import { scanFlow } from "./flow-scan.js"
-import type { FlowSinkPattern } from "./flow-scan.js"
+import type { FlowSinkPattern, FlowSummary } from "./flow-scan.js"
 import { buildObservationModel } from "../flow/observation-model.js"
 import type { ObservationModel } from "../flow/observation-model.js"
 import { buildPolicyModel, collectFlowPolicyRules } from "../flow/policy-model.js"
 import type { PolicyModel } from "../flow/policy-model.js"
-import type { ObservationEvent } from "../observe/index.js"
+import type { ObservationEvent, ObservationSkip } from "../observe/index.js"
 import type { EvidenceModel } from "./evidence-model.js"
 import { PACKAGE_VERSION } from "./package-version.js"
 import { DataProjectGenerationError } from "./errors.js"
@@ -105,6 +109,8 @@ export interface GenerateDataArtifactsOptions {
   readonly flowEvidence?: boolean | undefined
   /** Sinks the flow pass recognises instead of the defaults (`DEFAULT_FLOW_SINKS`). Only meaningful with `flowEvidence`. */
   readonly flowSinks?: readonly FlowSinkPattern[] | undefined
+  /** What calls into packages do, declared by the project (`FlowSummary`): without one, such a call that receives tracked data is an explicit unknown. Only meaningful with `flowEvidence`. */
+  readonly flowSummaries?: readonly FlowSummary[] | undefined
   /**
    * Runtime observations already collected through `data-cap/observe`
    * (ADR 0072), ingested into the Evidence Model's `observation` and, with
@@ -112,6 +118,11 @@ export interface GenerateDataArtifactsOptions {
    * this library never opens a file of its own.
    */
   readonly observations?: readonly ObservationEvent[] | undefined
+  /**
+   * What the recorder left out while collecting `observations` (`createMemorySink().skips()`), so a claim that
+   * rests on an incompletely recorded scope reads `indeterminate` rather than `verified`.
+   */
+  readonly observationSkips?: readonly ObservationSkip[] | undefined
   /** The commit SHA this run's evidence was generated against, stamped onto `EvidenceModel.provenance.commit`. Caller-supplied only -- `data-cap` never shells out to `git` itself, so omitting this records a stated absence, never a guess. */
   readonly commit?: string
   /** The single instant every time-sensitive computation in this run shares (`EvidenceModel.provenance.generatedAt`, Lifecycle Model's `daysRemaining`), so none of them can disagree about "now". Defaults to the wall clock at the moment this function is called. */
@@ -399,6 +410,7 @@ export async function computeDataArtifacts(
       tsconfig: options.tsconfig,
       packages,
       sinks: options.flowSinks,
+      summaries: options.flowSummaries,
     })
     flowPassWarnings.push(...scanned.warnings)
     flowModel = buildFlowModel(scanned.input)
@@ -406,11 +418,14 @@ export async function computeDataArtifacts(
     flowPassFindings = [
       ...policyFindings(policyModel, flowModel),
       ...leastDataFindings(analyzeLeastData({ capability: inventory, flow: flowModel })),
+      ...redundantTransformFindings(analyzeRedundantTransforms(flowModel), flowModel),
       ...flowAnalysisFindings(flowModel),
     ]
   }
   const observationModel: ObservationModel | undefined =
-    options.observations === undefined ? undefined : buildObservationModel(options.observations)
+    options.observations === undefined
+      ? undefined
+      : buildObservationModel(options.observations, options.observationSkips)
 
   let documentation: GenerateDocumentationResult | undefined
   if (options.docs !== undefined) {

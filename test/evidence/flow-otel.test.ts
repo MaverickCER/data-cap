@@ -249,3 +249,233 @@ describe("observationsFromOtlp", () => {
     expect(JSON.stringify(observationsFromOtlp(payload))).not.toContain("secret@example.com")
   })
 })
+
+describe("observationsToOtlp, with times and scope roots", () => {
+  const timedEvents: ObservationEvent[] = [
+    {
+      scope: "s1",
+      boundary: { kind: "log", name: "audit" },
+      field: "userData.user.email",
+      at: 1000,
+    },
+    {
+      scope: "s1",
+      boundary: { kind: "log", name: "audit" },
+      field: "userData.user.email",
+      at: 5000,
+    },
+    { scope: "s2", boundary: { kind: "database", name: "db" }, field: "userData.user.id" },
+  ]
+  const timed = buildObservationModel(timedEvents)
+
+  it("emits exactly the root and observation spans, with the times and statuses of each", () => {
+    const traces = observationsToOtlp({ observation: timed, provenance }, { scopeRoots: true })!
+    expect(traces.resourceSpans[0]!.scopeSpans[0]!.spans).toMatchInlineSnapshot(`
+      [
+        {
+          "attributes": [
+            {
+              "key": "data_cap.scope",
+              "value": {
+                "stringValue": "s1",
+              },
+            },
+            {
+              "key": "data_cap.scope.root",
+              "value": {
+                "stringValue": "true",
+              },
+            },
+            {
+              "key": "data_cap.timed",
+              "value": {
+                "stringValue": "true",
+              },
+            },
+          ],
+          "endTimeUnixNano": "5000000000",
+          "kind": 1,
+          "name": "data-cap.scope",
+          "spanId": "3826a5b9ac9250c3",
+          "startTimeUnixNano": "1000000000",
+          "status": {
+            "code": 1,
+          },
+          "traceId": "a2ae59ee17915464b98d7d2a31604a6f",
+        },
+        {
+          "attributes": [
+            {
+              "key": "data_cap.scope",
+              "value": {
+                "stringValue": "s2",
+              },
+            },
+            {
+              "key": "data_cap.scope.root",
+              "value": {
+                "stringValue": "true",
+              },
+            },
+          ],
+          "endTimeUnixNano": "1767225600000000000",
+          "kind": 1,
+          "name": "data-cap.scope",
+          "spanId": "019ed799c55959ae",
+          "startTimeUnixNano": "1767225600000000000",
+          "status": {
+            "code": 1,
+          },
+          "traceId": "50028a566cd6539f872d1924d91661ce",
+        },
+        {
+          "attributes": [
+            {
+              "key": "data_cap.boundary.kind",
+              "value": {
+                "stringValue": "log",
+              },
+            },
+            {
+              "key": "data_cap.boundary.name",
+              "value": {
+                "stringValue": "audit",
+              },
+            },
+            {
+              "key": "data_cap.count",
+              "value": {
+                "intValue": "2",
+              },
+            },
+            {
+              "key": "data_cap.field",
+              "value": {
+                "stringValue": "userData.user.email",
+              },
+            },
+            {
+              "key": "data_cap.scope",
+              "value": {
+                "stringValue": "s1",
+              },
+            },
+            {
+              "key": "data_cap.timed",
+              "value": {
+                "stringValue": "true",
+              },
+            },
+          ],
+          "endTimeUnixNano": "5000000000",
+          "kind": 1,
+          "name": "data-cap.boundary.crossing",
+          "parentSpanId": "3826a5b9ac9250c3",
+          "spanId": "ca162d4155c4549b",
+          "startTimeUnixNano": "1000000000",
+          "status": {
+            "code": 1,
+          },
+          "traceId": "a2ae59ee17915464b98d7d2a31604a6f",
+        },
+        {
+          "attributes": [
+            {
+              "key": "data_cap.boundary.kind",
+              "value": {
+                "stringValue": "database",
+              },
+            },
+            {
+              "key": "data_cap.boundary.name",
+              "value": {
+                "stringValue": "db",
+              },
+            },
+            {
+              "key": "data_cap.count",
+              "value": {
+                "intValue": "1",
+              },
+            },
+            {
+              "key": "data_cap.field",
+              "value": {
+                "stringValue": "userData.user.id",
+              },
+            },
+            {
+              "key": "data_cap.scope",
+              "value": {
+                "stringValue": "s2",
+              },
+            },
+          ],
+          "endTimeUnixNano": "1767225600000000000",
+          "kind": 1,
+          "name": "data-cap.boundary.crossing",
+          "parentSpanId": "019ed799c55959ae",
+          "spanId": "c9044fc62c915197",
+          "startTimeUnixNano": "1767225600000000000",
+          "status": {
+            "code": 1,
+          },
+          "traceId": "50028a566cd6539f872d1924d91661ce",
+        },
+      ]
+    `)
+  })
+
+  it("does not call an observation timed when only one end of its time is known", () => {
+    const [first] = timed.observations
+    const half = {
+      ...timed,
+      observations: [
+        { ...first!, firstSeen: "1970-01-01T00:00:01.000Z", lastSeen: undefined },
+        { ...first!, id: "other", firstSeen: undefined, lastSeen: "1970-01-01T00:00:05.000Z" },
+      ],
+    } as unknown as typeof timed
+    const spans = observationsToOtlp({ observation: half, provenance })!.resourceSpans[0]!
+      .scopeSpans[0]!.spans
+    expect(spans).toHaveLength(2)
+    for (const span of spans) expect(attr(span, "data_cap.timed")).toBeUndefined()
+  })
+})
+
+describe("observationsFromOtlp, with times it cannot read", () => {
+  const span = (start: string, end: string) => ({
+    resourceSpans: [
+      {
+        scopeSpans: [
+          {
+            spans: [
+              {
+                startTimeUnixNano: start,
+                endTimeUnixNano: end,
+                attributes: [
+                  { key: "data_cap.scope", value: { stringValue: "s" } },
+                  { key: "data_cap.field", value: { stringValue: "userData.user.email" } },
+                  { key: "data_cap.boundary.kind", value: { stringValue: "log" } },
+                  { key: "data_cap.boundary.name", value: { stringValue: "audit" } },
+                  { key: "data_cap.count", value: { intValue: "2" } },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  })
+
+  it("counts a time that is not wholly decimal digits as ignored and still reads the one that is", () => {
+    const read = observationsFromOtlp(span("abc123", "5000000"), { trustForeignTimes: true })
+    expect(read.ignoredTimes).toBe(1)
+    expect(read.events.map((event) => event.at)).toEqual([undefined, 5])
+  })
+
+  it("reads two decimal times as milliseconds", () => {
+    const read = observationsFromOtlp(span("2000000", "5000000"), { trustForeignTimes: true })
+    expect(read.ignoredTimes).toBeUndefined()
+    expect(read.events.map((event) => event.at)).toEqual([2, 5])
+  })
+})

@@ -2,12 +2,24 @@ import { describe, expect, it } from "vitest"
 import {
   accessDynamic,
   accessKey,
+  ANY_KEY,
   approximate,
   atomVal,
+  dropHandles,
   EMPTY_VAL,
   flattenAtoms,
+  GENERATOR_HANDLE,
+  handleVal,
+  handlesOf,
+  isHandleKey,
+  MAP_KEYS,
+  MAP_VALUES,
   mergeVals,
   objectVal,
+  OPAQUE_ALLOC,
+  PROMISE_HANDLE,
+  REJECT_HANDLE,
+  RESOLVE_HANDLE,
   signatureOf,
   withEntry,
 } from "../../src/build/flow-values.js"
@@ -177,5 +189,69 @@ describe("signatureOf", () => {
     let val: Val = atomVal(atom(["leaf"]))
     for (let i = 0; i < 40; i += 1) val = objectVal({ n: val }, [])
     expect(signatureOf(val).length).toBeLessThan(5000)
+  })
+})
+
+describe("the keys the analysis keeps for itself", () => {
+  it("are fixed strings that no property a program names can equal", () => {
+    expect([MAP_KEYS, MAP_VALUES, ANY_KEY]).toEqual(["\u0000keys", "\u0000values", "\u0000any"])
+    expect([PROMISE_HANDLE, RESOLVE_HANDLE, REJECT_HANDLE, GENERATOR_HANDLE]).toEqual([
+      "\u0000promise:",
+      "\u0000resolve:",
+      "\u0000reject:",
+      "\u0000generator:",
+    ])
+    expect(OPAQUE_ALLOC).toBe("?")
+    const all = [MAP_KEYS, MAP_VALUES, ANY_KEY, PROMISE_HANDLE, RESOLVE_HANDLE, REJECT_HANDLE]
+    expect(new Set([...all, GENERATOR_HANDLE]).size).toBe(7)
+  })
+
+  it.each([PROMISE_HANDLE, RESOLVE_HANDLE, REJECT_HANDLE, GENERATOR_HANDLE])(
+    "recognises a handle of kind %j and reads its id back",
+    (prefix) => {
+      expect(isHandleKey(`${prefix}7`)).toBe(true)
+      expect(handlesOf(handleVal(prefix, "7"), prefix)).toEqual(["7"])
+      expect(dropHandles(handleVal(prefix, "7")).props.size).toBe(0)
+    },
+  )
+
+  it("does not take a map's keys, a record's any-key or a plain property for a handle", () => {
+    for (const key of [MAP_KEYS, MAP_VALUES, ANY_KEY, "promise:1", "plain", ""])
+      expect(isHandleKey(key)).toBe(false)
+  })
+})
+
+describe("accessDynamic over several objects", () => {
+  it("lists the sites of the objects it may read, sorted and once", () => {
+    const child = (id: string): Val => ({ ...EMPTY_VAL, alloc: [id] })
+    const holder: Val = {
+      ...EMPTY_VAL,
+      props: new Map([
+        ["x", child("b")],
+        ["y", child("a")],
+        ["z", child("b")],
+      ]),
+    }
+    expect(accessDynamic(holder).alloc).toEqual(["a", "b"])
+  })
+})
+
+describe("signatureOf, with several sites", () => {
+  it("tells two sites from the one site whose name is the two run together", () => {
+    const two: Val = { ...EMPTY_VAL, alloc: ["a", "b"] }
+    const one: Val = { ...EMPTY_VAL, alloc: ["ab"] }
+    expect(signatureOf(two)).not.toBe(signatureOf(one))
+  })
+})
+
+describe("mergeVals, with atoms that differ only in being declared", () => {
+  it("keeps both", () => {
+    const merged = mergeVals(atomVal(atom(["a"])), atomVal(atom(["a"], { declared: true })))
+    expect(flattenAtoms(merged)).toHaveLength(2)
+  })
+
+  it("keeps one of two atoms that are the same", () => {
+    const merged = mergeVals(atomVal(atom(["a"])), atomVal(atom(["a"])))
+    expect(flattenAtoms(merged)).toHaveLength(1)
   })
 })

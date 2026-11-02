@@ -5,6 +5,7 @@
  */
 import { instance } from "@viz-js/viz"
 import {
+  buildCycloneDxBom,
   buildFlowGraphView,
   buildOscalAssessmentResults,
   buildProvDocument,
@@ -16,6 +17,7 @@ import {
 } from "data-cap/build"
 import type { ReportResult } from "data-cap/build"
 import { recordScenario } from "../../src/instrumentation.js"
+import { compareEvidence, renderComparisonMarkdown } from "../explorer/compare.js"
 import { buildExplorerHtml } from "./explorer.js"
 import { CONTROLS, runPipeline } from "./pipeline.js"
 
@@ -43,7 +45,8 @@ export async function computeOutputs(): Promise<Outputs> {
   const prov = buildProvDocument(evidence)
   const oscal = buildOscalAssessmentResults(evidence, { controls: CONTROLS, title: "Profile service: data-flow assessment" })
   const otlp = observationsToOtlp(evidence, { serviceName: "profile-service" })
-  if (dot === undefined || mermaid === undefined || text === undefined || prov === undefined || oscal === undefined || otlp === undefined || evidence.finding === undefined) {
+  const cyclonedx = buildCycloneDxBom(evidence, { name: "Profile service: data flows" })
+  if (cyclonedx === undefined || dot === undefined || mermaid === undefined || text === undefined || prov === undefined || oscal === undefined || otlp === undefined || evidence.finding === undefined) {
     throw new Error("the example's evidence is missing a sub-model; the flow analysis did not run")
   }
 
@@ -65,6 +68,11 @@ export async function computeOutputs(): Promise<Outputs> {
       "flow.sarif.json": json(buildSarifLog(evidence.finding, { flow: evidence.flow })),
       "flow.oscal.json": json(oscal),
       "flow.otlp.json": json(otlp),
+      "flow.cdx.json": json(cyclonedx),
+      // The earlier revision, committed so the explorer's comparison can be tried by loading it, and the
+      // comparison itself as text (a pull request comment, a screen reader).
+      "baseline.evidence.json": json(before.evidence),
+      "flow.diff.md": `${renderComparisonMarkdown(compareEvidence(before.evidence, evidence), "the earlier revision (docs/baseline.evidence.json)")}\n`,
       "explorer.html": html,
     },
   }

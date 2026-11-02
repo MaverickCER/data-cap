@@ -19,6 +19,7 @@
 import type { EvidenceModel } from "../build/evidence-model.js"
 import type { EvidenceRef } from "../flow/claims-model.js"
 import { analyzeLeastData } from "../flow/least-data.js"
+import { analyzeRedundantTransforms } from "../flow/redundant-transform.js"
 
 /** The rules a gate can enforce. Each is optional; at least one is required. */
 export interface EvidenceRules {
@@ -42,6 +43,14 @@ export interface EvidenceRules {
   readonly minVerifiedClaims?: number
   /** Each named policy rule (by id) has every one of its claims verified -- held statically and corroborated at runtime. */
   readonly requireVerified?: readonly string[]
+  /**
+   * Every verified claim was last observed no more than this many days before the evidence was generated
+   * (`provenance.generatedAt`; the check never reads a clock). Fails closed: a verified claim with no observation
+   * time (the recorder was given no `clock`) is a violation, not a skip.
+   */
+  readonly maxObservationAgeDays?: number
+  /** At most this many redundant transformations (a needless round trip, a forwarding chain, a derivation nobody reads; ADR 0075). */
+  readonly maxRedundantTransforms?: number
 }
 
 /** Every rule name the evaluator understands, in the order they are evaluated. */
@@ -56,6 +65,8 @@ export const EVIDENCE_RULE_NAMES = [
   "requireObservations",
   "minVerifiedClaims",
   "requireVerified",
+  "maxRedundantTransforms",
+  "maxObservationAgeDays",
 ] as const satisfies readonly (keyof EvidenceRules)[]
 
 /** One reason the gate did not pass. */
@@ -93,7 +104,37 @@ const COUNT_RULES: ReadonlySet<string> = new Set([
   "maxUnusedSensitivePaths",
   "maxWholeFieldToClient",
   "minVerifiedClaims",
+  "maxObservationAgeDays",
+  "maxRedundantTransforms",
 ])
+
+/** One `name: setting` pair of a rules file: its value when it is a valid setting of a known rule, else the reason it is not. */
+function readRuleSetting(
+  name: string,
+  setting: unknown,
+): { readonly ok: true; readonly value: unknown } | { readonly ok: false; readonly error: string } {
+  if (BOOLEAN_RULES.has(name)) {
+    return typeof setting === "boolean"
+      ? { ok: true, value: setting }
+      : { ok: false, error: `"${name}" must be true or false.` }
+  }
+  if (COUNT_RULES.has(name)) {
+    return typeof setting === "number" && setting % 1 === 0 && setting >= 0
+      ? { ok: true, value: setting }
+      : { ok: false, error: `"${name}" must be a non-negative whole number.` }
+  }
+  if (name === "requireVerified") {
+    return Array.isArray(setting) &&
+      setting.length > 0 &&
+      setting.every((item) => typeof item === "string" && item.length > 0)
+      ? { ok: true, value: setting }
+      : { ok: false, error: `"requireVerified" must be a non-empty array of policy rule ids.` }
+  }
+  return {
+    ok: false,
+    error: `"${name}" is not a rule. Rules are: ${EVIDENCE_RULE_NAMES.join(", ")}.`,
+  }
+}
 
 /** Parses a rules document (JSON text), rejecting anything it does not fully understand. */
 export function parseEvidenceRules(text: string): ParsedEvidenceRules {
@@ -109,23 +150,9 @@ export function parseEvidenceRules(text: string): ParsedEvidenceRules {
   const errors: string[] = []
   const rules: Record<string, unknown> = {}
   for (const [name, setting] of Object.entries(value)) {
-    if (BOOLEAN_RULES.has(name)) {
-      if (typeof setting === "boolean") rules[name] = setting
-      else errors.push(`"${name}" must be true or false.`)
-    } else if (COUNT_RULES.has(name)) {
-      if (typeof setting === "number" && setting % 1 === 0 && setting >= 0) rules[name] = setting
-      else errors.push(`"${name}" must be a non-negative whole number.`)
-    } else if (name === "requireVerified") {
-      if (
-        Array.isArray(setting) &&
-        setting.length > 0 &&
-        setting.every((item) => typeof item === "string" && item.length > 0)
-      )
-        rules[name] = setting
-      else errors.push(`"requireVerified" must be a non-empty array of policy rule ids.`)
-    } else {
-      errors.push(`"${name}" is not a rule. Rules are: ${EVIDENCE_RULE_NAMES.join(", ")}.`)
-    }
+    const read = readRuleSetting(name, setting)
+    if (read.ok) rules[name] = read.value
+    else errors.push(read.error)
   }
   if (errors.length === 0 && Object.keys(rules).length === 0) {
     errors.push(
@@ -138,14 +165,18 @@ export function parseEvidenceRules(text: string): ParsedEvidenceRules {
 /** What the evaluator reads from the Evidence Model. */
 export type EvidenceRulesInput = Pick<
   EvidenceModel,
-  "capability" | "flow" | "policy" | "claims" | "observation" | "computed"
+  "capability" | "flow" | "policy" | "claims" | "observation" | "computed" | "provenance"
 >
 
 /** The ceiling a `max*` rule sets. Only read where that rule is set, so the fallback (no ceiling) is never the answer. */
 function ceiling(
   rules: EvidenceRules,
   name:
-    "maxContradictedClaims" | "maxUnknowns" | "maxUnusedSensitivePaths" | "maxWholeFieldToClient",
+    | "maxContradictedClaims"
+    | "maxUnknowns"
+    | "maxUnusedSensitivePaths"
+    | "maxWholeFieldToClient"
+    | "maxRedundantTransforms",
 ): number {
   return rules[name] ?? Number.POSITIVE_INFINITY
 }
@@ -294,6 +325,25 @@ function checkMaxWholeFieldToClient(context: RuleContext): void {
   }
 }
 
+function checkMaxRedundantTransforms(context: RuleContext): void {
+  const { flow } = context.evidence
+  if (flow === undefined) {
+    failNotComputed(context, "maxRedundantTransforms")
+    return
+  }
+  const found = analyzeRedundantTransforms(flow)
+  if (found.length > ceiling(context.rules, "maxRedundantTransforms")) {
+    context.fail(
+      "maxRedundantTransforms",
+      `${found.length} redundant transformation(s) (${found.map((item) => `${item.kind} of ${item.field}`).join(", ")}); at most ${context.rules.maxRedundantTransforms} allowed.`,
+      found.flatMap((item) => [
+        { model: "flow" as const, id: item.fieldNode },
+        ...item.edges.map((id) => ({ model: "flow" as const, id })),
+      ]),
+    )
+  }
+}
+
 function checkRequireObservations(context: RuleContext): void {
   if (context.rules.requireObservations !== true) return
   const { observation } = context.evidence
@@ -331,6 +381,45 @@ function checkRequireVerified(context: RuleContext): void {
         "requireVerified",
         `Rule ${ruleId} is ${claim.verification} for ${claim.subject}, not verified.`,
         [...claim.supporting, ...claim.contradicting],
+      )
+    }
+  }
+}
+
+const DAY_MS = 86_400_000
+
+function checkMaxObservationAgeDays(context: RuleContext): void {
+  const { claims, provenance } = context.evidence
+  if (claims === undefined) {
+    failNotComputed(context, "maxObservationAgeDays")
+    return
+  }
+  const verified = claims.claims.filter((claim) => claim.verification === "verified")
+  if (verified.length === 0) return
+  const days = context.rules.maxObservationAgeDays ?? 0
+  const generated = Date.parse(provenance.generatedAt)
+  if (Number.isNaN(generated)) {
+    context.fail(
+      "maxObservationAgeDays",
+      `The generation time "${provenance.generatedAt}" is not a valid instant, so observation age cannot be judged.`,
+    )
+    return
+  }
+  const oldest = generated - days * DAY_MS
+  for (const claim of verified) {
+    // No time at all and a time that is not an instant are the same to a rule that judges age: `Date.parse` gives `NaN` for both.
+    const seen = Date.parse(String(claim.lastObservedAt))
+    if (Number.isNaN(seen)) {
+      context.fail(
+        "maxObservationAgeDays",
+        `${claim.statement} is verified but has no observation time, so its age cannot be judged; give the recorder a clock.`,
+        claim.supporting,
+      )
+    } else if (seen < oldest) {
+      context.fail(
+        "maxObservationAgeDays",
+        `${claim.statement} was last observed at ${claim.lastObservedAt}, more than ${days} day(s) before the evidence was generated (${provenance.generatedAt}).`,
+        claim.supporting,
       )
     }
   }
@@ -380,6 +469,12 @@ export function evaluateEvidenceRules(
     },
     requireVerified: () => {
       checkRequireVerified(context)
+    },
+    maxRedundantTransforms: () => {
+      checkMaxRedundantTransforms(context)
+    },
+    maxObservationAgeDays: () => {
+      checkMaxObservationAgeDays(context)
     },
   }
 

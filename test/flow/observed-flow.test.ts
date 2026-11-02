@@ -146,3 +146,120 @@ describe("observedFlow", () => {
     expect(a.nodes.map((n) => n.id)).toEqual([...a.nodes.map((n) => n.id)].sort())
   })
 })
+
+describe("observedFlow, with names that more than one node has", () => {
+  const OTHER = "src/other.ts"
+  const fieldIn = (scope: string): FlowNodeInput => ({
+    kind: "field",
+    scope,
+    name: "userData.user",
+    status: "static",
+  })
+  const fnIn = (scope: string, name: string): FlowNodeInput => ({
+    kind: "function",
+    scope,
+    name,
+    status: "static",
+  })
+  const route = (
+    scope: string,
+    fnName: string,
+    boundaryScope: string,
+    boundaryName: string,
+  ): FlowEdgeInput[] => {
+    const origin = flowNodeId("field", scope, "userData.user")
+    const through = flowNodeId("function", scope, fnName)
+    return [
+      { kind: "reads", from: origin, to: through, status: "static", origin, path: ["email"] },
+      {
+        kind: "side-effect",
+        from: through,
+        to: flowNodeId("boundary", boundaryScope, boundaryName),
+        status: "static",
+        origin,
+        path: ["email"],
+      },
+    ]
+  }
+  const http = (
+    boundaryScope: string,
+    boundaryKind?: "client-response" | "log",
+  ): FlowNodeInput => ({
+    kind: "boundary",
+    scope: boundaryScope,
+    name: "http",
+    status: "static",
+    ...(boundaryKind === undefined ? {} : { boundaryKind }),
+  })
+  const observed = (kind: "client-response" | "log") =>
+    buildObservationModel([seen("s", "userData.user.email", "http", kind)])
+
+  it("lights the route of every field that has the observed name", () => {
+    const two = buildFlowModel({
+      nodes: [
+        fieldIn(FILE),
+        fieldIn(OTHER),
+        fnIn(FILE, "a"),
+        fnIn(OTHER, "b"),
+        http("boundary", "client-response"),
+      ],
+      edges: [...route(FILE, "a", "boundary", "http"), ...route(OTHER, "b", "boundary", "http")],
+      unknowns: [],
+    })
+    const result = observedFlow(two, observed("client-response"))
+    expect(result.explained).toHaveLength(1)
+    expect(result.nodes.map((node) => node.id)).toEqual(
+      [
+        flowNodeId("field", FILE, "userData.user"),
+        flowNodeId("field", OTHER, "userData.user"),
+        flowNodeId("function", FILE, "a"),
+        flowNodeId("function", OTHER, "b"),
+        flowNodeId("boundary", "boundary", "http"),
+      ].sort(),
+    )
+  })
+
+  it("lights only the boundary of the observed kind when two boundaries share a name", () => {
+    const two = buildFlowModel({
+      nodes: [
+        fieldIn(FILE),
+        fnIn(FILE, "a"),
+        fnIn(FILE, "b"),
+        http("boundary", "client-response"),
+        http("boundary:log", "log"),
+      ],
+      edges: [...route(FILE, "a", "boundary", "http"), ...route(FILE, "b", "boundary:log", "http")],
+      unknowns: [],
+    })
+    const clientIds = observedFlow(two, observed("client-response")).nodes.map((node) => node.id)
+    expect(clientIds).toContain(flowNodeId("function", FILE, "a"))
+    expect(clientIds).not.toContain(flowNodeId("function", FILE, "b"))
+    const logIds = observedFlow(two, observed("log")).nodes.map((node) => node.id)
+    expect(logIds).toContain(flowNodeId("function", FILE, "b"))
+    expect(logIds).not.toContain(flowNodeId("function", FILE, "a"))
+  })
+
+  it("takes a boundary with no kind for any kind observed under its name", () => {
+    const kindless = buildFlowModel({
+      nodes: [fieldIn(FILE), fnIn(FILE, "a"), http("boundary")],
+      edges: route(FILE, "a", "boundary", "http"),
+      unknowns: [],
+    })
+    expect(observedFlow(kindless, observed("log")).explained).toHaveLength(1)
+    expect(observedFlow(kindless, observed("client-response")).explained).toHaveLength(1)
+  })
+
+  it("explains nothing for a name that is no field, however its prefix looks", () => {
+    const one = buildFlowModel({
+      nodes: [fieldIn(FILE), fnIn(FILE, "a"), http("boundary", "client-response")],
+      edges: route(FILE, "a", "boundary", "http"),
+      unknowns: [],
+    })
+    const result = observedFlow(
+      one,
+      buildObservationModel([seen("s", "userData.userExtra.email", "http")]),
+    )
+    expect(result.explained).toHaveLength(0)
+    expect(result.unexplained).toHaveLength(1)
+  })
+})

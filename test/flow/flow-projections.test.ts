@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 import { buildFlowModel, flowNodeId, FlowModelError } from "../../src/flow/flow-model.js"
 import type { FlowEdgeInput, FlowNodeInput } from "../../src/flow/flow-model.js"
-import { diffFlow, filterFlow, traceFlow } from "../../src/flow/flow-projections.js"
+import { diffFlow, filterFlow, flowIndex, traceFlow } from "../../src/flow/flow-projections.js"
 
 const FILE = "src/profile.ts"
 const id = (kind: FlowNodeInput["kind"], name: string): string => flowNodeId(kind, FILE, name)
@@ -168,6 +168,33 @@ describe("traceFlow", () => {
     expect(trace.complete).toBe(false)
     expect(trace.unknowns).toHaveLength(1)
   })
+
+  it.each([
+    ["the start node's unknown comes first", 1, 2],
+    ["the downstream node's unknown comes first", 2, 1],
+  ])(
+    "lists the unknowns of the nodes it visited in the order of the model when %s",
+    (_label, startLine, downstreamLine) => {
+      const model = buildFlowModel({
+        nodes: [node("field", "A"), node("function", "f")],
+        edges: [edge("reads", id("field", "A"), id("function", "f"))],
+        unknowns: [
+          {
+            reason: "unresolved-call",
+            subject: id("field", "A"),
+            source: { file: FILE, line: startLine, column: 1 },
+          },
+          {
+            reason: "unresolved-call",
+            subject: id("function", "f"),
+            source: { file: FILE, line: downstreamLine, column: 1 },
+          },
+        ],
+      })
+      const trace = traceFlow(model, id("field", "A"), "downstream")
+      expect(trace.unknowns).toEqual(model.unknowns)
+    },
+  )
 
   it("is not complete when a traversed edge has status unknown", () => {
     const model = buildFlowModel({
@@ -487,5 +514,53 @@ describe("diffFlow", () => {
   it("is unchanged for identical models", () => {
     const diff = diffFlow(profileModel(), profileModel())
     expect(diff.unchanged).toBe(true)
+  })
+})
+
+describe("traceFlow, with a direction it does not know", () => {
+  const model = buildFlowModel({
+    nodes: [node("field", "A"), node("function", "f")],
+    edges: [edge("reads", id("field", "A"), id("function", "f"))],
+    unknowns: [],
+  })
+
+  it.each(["downstream", "upstream"] as const)("traces %s", (direction) => {
+    expect(() => traceFlow(model, id("field", "A"), direction)).not.toThrow()
+  })
+
+  it.each(["sideways", "", "Downstream"])(
+    "refuses %j rather than walking some way",
+    (direction) => {
+      expect(() => traceFlow(model, id("field", "A"), direction as "downstream")).toThrow(
+        new FlowModelError(`Cannot trace "${direction}": a trace goes "downstream" or "upstream".`),
+      )
+    },
+  )
+})
+
+describe("flowIndex", () => {
+  const model = buildFlowModel({
+    nodes: [node("field", "A"), node("function", "f")],
+    edges: [edge("reads", id("field", "A"), id("function", "f"), { origin: id("field", "A") })],
+    unknowns: [],
+  })
+
+  it("is built once for a model and given back as the very same index", () => {
+    expect(flowIndex(model)).toBe(flowIndex(model))
+  })
+
+  it("is built apart for each model, even for models that are equal", () => {
+    const twin = buildFlowModel({ nodes: [...model.nodes], edges: [...model.edges], unknowns: [] })
+    expect(flowIndex(twin)).not.toBe(flowIndex(model))
+  })
+
+  it("indexes the edges by what they leave, enter and are about, and leaves out what has no origin or subject", () => {
+    const index = flowIndex(model)
+    expect(index.outgoing.get(id("field", "A"))).toHaveLength(1)
+    expect(index.incoming.get(id("function", "f"))).toHaveLength(1)
+    expect(index.byOrigin.get(id("field", "A"))).toHaveLength(1)
+    expect(index.byOrigin.size).toBe(1)
+    expect(index.unknownsBySubject.size).toBe(0)
+    expect(index.fields.map((field) => field.id)).toEqual([id("field", "A")])
   })
 })

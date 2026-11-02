@@ -1247,7 +1247,15 @@
         "derivedFrom": [
           "flow",
           "observation"
-        ]
+        ],
+        "observedPaths": [
+          "userData.user.email",
+          "userData.user.id",
+          "userData.user.name",
+          "userData.user.passwordHash",
+          "userData.user.role"
+        ],
+        "pathCoverage": "partial"
       },
       {
         "id": "claim:field-sourced-from-boundary:userData.user<-database:postgres:users",
@@ -1315,7 +1323,11 @@
           "flow",
           "policy",
           "observation"
-        ]
+        ],
+        "observedPaths": [
+          "userData.user.passwordHash"
+        ],
+        "pathCoverage": "whole"
       },
       {
         "id": "claim:policy-holds:userData/no-role-to-log:userData.user",
@@ -1346,7 +1358,11 @@
           "flow",
           "policy",
           "observation"
-        ]
+        ],
+        "observedPaths": [
+          "userData.user.role"
+        ],
+        "pathCoverage": "whole"
       }
     ],
     "summary": {

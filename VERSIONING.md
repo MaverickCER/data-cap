@@ -79,13 +79,15 @@ rules, read the evidence and enforce it in CI is exactly what real use will
 reshape ([ADR 0070](specs/decisions/0070-flow-evidence-is-part-of-the-single-evidence-model.md),
 [0071](specs/decisions/0071-epistemic-status-on-every-flow-fact.md),
 [0072](specs/decisions/0072-runtime-observation-is-a-separate-subpath.md),
-[0073](specs/decisions/0073-flow-views-standards-adapters-and-rules.md)):
+[0073](specs/decisions/0073-flow-views-standards-adapters-and-rules.md),
+[0074](specs/decisions/0074-flow-scan-non-goals-and-irreducible-limits.md),
+[0075](specs/decisions/0075-redundant-transformations.md)):
 
 - the `flow`, `policy`, `observation` and `claims` sub-models of the Evidence Model (schema version 3), and their JSON Schemas;
-- `flowPolicy` in `documentData()`, and the `--flow-evidence`, `--observations` and `--rules` flags with the `flowEvidence`, `flowSinks` and `observations` options;
-- `./observe` (`observeBoundary`, `createMemorySink`);
-- the isomorphic queries, views and adapters in `./evidence` (`traceFlow`, `filterFlow`, `diffFlow`, `buildFlowGraphView`, `renderFlowText`, `renderFlowDot`, `renderFlowMermaid`, `buildProvDocument`, `buildOscalAssessmentResults`, `observationsToOtlp`/`observationsFromOtlp`, `analyzeLeastData`) and `evaluateEvidenceRules`/`parseEvidenceRules`;
-- `ReportFinding.evidence`, `buildSarifLog`'s `flow` option, and the finding codes `FLOW_POLICY_VIOLATED`, `FLOW_POLICY_INDETERMINATE`, `FLOW_ANALYSIS_INCOMPLETE` and `LEAST_DATA_*`.
+- `flowPolicy` in `documentData()`, and the `--flow-evidence`, `--observations` and `--rules` flags with the `flowEvidence`, `flowSinks`, `flowSummaries` and `observations` options (and `FlowSummary`);
+- `./observe` (`observeBoundary`, `observeValue`, `observeSink`, `instrumentBoundary`, `observeResponse`, `createMemorySink`);
+- the isomorphic queries, views and adapters in `./evidence` (`traceFlow`, `filterFlow`, `diffFlow`, `buildFlowGraphView`, `renderFlowText`, `renderFlowDot`, `renderFlowMermaid`, `buildProvDocument`, `buildOscalAssessmentResults`, `observationsToOtlp`/`observationsFromOtlp`, `buildCycloneDxBom`/`renderFlowCycloneDx`, `analyzeLeastData`, `analyzeRedundantTransforms`/`redundantTransformFindings`) and `evaluateEvidenceRules`/`parseEvidenceRules` with its rules (including `maxRedundantTransforms` and `maxObservationAgeDays`); the optional `edgeTags` of the Flow Model;
+- `ReportFinding.evidence`, `buildSarifLog`'s `flow` option, and the finding codes `FLOW_POLICY_VIOLATED`, `FLOW_POLICY_INDETERMINATE`, `FLOW_ANALYSIS_INCOMPLETE` and `LEAST_DATA_*` (including `LEAST_DATA_REDUNDANT_TRANSFORM`).
 
 The rest of the Evidence Model (schema version 2's fields) stays Stable: the
 new sub-models are additive and optional, and a reader that knew version 2

@@ -20,7 +20,11 @@ describe("data-cap/observe entry point", () => {
     expect(Object.keys(observe).sort()).toEqual([
       "createMemorySink",
       "fieldPathName",
+      "instrumentBoundary",
       "observeBoundary",
+      "observeResponse",
+      "observeSink",
+      "observeValue",
     ])
   })
 

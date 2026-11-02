@@ -27,9 +27,30 @@
           },
           "description": "Every observation, ordered by id."
         },
+        "scopeTimes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ObservationScopeTimes"
+          },
+          "description": "First/last seen per scope, ordered by scope; absent when no event carried a time."
+        },
         "skipped": {
           "type": "number",
-          "description": "Events dropped as malformed -- stated, never silent."
+          "description": "Events (and skip reports) dropped as malformed -- stated, never silent."
+        },
+        "truncations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ObservationTruncation"
+          },
+          "description": "What the recorder reported leaving out, ordered by scope, field, reason; absent when it reported nothing."
+        },
+        "truncatedScopes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The scopes with a truncation, sorted -- a claim built on one cannot be called verified near the cut. Absent when none."
         }
       },
       "required": [
@@ -77,6 +98,14 @@
         "count": {
           "type": "number",
           "description": "How many matching events were recorded."
+        },
+        "firstSeen": {
+          "type": "string",
+          "description": "Earliest time any matching event carried (ISO 8601, UTC); absent when none carried one. Never used in the id."
+        },
+        "lastSeen": {
+          "type": "string",
+          "description": "Latest time any matching event carried; present exactly when `firstSeen` is."
         },
         "status": {
           "type": "string",
@@ -136,6 +165,64 @@
         "encrypted"
       ],
       "description": "The declared data-safety state of a value at a boundary crossing -- the vocabulary of `DataFlowEndpoint.handling` and of flow policy rules."
+    },
+    "ObservationScopeTimes": {
+      "type": "object",
+      "properties": {
+        "scope": {
+          "type": "string"
+        },
+        "firstSeen": {
+          "type": "string"
+        },
+        "lastSeen": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "scope",
+        "firstSeen",
+        "lastSeen"
+      ],
+      "additionalProperties": false,
+      "description": "First and last time anything was observed in one scope; only for scopes whose events carried times."
+    },
+    "ObservationTruncation": {
+      "type": "object",
+      "properties": {
+        "scope": {
+          "type": "string"
+        },
+        "field": {
+          "type": "string",
+          "description": "Capability-qualified dotted path below which evidence is missing (the capability itself for the root)."
+        },
+        "reason": {
+          "$ref": "#/definitions/ObservationSkipReason"
+        },
+        "count": {
+          "type": "number",
+          "description": "How many times the recorder reported this (scope, field, reason)."
+        }
+      },
+      "required": [
+        "scope",
+        "field",
+        "reason",
+        "count"
+      ],
+      "additionalProperties": false,
+      "description": "Evidence the recorder knowingly left out in one scope: below `field` something was not captured. Names only."
+    },
+    "ObservationSkipReason": {
+      "type": "string",
+      "enum": [
+        "dotted-key",
+        "max-depth",
+        "max-nodes",
+        "cycle"
+      ],
+      "description": "Why the walker did not record part of a value."
     }
   }
 }

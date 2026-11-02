@@ -66,6 +66,13 @@ export type {
   UnusedPath,
   WholeFieldToClient,
 } from "../flow/least-data.js"
+export {
+  analyzeRedundantTransforms,
+  MIN_FORWARDING_HOPS,
+  redundantTransformFindings,
+} from "../flow/redundant-transform.js"
+export type { RedundantTransform, RedundantTransformKind } from "../flow/redundant-transform.js"
+export type { FlowEdgeTag, FlowEdgeTagInput, FlowVia } from "../flow/flow-model.js"
 export type { Claim, ClaimVerification, ClaimsModel, EvidenceRef } from "../flow/claims-model.js"
 export type { Observation, ObservationModel } from "../flow/observation-model.js"
 export type { PolicyModel, PolicyOutcome, PolicyResult } from "../flow/policy-model.js"
@@ -98,6 +105,16 @@ export { buildProvDocument } from "./flow-prov.js"
 export type { ProvDocument, ProvInput } from "./flow-prov.js"
 export { buildOscalAssessmentResults } from "./flow-oscal.js"
 export type { OscalAssessmentResults, OscalInput, OscalOptions } from "./flow-oscal.js"
+export { buildCycloneDxBom, renderFlowCycloneDx } from "./flow-cyclonedx.js"
+export type {
+  CycloneDxAnnotation,
+  CycloneDxBom,
+  CycloneDxData,
+  CycloneDxInput,
+  CycloneDxOptions,
+  CycloneDxProperty,
+  CycloneDxService,
+} from "./flow-cyclonedx.js"
 export { observationsFromOtlp, observationsToOtlp } from "./flow-otel.js"
 export type {
   OtlpAttribute,

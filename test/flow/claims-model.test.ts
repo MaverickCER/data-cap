@@ -3,6 +3,7 @@ import { buildClaimsModel, CLAIMS_MODEL_SCHEMA_VERSION } from "../../src/flow/cl
 import { buildFlowModel, flowNodeId } from "../../src/flow/flow-model.js"
 import type { FlowBoundaryKind, FlowEdgeInput, FlowNodeInput } from "../../src/flow/flow-model.js"
 import { buildObservationModel } from "../../src/flow/observation-model.js"
+import { flowIndex } from "../../src/flow/flow-projections.js"
 import { buildPolicyModel } from "../../src/flow/policy-model.js"
 import type { FlowPolicyRule } from "../../src/flow/policy-model.js"
 import type { ObservationEvent } from "../../src/observe/index.js"
@@ -525,5 +526,718 @@ describe("buildClaimsModel: declared sources (field-sourced-from-boundary)", () 
   it("counts sourced claims in the summary alongside the others", () => {
     const { summary } = buildClaimsModel({ flow: sourced(), observation: seen("database", "pg") })
     expect(summary.verified).toBe(1)
+  })
+})
+
+describe("buildClaimsModel, the exact model of a rich scenario", () => {
+  const A = "src/a.ts"
+  const B = "src/b.ts"
+  const user = (scope: string): FlowNodeInput => ({
+    kind: "field",
+    scope,
+    name: "userData.user",
+    status: "static",
+    classification: "pii",
+  })
+  const team: FlowNodeInput = { kind: "field", scope: A, name: "userData.team", status: "static" }
+  const boundaryOf = (name: string, boundaryKind: FlowBoundaryKind): FlowNodeInput => ({
+    kind: "boundary",
+    scope: "boundary",
+    name,
+    status: "declared",
+    boundaryKind,
+  })
+  const idOf = (scope: string, name: string): string => flowNodeId("field", scope, name)
+  const edgeFrom = (
+    kind: FlowEdgeInput["kind"],
+    from: string,
+    to: string,
+    origin: string,
+    path: string[],
+    status: FlowEdgeInput["status"] = "static",
+  ): FlowEdgeInput => ({ kind, from, to, origin, path, status })
+
+  const scenario = () => {
+    const flowModel = buildFlowModel({
+      nodes: [
+        user(A),
+        user(B),
+        team,
+        boundaryOf("http", "client-response"),
+        boundaryOf("db", "database"),
+        boundaryOf("audit", "log"),
+      ],
+      edges: [
+        edgeFrom("side-effect", idOf(A, "userData.user"), bid("http"), idOf(A, "userData.user"), [
+          "email",
+        ]),
+        edgeFrom("side-effect", idOf(B, "userData.user"), bid("http"), idOf(B, "userData.user"), [
+          "email",
+        ]),
+        edgeFrom(
+          "side-effect",
+          idOf(A, "userData.user"),
+          bid("audit"),
+          idOf(A, "userData.user"),
+          ["name"],
+          "inferred",
+        ),
+        edgeFrom(
+          "crosses-boundary",
+          bid("db"),
+          idOf(A, "userData.user"),
+          idOf(A, "userData.user"),
+          ["id"],
+          "declared",
+        ),
+        edgeFrom(
+          "side-effect",
+          idOf(A, "userData.team"),
+          bid("http"),
+          idOf(A, "userData.team"),
+          [],
+        ),
+      ],
+      unknowns: [],
+    })
+    const at = (
+      scope: string,
+      kind: FlowBoundaryKind,
+      name: string,
+      field: string,
+      time?: number,
+      handling?: "hashed",
+    ): ObservationEvent => ({
+      scope,
+      boundary: { kind, name },
+      field,
+      ...(time === undefined ? {} : { at: time }),
+      ...(handling === undefined ? {} : { handling }),
+    })
+    const observation = buildObservationModel(
+      [
+        at("s1", "client-response", "http", "userData.user.email", 1000),
+        at("s1", "client-response", "http", "userData.user.email", 5000),
+        at("s2", "client-response", "http", "userData.user.email", 3000),
+        at("s1", "database", "db", "userData.user.id"),
+        at("s1", "log", "audit", "userData.user.name", 2000, "hashed"),
+        at("s3", "client-response", "http", "userData.team.x", 4000),
+        at("s1", "queue", "mq", "userData.user.email", 9000),
+        at("s1", "queue", "mq", "userData.user.email", 2000),
+        at("s1", "client-response", "http", "other.thing"),
+      ],
+      [
+        {
+          scope: "s3",
+          boundary: { kind: "client-response", name: "http" },
+          field: "userData.team",
+          reason: "max-depth",
+        },
+      ],
+    )
+    const rules: FlowPolicyRule[] = [
+      {
+        id: "pii-not-to-client",
+        appliesTo: { classification: "pii" },
+        forbidDestinations: ["client-response"],
+      },
+      {
+        id: "name-not-to-log",
+        appliesTo: { field: "user", path: ["name"] },
+        forbidDestinations: ["log"],
+      },
+    ]
+    return { flow: flowModel, observation, policy: buildPolicyModel(flowModel, rules) }
+  }
+
+  it("is exactly this", () => {
+    expect(buildClaimsModel(scenario())).toMatchInlineSnapshot(`
+      {
+        "claims": [
+          {
+            "contradicting": [],
+            "derivedFrom": [
+              "flow",
+              "observation",
+            ],
+            "id": "claim:field-reaches-boundary:other.thing->client-response:http",
+            "kind": "field-reaches-boundary",
+            "object": "http",
+            "scope": {
+              "observationScopes": [
+                "s1",
+              ],
+              "traceComplete": false,
+            },
+            "statement": "other.thing reaches client-response http",
+            "status": "observed",
+            "subject": "other.thing",
+            "supporting": [
+              {
+                "id": "observation:s1|client-response:http|other.thing|-",
+                "model": "observation",
+              },
+            ],
+            "verification": "observed-only",
+          },
+          {
+            "contradicting": [],
+            "derivedFrom": [
+              "flow",
+              "observation",
+            ],
+            "id": "claim:field-reaches-boundary:userData.team->client-response:http",
+            "kind": "field-reaches-boundary",
+            "lastObservedAt": "1970-01-01T00:00:04.000Z",
+            "object": "http",
+            "observedPaths": [
+              "userData.team.x",
+            ],
+            "pathCoverage": "partial",
+            "scope": {
+              "observationScopes": [
+                "s3",
+              ],
+              "traceComplete": true,
+              "truncatedScopes": [
+                "s3",
+              ],
+            },
+            "statement": "userData.team reaches client-response http",
+            "status": "static",
+            "subject": "userData.team",
+            "supporting": [
+              {
+                "id": "side-effect:field:src/a.ts#userData.team->boundary:boundary#http:@static^field:src/a.ts#userData.team",
+                "model": "flow",
+              },
+              {
+                "id": "observation:s3|client-response:http|userData.team.x|-",
+                "model": "observation",
+              },
+            ],
+            "verification": "indeterminate",
+          },
+          {
+            "contradicting": [],
+            "derivedFrom": [
+              "flow",
+              "observation",
+            ],
+            "id": "claim:field-reaches-boundary:userData.user->client-response:http",
+            "kind": "field-reaches-boundary",
+            "lastObservedAt": "1970-01-01T00:00:05.000Z",
+            "object": "http",
+            "observedPaths": [
+              "userData.user.email",
+            ],
+            "pathCoverage": "whole",
+            "scope": {
+              "observationScopes": [
+                "s1",
+                "s2",
+              ],
+              "traceComplete": true,
+            },
+            "statement": "userData.user reaches client-response http",
+            "status": "static",
+            "subject": "userData.user",
+            "supporting": [
+              {
+                "id": "side-effect:field:src/b.ts#userData.user->boundary:boundary#http:email@static^field:src/b.ts#userData.user",
+                "model": "flow",
+              },
+              {
+                "id": "observation:s1|client-response:http|userData.user.email|-",
+                "model": "observation",
+              },
+              {
+                "id": "observation:s2|client-response:http|userData.user.email|-",
+                "model": "observation",
+              },
+            ],
+            "verification": "verified",
+          },
+          {
+            "contradicting": [],
+            "derivedFrom": [
+              "flow",
+              "observation",
+            ],
+            "id": "claim:field-reaches-boundary:userData.user->client-response:http",
+            "kind": "field-reaches-boundary",
+            "lastObservedAt": "1970-01-01T00:00:05.000Z",
+            "object": "http",
+            "observedPaths": [
+              "userData.user.email",
+            ],
+            "pathCoverage": "whole",
+            "scope": {
+              "observationScopes": [
+                "s1",
+                "s2",
+              ],
+              "traceComplete": true,
+            },
+            "statement": "userData.user reaches client-response http",
+            "status": "static",
+            "subject": "userData.user",
+            "supporting": [
+              {
+                "id": "side-effect:field:src/a.ts#userData.user->boundary:boundary#http:email@static^field:src/a.ts#userData.user",
+                "model": "flow",
+              },
+              {
+                "id": "observation:s1|client-response:http|userData.user.email|-",
+                "model": "observation",
+              },
+              {
+                "id": "observation:s2|client-response:http|userData.user.email|-",
+                "model": "observation",
+              },
+            ],
+            "verification": "verified",
+          },
+          {
+            "contradicting": [],
+            "derivedFrom": [
+              "flow",
+              "observation",
+            ],
+            "id": "claim:field-reaches-boundary:userData.user->log:audit",
+            "kind": "field-reaches-boundary",
+            "lastObservedAt": "1970-01-01T00:00:02.000Z",
+            "object": "audit",
+            "observedPaths": [
+              "userData.user.name",
+            ],
+            "pathCoverage": "whole",
+            "scope": {
+              "observationScopes": [
+                "s1",
+              ],
+              "traceComplete": true,
+            },
+            "statement": "userData.user reaches log audit",
+            "status": "inferred",
+            "subject": "userData.user",
+            "supporting": [
+              {
+                "id": "side-effect:field:src/a.ts#userData.user->boundary:boundary#audit:name@inferred^field:src/a.ts#userData.user",
+                "model": "flow",
+              },
+              {
+                "id": "observation:s1|log:audit|userData.user.name|hashed",
+                "model": "observation",
+              },
+            ],
+            "verification": "verified",
+          },
+          {
+            "contradicting": [
+              {
+                "id": "field:src/a.ts#userData.user",
+                "model": "flow",
+              },
+            ],
+            "derivedFrom": [
+              "flow",
+              "observation",
+            ],
+            "id": "claim:field-reaches-boundary:userData.user.email->queue:mq",
+            "kind": "field-reaches-boundary",
+            "lastObservedAt": "1970-01-01T00:00:09.000Z",
+            "object": "mq",
+            "scope": {
+              "observationScopes": [
+                "s1",
+              ],
+              "traceComplete": true,
+            },
+            "statement": "userData.user.email reaches queue mq",
+            "status": "observed",
+            "subject": "userData.user.email",
+            "supporting": [
+              {
+                "id": "observation:s1|queue:mq|userData.user.email|-",
+                "model": "observation",
+              },
+            ],
+            "verification": "contradicted",
+          },
+          {
+            "contradicting": [],
+            "derivedFrom": [
+              "flow",
+              "observation",
+            ],
+            "id": "claim:field-sourced-from-boundary:userData.user<-database:db",
+            "kind": "field-sourced-from-boundary",
+            "object": "db",
+            "observedPaths": [
+              "userData.user.id",
+            ],
+            "pathCoverage": "whole",
+            "scope": {
+              "observationScopes": [
+                "s1",
+              ],
+              "traceComplete": true,
+            },
+            "statement": "userData.user is sourced from database db",
+            "status": "declared",
+            "subject": "userData.user",
+            "supporting": [
+              {
+                "id": "crosses-boundary:boundary:boundary#db->field:src/a.ts#userData.user:id@declared^field:src/a.ts#userData.user",
+                "model": "flow",
+              },
+              {
+                "id": "observation:s1|database:db|userData.user.id|-",
+                "model": "observation",
+              },
+            ],
+            "verification": "verified",
+          },
+          {
+            "contradicting": [
+              {
+                "id": "pii-not-to-client#field:src/b.ts#userData.user",
+                "model": "policy",
+              },
+              {
+                "id": "side-effect:field:src/b.ts#userData.user->boundary:boundary#http:email@static^field:src/b.ts#userData.user",
+                "model": "flow",
+              },
+              {
+                "id": "observation:s1|client-response:http|userData.user.email|-",
+                "model": "observation",
+              },
+              {
+                "id": "observation:s2|client-response:http|userData.user.email|-",
+                "model": "observation",
+              },
+            ],
+            "derivedFrom": [
+              "flow",
+              "policy",
+              "observation",
+            ],
+            "id": "claim:policy-holds:pii-not-to-client:userData.user",
+            "kind": "policy-holds",
+            "lastObservedAt": "1970-01-01T00:00:09.000Z",
+            "object": "pii-not-to-client",
+            "observedPaths": [
+              "userData.user.email",
+              "userData.user.id",
+              "userData.user.name",
+            ],
+            "pathCoverage": "partial",
+            "scope": {
+              "observationScopes": [
+                "s1",
+                "s2",
+              ],
+              "traceComplete": true,
+            },
+            "statement": "Rule pii-not-to-client holds for userData.user",
+            "status": "static",
+            "subject": "userData.user",
+            "supporting": [
+              {
+                "id": "pii-not-to-client#field:src/b.ts#userData.user",
+                "model": "policy",
+              },
+              {
+                "id": "observation:s1|database:db|userData.user.id|-",
+                "model": "observation",
+              },
+              {
+                "id": "observation:s1|log:audit|userData.user.name|hashed",
+                "model": "observation",
+              },
+              {
+                "id": "observation:s1|queue:mq|userData.user.email|-",
+                "model": "observation",
+              },
+            ],
+            "verification": "contradicted",
+          },
+          {
+            "contradicting": [
+              {
+                "id": "pii-not-to-client#field:src/a.ts#userData.user",
+                "model": "policy",
+              },
+              {
+                "id": "side-effect:field:src/a.ts#userData.user->boundary:boundary#http:email@static^field:src/a.ts#userData.user",
+                "model": "flow",
+              },
+              {
+                "id": "observation:s1|client-response:http|userData.user.email|-",
+                "model": "observation",
+              },
+              {
+                "id": "observation:s2|client-response:http|userData.user.email|-",
+                "model": "observation",
+              },
+            ],
+            "derivedFrom": [
+              "flow",
+              "policy",
+              "observation",
+            ],
+            "id": "claim:policy-holds:pii-not-to-client:userData.user",
+            "kind": "policy-holds",
+            "lastObservedAt": "1970-01-01T00:00:09.000Z",
+            "object": "pii-not-to-client",
+            "observedPaths": [
+              "userData.user.email",
+              "userData.user.id",
+              "userData.user.name",
+            ],
+            "pathCoverage": "partial",
+            "scope": {
+              "observationScopes": [
+                "s1",
+                "s2",
+              ],
+              "traceComplete": true,
+            },
+            "statement": "Rule pii-not-to-client holds for userData.user",
+            "status": "static",
+            "subject": "userData.user",
+            "supporting": [
+              {
+                "id": "pii-not-to-client#field:src/a.ts#userData.user",
+                "model": "policy",
+              },
+              {
+                "id": "observation:s1|database:db|userData.user.id|-",
+                "model": "observation",
+              },
+              {
+                "id": "observation:s1|log:audit|userData.user.name|hashed",
+                "model": "observation",
+              },
+              {
+                "id": "observation:s1|queue:mq|userData.user.email|-",
+                "model": "observation",
+              },
+            ],
+            "verification": "contradicted",
+          },
+        ],
+        "schemaVersion": 1,
+        "summary": {
+          "contradicted": 3,
+          "indeterminate": 1,
+          "inferred": 0,
+          "observed-only": 1,
+          "unobserved": 0,
+          "verified": 4,
+        },
+      }
+    `)
+  })
+})
+
+describe("buildClaimsModel, the details the scenario does not reach", () => {
+  const A = "src/a.ts"
+  const B = "src/b.ts"
+  const fieldIn = (scope: string, name: string): FlowNodeInput => ({
+    kind: "field",
+    scope,
+    name,
+    status: "static",
+  })
+  const http: FlowNodeInput = {
+    kind: "boundary",
+    scope: "boundary",
+    name: "http",
+    status: "declared",
+    boundaryKind: "client-response",
+  }
+  const sideEffect = (scope: string, name: string, path: string[] | undefined): FlowEdgeInput => ({
+    kind: "side-effect",
+    from: flowNodeId("field", scope, name),
+    to: flowNodeId("boundary", "boundary", "http"),
+    origin: flowNodeId("field", scope, name),
+    status: "static",
+    ...(path === undefined ? {} : { path }),
+  })
+  const event = (
+    scope: string,
+    field: string,
+    at?: number,
+    kind: FlowBoundaryKind = "client-response",
+    name = "http",
+  ): ObservationEvent => ({
+    scope,
+    boundary: { kind, name },
+    field,
+    ...(at === undefined ? {} : { at }),
+  })
+
+  it("marks a claim indeterminate when a cut in the middle of a scope's cuts concerns it, not only the first or the last", () => {
+    const flowModel = buildFlowModel({
+      nodes: [fieldIn(A, "userData.team"), http],
+      edges: [sideEffect(A, "userData.team", [])],
+      unknowns: [],
+    })
+    const skip = (field: string) => ({
+      scope: "s3",
+      boundary: { kind: "client-response", name: "http" } as const,
+      field,
+      reason: "max-depth" as const,
+    })
+    const observation = buildObservationModel(
+      [event("s3", "userData.team.x"), event("s4", "userData.team.x")],
+      [skip("userData.aaa"), skip("userData.team"), skip("userData.zzz")],
+    )
+    const [claim] = buildClaimsModel({ flow: flowModel, observation }).claims
+    expect(claim?.verification).toBe("indeterminate")
+    expect(claim?.scope.truncatedScopes).toEqual(["s3"])
+  })
+
+  it("anchors a contradiction on the first field in model order, whatever order the names are tried in", () => {
+    const flowModel = buildFlowModel({
+      nodes: [fieldIn(A, "userData.user.profile"), fieldIn(B, "userData.user"), http],
+      edges: [],
+      unknowns: [],
+    })
+    const observation = buildObservationModel([event("s", "userData.user.profile.x")])
+    const { claims } = buildClaimsModel({ flow: flowModel, observation })
+    expect(claims).toHaveLength(1)
+    expect(claims[0]?.verification).toBe("contradicted")
+    expect(claims[0]?.contradicting).toEqual([
+      { model: "flow", id: flowNodeId("field", A, "userData.user.profile") },
+    ])
+  })
+
+  describe("how much of the required path an observation covers", () => {
+    const flowModel = buildFlowModel({
+      nodes: [fieldIn(A, "userData.user"), http],
+      edges: [sideEffect(A, "userData.user", ["email", "domain"])],
+      unknowns: [],
+    })
+    const coverage = (field: string) =>
+      buildClaimsModel({
+        flow: flowModel,
+        observation: buildObservationModel([event("s", field)]),
+      }).claims.find((claim) => claim.subject === "userData.user")?.pathCoverage
+
+    it.each([
+      ["the whole field", "userData.user", "whole"],
+      ["a part of the path", "userData.user.email", "whole"],
+      ["the path itself", "userData.user.email.domain", "whole"],
+      ["something inside the path", "userData.user.email.domain.tld", "partial"],
+    ])("%s is %s", (_label, field, expected) => {
+      expect(coverage(field)).toBe(expected)
+    })
+  })
+
+  it("calls a path only partly covered when it must cover every edge of the route, not just one", () => {
+    const through = flowNodeId("function", A, "f")
+    const origin = flowNodeId("field", A, "userData.user")
+    const flowModel = buildFlowModel({
+      nodes: [
+        fieldIn(A, "userData.user"),
+        { kind: "function", scope: A, name: "f", status: "static" },
+        http,
+      ],
+      edges: [
+        { kind: "reads", from: origin, to: through, origin, status: "static", path: ["email"] },
+        {
+          kind: "side-effect",
+          from: through,
+          to: flowNodeId("boundary", "boundary", "http"),
+          origin,
+          status: "static",
+          path: ["email", "domain"],
+        },
+      ],
+      unknowns: [],
+    })
+    const coverage = (field: string) =>
+      buildClaimsModel({
+        flow: flowModel,
+        observation: buildObservationModel([event("s", field)]),
+      }).claims.find((claim) => claim.subject === "userData.user")?.pathCoverage
+    expect(coverage("userData.user.email")).toBe("whole")
+    expect(coverage("userData.user.email.domain")).toBe("partial")
+  })
+
+  it("takes the latest time of the observations behind a claim, ignoring those with none", () => {
+    const flowModel = buildFlowModel({
+      nodes: [fieldIn(A, "userData.user"), http],
+      edges: [sideEffect(A, "userData.user", ["email"])],
+      unknowns: [],
+    })
+    const claim = (events: ObservationEvent[]) =>
+      buildClaimsModel({ flow: flowModel, observation: buildObservationModel(events) }).claims.find(
+        (candidate) => candidate.subject === "userData.user",
+      )
+    const timed = [
+      event("s0", "userData.user.email", 12000),
+      event("s1", "userData.user.email", 9000),
+      event("s2", "userData.user.email", 2000),
+    ]
+    expect(claim(timed)?.lastObservedAt).toBe("1970-01-01T00:00:12.000Z")
+    expect(claim([...timed, event("s3", "userData.user.email")])?.lastObservedAt).toBe(
+      "1970-01-01T00:00:12.000Z",
+    )
+    expect(claim([event("s3", "userData.user.email")])?.lastObservedAt).toBeUndefined()
+  })
+
+  it("takes the latest time of the observations behind an observed-only claim, ignoring those with none", () => {
+    const flowModel = buildFlowModel({
+      nodes: [fieldIn(A, "userData.user"), http],
+      edges: [],
+      unknowns: [],
+    })
+    const run = (events: ObservationEvent[]) =>
+      buildClaimsModel({ flow: flowModel, observation: buildObservationModel(events) }).claims[0]
+    const timed = [
+      event("s0", "userData.user.email", 12000),
+      event("s1", "userData.user.email", 9000),
+      event("s2", "userData.user.email", 2000),
+    ]
+    expect(run(timed)?.lastObservedAt).toBe("1970-01-01T00:00:12.000Z")
+    expect(run([...timed, event("s3", "userData.user.email")])?.lastObservedAt).toBe(
+      "1970-01-01T00:00:12.000Z",
+    )
+    expect(run([event("s3", "userData.user.email")])?.lastObservedAt).toBeUndefined()
+  })
+
+  it("follows the flow once for each path observed, however many observations share it", () => {
+    const flowModel = buildFlowModel({
+      nodes: [fieldIn(A, "userData.user"), http],
+      edges: [sideEffect(A, "userData.user", ["email"])],
+      unknowns: [],
+    })
+    const index = flowIndex(flowModel)
+    let reads = 0
+    const counted = new Proxy(index.outgoing, {
+      get(target, property) {
+        if (property === "get") reads += 1
+        const value = Reflect.get(target, property, target) as unknown
+        return typeof value === "function"
+          ? (value as (...args: unknown[]) => unknown).bind(target)
+          : value
+      },
+    })
+    Object.defineProperty(index, "outgoing", { value: counted })
+    const run = (scopes: string[]) => {
+      reads = 0
+      buildClaimsModel({
+        flow: flowModel,
+        observation: buildObservationModel(
+          scopes.map((scope) => event(scope, "userData.user.email")),
+        ),
+      })
+      return reads
+    }
+    expect(run(["a", "b", "c", "d"])).toBe(run(["a"]))
   })
 })

@@ -22,7 +22,7 @@
 import type { ReportFinding } from "../build/findings.js"
 import { flowNodeId } from "./flow-model.js"
 import type { FlowEdge, FlowModel } from "./flow-model.js"
-import { traceFlow } from "./flow-projections.js"
+import { flowIndex, traceFlow } from "./flow-projections.js"
 import type { CapabilityInventory } from "../build/inventory.js"
 
 /** Identifies a capability in a report. */
@@ -105,7 +105,7 @@ function objectKeys(shape: unknown): readonly string[] {
 /** Finds unused paths and whole-field client exposure. */
 export function analyzeLeastData(input: LeastDataInput): LeastDataReport {
   const { flow } = input
-  const nodesById = new Map(flow.nodes.map((node) => [node.id, node]))
+  const { nodesById, byOrigin } = flowIndex(flow)
   const unusedPaths: UnusedPath[] = []
   const wholeFieldToClient: WholeFieldToClient[] = []
   const indeterminate: LeastDataIndeterminate[] = []
@@ -135,9 +135,9 @@ export function analyzeLeastData(input: LeastDataInput): LeastDataReport {
         continue
       }
 
-      const edges = flow.edges.filter((edge) => edge.origin === fieldNode)
+      const edges = byOrigin.get(fieldNode)
 
-      if (keys.length >= 2) {
+      if (keys.length >= 2 && edges !== undefined) {
         const bySink = new Map<string, FlowEdge[]>()
         for (const edge of edges) {
           const target = nodesById.get(edge.to)
@@ -194,7 +194,7 @@ export function analyzeLeastData(input: LeastDataInput): LeastDataReport {
       ].sort()
 
       for (const key of keys.filter((candidate) => !blocked.includes(candidate))) {
-        const used = edges.some((edge) => {
+        const used = edges?.some((edge) => {
           if (!isUseKind(edge.kind)) return false
           const from = nodesById.get(edge.from)
           const to = nodesById.get(edge.to)

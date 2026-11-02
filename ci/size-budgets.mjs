@@ -30,8 +30,11 @@ export default [
   { label: "runtime/retry", file: "dist/runtime/retry.js", maxGzipBytes: 2 * 1024 },
   { label: "helpers", file: "dist/helpers.js", maxGzipBytes: 3 * 1024 },
   // The runtime-observation recorder (ADR 0072) ships into the consumer's application, so it is budgeted
-  // like the other isomorphic entries. It is a few small functions with no dependencies.
-  { label: "observe", file: "dist/observe.js", maxGzipBytes: 1 * 1024 },
+  // like the other isomorphic entries. It is a few small functions with no dependencies. Raised from 1KB to 2KB
+  // when the auto-walker (observeValue) and the instrumentation helpers joined the recorder, then to 2.5KB
+  // (about 2.1KB used) when response observation (observeResponse), path-level claims and the truncation signal
+  // joined; still dependency-free.
+  { label: "observe", file: "dist/observe.js", maxGzipBytes: 2.5 * 1024 },
   { label: "build", file: "dist/build.js", maxGzipBytes: 999 * 1024 },
   { label: "eslint-plugin", file: "dist/eslint-plugin/index.js", maxGzipBytes: 999 * 1024 },
   { label: "cli", file: "dist/cli/index.js", maxGzipBytes: 999 * 1024 },

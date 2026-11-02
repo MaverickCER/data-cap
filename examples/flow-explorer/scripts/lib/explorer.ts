@@ -11,6 +11,7 @@
 import path from "node:path"
 import { build } from "esbuild"
 import type { EvidenceModel } from "data-cap/build"
+import { compareEvidence, renderComparisonHtml } from "../explorer/compare.js"
 import { exampleRoot } from "./pipeline.js"
 
 export const LIGHT = {
@@ -101,6 +102,13 @@ fieldset label { display: inline-block; margin-right: 12px; font-weight: 400; }
 #graph g.edge.violation path { stroke: var(--danger); stroke-width: 3; stroke-dasharray: none; }
 #graph g.edge.violation polygon { stroke: var(--danger); fill: var(--danger); }
 #graph g.added polygon, #graph g.added ellipse, #graph g.added path { stroke: var(--ok); stroke-width: 3; }
+#graph g.node.changed polygon, #graph g.node.changed ellipse, #graph g.node.changed path { stroke: var(--warn); stroke-width: 3; stroke-dasharray: 8 2; }
+#graph g.edge.changed:not(.violation) path { stroke: var(--warn); stroke-width: 3; }
+#diff-result ul { list-style: none; padding-left: 0; }
+#diff-result li { margin: 2px 0; }
+#diff-result li button { background: none; color: var(--accent); border: 0; border-bottom: 1px solid var(--accent); padding: 2px 0; min-height: 0; text-align: left; }
+#diff-result li button[aria-current="true"] { font-weight: 700; }
+.where { color: var(--muted); font-family: ui-monospace, monospace; font-size: 0.9em; }
 #graph g.node:focus { outline: 3px solid var(--accent); outline-offset: 2px; }
 #graph .dim { opacity: 0.18; }
 #graph .filtered { display: none; }
@@ -155,6 +163,12 @@ export async function buildExplorerHtml(input: ExplorerInput): Promise<string> {
   const claims = input.evidence.claims?.claims ?? []
   const coverage = input.evidence.flow?.coverage
   const complete = coverage?.complete === true
+  const baselineFlow = input.baseline?.flow
+  const hasBaseline = baselineFlow !== undefined
+  const comparisonHtml =
+    input.baseline === undefined || input.evidence.flow === undefined || !hasBaseline
+      ? '<p id="diff-summary" role="status">Not comparing: this page has no earlier revision embedded. Load an evidence file to compare.</p>'
+      : renderComparisonHtml(compareEvidence(input.baseline, input.evidence), "the revision embedded in this page", false)
   const rows = claims
     .map((claim) => `<tr><td>${escapeHtml(claim.verification)}</td><td>${escapeHtml(claim.statement)}</td><td>${escapeHtml(claim.status)}</td><td>${escapeHtml(claim.scope.traceComplete ? "complete" : "not complete")}</td></tr>`)
     .join("\n")
@@ -209,9 +223,14 @@ export async function buildExplorerHtml(input: ExplorerInput): Promise<string> {
   </section>
   <section aria-labelledby="diff-h">
     <h2 id="diff-h">Compare with another revision</h2>
-    <label for="baseline">Evidence file (docs/data.evidence.json from another commit)</label>
-    <input type="file" id="baseline" accept="application/json,.json">
-    <div id="diff-result" role="status"></div>
+    <p>Load the <code>docs/data.evidence.json</code> of another commit to see which edges, nodes, unknowns and policy results differ. What is new is outlined in green and what changed in amber, and each is named in the node&rsquo;s accessible name; the lists below say the same in words, and each item opens the details with its source location. A loaded file cannot be put in a link; the embedded revision can.</p>
+    <div class="controls">
+      <div><label for="baseline">Evidence file (from another commit)</label><input type="file" id="baseline" accept="application/json,.json"></div>
+      <div><button type="button" id="compare-embedded"${hasBaseline ? "" : " disabled"}>Compare with the revision embedded in this page</button></div>
+      <div><button type="button" id="compare-off">Stop comparing</button></div>
+      <div><label><input type="checkbox" id="only-changes"> Dim everything that did not change</label></div>
+    </div>
+    <div id="diff-result">${comparisonHtml}</div>
   </section>
   <section aria-labelledby="claims-h">
     <h2 id="claims-h">Claims</h2>

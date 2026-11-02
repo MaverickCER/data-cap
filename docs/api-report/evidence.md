@@ -36,6 +36,14 @@ Content-addressed.
 readonly kind: ClaimKind;
 ```
 
+##### lastObservedAt?
+
+```ts
+readonly optional lastObservedAt?: string;
+```
+
+The latest time any backing observation was seen (ISO 8601, UTC); absent when none carried a time.
+
 ##### object
 
 ```ts
@@ -43,6 +51,22 @@ readonly object: string;
 ```
 
 Boundary name (`field-reaches-boundary`) or rule id (`policy-holds`).
+
+##### observedPaths?
+
+```ts
+readonly optional observedPaths?: readonly string[];
+```
+
+The capability-qualified names of the observed paths that back this claim, sorted and distinct; absent when none did.
+
+##### pathCoverage?
+
+```ts
+readonly optional pathCoverage?: ClaimPathCoverage;
+```
+
+Whether those paths cover the claim's whole path scope; present exactly when `observedPaths` is.
 
 ##### scope
 
@@ -114,6 +138,348 @@ Always `CLAIMS_MODEL_SCHEMA_VERSION`.
 
 ```ts
 readonly summary: ClaimsSummary;
+```
+
+***
+
+### CycloneDxAnnotation
+
+A CycloneDX annotation.
+
+#### Properties
+
+##### annotator
+
+```ts
+readonly annotator: {
+  component: {
+     name: string;
+     type: "application";
+     version: string;
+  };
+};
+```
+
+###### component
+
+```ts
+readonly component: {
+  name: string;
+  type: "application";
+  version: string;
+};
+```
+
+###### component.name
+
+```ts
+readonly name: string;
+```
+
+###### component.type
+
+```ts
+readonly type: "application";
+```
+
+###### component.version
+
+```ts
+readonly version: string;
+```
+
+##### bom-ref
+
+```ts
+readonly bom-ref: string;
+```
+
+##### subjects
+
+```ts
+readonly subjects: readonly string[];
+```
+
+##### text
+
+```ts
+readonly text: string;
+```
+
+##### timestamp
+
+```ts
+readonly timestamp: string;
+```
+
+***
+
+### CycloneDxBom
+
+The CycloneDX 1.6 document, restricted to what this projection populates.
+
+#### Properties
+
+##### annotations?
+
+```ts
+readonly optional annotations?: readonly CycloneDxAnnotation[];
+```
+
+##### bomFormat
+
+```ts
+readonly bomFormat: "CycloneDX";
+```
+
+##### metadata
+
+```ts
+readonly metadata: {
+  component: {
+     bom-ref: string;
+     name: string;
+     type: "application";
+  };
+  properties: readonly CycloneDxProperty[];
+  timestamp: string;
+  tools: {
+     components: readonly {
+        bom-ref: string;
+        name: string;
+        type: "application";
+        version: string;
+     }[];
+  };
+};
+```
+
+###### component
+
+```ts
+readonly component: {
+  bom-ref: string;
+  name: string;
+  type: "application";
+};
+```
+
+###### component.bom-ref
+
+```ts
+readonly bom-ref: string;
+```
+
+###### component.name
+
+```ts
+readonly name: string;
+```
+
+###### component.type
+
+```ts
+readonly type: "application";
+```
+
+###### properties
+
+```ts
+readonly properties: readonly CycloneDxProperty[];
+```
+
+###### timestamp
+
+```ts
+readonly timestamp: string;
+```
+
+###### tools
+
+```ts
+readonly tools: {
+  components: readonly {
+     bom-ref: string;
+     name: string;
+     type: "application";
+     version: string;
+  }[];
+};
+```
+
+###### tools.components
+
+```ts
+readonly components: readonly {
+  bom-ref: string;
+  name: string;
+  type: "application";
+  version: string;
+}[];
+```
+
+##### serialNumber
+
+```ts
+readonly serialNumber: string;
+```
+
+##### services?
+
+```ts
+readonly optional services?: readonly CycloneDxService[];
+```
+
+##### specVersion
+
+```ts
+readonly specVersion: "1.6";
+```
+
+##### version
+
+```ts
+readonly version: 1;
+```
+
+***
+
+### CycloneDxData
+
+A CycloneDX `serviceData` entry.
+
+#### Properties
+
+##### classification
+
+```ts
+readonly classification: string;
+```
+
+##### description
+
+```ts
+readonly description: string;
+```
+
+##### destination?
+
+```ts
+readonly optional destination?: readonly string[];
+```
+
+##### flow
+
+```ts
+readonly flow: "unknown" | "inbound" | "outbound" | "bi-directional";
+```
+
+##### governance?
+
+```ts
+readonly optional governance?: {
+  owners: readonly {
+     organization: {
+        name: string;
+     };
+  }[];
+};
+```
+
+###### owners
+
+```ts
+readonly owners: readonly {
+  organization: {
+     name: string;
+  };
+}[];
+```
+
+##### name
+
+```ts
+readonly name: string;
+```
+
+##### source?
+
+```ts
+readonly optional source?: readonly string[];
+```
+
+***
+
+### CycloneDxOptions
+
+Options for `buildCycloneDxBom`.
+
+#### Properties
+
+##### name?
+
+```ts
+readonly optional name?: string;
+```
+
+Name of the described system (`metadata.component.name`; default `data-cap data-flow`).
+
+***
+
+### CycloneDxProperty
+
+A CycloneDX name/value property.
+
+#### Properties
+
+##### name
+
+```ts
+readonly name: string;
+```
+
+##### value
+
+```ts
+readonly value: string;
+```
+
+***
+
+### CycloneDxService
+
+A CycloneDX service, restricted to what this projection populates.
+
+#### Properties
+
+##### bom-ref
+
+```ts
+readonly bom-ref: string;
+```
+
+##### data?
+
+```ts
+readonly optional data?: readonly CycloneDxData[];
+```
+
+##### description
+
+```ts
+readonly description: string;
+```
+
+##### name
+
+```ts
+readonly name: string;
+```
+
+##### properties
+
+```ts
+readonly properties: readonly CycloneDxProperty[];
 ```
 
 ***
@@ -415,6 +781,24 @@ readonly optional maxContradictedClaims?: number;
 
 At most this many claims are contradicted by evidence.
 
+##### maxObservationAgeDays?
+
+```ts
+readonly optional maxObservationAgeDays?: number;
+```
+
+Every verified claim was last observed no more than this many days before the evidence was generated
+(`provenance.generatedAt`; the check never reads a clock). Fails closed: a verified claim with no observation
+time (the recorder was given no `clock`) is a violation, not a skip.
+
+##### maxRedundantTransforms?
+
+```ts
+readonly optional maxRedundantTransforms?: number;
+```
+
+At most this many redundant transformations (a needless round trip, a forwarding chain, a derivation nobody reads; ADR 0075).
+
 ##### maxUnknowns?
 
 ```ts
@@ -508,7 +892,9 @@ readonly evaluated: readonly (
   | "maxWholeFieldToClient"
   | "requireObservations"
   | "minVerifiedClaims"
-  | "requireVerified")[];
+  | "requireVerified"
+  | "maxObservationAgeDays"
+  | "maxRedundantTransforms")[];
 ```
 
 The rules that were evaluated, in order.
@@ -562,7 +948,9 @@ readonly rule:
   | "maxWholeFieldToClient"
   | "requireObservations"
   | "minVerifiedClaims"
-  | "requireVerified";
+  | "requireVerified"
+  | "maxObservationAgeDays"
+  | "maxRedundantTransforms";
 ```
 
 Which rule.
@@ -958,6 +1346,134 @@ Id of the target node.
 
 ***
 
+### FlowEdgeTag
+
+One tag of the Flow Model.
+
+#### Extends
+
+- [`FlowEdgeTagInput`](#flowedgetaginput)
+
+#### Properties
+
+##### edge
+
+```ts
+readonly edge: string;
+```
+
+Id of the existing edge that carries the data at this place (an edge id as `flowEdgeId` derives it).
+
+###### Inherited from
+
+[`FlowEdgeTagInput`](#flowedgetaginput).[`edge`](#edge-1)
+
+##### fresh?
+
+```ts
+readonly optional fresh?: true;
+```
+
+With `copy`: the value copied was already a fresh copy.
+
+###### Inherited from
+
+[`FlowEdgeTagInput`](#flowedgetaginput).[`fresh`](#fresh-1)
+
+##### id
+
+```ts
+readonly id: string;
+```
+
+Content-addressed: `tag:via:edgeId@file:line:column`.
+
+##### source
+
+```ts
+readonly source: SourceLocation;
+```
+
+Where the copy, the derivation or the hand-over is.
+
+###### Inherited from
+
+[`FlowEdgeTagInput`](#flowedgetaginput).[`source`](#source-3)
+
+##### unused?
+
+```ts
+readonly optional unused?: true;
+```
+
+With `derive`: nothing ever reads the derived value.
+
+###### Inherited from
+
+[`FlowEdgeTagInput`](#flowedgetaginput).[`unused`](#unused-1)
+
+##### via
+
+```ts
+readonly via: FlowVia;
+```
+
+###### Inherited from
+
+[`FlowEdgeTagInput`](#flowedgetaginput).[`via`](#via-1)
+
+***
+
+### FlowEdgeTagInput
+
+One tag as a producer supplies it -- the id is derived, never supplied.
+
+#### Extended by
+
+- [`FlowEdgeTag`](#flowedgetag)
+
+#### Properties
+
+##### edge
+
+```ts
+readonly edge: string;
+```
+
+Id of the existing edge that carries the data at this place (an edge id as `flowEdgeId` derives it).
+
+##### fresh?
+
+```ts
+readonly optional fresh?: true;
+```
+
+With `copy`: the value copied was already a fresh copy.
+
+##### source
+
+```ts
+readonly source: SourceLocation;
+```
+
+Where the copy, the derivation or the hand-over is.
+
+##### unused?
+
+```ts
+readonly optional unused?: true;
+```
+
+With `derive`: nothing ever reads the derived value.
+
+##### via
+
+```ts
+readonly via: FlowVia;
+```
+
+***
+
 ### FlowFilter
 
 Criteria for `filterFlow`; every supplied criterion must match.
@@ -1095,6 +1611,14 @@ readonly edges: readonly FlowEdge[];
 ```
 
 Every edge, ordered by id.
+
+##### edgeTags?
+
+```ts
+readonly optional edgeTags?: readonly FlowEdgeTag[];
+```
+
+What the scanner saw happen to the data of some edges, ordered by id. Absent when it saw nothing worth noting (ADR 0075).
 
 ##### nodes
 
@@ -1916,6 +2440,14 @@ readonly field: string;
 
 Capability-qualified dotted field path -- the Flow Model's field-node naming.
 
+##### firstSeen?
+
+```ts
+readonly optional firstSeen?: string;
+```
+
+Earliest time any matching event carried (ISO 8601, UTC); absent when none carried one. Never used in the id.
+
 ##### handling?
 
 ```ts
@@ -1929,6 +2461,14 @@ readonly id: string;
 ```
 
 Content-addressed: `observation:scope|kind:boundary|field|handling-or-dash`.
+
+##### lastSeen?
+
+```ts
+readonly optional lastSeen?: string;
+```
+
+Latest time any matching event carried; present exactly when `firstSeen` is.
 
 ##### scope
 
@@ -1976,13 +2516,37 @@ readonly scopes: readonly string[];
 
 Every distinct scope that contributed at least one observation, sorted.
 
+##### scopeTimes?
+
+```ts
+readonly optional scopeTimes?: readonly ObservationScopeTimes[];
+```
+
+First/last seen per scope, ordered by scope; absent when no event carried a time.
+
 ##### skipped
 
 ```ts
 readonly skipped: number;
 ```
 
-Events dropped as malformed -- stated, never silent.
+Events (and skip reports) dropped as malformed -- stated, never silent.
+
+##### truncatedScopes?
+
+```ts
+readonly optional truncatedScopes?: readonly string[];
+```
+
+The scopes with a truncation, sorted -- a claim built on one cannot be called verified near the cut. Absent when none.
+
+##### truncations?
+
+```ts
+readonly optional truncations?: readonly ObservationTruncation[];
+```
+
+What the recorder reported leaving out, ordered by scope, field, reason; absent when it reported nothing.
 
 ***
 
@@ -2269,6 +2833,16 @@ Options for `observationsToOtlp`.
 
 #### Properties
 
+##### scopeRoots?
+
+```ts
+readonly optional scopeRoots?: boolean;
+```
+
+Also emit one root span per scope (`data_cap.scope.root = "true"`, spanning the scope's first..last seen when the
+scope carried times) and point each observation span of that scope at it with `parentSpanId`. Off by default so
+the flat output stays byte-identical. The reader skips roots without counting them.
+
 ##### serviceName?
 
 ```ts
@@ -2293,6 +2867,17 @@ readonly optional maxEventsPerSpan?: number;
 
 The most events one span's `data_cap.count` may expand to (default 10 000), so a hostile or buggy count cannot exhaust memory.
 
+##### trustForeignTimes?
+
+```ts
+readonly optional trustForeignTimes?: boolean;
+```
+
+Also take `startTimeUnixNano`/`endTimeUnixNano` from spans NOT marked `data_cap.timed` (default false: such a
+span's stamp is usually the exporter's own instant, not an observation time). The first event of a span gets the
+start, the others the end. Only spans that carry the `data_cap.*` attributes are read at all. Invalid times are
+ignored and counted in `ignoredTimes`.
+
 ***
 
 ### OtlpReadResult
@@ -2306,6 +2891,14 @@ What `observationsFromOtlp` read.
 ```ts
 readonly events: readonly ObservationEvent[];
 ```
+
+##### ignoredTimes?
+
+```ts
+readonly optional ignoredTimes?: number;
+```
+
+Start/end times that were read (the span was timed, or `trustForeignTimes` was set) but missing or not a decimal-nanosecond string; absent when none.
 
 ##### skipped
 
@@ -2348,6 +2941,14 @@ readonly kind: 1;
 ```ts
 readonly name: string;
 ```
+
+##### parentSpanId?
+
+```ts
+readonly optional parentSpanId?: string;
+```
+
+Present on a scope's observation spans when `scopeRoots` is on: the root span of that scope.
 
 ##### spanId
 
@@ -2569,6 +3170,84 @@ readonly optional wasGeneratedBy?: Record<string, Attributes>;
 ```ts
 readonly optional wasInformedBy?: Record<string, Attributes>;
 ```
+
+***
+
+### RedundantTransform
+
+One redundant transformation of the data of one field.
+
+#### Properties
+
+##### capability
+
+```ts
+readonly capability: LeastDataCapability;
+```
+
+The capability the field belongs to.
+
+##### edges
+
+```ts
+readonly edges: readonly string[];
+```
+
+Ids of the flow edges this rests on, sorted.
+
+##### field
+
+```ts
+readonly field: string;
+```
+
+The field's top-level name.
+
+##### fieldNode
+
+```ts
+readonly fieldNode: string;
+```
+
+Id of the field's node in the Flow Model.
+
+##### hops
+
+```ts
+readonly hops: readonly string[];
+```
+
+For `forwarding-hop`: the ids of the function nodes that only hand the data on, in order, then the function that finally does something with it. Empty otherwise.
+
+##### kind
+
+```ts
+readonly kind: RedundantTransformKind;
+```
+
+##### paths
+
+```ts
+readonly paths: readonly (readonly string[])[];
+```
+
+The paths inside the field that are handled redundantly (`[]` is the whole field), sorted.
+
+##### source?
+
+```ts
+readonly optional source?: SourceLocation;
+```
+
+Where it happens: the copy, the derivation, or the call that starts a forwarding chain.
+
+##### via?
+
+```ts
+readonly optional via?: "serialized" | "copied";
+```
+
+For `round-trip`: how the data was taken apart and put back, `serialized` or `copied`.
 
 ***
 
@@ -2881,6 +3560,22 @@ How the evidence lines up for a claim.
 
 ***
 
+### CycloneDxInput
+
+```ts
+type CycloneDxInput = Pick<EvidenceModel, 
+  | "flow"
+  | "policy"
+  | "claims"
+  | "observation"
+  | "provenance"
+| "capability">;
+```
+
+What the projection reads from the Evidence Model.
+
+***
+
 ### DiagramInput
 
 ```ts
@@ -2938,7 +3633,14 @@ enforce the read-only half of purity but not the "no side effects" half.
 ### EvidenceRulesInput
 
 ```ts
-type EvidenceRulesInput = Pick<EvidenceModel, "capability" | "flow" | "policy" | "claims" | "observation" | "computed">;
+type EvidenceRulesInput = Pick<EvidenceModel, 
+  | "capability"
+  | "flow"
+  | "policy"
+  | "claims"
+  | "observation"
+  | "computed"
+| "provenance">;
 ```
 
 What the evaluator reads from the Evidence Model.
@@ -3024,6 +3726,24 @@ Why a part of the program could not be analyzed (ADR 0053 citations apply to eac
 
 ***
 
+### FlowVia
+
+```ts
+type FlowVia = "copy" | "serialize-roundtrip" | "forward" | "derive";
+```
+
+What the scanner saw happen to the data of an edge at one place, beyond what the edge says (ADR 0075).
+
+- `serialize-roundtrip`: the data was taken apart and put back together with nothing in between that reads it
+  (`JSON.parse(JSON.stringify(x))`, `Object.fromEntries(Object.entries(x))`).
+- `copy`: the data was copied and nothing was added, dropped or renamed (`structuredClone(x)`, `{ ...x }`,
+  `[...x]`, `Array.from(x)`). `fresh` says the copied value was itself a copy made by one of these.
+- `derive`: a value computed from the data was bound to a name that is never read (`unused`).
+- `forward`: reserved for a producer that knows a function only hands the data on. The scanner does not emit it;
+  forwarding chains are found from the edges alone, so no reader depends on this tag.
+
+***
+
 ### OscalInput
 
 ```ts
@@ -3096,12 +3816,22 @@ type ProvInput = Pick<EvidenceModel, "flow" | "claims" | "observation" | "proven
 
 What the projection reads from the Evidence Model.
 
+***
+
+### RedundantTransformKind
+
+```ts
+type RedundantTransformKind = "round-trip" | "forwarding-hop" | "dead-derivation";
+```
+
+The kinds of redundant transformation.
+
 ## Variables
 
 ### EVIDENCE\_RULE\_NAMES
 
 ```ts
-const EVIDENCE_RULE_NAMES: readonly ["noPolicyViolations", "noIndeterminatePolicies", "maxContradictedClaims", "maxUnknowns", "requireComplete", "maxUnusedSensitivePaths", "maxWholeFieldToClient", "requireObservations", "minVerifiedClaims", "requireVerified"];
+const EVIDENCE_RULE_NAMES: readonly ["noPolicyViolations", "noIndeterminatePolicies", "maxContradictedClaims", "maxUnknowns", "requireComplete", "maxUnusedSensitivePaths", "maxWholeFieldToClient", "requireObservations", "minVerifiedClaims", "requireVerified", "maxRedundantTransforms", "maxObservationAgeDays"];
 ```
 
 Every rule name the evaluator understands, in the order they are evaluated.
@@ -3115,6 +3845,16 @@ const FLOW_GRAPH_VIEW_VERSION: 1 = 1;
 ```
 
 Bump only when a renderer written for the previous shape could misread the new one.
+
+***
+
+### MIN\_FORWARDING\_HOPS
+
+```ts
+const MIN_FORWARDING_HOPS: 3 = 3;
+```
+
+The fewest functions in a chain for it to be a `forwarding-hop`.
 
 ## Functions
 
@@ -3135,6 +3875,48 @@ Finds unused paths and whole-field client exposure.
 #### Returns
 
 [`LeastDataReport`](#leastdatareport)
+
+***
+
+### analyzeRedundantTransforms()
+
+```ts
+function analyzeRedundantTransforms(flow): RedundantTransform[];
+```
+
+Finds the redundant transformations in a Flow Model, in a fixed order (by place, then kind). A model without
+`edgeTags` has no round trips or dead derivations to report; forwarding chains come from its edges.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `flow` | [`FlowModel`](#flowmodel) |
+
+#### Returns
+
+[`RedundantTransform`](#redundanttransform)[]
+
+***
+
+### buildCycloneDxBom()
+
+```ts
+function buildCycloneDxBom(evidence, options?): CycloneDxBom | undefined;
+```
+
+Projects the flow, policy, claims and observations into CycloneDX 1.6, or `undefined` when no flow was computed.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `evidence` | [`CycloneDxInput`](#cyclonedxinput) |
+| `options?` | [`CycloneDxOptions`](#cyclonedxoptions) |
+
+#### Returns
+
+[`CycloneDxBom`](#cyclonedxbom) \| `undefined`
 
 ***
 
@@ -3475,6 +4257,48 @@ Parses a rules document (JSON text), rejecting anything it does not fully unders
 #### Returns
 
 [`ParsedEvidenceRules`](#parsedevidencerules)
+
+***
+
+### redundantTransformFindings()
+
+```ts
+function redundantTransformFindings(items, flow): ReportFinding[];
+```
+
+Turns redundant transformations into report findings (family `flow`, always `info`: this analysis alone never fails a build).
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `items` | readonly [`RedundantTransform`](#redundanttransform)[] |
+| `flow` | [`FlowModel`](#flowmodel) |
+
+#### Returns
+
+[`ReportFinding`](build.md#reportfinding)[]
+
+***
+
+### renderFlowCycloneDx()
+
+```ts
+function renderFlowCycloneDx(evidence, options?): string | undefined;
+```
+
+`buildCycloneDxBom` serialized as stable, indented JSON with a trailing newline, or `undefined` when no flow was computed.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `evidence` | [`CycloneDxInput`](#cyclonedxinput) |
+| `options?` | [`CycloneDxOptions`](#cyclonedxoptions) |
+
+#### Returns
+
+`string` \| `undefined`
 
 ***
 

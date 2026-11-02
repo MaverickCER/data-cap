@@ -37,6 +37,13 @@
         "coverage": {
           "$ref": "#/definitions/FlowCoverage",
           "description": "What was and was not analyzed."
+        },
+        "edgeTags": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FlowEdgeTag"
+          },
+          "description": "What the scanner saw happen to the data of some edges, ordered by id. Absent when it saw nothing worth noting (ADR 0075)."
         }
       },
       "required": [
@@ -363,6 +370,54 @@
       ],
       "additionalProperties": false,
       "description": "What was and was not analyzed -- a projection must not call a graph complete unless `complete`."
+    },
+    "FlowEdgeTag": {
+      "type": "object",
+      "properties": {
+        "via": {
+          "$ref": "#/definitions/FlowVia"
+        },
+        "edge": {
+          "type": "string",
+          "description": "Id of the existing edge that carries the data at this place (an edge id as `flowEdgeId` derives it)."
+        },
+        "source": {
+          "$ref": "#/definitions/SourceLocation",
+          "description": "Where the copy, the derivation or the hand-over is."
+        },
+        "fresh": {
+          "type": "boolean",
+          "const": true,
+          "description": "With `copy`: the value copied was already a fresh copy."
+        },
+        "unused": {
+          "type": "boolean",
+          "const": true,
+          "description": "With `derive`: nothing ever reads the derived value."
+        },
+        "id": {
+          "type": "string",
+          "description": "Content-addressed: `tag:via:edgeId@file:line:column`."
+        }
+      },
+      "required": [
+        "edge",
+        "id",
+        "source",
+        "via"
+      ],
+      "additionalProperties": false,
+      "description": "One tag of the Flow Model."
+    },
+    "FlowVia": {
+      "type": "string",
+      "enum": [
+        "copy",
+        "serialize-roundtrip",
+        "forward",
+        "derive"
+      ],
+      "description": "What the scanner saw happen to the data of an edge at one place, beyond what the edge says (ADR 0075).\n\n- `serialize-roundtrip`: the data was taken apart and put back together with nothing in between that reads it (`JSON.parse(JSON.stringify(x))`, `Object.fromEntries(Object.entries(x))`).\n- `copy`: the data was copied and nothing was added, dropped or renamed (`structuredClone(x)`, `{...x }`, `[...x]`, `Array.from(x)`). `fresh` says the copied value was itself a copy made by one of these.\n- `derive`: a value computed from the data was bound to a name that is never read (`unused`).\n- `forward`: reserved for a producer that knows a function only hands the data on. The scanner does not emit it; forwarding chains are found from the edges alone, so no reader depends on this tag."
     }
   }
 }

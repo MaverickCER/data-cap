@@ -82,6 +82,21 @@
             "$ref": "#/definitions/EvidenceRefModel"
           },
           "description": "Which sub-models this claim was derived from."
+        },
+        "observedPaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The capability-qualified names of the observed paths that back this claim, sorted and distinct; absent when none did."
+        },
+        "pathCoverage": {
+          "$ref": "#/definitions/ClaimPathCoverage",
+          "description": "Whether those paths cover the claim's whole path scope; present exactly when `observedPaths` is."
+        },
+        "lastObservedAt": {
+          "type": "string",
+          "description": "The latest time any backing observation was seen (ISO 8601, UTC); absent when none carried a time."
         }
       },
       "required": [
@@ -145,6 +160,13 @@
         "traceComplete": {
           "type": "boolean",
           "description": "False when the static trace behind the claim touched an `unknown` fact: the real picture may be larger."
+        },
+        "truncatedScopes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Contributing observation scopes whose recorder reported leaving out evidence near this claim's field, sorted; absent when none."
         }
       },
       "required": [
@@ -180,6 +202,14 @@
         "observation"
       ],
       "description": "Which sub-model of the Evidence Model a piece of evidence lives in."
+    },
+    "ClaimPathCoverage": {
+      "type": "string",
+      "enum": [
+        "whole",
+        "partial"
+      ],
+      "description": "Whether the observations seen cover the claim's whole path scope or only narrower paths inside it."
     },
     "ClaimsSummary": {
       "type": "object",

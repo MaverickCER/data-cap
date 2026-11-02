@@ -987,6 +987,14 @@ readonly traceComplete: boolean;
 
 False when the static trace behind the claim touched an `unknown` fact: the real picture may be larger.
 
+##### truncatedScopes?
+
+```ts
+readonly optional truncatedScopes?: readonly string[];
+```
+
+Contributing observation scopes whose recorder reported leaving out evidence near this claim's field, sorted; absent when none.
+
 ***
 
 ### ClaimsModelInputs
@@ -2092,6 +2100,14 @@ Everything a producer hands to `buildFlowModel`.
 readonly edges: readonly FlowEdgeInput[];
 ```
 
+##### edgeTags?
+
+```ts
+readonly optional edgeTags?: readonly FlowEdgeTagInput[];
+```
+
+What the scanner saw happen to the data of some edges. Optional and additive: edge ids do not depend on it.
+
 ##### nodes
 
 ```ts
@@ -2452,6 +2468,14 @@ readonly optional flowSinks?: readonly FlowSinkPattern[];
 
 Sinks the flow pass recognises instead of the defaults (`DEFAULT_FLOW_SINKS`). Only meaningful with `flowEvidence`.
 
+##### flowSummaries?
+
+```ts
+readonly optional flowSummaries?: readonly FlowSummary[];
+```
+
+What calls into packages do, declared by the project (`FlowSummary`): without one, such a call that receives tracked data is an explicit unknown. Only meaningful with `flowEvidence`.
+
 ##### fs
 
 ```ts
@@ -2494,6 +2518,15 @@ Runtime observations already collected through `data-cap/observe`
 (ADR 0072), ingested into the Evidence Model's `observation` and, with
 `flowEvidence`, joined to the static claims. Events, not a file path:
 this library never opens a file of its own.
+
+##### observationSkips?
+
+```ts
+readonly optional observationSkips?: readonly ObservationSkip[];
+```
+
+What the recorder left out while collecting `observations` (`createMemorySink().skips()`), so a claim that
+rests on an incompletely recorded scope reads `indeterminate` rather than `verified`.
 
 ##### ownership?
 
@@ -3095,6 +3128,18 @@ Sinks the flow pass recognises instead of the defaults (`DEFAULT_FLOW_SINKS`). O
 
 [`GenerateDataArtifactsOptions`](#generatedataartifactsoptions).[`flowSinks`](#flowsinks)
 
+##### flowSummaries?
+
+```ts
+readonly optional flowSummaries?: readonly FlowSummary[];
+```
+
+What calls into packages do, declared by the project (`FlowSummary`): without one, such a call that receives tracked data is an explicit unknown. Only meaningful with `flowEvidence`.
+
+###### Inherited from
+
+[`GenerateDataArtifactsOptions`](#generatedataartifactsoptions).[`flowSummaries`](#flowsummaries)
+
 ##### fs
 
 ```ts
@@ -3157,6 +3202,19 @@ this library never opens a file of its own.
 ###### Inherited from
 
 [`GenerateDataArtifactsOptions`](#generatedataartifactsoptions).[`observations`](#observations)
+
+##### observationSkips?
+
+```ts
+readonly optional observationSkips?: readonly ObservationSkip[];
+```
+
+What the recorder left out while collecting `observations` (`createMemorySink().skips()`), so a claim that
+rests on an incompletely recorded scope reads `indeterminate` rather than `verified`.
+
+###### Inherited from
+
+[`GenerateDataArtifactsOptions`](#generatedataartifactsoptions).[`observationSkips`](#observationskips)
 
 ##### ownership?
 
@@ -5042,6 +5100,14 @@ readonly optional sinks?: readonly FlowSinkPattern[];
 
 Sinks to recognise instead of `DEFAULT_FLOW_SINKS`.
 
+##### summaries?
+
+```ts
+readonly optional summaries?: readonly FlowSummary[];
+```
+
+What calls into packages do, declared by the project. Each makes a call that would be an unknown a `declared` fact instead.
+
 ##### tsconfig?
 
 ```ts
@@ -5427,6 +5493,61 @@ readonly optional position?: SourcePosition;
 
 ***
 
+### FlowSummary
+
+```ts
+type FlowSummary = {
+  export: string;
+  module: string;
+} & 
+  | {
+  approximate?: true;
+  effect: "pass-through";
+}
+  | {
+  approximate?: true;
+  arg: number;
+  effect: "returns-arg";
+}
+  | {
+  boundary: FlowSinkPattern["boundary"];
+  effect: "sink";
+  handling?: FlowHandling;
+}
+  | {
+  effect: "sanitizes";
+}
+  | {
+  effect: "ignores";
+};
+```
+
+What a call to a function of a package does, as the project's author states it. A package's code is never read
+(ADR 0002), so this is the only sound way past it: without a summary, a call that receives tracked data is an
+explicit unknown. Whatever a summary lets the scan follow is `declared` evidence (ADR 0071), never `static`: it
+is the author's word, not the scan's proof.
+
+`module` is the specifier as the code writes it (`lodash`, `lodash/fp`, `@acme/sdk`). `export` is the name it is
+imported by (`pick`), `default` for a default import, or a dotted path to a member (`z.object`,
+`default.get`). A member of a default import also matches the bare member name (`_.pick` matches `pick`), for
+packages whose default export is the object of their named exports. The first summary that matches wins.
+
+#### Type Declaration
+
+##### export
+
+```ts
+readonly export: string;
+```
+
+##### module
+
+```ts
+readonly module: string;
+```
+
+***
+
 ### JsonSchemaLike
 
 ```ts
@@ -5620,6 +5741,7 @@ type ReportFindingCode =
   | "LEAST_DATA_UNUSED_SENSITIVE_PATH"
   | "LEAST_DATA_WHOLE_FIELD_TO_CLIENT"
   | "LEAST_DATA_ANALYSIS_INDETERMINATE"
+  | "LEAST_DATA_REDUNDANT_TRANSFORM"
   | "FLOW_POLICY_VIOLATED"
   | "FLOW_POLICY_INDETERMINATE"
   | "FLOW_ANALYSIS_INCOMPLETE";
@@ -6233,16 +6355,18 @@ Builds a deterministic snapshot of the current inventory -- every capability inc
 ### buildObservationModel()
 
 ```ts
-function buildObservationModel(events): ObservationModel;
+function buildObservationModel(events, skips?): ObservationModel;
 ```
 
-Aggregates `events` into the Observation Model.
+Aggregates `events` into the Observation Model. `skips` is what the recorder reported leaving out
+(`createMemorySink().skips()`): it becomes `truncations`/`truncatedScopes`, which the Claims Model reads.
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `events` | readonly [`ObservationEvent`](observe.md#observationevent)[] |
+| Parameter | Type | Default value |
+| ------ | ------ | ------ |
+| `events` | readonly [`ObservationEvent`](observe.md#observationevent)[] | `undefined` |
+| `skips?` | readonly [`ObservationSkip`](observe.md#observationskip)[] | `[]` |
 
 #### Returns
 
@@ -7731,6 +7855,18 @@ Re-exports [analyzeLeastData](evidence.md#analyzeleastdata)
 
 ***
 
+### analyzeRedundantTransforms
+
+Re-exports [analyzeRedundantTransforms](evidence.md#analyzeredundanttransforms)
+
+***
+
+### buildCycloneDxBom
+
+Re-exports [buildCycloneDxBom](evidence.md#buildcyclonedxbom)
+
+***
+
 ### buildFlowGraphView
 
 Re-exports [buildFlowGraphView](evidence.md#buildflowgraphview)
@@ -7764,6 +7900,18 @@ Re-exports [ClaimsModel](evidence.md#claimsmodel)
 ### ClaimVerification
 
 Re-exports [ClaimVerification](evidence.md#claimverification-1)
+
+***
+
+### CycloneDxBom
+
+Re-exports [CycloneDxBom](evidence.md#cyclonedxbom)
+
+***
+
+### CycloneDxOptions
+
+Re-exports [CycloneDxOptions](evidence.md#cyclonedxoptions)
 
 ***
 
@@ -7905,6 +8053,18 @@ Re-exports [FlowEdgeKind](evidence.md#flowedgekind-1)
 
 ***
 
+### FlowEdgeTag
+
+Re-exports [FlowEdgeTag](evidence.md#flowedgetag)
+
+***
+
+### FlowEdgeTagInput
+
+Re-exports [FlowEdgeTagInput](evidence.md#flowedgetaginput)
+
+***
+
 ### FlowFilter
 
 Re-exports [FlowFilter](evidence.md#flowfilter)
@@ -7995,6 +8155,12 @@ Re-exports [FlowUnknownReason](evidence.md#flowunknownreason-1)
 
 ***
 
+### FlowVia
+
+Re-exports [FlowVia](evidence.md#flowvia)
+
+***
+
 ### FlowView
 
 Re-exports [FlowView](evidence.md#flowview)
@@ -8016,6 +8182,12 @@ Re-exports [LeastDataIndeterminate](evidence.md#leastdataindeterminate)
 ### LeastDataReport
 
 Re-exports [LeastDataReport](evidence.md#leastdatareport)
+
+***
+
+### MIN\_FORWARDING\_HOPS
+
+Re-exports [MIN_FORWARDING_HOPS](evidence.md#min_forwarding_hops)
 
 ***
 
@@ -8124,6 +8296,30 @@ Re-exports [PolicyResult](evidence.md#policyresult)
 ### ProvDocument
 
 Re-exports [ProvDocument](evidence.md#provdocument)
+
+***
+
+### RedundantTransform
+
+Re-exports [RedundantTransform](evidence.md#redundanttransform)
+
+***
+
+### redundantTransformFindings
+
+Re-exports [redundantTransformFindings](evidence.md#redundanttransformfindings)
+
+***
+
+### RedundantTransformKind
+
+Re-exports [RedundantTransformKind](evidence.md#redundanttransformkind-1)
+
+***
+
+### renderFlowCycloneDx
+
+Re-exports [renderFlowCycloneDx](evidence.md#renderflowcyclonedx)
 
 ***
 

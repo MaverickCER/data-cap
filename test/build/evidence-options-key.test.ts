@@ -98,4 +98,36 @@ describe("computeSourceFingerprint with an options key", () => {
     expect(a).not.toBe(base)
     expect(b).not.toBe(a)
   })
+
+  it("keys flow summaries by every field, in order, with a fixed placeholder for each one left out", () => {
+    expect(
+      evidenceOptionsKey({
+        flowEvidence: true,
+        flowSummaries: [
+          {
+            module: "lodash",
+            export: "pick",
+            effect: "sink",
+            arg: 1,
+            approximate: true,
+            boundary: { kind: "log", name: "audit" },
+            handling: "masked",
+          },
+          { module: "zod", export: "parse", effect: "pass-through" },
+        ],
+      }),
+    ).toBe(
+      '{"flow":true,"summaries":[["lodash","pick","sink",1,true,"log","audit","masked"],["zod","parse","pass-through","",false,"","",""]]}',
+    )
+  })
+
+  it("keeps an argument of 0 apart from no argument", () => {
+    const key = (arg?: number) =>
+      evidenceOptionsKey({
+        flowEvidence: true,
+        flowSummaries: [{ module: "m", export: "e", effect: "returns-arg", arg }],
+      })
+    expect(key(0)).toContain('"returns-arg",0,')
+    expect(key(0)).not.toBe(key())
+  })
 })

@@ -1668,6 +1668,7 @@
         "LEAST_DATA_UNUSED_SENSITIVE_PATH",
         "LEAST_DATA_WHOLE_FIELD_TO_CLIENT",
         "LEAST_DATA_ANALYSIS_INDETERMINATE",
+        "LEAST_DATA_REDUNDANT_TRANSFORM",
         "FLOW_POLICY_VIOLATED",
         "FLOW_POLICY_INDETERMINATE",
         "FLOW_ANALYSIS_INCOMPLETE"
@@ -1919,6 +1920,13 @@
         "coverage": {
           "$ref": "#/definitions/FlowCoverage",
           "description": "What was and was not analyzed."
+        },
+        "edgeTags": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FlowEdgeTag"
+          },
+          "description": "What the scanner saw happen to the data of some edges, ordered by id. Absent when it saw nothing worth noting (ADR 0075)."
         }
       },
       "required": [
@@ -2166,6 +2174,54 @@
       "additionalProperties": false,
       "description": "What was and was not analyzed -- a projection must not call a graph complete unless `complete`."
     },
+    "FlowEdgeTag": {
+      "type": "object",
+      "properties": {
+        "via": {
+          "$ref": "#/definitions/FlowVia"
+        },
+        "edge": {
+          "type": "string",
+          "description": "Id of the existing edge that carries the data at this place (an edge id as `flowEdgeId` derives it)."
+        },
+        "source": {
+          "$ref": "#/definitions/SourceLocation",
+          "description": "Where the copy, the derivation or the hand-over is."
+        },
+        "fresh": {
+          "type": "boolean",
+          "const": true,
+          "description": "With `copy`: the value copied was already a fresh copy."
+        },
+        "unused": {
+          "type": "boolean",
+          "const": true,
+          "description": "With `derive`: nothing ever reads the derived value."
+        },
+        "id": {
+          "type": "string",
+          "description": "Content-addressed: `tag:via:edgeId@file:line:column`."
+        }
+      },
+      "required": [
+        "edge",
+        "id",
+        "source",
+        "via"
+      ],
+      "additionalProperties": false,
+      "description": "One tag of the Flow Model."
+    },
+    "FlowVia": {
+      "type": "string",
+      "enum": [
+        "copy",
+        "serialize-roundtrip",
+        "forward",
+        "derive"
+      ],
+      "description": "What the scanner saw happen to the data of an edge at one place, beyond what the edge says (ADR 0075).\n\n- `serialize-roundtrip`: the data was taken apart and put back together with nothing in between that reads it (`JSON.parse(JSON.stringify(x))`, `Object.fromEntries(Object.entries(x))`).\n- `copy`: the data was copied and nothing was added, dropped or renamed (`structuredClone(x)`, `{...x }`, `[...x]`, `Array.from(x)`). `fresh` says the copied value was itself a copy made by one of these.\n- `derive`: a value computed from the data was bound to a name that is never read (`unused`).\n- `forward`: reserved for a producer that knows a function only hands the data on. The scanner does not emit it; forwarding chains are found from the edges alone, so no reader depends on this tag."
+    },
     "PolicyModel": {
       "type": "object",
       "properties": {
@@ -2383,9 +2439,30 @@
           },
           "description": "Every observation, ordered by id."
         },
+        "scopeTimes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ObservationScopeTimes"
+          },
+          "description": "First/last seen per scope, ordered by scope; absent when no event carried a time."
+        },
         "skipped": {
           "type": "number",
-          "description": "Events dropped as malformed -- stated, never silent."
+          "description": "Events (and skip reports) dropped as malformed -- stated, never silent."
+        },
+        "truncations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ObservationTruncation"
+          },
+          "description": "What the recorder reported leaving out, ordered by scope, field, reason; absent when it reported nothing."
+        },
+        "truncatedScopes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The scopes with a truncation, sorted -- a claim built on one cannot be called verified near the cut. Absent when none."
         }
       },
       "required": [
@@ -2434,6 +2511,14 @@
           "type": "number",
           "description": "How many matching events were recorded."
         },
+        "firstSeen": {
+          "type": "string",
+          "description": "Earliest time any matching event carried (ISO 8601, UTC); absent when none carried one. Never used in the id."
+        },
+        "lastSeen": {
+          "type": "string",
+          "description": "Latest time any matching event carried; present exactly when `firstSeen` is."
+        },
         "status": {
           "type": "string",
           "const": "observed",
@@ -2450,6 +2535,64 @@
       ],
       "additionalProperties": false,
       "description": "One aggregated observation."
+    },
+    "ObservationScopeTimes": {
+      "type": "object",
+      "properties": {
+        "scope": {
+          "type": "string"
+        },
+        "firstSeen": {
+          "type": "string"
+        },
+        "lastSeen": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "scope",
+        "firstSeen",
+        "lastSeen"
+      ],
+      "additionalProperties": false,
+      "description": "First and last time anything was observed in one scope; only for scopes whose events carried times."
+    },
+    "ObservationTruncation": {
+      "type": "object",
+      "properties": {
+        "scope": {
+          "type": "string"
+        },
+        "field": {
+          "type": "string",
+          "description": "Capability-qualified dotted path below which evidence is missing (the capability itself for the root)."
+        },
+        "reason": {
+          "$ref": "#/definitions/ObservationSkipReason"
+        },
+        "count": {
+          "type": "number",
+          "description": "How many times the recorder reported this (scope, field, reason)."
+        }
+      },
+      "required": [
+        "scope",
+        "field",
+        "reason",
+        "count"
+      ],
+      "additionalProperties": false,
+      "description": "Evidence the recorder knowingly left out in one scope: below `field` something was not captured. Names only."
+    },
+    "ObservationSkipReason": {
+      "type": "string",
+      "enum": [
+        "dotted-key",
+        "max-depth",
+        "max-nodes",
+        "cycle"
+      ],
+      "description": "Why the walker did not record part of a value."
     },
     "ClaimsModel": {
       "type": "object",
@@ -2528,6 +2671,21 @@
             "$ref": "#/definitions/EvidenceRefModel"
           },
           "description": "Which sub-models this claim was derived from."
+        },
+        "observedPaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The capability-qualified names of the observed paths that back this claim, sorted and distinct; absent when none did."
+        },
+        "pathCoverage": {
+          "$ref": "#/definitions/ClaimPathCoverage",
+          "description": "Whether those paths cover the claim's whole path scope; present exactly when `observedPaths` is."
+        },
+        "lastObservedAt": {
+          "type": "string",
+          "description": "The latest time any backing observation was seen (ISO 8601, UTC); absent when none carried a time."
         }
       },
       "required": [
@@ -2580,6 +2738,13 @@
         "traceComplete": {
           "type": "boolean",
           "description": "False when the static trace behind the claim touched an `unknown` fact: the real picture may be larger."
+        },
+        "truncatedScopes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Contributing observation scopes whose recorder reported leaving out evidence near this claim's field, sorted; absent when none."
         }
       },
       "required": [
@@ -2588,6 +2753,14 @@
       ],
       "additionalProperties": false,
       "description": "What a claim covers and how completely."
+    },
+    "ClaimPathCoverage": {
+      "type": "string",
+      "enum": [
+        "whole",
+        "partial"
+      ],
+      "description": "Whether the observations seen cover the claim's whole path scope or only narrower paths inside it."
     },
     "ClaimsSummary": {
       "type": "object",

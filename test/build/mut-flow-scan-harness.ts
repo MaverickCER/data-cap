@@ -3,9 +3,9 @@ import os from "node:os"
 import path from "node:path"
 import { flowNodeId } from "../../src/flow/flow-model.js"
 import type { FlowEdgeInput, FlowModelInput } from "../../src/flow/flow-model.js"
-import { scanFlow } from "../../src/build/flow-scan.js"
+import { defaultScanLimits, scanFlowWithin } from "../../src/build/flow-scan.js"
 import type { FlowSinkPattern } from "../../src/build/flow-scan.js"
-import type { ScanFlowOptions, ScanFlowResult } from "../../src/build/flow-scan.js"
+import type { ScanFlowOptions, ScanFlowResult, ScanLimits } from "../../src/build/flow-scan.js"
 import type {
   CapabilityInventory,
   CapabilityNode,
@@ -155,12 +155,14 @@ export interface Harness {
     files: Record<string, string>,
     overrides?: Partial<ScanFlowOptions>,
     inventory?: CapabilityInventory,
+    limits?: Partial<ScanLimits>,
   ): Promise<ScanFlowResult>
   /** As `scan`, with every `res.json(` rewritten to its own sink (see `distinctSinks`). */
   scanDistinct(
     files: Record<string, string>,
     overrides?: Partial<ScanFlowOptions>,
     inventory?: CapabilityInventory,
+    limits?: Partial<ScanLimits>,
   ): Promise<ScanFlowResult>
   root(): string
   cleanup(): Promise<void>
@@ -172,11 +174,11 @@ export async function makeHarness(): Promise<Harness> {
   )
   const harness: Harness = {
     root: () => root,
-    async scanDistinct(files, overrides = {}, inventory = inventoryOf(capability())) {
+    async scanDistinct(files, overrides = {}, inventory = inventoryOf(capability()), limits = {}) {
       const { files: rewritten, sinks } = distinctSinks(files)
-      return harness.scan(rewritten, { sinks, ...overrides }, inventory)
+      return harness.scan(rewritten, { sinks, ...overrides }, inventory, limits)
     },
-    async scan(files, overrides = {}, inventory = inventoryOf(capability())) {
+    async scan(files, overrides = {}, inventory = inventoryOf(capability()), limits = {}) {
       const absolute: string[] = []
       for (const [relative, content] of Object.entries({ [CAP_FILE]: CAP_SOURCE, ...files })) {
         const filePath = path.join(root, relative)
@@ -184,14 +186,17 @@ export async function makeHarness(): Promise<Harness> {
         await fs.writeFile(filePath, content, "utf8")
         absolute.push(filePath)
       }
-      return scanFlow({
-        inventory,
-        files: absolute,
-        fs: nodeBuildFs,
-        root,
-        tsconfig: false,
-        ...overrides,
-      })
+      return scanFlowWithin(
+        {
+          inventory,
+          files: absolute,
+          fs: nodeBuildFs,
+          root,
+          tsconfig: false,
+          ...overrides,
+        },
+        { ...defaultScanLimits(), ...limits },
+      )
     },
     async cleanup() {
       await fs.rm(root, { recursive: true, force: true })

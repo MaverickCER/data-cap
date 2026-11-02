@@ -114,12 +114,32 @@ export interface EvidenceOptionsKeyInput {
         readonly handling?: string | undefined
       }[]
     | undefined
+  readonly flowSummaries?:
+    | readonly {
+        readonly module: string
+        readonly export: string
+        readonly effect: string
+        readonly arg?: number | undefined
+        readonly approximate?: true | undefined
+        readonly boundary?: { readonly kind: string; readonly name: string } | undefined
+        readonly handling?: string | undefined
+      }[]
+    | undefined
   readonly observations?:
     | readonly {
         readonly scope: string
         readonly boundary: { readonly kind: string; readonly name: string }
         readonly field: string
         readonly handling?: string | undefined
+        readonly at?: string | number | undefined
+      }[]
+    | undefined
+  readonly observationSkips?:
+    | readonly {
+        readonly scope: string
+        readonly boundary: { readonly kind: string; readonly name: string }
+        readonly field: string
+        readonly reason: string
       }[]
     | undefined
 }
@@ -145,6 +165,19 @@ export function evidenceOptionsKey(input: EvidenceOptionsKeyInput): string | und
         sink.handling ?? "",
       ])
     }
+    // The first summary that matches a call wins, so their order is part of what the evidence says.
+    if (input.flowSummaries !== undefined && input.flowSummaries.length > 0) {
+      parts["summaries"] = input.flowSummaries.map((summary) => [
+        summary.module,
+        summary.export,
+        summary.effect,
+        summary.arg ?? "",
+        summary.approximate === true,
+        summary.boundary?.kind ?? "",
+        summary.boundary?.name ?? "",
+        summary.handling ?? "",
+      ])
+    }
   }
   if (input.observations !== undefined) {
     parts["observations"] = input.observations
@@ -155,7 +188,17 @@ export function evidenceOptionsKey(input: EvidenceOptionsKeyInput): string | und
           event.boundary.name,
           event.field,
           event.handling ?? "",
+          ...(event.at === undefined ? [] : [String(event.at)]),
         ].join("\u0000"),
+      )
+      .sort()
+  }
+  if (input.observationSkips !== undefined && input.observationSkips.length > 0) {
+    parts["skips"] = input.observationSkips
+      .map((skip) =>
+        [skip.scope, skip.boundary.kind, skip.boundary.name, skip.field, skip.reason].join(
+          "\u0000",
+        ),
       )
       .sort()
   }

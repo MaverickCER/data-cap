@@ -22,7 +22,8 @@ describe("published JSON Schema: freshness", () => {
     const fresh = `${JSON.stringify(generateReportSchema(), null, 2)}\n`
     const committed = readFileSync(schemaPath, "utf8")
     expect(committed).toBe(fresh)
-  }, 15000)
+    // The type graph now includes the flow evidence types, so under coverage and a busy machine this takes well over 15s.
+  }, 90_000)
 })
 
 describe.skipIf(distMissing)(

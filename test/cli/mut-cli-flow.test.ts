@@ -192,6 +192,19 @@ describe("readRulesFile and readObservationsFile: exact errors", () => {
     expect((obs as Error).message).toBe("--observations o.json could not be read: plain")
   })
 
+  it.each(["null", "5", '"text"', "true", "{}", '{"events": 1}', '{"skips": []}'])(
+    "refuses an observations file that holds %s, with the message that says what it may hold",
+    async (content) => {
+      const file = path.join(dir, "obs.json")
+      await fsPromises.writeFile(file, content, "utf8")
+      await expect(readObservationsFile(file)).rejects.toThrow(
+        new Error(
+          `--observations ${file} must contain a JSON array of observation events, or an object with an "events" array and an optional "skips" array.`,
+        ),
+      )
+    },
+  )
+
   it("has exact messages for invalid observations JSON and non-arrays", async () => {
     const file = path.join(dir, "obs.json")
     await fsPromises.writeFile(file, "{no", "utf8")
@@ -200,7 +213,7 @@ describe("readRulesFile and readObservationsFile: exact errors", () => {
     )
     await fsPromises.writeFile(file, "{}", "utf8")
     await expect(readObservationsFile(file)).rejects.toThrow(
-      `--observations ${file} must contain a JSON array of observation events.`,
+      `--observations ${file} must contain a JSON array of observation events, or an object with an "events" array and an optional "skips" array.`,
     )
   })
 })

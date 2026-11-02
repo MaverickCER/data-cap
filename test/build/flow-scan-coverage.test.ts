@@ -306,11 +306,11 @@ export function h(res: any) {
       expect(responsePaths(model, "user")).toEqual(expect.arrayContaining(["email", "name"]))
     })
 
-    it("an assignment to a non-local base stores nothing", async () => {
+    it("an assignment through a nested member chain is stored under the variable the chain starts from", async () => {
       const { model } = await scan(
         handler(`  res.other.a = userData.fields.user.email\n  res.json(res.other.a)`),
       )
-      expect(responsePaths(model, "user")).toEqual([])
+      expect(responsePaths(model, "user")).toEqual(["email"])
     })
 
     it("object literals: shorthand, spreads, computed keys, methods, duplicates", async () => {
@@ -332,8 +332,10 @@ export function h(res: any) {
   res.json(o.dup)
   res.json(o.method())`),
       )
+      // The method stored in the literal is called through `o.method()` and returns the password hash; a computed key
+      // stores its value under an unknown name, so every read of `o` reaches `email` below some path.
       expect(responsePaths(model, "user")).toEqual(
-        expect.arrayContaining(["id", "role", "name", "email"]),
+        expect.arrayContaining(["id", "role", "name", "passwordHash", "email.id"]),
       )
       expect(responsePaths(model, "team")).toEqual(["name"])
     })
@@ -393,7 +395,7 @@ export function h(res: any) {
       expect(responsePaths(model, "user")).toEqual(["email", "id", "name"])
     })
 
-    it("if statements follow both branches; a for-of with a destructuring target binds nothing", async () => {
+    it("if statements follow both branches; a for-of with a destructuring target binds its element", async () => {
       const { model } = await scan(
         handler(`  if (userData.fields.user.role) { res.json(userData.fields.user.email) } else { res.json(userData.fields.user.name) }
   if (key) res.json(userData.fields.user.id)
@@ -402,8 +404,8 @@ export function h(res: any) {
   return
 `),
       )
-      // The condition `role` is read, not forwarded; the destructuring for-of target binds nothing.
-      expect(responsePaths(model, "user")).toEqual(["email", "id", "name"])
+      // The condition `role` is read, not forwarded; the destructuring for-of target binds the element.
+      expect(responsePaths(model, "user")).toEqual(["email", "id", "name", "passwordHash.[]"])
     })
 
     it("try/finally without a catch, and a catch without a binding, are both walked", async () => {
@@ -444,7 +446,9 @@ export function h(res: any) {
         handler(`  const JSON: any = { stringify: (v: any) => v }
   res.json(JSON.stringify(userData.fields.user.email))`),
       )
-      expect(model.unknowns.map((u) => u.reason)).toEqual(["unresolved-call"])
+      // The shadowing object's own method is the one called, exactly (a builtin would have made it approximate).
+      expect(model.unknowns).toEqual([])
+      expect(model.edges.find((e) => e.kind === "side-effect")?.status).toBe("static")
     })
 
     it("an immediately-invoked function expression and an anonymous callback are analyzed", async () => {
@@ -495,7 +499,7 @@ export function h(res: any) {
       expect(responsePaths(model, "user")).toEqual(["email", "id", "name", "passwordHash", "role"])
     })
 
-    it("forEach and predicate callbacks return nothing, with or without a resolvable callback", async () => {
+    it("forEach and predicate callbacks return nothing; a callback that cannot be resolved is reported", async () => {
       const { model } = await scan(
         handler(`  const a: any[] = [userData.fields.user.email]
   const b: any[] = [userData.fields.user.name]
@@ -511,7 +515,14 @@ export function h(res: any) {
       )
       expect(responsePaths(model, "user")).toEqual([])
       expect(responsePaths(model, "team")).toEqual([])
-      expect(model.unknowns).toEqual([])
+      // The elements went into `unknownFn`, which may send them anywhere: one unknown per such call, none for the rest.
+      expect(
+        model.unknowns.map((u) => [u.reason, u.source.line, u.data?.map((d) => d.path.join("."))]),
+      ).toEqual([
+        ["unresolved-call", 11, ["role"]],
+        ["unresolved-call", 12, ["name"]],
+        ["unresolved-call", 13, ["name"]],
+      ])
     })
 
     it("map with a callback it cannot resolve is an unresolved call", async () => {
@@ -546,7 +557,7 @@ export function h(res: any) {
       expect(responsePaths(model, "user")).toEqual(expect.arrayContaining(["email", "name"]))
     })
 
-    it("call, apply and bind on a project function are unresolved, with the data they received", async () => {
+    it("call, apply and bind on a project function are followed", async () => {
       const { model } = await scan({
         "app/p.ts": `${IMPORT_CAP}function target(v: any) { return v }
 export function h(res: any) {
@@ -556,12 +567,8 @@ export function h(res: any) {
 }
 `,
       })
-      expect(model.unknowns.map((u) => u.reason)).toEqual(
-        expect.arrayContaining(["unresolved-call"]),
-      )
-      expect(model.unknowns.flatMap((u) => u.data ?? []).map((d) => d.path.join("."))).toEqual(
-        expect.arrayContaining(["email", "name", "id"]),
-      )
+      expect(model.unknowns).toEqual([])
+      expect(responsePaths(model, "user")).toEqual(["email", "id", "name"])
     })
 
     it("predicates, shape-preserving and transforming string/array methods", async () => {
@@ -877,23 +884,15 @@ export function h(res: any) {
       expect(model.unknowns.map((u) => u.reason)).toContain("unresolved-call")
     })
 
-    it("call, apply and bind on a local function value are unresolved with the data they received", async () => {
+    it("call, apply and bind on a local function value are followed; the bound function carries what it fixed", async () => {
       const { model } = await scan(
         handler(`  const t = (v: any) => v
   res.json(t.call(null, userData.fields.user.email))
   res.json(t.apply(null, [userData.fields.user.name]))
   res.json(t.bind(null, userData.fields.user.id))`),
       )
-      expect(model.unknowns.map((u) => u.reason)).toEqual([
-        "unresolved-call",
-        "unresolved-call",
-        "unresolved-call",
-      ])
-      expect(model.unknowns.flatMap((u) => u.data ?? []).map((d) => d.path.join("."))).toEqual([
-        "email",
-        "name",
-        "id",
-      ])
+      expect(model.unknowns).toEqual([])
+      expect(responsePaths(model, "user")).toEqual(["email", "id", "name"])
     })
 
     it("top-level variables without initializers or exports are not exported functions", async () => {
@@ -933,7 +932,7 @@ export function h(res: any) {
       expect(crossing.every((e) => e.handling === undefined)).toBe(true)
     })
 
-    it("an inventory entry whose path does not match a scanned file is registered under its own path and cannot be followed", async () => {
+    it("an inventory entry spelled `./features/...` is registered under the normal path and followed like any other", async () => {
       const inv = inventoryOf(capability({ file: "./features/user/user.ts" }))
       const { model } = await scan(
         handler(`  res.json(userData.getSnapshot())\n  res.json(userData.fields.user.email)`),
@@ -941,9 +940,17 @@ export function h(res: any) {
         inv,
       )
       expect(model.nodes.find((n) => n.kind === "field" && n.name === "userData.user")?.scope).toBe(
-        "./features/user/user.ts",
+        "features/user/user.ts",
       )
-      expect(model.edges.filter((e) => e.kind === "side-effect")).toEqual([])
+      expect(model.nodes.some((n) => n.scope.startsWith("./"))).toBe(false)
+      // The whole snapshot is sent first (every field of the capability), then the one field.
+      const sideEffects = model.edges.filter((e) => e.kind === "side-effect")
+      expect(sideEffects.map((e) => e.path?.join("."))).toEqual(["", "", "", "", "email"])
+      expect(sideEffects.map((e) => e.origin).sort()).toEqual(
+        ["user", "team", "tags", "empty", "user"]
+          .map((name) => flowNodeId("field", "features/user/user.ts", `userData.${name}`))
+          .sort(),
+      )
     })
 
     it("a field with an empty path and a write with an empty path are keyed by the empty name", async () => {

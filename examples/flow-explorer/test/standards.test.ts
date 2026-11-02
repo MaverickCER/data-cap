@@ -87,6 +87,39 @@ describe("OSCAL", () => {
   })
 })
 
+describe("CycloneDX", () => {
+  it("is valid against the official CycloneDX 1.6 schema, and states the leak, the unknown and the incomplete coverage", () => {
+    const ajv = new Ajv({ strict: false, allErrors: true })
+    addFormats(ajv)
+    ajv.addSchema(standards("spdx.schema.json") as object)
+    ajv.addSchema(standards("jsf-0.82.schema.json") as object)
+    const validate = ajv.compile(standards("bom-1.6.schema.json") as object)
+    type Property = { name: string; value: string }
+    type Service = { "bom-ref": string; name: string; properties: Property[]; data?: { flow: string; classification: string; description: string; destination?: string[]; source?: string[] }[] }
+    const bom = JSON.parse(docs("flow.cdx.json")) as {
+      specVersion: string
+      metadata: { properties: Property[] }
+      services: Service[]
+      annotations: { text: string }[]
+    }
+    assert.equal(validate(bom), true, JSON.stringify(validate.errors?.slice(0, 3)))
+    assert.equal(bom.specVersion, "1.6")
+    const prop = (owner: { properties: Property[] }, name: string): string[] => owner.properties.filter((p) => p.name === name).map((p) => p.value)
+    assert.deepEqual(prop(bom.metadata, "data-cap:coverage.complete"), ["false"], "an incomplete analysis is never presented as complete")
+    const component = bom.services.find((service) => service.name === "src/features/user.capability.ts")
+    const response = bom.services.find((service) => service.name === "http-response")
+    assert.ok(component && response)
+    const toClient = (component.data ?? []).filter((entry) => entry.flow === "outbound" && entry.destination?.[0]?.endsWith(`#${response["bom-ref"]}`))
+    assert.deepEqual(toClient.map((entry) => entry.classification), ["confidential"])
+    assert.ok(toClient.some((entry) => /status: static/.test(entry.description) && /\(whole\)/.test(entry.description)), "the whole-record send to the client is a static outbound flow")
+    assert.deepEqual(prop(component, "data-cap:status"), ["static"])
+    assert.deepEqual(prop(bom.services.find((service) => service.name === "postgres:users")!, "data-cap:status"), ["declared"])
+    const text = bom.annotations.map((note) => note.text)
+    assert.ok(text.some((line) => line.startsWith("policy violated: userData/no-password-to-client")))
+    assert.ok(text.some((line) => line.startsWith("unknown: unresolved-call at src/app/track.ts")))
+  })
+})
+
 describe("PROV-JSON", () => {
   it("is referentially closed and ties the leak's claim to its evidence", () => {
     const prov = JSON.parse(docs("flow.prov.json")) as Record<string, Record<string, Record<string, unknown>>>

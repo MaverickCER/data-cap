@@ -57,7 +57,7 @@ describe("flow-scan: remaining behaviours", () => {
     `)
   })
 
-  it("catch and finally callbacks do not contribute their return value", async () => {
+  it("a catch callback contributes its return value, a finally callback does not", async () => {
     expect(
       await run([
         `  const p: any = ${USER}.id\n  res.json(p.catch(() => ${USER}.name))`,
@@ -94,6 +94,8 @@ describe("flow-scan: remaining behaviours", () => {
       E reads field:features/user/user.ts#userData.user->function:app/p.ts#p0>anonymous@4:19 p=name static o=field:features/user/user.ts#userData.user h= @app/p.ts:4:25
       E returns function:app/p.ts#p0>anonymous@4:19->return:app/p.ts#p0>anonymous@4:19#return p=name static o=field:features/user/user.ts#userData.user h= @app/p.ts:4:25
       E side-effect function:app/p.ts#p0->boundary:boundary:code#b0 p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:4:3
+      E passes return:app/p.ts#p0>anonymous@4:19#return->function:app/p.ts#p0 p=name static o=field:features/user/user.ts#userData.user h= @app/p.ts:4:3
+      E side-effect function:app/p.ts#p0->boundary:boundary:code#b0 p=name static o=field:features/user/user.ts#userData.user h= @app/p.ts:4:3
       E reads field:features/user/user.ts#userData.user->function:app/p.ts#p1 p= static o=field:features/user/user.ts#userData.user h= @app/p.ts:7:18
       E reads field:features/user/user.ts#userData.user->function:app/p.ts#p1 p=id static o=field:features/user/user.ts#userData.user h= @app/p.ts:7:18
       E calls function:app/p.ts#p1->function:app/p.ts#p1>anonymous@8:21 p=- static o= h= @app/p.ts:8:11
@@ -193,14 +195,15 @@ describe("flow-scan: remaining behaviours", () => {
         `declare function mystery(v: any): any\n`,
       ),
     ).toMatchInlineSnapshot(`
-      "N function app/p.ts p0 static bk= cl= src=3:1
+      "N function app/p.ts p1 static bk= cl= src=6:1
+      N function app/p.ts p0 static bk= cl= src=3:1
       N parameter app/p.ts p0.res static bk= cl= src=
       N parameter app/p.ts p0.key static bk= cl= src=
       N return app/p.ts p0#return static bk= cl= src=
-      N function app/p.ts p1 static bk= cl= src=6:1
       N parameter app/p.ts p1.res static bk= cl= src=
       N parameter app/p.ts p1.key static bk= cl= src=
-      N return app/p.ts p1#return static bk= cl= src="
+      N return app/p.ts p1#return static bk= cl= src=
+      E reads field:features/user/user.ts#userData.user->function:app/p.ts#p1 p= static o=field:features/user/user.ts#userData.user h= @app/p.ts:7:5"
     `)
   })
 

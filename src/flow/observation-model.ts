@@ -16,7 +16,7 @@
 
 import { compareById } from "./flow-model.js"
 import type { FlowBoundaryKind, FlowHandling } from "./flow-model.js"
-import type { ObservationEvent } from "../observe/index.js"
+import type { ObservationEvent, ObservationSkip, ObservationSkipReason } from "../observe/index.js"
 
 /** Bump only when a reader could misinterpret the shape. */
 export const OBSERVATION_MODEL_SCHEMA_VERSION = 1
@@ -37,8 +37,29 @@ export interface Observation {
   readonly handling?: FlowHandling
   /** How many matching events were recorded. */
   readonly count: number
+  /** Earliest time any matching event carried (ISO 8601, UTC); absent when none carried one. Never used in the id. */
+  readonly firstSeen?: string
+  /** Latest time any matching event carried; present exactly when `firstSeen` is. */
+  readonly lastSeen?: string
   /** Always `observed` (ADR 0071). */
   readonly status: "observed"
+}
+
+/** Evidence the recorder knowingly left out in one scope: below `field` something was not captured. Names only. */
+export interface ObservationTruncation {
+  readonly scope: string
+  /** Capability-qualified dotted path below which evidence is missing (the capability itself for the root). */
+  readonly field: string
+  readonly reason: ObservationSkipReason
+  /** How many times the recorder reported this (scope, field, reason). */
+  readonly count: number
+}
+
+/** First and last time anything was observed in one scope; only for scopes whose events carried times. */
+export interface ObservationScopeTimes {
+  readonly scope: string
+  readonly firstSeen: string
+  readonly lastSeen: string
 }
 
 /** `data-cap`'s Observation Model. */
@@ -49,8 +70,14 @@ export interface ObservationModel {
   readonly scopes: readonly string[]
   /** Every observation, ordered by id. */
   readonly observations: readonly Observation[]
-  /** Events dropped as malformed -- stated, never silent. */
+  /** First/last seen per scope, ordered by scope; absent when no event carried a time. */
+  readonly scopeTimes?: readonly ObservationScopeTimes[]
+  /** Events (and skip reports) dropped as malformed -- stated, never silent. */
   readonly skipped: number
+  /** What the recorder reported leaving out, ordered by scope, field, reason; absent when it reported nothing. */
+  readonly truncations?: readonly ObservationTruncation[]
+  /** The scopes with a truncation, sorted -- a claim built on one cannot be called verified near the cut. Absent when none. */
+  readonly truncatedScopes?: readonly string[]
 }
 
 function isName(value: unknown): value is string {
@@ -63,6 +90,30 @@ interface CleanEvent {
   readonly name: string
   readonly field: string
   readonly handling: FlowHandling | undefined
+  /** Epoch milliseconds, when the event carried a usable time. */
+  readonly at: number | undefined
+}
+
+interface Range {
+  readonly first: number
+  readonly last: number
+}
+
+/** An event time as epoch ms, from epoch ms or an ISO 8601 string; `undefined` for anything not a valid instant. */
+function instantOf(raw: unknown): number | undefined {
+  const ms = typeof raw === "string" ? Date.parse(raw) : typeof raw === "number" ? raw : Number.NaN
+  const time = new Date(ms).getTime()
+  return Number.isNaN(time) ? undefined : time
+}
+
+function widen(range: Range | undefined, at: number | undefined): Range | undefined {
+  if (at === undefined) return range
+  if (range === undefined) return { first: at, last: at }
+  return { first: Math.min(range.first, at), last: Math.max(range.last, at) }
+}
+
+function iso(ms: number): string {
+  return new Date(ms).toISOString()
 }
 
 function clean(raw: unknown): CleanEvent | undefined {
@@ -80,6 +131,7 @@ function clean(raw: unknown): CleanEvent | undefined {
     name,
     field: candidate.field,
     handling,
+    at: instantOf(candidate.at),
   }
 }
 
@@ -89,15 +141,77 @@ function clean(raw: unknown): CleanEvent | undefined {
  * continues at a `.`: `userData.userExtra.email` is not inside `userData.user`.
  */
 export function subpathWithin(fieldName: string, observed: string): string[] | undefined {
-  if (observed === fieldName) return []
-  return observed.startsWith(`${fieldName}.`)
-    ? observed.slice(fieldName.length + 1).split(".")
+  return observed === fieldName || observed.startsWith(`${fieldName}.`)
+    ? pathWithin(fieldName, observed)
     : undefined
 }
 
-/** Aggregates `events` into the Observation Model. */
-export function buildObservationModel(events: readonly ObservationEvent[]): ObservationModel {
+/** `subpathWithin` for a name already known to be the field or inside it: the path inside the field. */
+export function pathWithin(fieldName: string, observed: string): string[] {
+  return observed === fieldName ? [] : observed.slice(fieldName.length + 1).split(".")
+}
+
+/** `name`, then each name it lies inside of, shortest first: `a.b.c` gives `a.b.c`, `a`, `a.b`. */
+export function nameAndAncestors(name: string): string[] {
+  const parts = name.split(".")
+  return [name, ...parts.slice(0, -1).map((_, index) => parts.slice(0, index + 1).join("."))]
+}
+
+/** Whether two capability-qualified names are the same or one lies inside the other (always at a `.` boundary). */
+export function fieldNamesRelated(a: string, b: string): boolean {
+  return a === b || a.startsWith(`${b}.`) || b.startsWith(`${a}.`)
+}
+
+function isSkipReason(value: unknown): value is ObservationSkipReason {
+  const reasons: readonly unknown[] = ["dotted-key", "max-depth", "max-nodes", "cycle"]
+  return reasons.includes(value)
+}
+
+/** Orders grouped entries by their keys, which are distinct. */
+function byKey([a]: readonly [string, unknown], [b]: readonly [string, unknown]): number {
+  // Stryker disable next-line EqualityOperator: equivalent -- the keys are distinct, so `<` and `<=` order them the same.
+  return a < b ? -1 : 1
+}
+
+/** Aggregates the recorder's skip reports into truncations; returns how many reports were malformed. */
+function truncationsOf(rawSkips: readonly unknown[]): {
+  readonly truncations: ObservationTruncation[]
+  readonly malformed: number
+} {
+  const grouped = new Map<string, ObservationTruncation>()
+  let malformed = 0
+  for (const raw of rawSkips) {
+    const candidate: Partial<Record<keyof ObservationSkip, unknown>> =
+      typeof raw === "object" && raw !== null ? raw : {}
+    const { scope, field, reason } = candidate
+    if (!isName(scope) || !isName(field) || !isSkipReason(reason)) {
+      malformed += 1
+      continue
+    }
+    const key = `${scope}\u0000${field}\u0000${reason}`
+    const existing = grouped.get(key)
+    grouped.set(
+      key,
+      existing === undefined
+        ? { scope, field, reason, count: 1 }
+        : { ...existing, count: existing.count + 1 },
+    )
+  }
+  const truncations = [...grouped.entries()].sort(byKey).map(([, item]) => item)
+  return { truncations, malformed }
+}
+
+/**
+ * Aggregates `events` into the Observation Model. `skips` is what the recorder reported leaving out
+ * (`createMemorySink().skips()`): it becomes `truncations`/`truncatedScopes`, which the Claims Model reads.
+ */
+export function buildObservationModel(
+  events: readonly ObservationEvent[],
+  skips: readonly ObservationSkip[] = [],
+): ObservationModel {
   const grouped = new Map<string, Observation>()
+  const ranges = new Map<string, Range | undefined>()
+  const scopeRanges = new Map<string, Range | undefined>()
   let skipped = 0
 
   for (const raw of events) {
@@ -108,26 +222,48 @@ export function buildObservationModel(events: readonly ObservationEvent[]): Obse
     }
     const id = `observation:${event.scope}|${event.kind}:${event.name}|${event.field}|${event.handling ?? "-"}`
     const existing = grouped.get(id)
-    if (existing !== undefined) {
-      grouped.set(id, { ...existing, count: existing.count + 1 })
-      continue
-    }
-    grouped.set(id, {
+    grouped.set(
       id,
-      scope: event.scope,
-      boundary: { kind: event.kind, name: event.name },
-      field: event.field,
-      ...(event.handling === undefined ? {} : { handling: event.handling }),
-      count: 1,
-      status: "observed",
-    })
+      existing === undefined
+        ? {
+            id,
+            scope: event.scope,
+            boundary: { kind: event.kind, name: event.name },
+            field: event.field,
+            ...(event.handling === undefined ? {} : { handling: event.handling }),
+            count: 1,
+            status: "observed",
+          }
+        : { ...existing, count: existing.count + 1 },
+    )
+    ranges.set(id, widen(ranges.get(id), event.at))
+    scopeRanges.set(event.scope, widen(scopeRanges.get(event.scope), event.at))
   }
 
-  const observations = [...grouped.values()].sort(compareById)
+  const observations = [...grouped.values()]
+    .map((item): Observation => {
+      const range = ranges.get(item.id)
+      return range === undefined
+        ? item
+        : { ...item, firstSeen: iso(range.first), lastSeen: iso(range.last) }
+    })
+    .sort(compareById)
+  const scopes = [...new Set(observations.map((observation) => observation.scope))].sort()
+  const scopeTimes = scopes.flatMap((scope) => {
+    const range = scopeRanges.get(scope)
+    return range === undefined
+      ? []
+      : [{ scope, firstSeen: iso(range.first), lastSeen: iso(range.last) }]
+  })
+  const { truncations, malformed } = truncationsOf(skips)
+  // The truncations are ordered by a key that starts with the scope and ends it with the lowest character, so their scopes already are.
+  const truncatedScopes = [...new Set(truncations.map((item) => item.scope))]
   return {
     schemaVersion: OBSERVATION_MODEL_SCHEMA_VERSION,
-    scopes: [...new Set(observations.map((observation) => observation.scope))].sort(),
+    scopes,
     observations,
-    skipped,
+    ...(scopeTimes.length === 0 ? {} : { scopeTimes }),
+    skipped: skipped + malformed,
+    ...(truncations.length === 0 ? {} : { truncations, truncatedScopes }),
   }
 }

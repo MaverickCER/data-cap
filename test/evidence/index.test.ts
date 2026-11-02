@@ -23,6 +23,8 @@ describe("evidence public barrel exports", () => {
     expect(Object.keys(evidence).sort()).toEqual(
       [
         "analyzeLeastData",
+        "analyzeRedundantTransforms",
+        "buildCycloneDxBom",
         "buildFlowGraphView",
         "buildOscalAssessmentResults",
         "buildProvDocument",
@@ -35,10 +37,13 @@ describe("evidence public barrel exports", () => {
         "flowNodeId",
         "FLOW_GRAPH_VIEW_VERSION",
         "leastDataFindings",
+        "MIN_FORWARDING_HOPS",
         "observationsFromOtlp",
         "observationsToOtlp",
         "observedFlow",
         "parseEvidenceRules",
+        "redundantTransformFindings",
+        "renderFlowCycloneDx",
         "renderFlowDot",
         "renderFlowMermaid",
         "renderFlowText",

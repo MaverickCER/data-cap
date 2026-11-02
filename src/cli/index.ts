@@ -11,7 +11,7 @@ import {
   type EvidenceRulesResult,
   type ReportResult,
 } from "../build/index.js"
-import type { ObservationEvent } from "../observe/index.js"
+import type { ObservationEvent, ObservationSkip } from "../observe/index.js"
 import { nodeBuildFileSystem } from "./filesystem.js"
 import { runInitCommand } from "./init.js"
 import { serializeFailure, serializeSuccess, writeJson } from "./json.js"
@@ -163,8 +163,9 @@ Where to look:
 What to analyze:
   --flow-evidence             Trace each capability field through your functions to where it goes, evaluate the flowPolicy
                               rules your capabilities declare, and add the result to the Evidence Model
-  --observations <path>       A JSON array of runtime observations (from data-cap/observe) to add to the Evidence Model and
-                              compare with the static findings
+  --observations <path>       Runtime observations (from data-cap/observe) to add to the Evidence Model and compare with the
+                              static findings: a JSON array of events, or { "events": [...], "skips": [...] } to also
+                              report what the recorder left out
 
 What to write:
   --evidence <path>           Write the Evidence Model as JSON at this path
@@ -346,6 +347,7 @@ export function writeCheckSummary(
 /** The resolved option object `checkArtifacts`/`generateDataArtifacts` receive. */
 type CliOptions = ReturnType<typeof resolveOptions> & {
   readonly observations?: readonly ObservationEvent[] | undefined
+  readonly observationSkips?: readonly ObservationSkip[] | undefined
   readonly rules?: EvidenceRules | undefined
 }
 
@@ -415,13 +417,19 @@ export async function readRulesFile(file: string): Promise<EvidenceRules> {
   return parsed.rules
 }
 
+/** What an `--observations` file holds: the recorded events, and what the recorder reported leaving out. */
+export interface ObservationsInput {
+  readonly events: readonly ObservationEvent[]
+  readonly skips: readonly ObservationSkip[]
+}
+
 /**
- * Reads `--observations`: a JSON array of events written from a
- * `data-cap/observe` sink. The file is read here, in the CLI -- the build
- * library never opens a file of its own (ADR 0058). Malformed individual
- * events are not rejected here; the Observation Model counts them as skipped.
+ * Reads `--observations`: a JSON array of events written from a `data-cap/observe` sink, or an object
+ * `{ "events": [...], "skips": [...] }` that also carries `createMemorySink().skips()`. The file is read here, in
+ * the CLI -- the build library never opens a file of its own (ADR 0058). Malformed individual events are not
+ * rejected here; the Observation Model counts them as skipped.
  */
-export async function readObservationsFile(file: string): Promise<readonly ObservationEvent[]> {
+export async function readObservationsInput(file: string): Promise<ObservationsInput> {
   let text: string
   try {
     text = await nodeBuildFileSystem.readFile(file, "utf8")
@@ -437,10 +445,25 @@ export async function readObservationsFile(file: string): Promise<readonly Obser
   } catch {
     throw new Error(`--observations ${file} is not valid JSON.`)
   }
-  if (!Array.isArray(parsed)) {
-    throw new Error(`--observations ${file} must contain a JSON array of observation events.`)
+  if (Array.isArray(parsed)) return { events: parsed as ObservationEvent[], skips: [] }
+  // A JSON primitive has no `events` or `skips` either, so it reads as an object with neither; only `null` has no properties to read.
+  const body = parsed !== null ? (parsed as Record<string, unknown>) : {}
+  const events = body["events"]
+  if (!Array.isArray(events)) {
+    throw new Error(
+      `--observations ${file} must contain a JSON array of observation events, or an object with an "events" array and an optional "skips" array.`,
+    )
   }
-  return parsed as ObservationEvent[]
+  const skips = body["skips"] ?? []
+  if (!Array.isArray(skips)) {
+    throw new Error(`--observations ${file}: "skips" must be an array.`)
+  }
+  return { events: events as ObservationEvent[], skips: skips as ObservationSkip[] }
+}
+
+/** @internal Exported for direct unit coverage. */
+export async function readObservationsFile(file: string): Promise<readonly ObservationEvent[]> {
+  return (await readObservationsInput(file)).events
 }
 
 /** `--check`: report staleness (its own exit code) and surface findings for visibility. */
@@ -536,13 +559,14 @@ export async function main(): Promise<void> {
   // Everything the run depends on is read and validated first, so a bad rules or observations file fails before any work.
   const rules =
     args.rules === undefined ? undefined : await readRulesFile(path.resolve(base.root, args.rules))
-  const observations =
+  const observed =
     args.observations === undefined
       ? undefined
-      : await readObservationsFile(path.resolve(base.root, args.observations))
+      : await readObservationsInput(path.resolve(base.root, args.observations))
   const options: CliOptions = {
     ...base,
-    observations,
+    observations: observed?.events,
+    observationSkips: observed?.skips,
     rules,
   }
 

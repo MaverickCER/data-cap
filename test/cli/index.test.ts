@@ -458,9 +458,9 @@ describe("readObservationsFile", () => {
     )
   })
 
-  it("rejects JSON that is not an array", async () => {
+  it("rejects JSON that is neither an array nor an object with an events array", async () => {
     const file = path.join(dir, "obs.json")
-    await fsPromises.writeFile(file, JSON.stringify({ events: [event] }), "utf8")
+    await fsPromises.writeFile(file, JSON.stringify({ evidence: [event] }), "utf8")
     await expect(readObservationsFile(file)).rejects.toThrow(/JSON array of observation events/)
   })
 

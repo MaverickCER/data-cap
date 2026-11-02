@@ -71,6 +71,91 @@ interface Walk {
   readonly edges: ReadonlyMap<string, FlowEdge>
 }
 
+/** One unknown with its position in `model.unknowns`, so a subset can be put back in model order. */
+interface IndexedUnknown {
+  readonly unknown: FlowUnknown
+  readonly position: number
+}
+
+/**
+ * Adjacency lists over one Flow Model, each in model order, built once per model (see `flowIndex`) so a trace costs
+ * time in the part of the graph it visits rather than in the size of the whole model.
+ */
+export interface FlowIndex {
+  readonly nodesById: ReadonlyMap<string, FlowNode>
+  /** Every `field` node, in model order. */
+  readonly fields: readonly FlowNode[]
+  /** Data-carrying edges by their `from` node. */
+  readonly outgoing: ReadonlyMap<string, readonly FlowEdge[]>
+  /** Data-carrying edges by their `to` node. */
+  readonly incoming: ReadonlyMap<string, readonly FlowEdge[]>
+  /** Every edge (of any kind) by its `origin` field. */
+  readonly byOrigin: ReadonlyMap<string, readonly FlowEdge[]>
+  /** Unknowns by the node they are attached to. */
+  readonly unknownsBySubject: ReadonlyMap<string, readonly IndexedUnknown[]>
+}
+
+function pushTo<T>(map: Map<string, T[]>, key: string, value: T): void {
+  const list = map.get(key)
+  if (list === undefined) map.set(key, [value])
+  else list.push(value)
+}
+
+const indexes = new WeakMap<FlowModel, FlowIndex>()
+
+/** The adjacency index of `model`, built on first use and reused by every later query of the same model object. */
+export function flowIndex(model: FlowModel): FlowIndex {
+  const cached = indexes.get(model)
+  // Stryker disable next-line ConditionalExpression: the cache changes the speed of every query and nothing else, so under Stryker the slow queries time out before a verdict; the `flowIndex` tests that pin the very same index fail when this is applied by hand (verified).
+  if (cached !== undefined) return cached
+  const outgoing = new Map<string, FlowEdge[]>()
+  const incoming = new Map<string, FlowEdge[]>()
+  const byOrigin = new Map<string, FlowEdge[]>()
+  for (const edge of model.edges) {
+    if (isDataEdgeKind(edge.kind)) {
+      pushTo(outgoing, edge.from, edge)
+      pushTo(incoming, edge.to, edge)
+    }
+    // Stryker disable next-line ConditionalExpression: equivalent -- `byOrigin` is only read by an origin, never by `undefined`, so an edge without one adds an entry nothing looks up.
+    if (edge.origin !== undefined) pushTo(byOrigin, edge.origin, edge)
+  }
+  const unknownsBySubject = new Map<string, IndexedUnknown[]>()
+  for (const [position, unknown] of model.unknowns.entries()) {
+    // Stryker disable next-line ConditionalExpression: equivalent -- `unknownsBySubject` is only read by a node id, never by `undefined`, so an unknown without a subject adds an entry nothing looks up.
+    if (unknown.subject !== undefined) {
+      pushTo(unknownsBySubject, unknown.subject, { unknown, position })
+    }
+  }
+  const built: FlowIndex = {
+    nodesById: new Map(model.nodes.map((node) => [node.id, node])),
+    fields: model.nodes.filter((node) => node.kind === "field"),
+    outgoing,
+    incoming,
+    byOrigin,
+    unknownsBySubject,
+  }
+  // Stryker disable next-line CallExpression: the cache changes the speed of every query and nothing else, so under Stryker the slow queries time out before a verdict; the `flowIndex` tests that pin the very same index fail when this is applied by hand (verified).
+  indexes.set(model, built)
+  return built
+}
+
+/** The nodes with these ids, ordered by id. */
+function nodesOf(index: FlowIndex, ids: ReadonlySet<string>): FlowNode[] {
+  const nodes: FlowNode[] = []
+  for (const id of ids) {
+    const node = index.nodesById.get(id)
+    if (node !== undefined) nodes.push(node)
+  }
+  return nodes.sort(compareById)
+}
+
+/** The unknowns attached to any of these nodes, in the order of `model.unknowns`. */
+function unknownsAt(index: FlowIndex, ids: ReadonlySet<string>): FlowUnknown[] {
+  const found: IndexedUnknown[] = []
+  for (const id of ids) found.push(...(index.unknownsBySubject.get(id) ?? []))
+  return found.sort((a, b) => a.position - b.position).map(({ unknown }) => unknown)
+}
+
 /**
  * Breadth-first walk of data edges downstream from `start`. When `origin` is
  * given only edges carrying that field's data (or no origin at all) are
@@ -79,8 +164,7 @@ interface Walk {
  * expanded once and the walk ends on any graph, cycles included.
  */
 function walk(
-  model: FlowModel,
-  nodesById: ReadonlyMap<string, FlowNode>,
+  index: FlowIndex,
   start: string,
   options: FlowTraceOptions,
   origin: string | undefined,
@@ -91,12 +175,13 @@ function walk(
   const traversed = new Map<string, FlowEdge>()
 
   for (const current of visited) {
-    for (const edge of model.edges) {
-      if (!isDataEdgeKind(edge.kind) || edge.from !== current) continue
+    const leaving = index.outgoing.get(current)
+    if (leaving === undefined) continue
+    for (const edge of leaving) {
       if (origin !== undefined && edge.origin !== undefined && edge.origin !== origin) continue
       if (allowed !== undefined && !allowed.has(edge.status)) continue
       if (path !== undefined && edge.path !== undefined && !pathsRelated(edge.path, path)) continue
-      const nextNode = nodesById.get(edge.to)
+      const nextNode = index.nodesById.get(edge.to)
       if (nextNode === undefined) continue
       if (allowed !== undefined && !allowed.has(nextNode.status)) continue
       traversed.set(edge.id, edge)
@@ -107,12 +192,14 @@ function walk(
 }
 
 /** Ids from which `target` is reachable using only `edges`; `reach` is iterated while it grows, so this ends on any graph. */
-function canReach(edges: readonly FlowEdge[], target: string): Set<string> {
+function canReach(edges: Iterable<FlowEdge>, target: string): Set<string> {
+  const into = new Map<string, FlowEdge[]>()
+  for (const edge of edges) pushTo(into, edge.to, edge)
   const reach = new Set<string>([target])
   for (const id of reach) {
-    for (const edge of edges) {
-      if (edge.to === id) reach.add(edge.from)
-    }
+    const entering = into.get(id)
+    if (entering === undefined) continue
+    for (const edge of entering) reach.add(edge.from)
   }
   return reach
 }
@@ -130,8 +217,13 @@ export function traceFlow(
   direction: FlowTraceDirection,
   options: FlowTraceOptions = {},
 ): FlowTrace {
-  const nodesById = new Map(model.nodes.map((node) => [node.id, node]))
-  const startNode = nodesById.get(start)
+  if (!["downstream", "upstream"].includes(direction)) {
+    throw new FlowModelError(
+      `Cannot trace "${direction}": a trace goes "downstream" or "upstream".`,
+    )
+  }
+  const index = flowIndex(model)
+  const startNode = index.nodesById.get(start)
   if (startNode === undefined) {
     throw new FlowModelError(`Cannot trace from ${start}: it is not a node of this model.`)
   }
@@ -140,37 +232,34 @@ export function traceFlow(
   let traversed: Map<string, FlowEdge>
 
   if (direction === "downstream") {
-    const result = walk(
-      model,
-      nodesById,
-      start,
-      options,
-      startNode.kind === "field" ? start : undefined,
-    )
+    const result = walk(index, start, options, startNode.kind === "field" ? start : undefined)
     visited = new Set(result.visited)
     traversed = new Map(result.edges)
   } else {
     visited = new Set([start])
     traversed = new Map()
-    for (const field of model.nodes.filter((node) => node.kind === "field")) {
-      const forward = walk(model, nodesById, field.id, options, field.id)
+    for (const field of index.fields) {
+      const forward = walk(index, field.id, options, field.id)
       if (!forward.visited.has(start)) continue
-      const leadsToStart = canReach([...forward.edges.values()], start)
+      const leadsToStart = canReach(forward.edges.values(), start)
       for (const edge of forward.edges.values()) {
         if (!leadsToStart.has(edge.to)) continue
         traversed.set(edge.id, edge)
         visited.add(edge.from)
       }
-      for (const edge of model.edges) {
-        if (edge.to === field.id && edge.origin === field.id && isDataEdgeKind(edge.kind)) {
-          traversed.set(edge.id, edge)
-          visited.add(edge.from)
+      const entering = index.incoming.get(field.id)
+      if (entering !== undefined) {
+        for (const edge of entering) {
+          if (edge.origin === field.id) {
+            traversed.set(edge.id, edge)
+            visited.add(edge.from)
+          }
         }
       }
     }
   }
 
-  const nodes = model.nodes.filter((node) => visited.has(node.id)).sort(compareById)
+  const nodes = nodesOf(index, visited)
   const edges = [...traversed.values()].sort(compareById)
   // Whose data this trace is about. A trace from a field is about that field; an upstream trace is about every
   // field that reached the start; a trace from any other node cannot tell, and treats every unknown as relevant.
@@ -180,10 +269,7 @@ export function traceFlow(
         ? new Set([start])
         : undefined
       : new Set([start, ...[...traversed.values()].map((edge) => edge.origin)])
-  // An unknown with no subject is attached to no node, so it is never in this set.
-  const visitedSubjects: ReadonlySet<string | undefined> = visited
-  const unknowns = model.unknowns.filter((unknown) => {
-    if (!visitedSubjects.has(unknown.subject)) return false
+  const unknowns = unknownsAt(index, visited).filter((unknown) => {
     if (unknown.data === undefined || concerned === undefined) return true
     return unknown.data.some(
       (item) =>
@@ -210,31 +296,22 @@ export function traceFlowBetween(
   target: string,
   options: FlowTraceOptions = {},
 ): FlowTrace {
-  const nodesById = new Map(model.nodes.map((node) => [node.id, node]))
-  const startNode = nodesById.get(start)
-  if (startNode === undefined || !nodesById.has(target)) {
+  const index = flowIndex(model)
+  const startNode = index.nodesById.get(start)
+  if (startNode === undefined || !index.nodesById.has(target)) {
     throw new FlowModelError(
       `Cannot trace from ${start} to ${target}: both must be nodes of this model.`,
     )
   }
-  const forward = walk(
-    model,
-    nodesById,
-    start,
-    options,
-    startNode.kind === "field" ? start : undefined,
-  )
-  const leadsToTarget = canReach([...forward.edges.values()], target)
+  const forward = walk(index, start, options, startNode.kind === "field" ? start : undefined)
+  const leadsToTarget = canReach(forward.edges.values(), target)
   const reached = forward.visited.has(target)
   const keep = new Set([...forward.visited].filter((id) => reached && leadsToTarget.has(id)))
   const edges = [...forward.edges.values()]
     .filter((edge) => keep.has(edge.from) && keep.has(edge.to))
     .sort(compareById)
-  const nodes = model.nodes.filter((node) => keep.has(node.id)).sort(compareById)
-  // An unknown with no subject is attached to no node, so it is never in this set.
-  const keptSubjects: ReadonlySet<string | undefined> = keep
-  const unknowns = model.unknowns.filter((unknown) => {
-    if (!keptSubjects.has(unknown.subject)) return false
+  const nodes = nodesOf(index, keep)
+  const unknowns = unknownsAt(index, keep).filter((unknown) => {
     if (unknown.data === undefined || startNode.kind !== "field") return true
     return unknown.data.some(
       (item) =>
@@ -417,10 +494,14 @@ export function weakestStatus(statuses: readonly FlowStatus[]): FlowStatus {
  * Breadth-first: `paths` is iterated while it grows, so each node is expanded once and the search ends on any graph.
  */
 export function flowPathTo(trace: FlowTrace, start: string, target: string): readonly FlowEdge[] {
+  const leaving = new Map<string, FlowEdge[]>()
+  for (const edge of trace.edges) pushTo(leaving, edge.from, edge)
   const paths = new Map<string, readonly FlowEdge[]>([[start, []]])
   for (const [current, here] of paths) {
-    for (const edge of trace.edges) {
-      if (edge.from === current && !paths.has(edge.to)) paths.set(edge.to, [...here, edge])
+    const next = leaving.get(current)
+    if (next === undefined) continue
+    for (const edge of next) {
+      if (!paths.has(edge.to)) paths.set(edge.to, [...here, edge])
     }
   }
   return paths.get(target) ?? []

@@ -179,11 +179,45 @@ export interface FlowCoverage {
   readonly complete: boolean
 }
 
+/**
+ * What the scanner saw happen to the data of an edge at one place, beyond what the edge says (ADR 0075).
+ *
+ * - `serialize-roundtrip`: the data was taken apart and put back together with nothing in between that reads it
+ *   (`JSON.parse(JSON.stringify(x))`, `Object.fromEntries(Object.entries(x))`).
+ * - `copy`: the data was copied and nothing was added, dropped or renamed (`structuredClone(x)`, `{ ...x }`,
+ *   `[...x]`, `Array.from(x)`). `fresh` says the copied value was itself a copy made by one of these.
+ * - `derive`: a value computed from the data was bound to a name that is never read (`unused`).
+ * - `forward`: reserved for a producer that knows a function only hands the data on. The scanner does not emit it;
+ *   forwarding chains are found from the edges alone, so no reader depends on this tag.
+ */
+export type FlowVia = "copy" | "serialize-roundtrip" | "forward" | "derive"
+
+/** One tag as a producer supplies it -- the id is derived, never supplied. */
+export interface FlowEdgeTagInput {
+  readonly via: FlowVia
+  /** Id of the existing edge that carries the data at this place (an edge id as `flowEdgeId` derives it). */
+  readonly edge: string
+  /** Where the copy, the derivation or the hand-over is. */
+  readonly source: SourceLocation
+  /** With `copy`: the value copied was already a fresh copy. */
+  readonly fresh?: true
+  /** With `derive`: nothing ever reads the derived value. */
+  readonly unused?: true
+}
+
+/** One tag of the Flow Model. */
+export interface FlowEdgeTag extends FlowEdgeTagInput {
+  /** Content-addressed: `tag:via:edgeId@file:line:column`. */
+  readonly id: string
+}
+
 /** Everything a producer hands to `buildFlowModel`. */
 export interface FlowModelInput {
   readonly nodes: readonly FlowNodeInput[]
   readonly edges: readonly FlowEdgeInput[]
   readonly unknowns: readonly FlowUnknownInput[]
+  /** What the scanner saw happen to the data of some edges. Optional and additive: edge ids do not depend on it. */
+  readonly edgeTags?: readonly FlowEdgeTagInput[]
 }
 
 /** `data-cap`'s Flow Model. */
@@ -198,6 +232,8 @@ export interface FlowModel {
   readonly unknowns: readonly FlowUnknown[]
   /** What was and was not analyzed. */
   readonly coverage: FlowCoverage
+  /** What the scanner saw happen to the data of some edges, ordered by id. Absent when it saw nothing worth noting (ADR 0075). */
+  readonly edgeTags?: readonly FlowEdgeTag[]
 }
 
 /** Thrown when the input to `buildFlowModel` is internally inconsistent. */
@@ -227,6 +263,11 @@ export function flowEdgeId(
   const pathSegment = path === undefined ? "" : `:${path.join(".")}`
   const originSegment = origin === undefined ? "" : `^${origin}`
   return `${kind}:${from}->${to}${pathSegment}@${status}${originSegment}`
+}
+
+/** The one place a tag id is derived. */
+export function flowEdgeTagId(via: FlowVia, edge: string, source: SourceLocation): string {
+  return `tag:${via}:${edge}@${source.file}:${source.line}:${source.column}`
 }
 
 function flowUnknownId(reason: FlowUnknownReason, source: SourceLocation): string {
@@ -357,6 +398,27 @@ function addUnknown(
   })
 }
 
+/** A tag names an edge that is in the model; the same place tagged twice is one tag that holds what either said. */
+function addTag(
+  edges: ReadonlyMap<string, FlowEdge>,
+  tags: Map<string, FlowEdgeTag>,
+  raw: FlowEdgeTagInput,
+): void {
+  if (!edges.has(raw.edge)) {
+    throw new FlowModelError(`Tag ${raw.via} refers to ${raw.edge}, which is not an edge.`)
+  }
+  const id = flowEdgeTagId(raw.via, raw.edge, raw.source)
+  const existing = tags.get(id)
+  tags.set(id, {
+    id,
+    via: raw.via,
+    edge: raw.edge,
+    source: raw.source,
+    ...(raw.fresh === true || existing?.fresh === true ? { fresh: true as const } : {}),
+    ...(raw.unused === true || existing?.unused === true ? { unused: true as const } : {}),
+  })
+}
+
 function buildCoverage(
   nodes: readonly FlowNode[],
   edges: readonly FlowEdge[],
@@ -383,9 +445,13 @@ export function buildFlowModel(input: FlowModelInput): FlowModel {
   const unknowns = new Map<string, FlowUnknown>()
   for (const raw of input.unknowns) addUnknown(nodes, unknowns, raw)
 
+  const tags = new Map<string, FlowEdgeTag>()
+  for (const raw of input.edgeTags ?? []) addTag(edges, tags, raw)
+
   const orderedNodes = [...nodes.values()].sort(compareById)
   const orderedEdges = [...edges.values()].sort(compareById)
   const orderedUnknowns = [...unknowns.values()].sort(compareById)
+  const orderedTags = [...tags.values()].sort(compareById)
 
   return {
     schemaVersion: FLOW_MODEL_SCHEMA_VERSION,
@@ -393,5 +459,6 @@ export function buildFlowModel(input: FlowModelInput): FlowModel {
     edges: orderedEdges,
     unknowns: orderedUnknowns,
     coverage: buildCoverage(orderedNodes, orderedEdges, orderedUnknowns),
+    ...(orderedTags.length === 0 ? {} : { edgeTags: orderedTags }),
   }
 }

@@ -308,6 +308,191 @@ describe("comparing revisions", () => {
   })
 })
 
+describe("comparison lists", () => {
+  const items = (dom: JSDOM, group: string): Element[] => [...doc(dom).querySelectorAll(`#diff-result ul[data-group="${group}"] li`)]
+  const buttons = (dom: JSDOM, group: string): HTMLButtonElement[] => [...doc(dom).querySelectorAll<HTMLButtonElement>(`#diff-result ul[data-group="${group}"] button`)]
+  const headings = (dom: JSDOM): string[] => [...doc(dom).querySelectorAll("#diff-result h3")].map((h) => h.textContent ?? "")
+  const detail = (dom: JSDOM): string => doc(dom).getElementById("detail-body")!.textContent!
+  const SIDE_EFFECT = "side-effect (whole): exportEverything to http-response (static)"
+  const flowOf = (): { edges: { id: string; kind: string; path?: string[]; from: string; to: string }[] } => (evidence as unknown as { flow: { edges: { id: string; kind: string; path?: string[]; from: string; to: string }[] } }).flow
+  const loadFile = async (dom: JSDOM, name: string, text: string): Promise<void> => {
+    const input = doc(dom).getElementById("baseline") as HTMLInputElement
+    Object.defineProperty(input, "files", { value: [{ name, text: async () => text }], configurable: true })
+    input.dispatchEvent(new dom.window.Event("change", { bubbles: true }))
+    await new Promise((resolve) => setTimeout(resolve, 20))
+  }
+
+  it("reads without scripts: the same three lists are in the page as plain text", () => {
+    const dom = open("", false)
+    const result = doc(dom).getElementById("diff-result")!
+    assert.match(result.textContent!, /Compared with the revision embedded in this page/)
+    assert.deepEqual([...result.querySelectorAll("h3")].map((h) => h.textContent).slice(0, 3), ["Changed policy results (1)", "Added edges (2)", "Removed edges (0)"])
+    assert.ok([...result.querySelectorAll("li")].some((li) => li.textContent!.startsWith(SIDE_EFFECT)))
+    assert.match(result.textContent!, /satisfied, static before, violated reaching http-response, static now/)
+    assert.equal(result.querySelectorAll("button").length, 0, "no scripts, no buttons: the text alone is complete")
+  })
+
+  it("lists Added edges, Removed edges and Changed policy results, then nodes and unknowns, each with its count", () => {
+    const dom = open()
+    assert.deepEqual(headings(dom), [
+      "Changed policy results (1)",
+      "Added edges (2)",
+      "Removed edges (0)",
+      "Added nodes (3)",
+      "Removed nodes (0)",
+      "Changed nodes (0)",
+      "New unknowns (parts of the program the analysis could not follow) (0)",
+      "Resolved unknowns (0)",
+    ])
+    assert.equal(items(dom, "added-edges").length, 2)
+    assert.equal(items(dom, "removed-edges")[0]!.textContent, "none")
+    assert.ok(items(dom, "added-edges").some((li) => li.textContent!.startsWith(SIDE_EFFECT)))
+  })
+
+  it("announces the summary in a live region of its own, not the whole list", () => {
+    const dom = open()
+    const summaryEl = doc(dom).getElementById("diff-summary")!
+    assert.equal(summaryEl.getAttribute("role"), "status")
+    assert.match(summaryEl.textContent!, /^Compared with the revision embedded in this page: 2 edge\(s\) added, 0 removed; 3 node\(s\) added/)
+    assert.equal(doc(dom).getElementById("diff-result")!.getAttribute("role"), null)
+  })
+
+  it("highlights what changed in the graph: added, and changed policy results; the rest is untouched", () => {
+    const dom = open()
+    assert.ok(classes(dom, idOf("exportEverything")).includes("added"))
+    assert.ok(!classes(dom, idOf("buildUserProfile")).includes("added"))
+    const added = [...doc(dom).querySelectorAll("#graph g.edge.added")].map((g) => g.getAttribute("id"))
+    assert.equal(added.length, 2)
+    const changed = [...doc(dom).querySelectorAll("#graph g.edge.changed")].map((g) => g.getAttribute("id"))
+    assert.deepEqual(new Set(changed), new Set(added), "both new edges are what makes the rule violated")
+    assert.equal(doc(dom).querySelectorAll("#graph g.node.changed").length, 0)
+  })
+
+  it("says in a node's accessible name that it is new, so the highlight is not colour alone", () => {
+    const dom = open()
+    assert.match(group(dom, idOf("exportEverything")).getAttribute("aria-label")!, /, added since the compared revision$/)
+    assert.doesNotMatch(group(dom, idOf("buildUserProfile")).getAttribute("aria-label")!, /since the compared revision/)
+  })
+
+  it("every item is a real button (Tab, Enter and Space work natively), named by its text", () => {
+    const dom = open()
+    const all = buttons(dom, "added-edges")
+    assert.equal(all.length, 2)
+    for (const button of all) {
+      assert.equal(button.tagName, "BUTTON")
+      assert.equal(button.getAttribute("type"), "button")
+      assert.equal(button.getAttribute("tabindex"), null)
+      assert.ok(button.textContent!.length > 10)
+    }
+  })
+
+  it("activating an added edge drills to its source location and moves focus to the details", () => {
+    const dom = open()
+    const button = buttons(dom, "added-edges").find((b) => b.textContent!.startsWith(SIDE_EFFECT))!
+    button.click()
+    assert.match(detail(dom), /Added in this revision/)
+    assert.match(detail(dom), /Source: src\/app\/export\.ts:\d+:\d+/)
+    assert.match(detail(dom), /side-effect \(whole\): exportEverything to http-response \(static\)/)
+    assert.equal(doc(dom).activeElement, doc(dom).getElementById("detail"))
+    assert.equal(button.getAttribute("aria-current"), "true")
+    assert.match(dom.window.location.hash, /change=added-edges%7C/)
+  })
+
+  it("activating a changed policy result shows both outcomes and where the crossing is", () => {
+    const dom = open()
+    buttons(dom, "changed-policy")[0]!.click()
+    assert.match(detail(dom), /Policy result changed/)
+    assert.match(detail(dom), /satisfied, static before, violated reaching http-response, static now/)
+    assert.match(detail(dom), /Source: src\/app\/export\.ts:\d+:\d+/)
+  })
+
+  it("an added node says what it is and where it is declared, and can be opened in the graph", () => {
+    const dom = open()
+    const button = buttons(dom, "added-nodes").find((b) => b.textContent!.startsWith("function exportEverything"))!
+    button.click()
+    assert.match(detail(dom), /Source: src\/app\/export\.ts:\d+:\d+/)
+    const open_ = doc(dom).getElementById("change-open")! as HTMLButtonElement
+    open_.click()
+    assert.match(detail(dom), /Reads/, "the full details of the function")
+    assert.match(detail(dom), /exportEverything/)
+  })
+
+  it("a file with a flow the page lacks lists it as removed, inspectable only in the compared revision", async () => {
+    const dom = open()
+    const flow = flowOf()
+    const base = flow.edges.find((e) => e.kind === "side-effect" && e.to === idOf("http-response") && e.from === idOf("exportEverything"))!
+    const extra = { ...base, id: `${base.id}~extra`, path: ["role"] }
+    const file = JSON.parse(evidenceText) as { flow: { edges: unknown[] } }
+    file.flow.edges.push(extra)
+    await loadFile(dom, "later.json", JSON.stringify(file))
+    assert.match(doc(dom).getElementById("diff-summary")!.textContent!, /^Compared with later\.json: 0 edge\(s\) added, 1 removed/)
+    assert.equal(items(dom, "removed-edges").length, 1)
+    assert.equal(doc(dom).querySelectorAll("#graph .added").length, 0)
+    buttons(dom, "removed-edges")[0]!.click()
+    assert.match(detail(dom), /Only in the revision compared against/)
+    assert.match(detail(dom), /not drawn/i)
+    assert.equal(doc(dom).getElementById("change-open"), null, "there is nothing in the graph to open")
+    assert.match(detail(dom), /Source: src\/app\/export\.ts:\d+:\d+/)
+  })
+
+  it("'Dim everything that did not change' keeps only the new and changed elements lit, and is part of the link", () => {
+    const dom = open()
+    const box = doc(dom).getElementById("only-changes") as HTMLInputElement
+    box.checked = true
+    box.dispatchEvent(new dom.window.Event("change", { bubbles: true }))
+    assert.ok(!classes(dom, idOf("exportEverything")).includes("dim"))
+    assert.ok(classes(dom, idOf("buildUserProfile")).includes("dim"))
+    assert.ok(classes(dom, USER).includes("dim"), "the field did not change")
+    assert.match(summary(dom), /Showing only what changed since the compared revision\./)
+    assert.match(dom.window.location.hash, /changes=1/)
+    const restored = open("#changes=1")
+    assert.equal((doc(restored).getElementById("only-changes") as HTMLInputElement).checked, true)
+    assert.ok(classes(restored, idOf("buildUserProfile")).includes("dim"))
+  })
+
+  it("'Stop comparing' removes the lists and the highlights, and the link records it; the other button brings them back", () => {
+    const dom = open()
+    doc(dom).getElementById("compare-off")!.dispatchEvent(new dom.window.Event("click", { bubbles: true }))
+    assert.equal(doc(dom).querySelectorAll("#graph .added, #graph .changed").length, 0)
+    assert.equal(headings(dom).length, 0)
+    assert.match(doc(dom).getElementById("diff-summary")!.textContent!, /^Not comparing/)
+    assert.match(dom.window.location.hash, /compare=off/)
+    assert.equal((doc(dom).getElementById("only-changes") as HTMLInputElement).disabled, true)
+    const off = open("#compare=off")
+    assert.equal(doc(off).querySelectorAll("#graph .added").length, 0)
+    doc(dom).getElementById("compare-embedded")!.dispatchEvent(new dom.window.Event("click", { bubbles: true }))
+    assert.ok(classes(dom, idOf("exportEverything")).includes("added"))
+    assert.ok(!/compare=off/.test(dom.window.location.hash))
+  })
+
+  it("restores a selected change from the link, with the details open but without taking focus", () => {
+    const dom = open()
+    buttons(dom, "changed-policy")[0]!.click()
+    const hash = dom.window.location.hash
+    const restored = open(hash)
+    assert.match(detail(restored), /Policy result changed/)
+    assert.notEqual(doc(restored).activeElement, doc(restored).getElementById("detail"))
+    assert.equal(buttons(restored, "changed-policy")[0]!.getAttribute("aria-current"), "true")
+  })
+
+  it("ignores a link to a change that is not in this comparison", () => {
+    const dom = open(`#${new URLSearchParams({ change: "added-edges|nope" }).toString()}`)
+    assert.match(detail(dom), /Select a node or an edge/)
+  })
+
+  it("has no axe violations with the comparison open, a change selected and the dimming on", async () => {
+    const dom = open()
+    buttons(dom, "added-edges")[0]!.click()
+    const box = doc(dom).getElementById("only-changes") as HTMLInputElement
+    box.checked = true
+    box.dispatchEvent(new dom.window.Event("change", { bubbles: true }))
+    dom.window.eval(axe.source)
+    const results = await (dom.window as unknown as { axe: typeof axe }).axe.run(dom.window.document.documentElement, { rules: { "color-contrast": { enabled: false } } })
+    const found = Array.from(results.violations, (v) => `${v.id}: ${Array.from(v.nodes, (n) => n.target.join(" ")).slice(0, 3).join(" | ")}`)
+    assert.equal(found.length, 0, found.join("\n"))
+  })
+})
+
 describe("a shared link", () => {
   it("restores the trace, the path and the filters", () => {
     const params = new URLSearchParams({ from: USER, path: "passwordHash", hide: "inferred", violations: "1" })
