@@ -1,6 +1,6 @@
 # data-cap public API
 
-Every export a consumer can import, by entry point, for version 0.8.2. Generated from the package's committed API baselines; the type declarations in the installed package are the authority.
+Every export a consumer can import, by entry point, for version 0.8.3. Generated from the package's committed API baselines; the type declarations in the installed package are the authority.
 
 ## `data-cap`
 
