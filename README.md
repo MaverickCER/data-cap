@@ -6,7 +6,7 @@
 [![Mutation score: the share of applicable mutants the tests detect](https://img.shields.io/endpoint?url=https://maverickcer.github.io/data-cap/mutation-badge.json)](https://maverickcer.github.io/data-cap/mutation.json)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/MaverickCER/data-cap/badge)](https://scorecard.dev/viewer/?uri=github.com/MaverickCER/data-cap)
 [![Bundle size: gzip size of the entry point against its budget](https://img.shields.io/endpoint?url=https://maverickcer.github.io/data-cap/size-badge.json)](https://maverickcer.github.io/data-cap/size.json)
-[![Socket Badge](https://badge.socket.dev/npm/package/data-cap/latest)](https://socket.dev/npm/package/data-cap)
+![Socket Badge](https://badge.socket.dev/npm/package/data-cap/latest)
 [![Node](https://img.shields.io/node/v/data-cap)](https://www.npmjs.com/package/data-cap)
 [![License](https://img.shields.io/npm/l/data-cap)](LICENSE)
 
