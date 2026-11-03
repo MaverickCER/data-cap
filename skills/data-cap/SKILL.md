@@ -99,4 +99,4 @@ Report any check you could not run, and any assumption you made.
 
 ## Authority
 
-Target `data-cap@0.8.2`. The installed package's exports and type declarations are the API: do not invent exports, options or return values. Behaviour is established by its tests and examples. If this skill and the code disagree, say so rather than guessing.
+Target `data-cap@0.8.3`. The installed package's exports and type declarations are the API: do not invent exports, options or return values. Behaviour is established by its tests and examples. If this skill and the code disagree, say so rather than guessing.
