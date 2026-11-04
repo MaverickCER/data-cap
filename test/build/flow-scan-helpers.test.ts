@@ -16,7 +16,7 @@ import {
 } from "../../src/build/flow-values.js"
 import type { Atom, Val } from "../../src/build/flow-values.js"
 
-const h = scanHelpers
+const h = scanHelpers()
 
 function source(code: string): TS.SourceFile {
   return ts.createSourceFile("x.ts", code, ts.ScriptTarget.Latest, true)

@@ -72,7 +72,11 @@ export interface Val {
   readonly alloc?: readonly string[]
 }
 
-/** The builtin collections the scan models (`mapVal`, `setVal`, `recordVal`). */
+/**
+ * The builtin collections the scan models (`mapVal`, `setVal`, `recordVal`).
+ *
+ * @public Exported because a public type names it, so the published schema describes it.
+ */
 export type NativeKind = "map" | "set" | "record"
 
 /** The value of an expression carrying no tracked data. */

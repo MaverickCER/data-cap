@@ -92,7 +92,11 @@ export interface ClaimScope {
   readonly truncatedScopes?: readonly string[]
 }
 
-/** Whether the observations seen cover the claim's whole path scope or only narrower paths inside it. */
+/**
+ * Whether the observations seen cover the claim's whole path scope or only narrower paths inside it.
+ *
+ * @public Exported because a public type names it, so the published schema describes it.
+ */
 export type ClaimPathCoverage = "whole" | "partial"
 
 /** One claim. */

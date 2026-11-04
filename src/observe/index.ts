@@ -278,7 +278,7 @@ function walkValue(
   }
   state.visited += 1
   // Stryker disable all: unreachable -- `walkChildren` stops at `maxNodes` before it walks another node, so `visited` never passes it; the bound only turns a walk that lost that stop into a failure the caller's catch swallows, instead of a walk through an enormous value.
-  /* v8 ignore next 3 */
+  /* v8 ignore next 3 -- unreachable: an earlier guard keeps this check from ever being true; it only turns a lost bound into a failure instead of a hang */
   if (state.visited > state.maxNodes) {
     throw new Error("the walk passed its node bound")
   }

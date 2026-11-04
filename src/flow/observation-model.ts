@@ -45,7 +45,11 @@ export interface Observation {
   readonly status: "observed"
 }
 
-/** Evidence the recorder knowingly left out in one scope: below `field` something was not captured. Names only. */
+/**
+ * Evidence the recorder knowingly left out in one scope: below `field` something was not captured. Names only.
+ *
+ * @public Exported because a public type names it, so the published schema describes it.
+ */
 export interface ObservationTruncation {
   readonly scope: string
   /** Capability-qualified dotted path below which evidence is missing (the capability itself for the root). */
@@ -55,7 +59,11 @@ export interface ObservationTruncation {
   readonly count: number
 }
 
-/** First and last time anything was observed in one scope; only for scopes whose events carried times. */
+/**
+ * First and last time anything was observed in one scope; only for scopes whose events carried times.
+ *
+ * @public Exported because a public type names it, so the published schema describes it.
+ */
 export interface ObservationScopeTimes {
   readonly scope: string
   readonly firstSeen: string

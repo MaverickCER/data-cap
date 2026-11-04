@@ -310,7 +310,7 @@ function chainsOf(forwarders: ReadonlyMap<string, Forwarder>): Chain[] {
     ) {
       seen.add(step.fn)
       // Stryker disable all: unreachable -- `seen` keeps every step distinct, so a chain is never longer than the forwarders; the bound only turns a walk that lost its cycle check into a failure instead of a hang.
-      /* v8 ignore next 3 */
+      /* v8 ignore next 3 -- unreachable: an earlier guard keeps this check from ever being true; it only turns a lost bound into a failure instead of a hang */
       if (steps.length >= forwarders.size) {
         throw new Error("a forwarding chain is longer than the forwarders it is made of")
       }

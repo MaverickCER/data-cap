@@ -102,6 +102,44 @@ function objectKeys(shape: unknown): readonly string[] {
     : []
 }
 
+type NodesById = ReturnType<typeof flowIndex>["nodesById"]
+
+/** Groups the edges that send a whole value to a client response by the response they send it to. */
+function wholeSendsByResponse(
+  edges: readonly FlowEdge[],
+  nodesById: NodesById,
+): Map<string, FlowEdge[]> {
+  const bySink = new Map<string, FlowEdge[]>()
+  for (const edge of edges) {
+    const target = nodesById.get(edge.to)
+    const wholeValue = edge.path === undefined || edge.path.length === 0
+    if (
+      edge.kind === "side-effect" &&
+      target?.kind === "boundary" &&
+      target.boundaryKind === "client-response" &&
+      wholeValue
+    ) {
+      bySink.set(edge.to, [...(bySink.get(edge.to) ?? []), edge])
+    }
+  }
+  return bySink
+}
+
+/** Tells whether an edge reads, forwards or sends the key, directly or as part of a whole value. */
+function usesKey(edge: FlowEdge, key: string, nodesById: NodesById): boolean {
+  if (!isUseKind(edge.kind)) return false
+  const from = nodesById.get(edge.from)
+  const to = nodesById.get(edge.to)
+  if (from?.kind === "boundary") return false
+  if (edge.path?.[0] === key) return true
+  const wholeValue = edge.path === undefined || edge.path.length === 0
+  return (
+    wholeValue &&
+    to?.kind === "boundary" &&
+    (edge.kind === "side-effect" || edge.kind === "crosses-boundary")
+  )
+}
+
 /** Finds unused paths and whole-field client exposure. */
 export function analyzeLeastData(input: LeastDataInput): LeastDataReport {
   const { flow } = input
@@ -138,20 +176,7 @@ export function analyzeLeastData(input: LeastDataInput): LeastDataReport {
       const edges = byOrigin.get(fieldNode)
 
       if (keys.length >= 2 && edges !== undefined) {
-        const bySink = new Map<string, FlowEdge[]>()
-        for (const edge of edges) {
-          const target = nodesById.get(edge.to)
-          const wholeValue = edge.path === undefined || edge.path.length === 0
-          if (
-            edge.kind === "side-effect" &&
-            target?.kind === "boundary" &&
-            target.boundaryKind === "client-response" &&
-            wholeValue
-          ) {
-            bySink.set(edge.to, [...(bySink.get(edge.to) ?? []), edge])
-          }
-        }
-        for (const [boundary, sending] of bySink) {
+        for (const [boundary, sending] of wholeSendsByResponse(edges, nodesById)) {
           wholeFieldToClient.push({
             capability: identity,
             field: fieldName,
@@ -194,19 +219,7 @@ export function analyzeLeastData(input: LeastDataInput): LeastDataReport {
       ].sort()
 
       for (const key of keys.filter((candidate) => !blocked.includes(candidate))) {
-        const used = edges?.some((edge) => {
-          if (!isUseKind(edge.kind)) return false
-          const from = nodesById.get(edge.from)
-          const to = nodesById.get(edge.to)
-          if (from?.kind === "boundary") return false
-          if (edge.path?.[0] === key) return true
-          const wholeValue = edge.path === undefined || edge.path.length === 0
-          return (
-            wholeValue &&
-            to?.kind === "boundary" &&
-            (edge.kind === "side-effect" || edge.kind === "crosses-boundary")
-          )
-        })
+        const used = edges?.some((edge) => usesKey(edge, key, nodesById))
         if (!used) {
           unusedPaths.push({
             capability: identity,

@@ -265,7 +265,11 @@ export function flowEdgeId(
   return `${kind}:${from}->${to}${pathSegment}@${status}${originSegment}`
 }
 
-/** The one place a tag id is derived. */
+/**
+ * The one place a tag id is derived.
+ *
+ * @public Exported as the one place a tag id is derived, so anything that names a tag derives it the same way.
+ */
 export function flowEdgeTagId(via: FlowVia, edge: string, source: SourceLocation): string {
   return `tag:${via}:${edge}@${source.file}:${source.line}:${source.column}`
 }

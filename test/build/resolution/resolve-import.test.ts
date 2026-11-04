@@ -8,10 +8,15 @@ import {
 } from "../../../src/build/resolution/resolve-import.js"
 import { createAliasResolutionCache } from "../../../src/build/resolution/resolve-tsconfig-paths.js"
 import type { TsconfigPathsResolution } from "../../../src/build/resolution/resolve-tsconfig-paths.js"
+import { ts } from "../../../src/build/typescript.js"
 import { nodeBuildFs } from "../../support/build-filesystem.js"
 
 describe("resolveImportSpecifier -- relative resolution", () => {
   let root: string
+  /** The compiler options of a tsconfig with `baseUrl` and an `@app/*` alias, as TypeScript itself reads them from JSON. */
+  const aliasOptions = (): TsconfigPathsResolution["compilerOptions"] =>
+    ts.convertCompilerOptionsFromJson({ baseUrl: root, paths: { "@app/*": ["src/*"] } }, root)
+      .options
   const context = (): ImportResolutionContext => ({
     fs: nodeBuildFs,
     root,
@@ -109,7 +114,7 @@ describe("resolveImportSpecifier -- relative resolution", () => {
     )
     await write("node_modules/@vendor/pkg/schema.ts")
     const tsconfigPaths: TsconfigPathsResolution = {
-      compilerOptions: { baseUrl: root, paths: { "@app/*": ["src/*"] } },
+      compilerOptions: aliasOptions(),
       configFile: path.join(root, "tsconfig.json"),
     }
     const resolved = await resolveImportSpecifier(path.join(root, "src/index.ts"), "@vendor/pkg", {
@@ -125,7 +130,7 @@ describe("resolveImportSpecifier -- relative resolution", () => {
   it("falls through to tsconfig path-alias resolution for a bare specifier the aliases match", async () => {
     const target = await write("src/schema.ts")
     const tsconfigPaths: TsconfigPathsResolution = {
-      compilerOptions: { baseUrl: root, paths: { "@app/*": ["src/*"] } },
+      compilerOptions: aliasOptions(),
       configFile: path.join(root, "tsconfig.json"),
     }
     expect(
