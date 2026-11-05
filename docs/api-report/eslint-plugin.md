@@ -7,10 +7,10 @@
 ```ts
 const default: {
   rules: {
-     no-fields-escape: RuleModuleWithName<"prop" | "spread" | "argument" | "exported", [RuleOptions], unknown, RuleListener>;
-     no-node-fs: RuleModuleWithName<"noNodeFs", [RuleOptions], unknown, RuleListener>;
-     no-raw-external-io: RuleModuleWithName<"noRawExternalIo", [RuleOptions], unknown, RuleListener>;
-     stable-operation-reference: RuleModuleWithName<"inlineFunctionLiteral" | "recreatedPerCall", [], unknown, RuleListener>;
+     "no-fields-escape": RuleModuleWithName<"prop" | "spread" | "argument" | "exported", [RuleOptions], unknown, RuleListener>;
+     "no-node-fs": RuleModuleWithName<"noNodeFs", [RuleOptions], unknown, RuleListener>;
+     "no-raw-external-io": RuleModuleWithName<"noRawExternalIo", [RuleOptions], unknown, RuleListener>;
+     "stable-operation-reference": RuleModuleWithName<"inlineFunctionLiteral" | "recreatedPerCall", [], unknown, RuleListener>;
   };
 };
 ```
@@ -30,10 +30,10 @@ A 6th public entry point alongside `.`, `./runtime`, `./build`,
 
 ```ts
 rules: {
-  no-fields-escape: RuleModuleWithName<"prop" | "spread" | "argument" | "exported", [RuleOptions], unknown, RuleListener>;
-  no-node-fs: RuleModuleWithName<"noNodeFs", [RuleOptions], unknown, RuleListener>;
-  no-raw-external-io: RuleModuleWithName<"noRawExternalIo", [RuleOptions], unknown, RuleListener>;
-  stable-operation-reference: RuleModuleWithName<"inlineFunctionLiteral" | "recreatedPerCall", [], unknown, RuleListener>;
+  "no-fields-escape": RuleModuleWithName<"prop" | "spread" | "argument" | "exported", [RuleOptions], unknown, RuleListener>;
+  "no-node-fs": RuleModuleWithName<"noNodeFs", [RuleOptions], unknown, RuleListener>;
+  "no-raw-external-io": RuleModuleWithName<"noRawExternalIo", [RuleOptions], unknown, RuleListener>;
+  "stable-operation-reference": RuleModuleWithName<"inlineFunctionLiteral" | "recreatedPerCall", [], unknown, RuleListener>;
 };
 ```
 
@@ -42,7 +42,7 @@ Every rule this plugin ships, keyed by its flat-config rule name.
 ###### rules.no-fields-escape
 
 ```ts
-no-fields-escape: RuleModuleWithName<"prop" | "spread" | "argument" | "exported", [RuleOptions], unknown, RuleListener> = noFieldsEscape;
+"no-fields-escape": RuleModuleWithName<"prop" | "spread" | "argument" | "exported", [RuleOptions], unknown, RuleListener> = noFieldsEscape;
 ```
 
 See [noFieldsEscape](#nofieldsescape).
@@ -50,7 +50,7 @@ See [noFieldsEscape](#nofieldsescape).
 ###### rules.no-node-fs
 
 ```ts
-no-node-fs: RuleModuleWithName<"noNodeFs", [RuleOptions], unknown, RuleListener> = noNodeFs;
+"no-node-fs": RuleModuleWithName<"noNodeFs", [RuleOptions], unknown, RuleListener> = noNodeFs;
 ```
 
 See [noNodeFs](#nonodefs).
@@ -58,7 +58,7 @@ See [noNodeFs](#nonodefs).
 ###### rules.no-raw-external-io
 
 ```ts
-no-raw-external-io: RuleModuleWithName<"noRawExternalIo", [RuleOptions], unknown, RuleListener> = noRawExternalIo;
+"no-raw-external-io": RuleModuleWithName<"noRawExternalIo", [RuleOptions], unknown, RuleListener> = noRawExternalIo;
 ```
 
 See [noRawExternalIo](#norawexternalio).
@@ -66,7 +66,7 @@ See [noRawExternalIo](#norawexternalio).
 ###### rules.stable-operation-reference
 
 ```ts
-stable-operation-reference: RuleModuleWithName<"inlineFunctionLiteral" | "recreatedPerCall", [], unknown, RuleListener> = stableOperationReference;
+"stable-operation-reference": RuleModuleWithName<"inlineFunctionLiteral" | "recreatedPerCall", [], unknown, RuleListener> = stableOperationReference;
 ```
 
 See [stableOperationReference](#stableoperationreference).

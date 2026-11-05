@@ -199,8 +199,8 @@ describe("the limits the scanner has are explicit unknowns, never a smaller grap
         `flow scale: step budget exhausted after ${Math.round(ms)} ms with ${exhausted.length} unknown(s)`,
       )
     },
-    // About 90 s alone; under coverage instrumentation and a busy machine it takes several times that. The assertions
-    // count unknowns, not time, so a long timeout only ever ends a genuine hang.
-    480_000,
+    // About 90 s alone; under coverage instrumentation it took 281 s on Node 24 and over 480 s on Node 22 in CI. The
+    // assertions count unknowns, not time, so a long timeout only ever ends a genuine hang.
+    1_200_000,
   )
 })

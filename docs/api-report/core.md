@@ -42,9 +42,7 @@ new DataCapError(message?): DataCapError;
 
 ###### Inherited from
 
-```ts
-Error.constructor
-```
+`Error.constructor`
 
 ##### Constructor
 
@@ -65,23 +63,19 @@ new DataCapError(message?, options?): DataCapError;
 
 ###### Inherited from
 
-```ts
-Error.constructor
-```
+`Error.constructor`
 
 #### Properties
 
 ##### cause?
 
 ```ts
-optional cause?: unknown;
+cause?: unknown;
 ```
 
 ###### Inherited from
 
-```ts
-Error.cause
-```
+`Error.cause`
 
 ##### code
 
@@ -99,9 +93,7 @@ message: string;
 
 ###### Inherited from
 
-```ts
-Error.message
-```
+`Error.message`
 
 ##### name
 
@@ -111,21 +103,17 @@ name: string;
 
 ###### Inherited from
 
-```ts
-Error.name
-```
+`Error.name`
 
 ##### stack?
 
 ```ts
-optional stack?: string;
+stack?: string;
 ```
 
 ###### Inherited from
 
-```ts
-Error.stack
-```
+`Error.stack`
 
 ##### stackTraceLimit
 
@@ -145,9 +133,7 @@ not capture any frames.
 
 ###### Inherited from
 
-```ts
-Error.stackTraceLimit
-```
+`Error.stackTraceLimit`
 
 #### Methods
 
@@ -214,9 +200,7 @@ a();
 
 ###### Inherited from
 
-```ts
-Error.captureStackTrace
-```
+`Error.captureStackTrace`
 
 ##### prepareStackTrace()
 
@@ -241,9 +225,7 @@ https://v8.dev/docs/stack-trace-api#customizing-stack-traces
 
 ###### Inherited from
 
-```ts
-Error.prepareStackTrace
-```
+`Error.prepareStackTrace`
 
 ***
 
@@ -354,7 +336,7 @@ new InvalidFieldDefaultError(path, reason): InvalidFieldDefaultError;
 ##### cause?
 
 ```ts
-optional cause?: unknown;
+cause?: unknown;
 ```
 
 ###### Inherited from
@@ -404,7 +386,7 @@ Path (key names only, never values) to the invalid default.
 ##### stack?
 
 ```ts
-optional stack?: string;
+stack?: string;
 ```
 
 ###### Inherited from
@@ -564,7 +546,7 @@ The default/example value for every field, declaring the capability's shape.
 ##### active?
 
 ```ts
-readonly optional active?: boolean;
+readonly active?: boolean;
 ```
 
 Defaults to `true` when omitted. Gates `exclusiveGroup` conflict checks and manifest membership.
@@ -572,7 +554,7 @@ Defaults to `true` when omitted. Gates `exclusiveGroup` conflict checks and mani
 ##### auditRequired?
 
 ```ts
-readonly optional auditRequired?: boolean;
+readonly auditRequired?: boolean;
 ```
 
 Whether access to this capability's data is documented as requiring an
@@ -583,7 +565,7 @@ for that field specifically.
 ##### category?
 
 ```ts
-readonly optional category?: string;
+readonly category?: string;
 ```
 
 Free-form classification -- never validated.
@@ -591,7 +573,7 @@ Free-form classification -- never validated.
 ##### dataResidency?
 
 ```ts
-readonly optional dataResidency?: string | readonly string[];
+readonly dataResidency?: string | readonly string[];
 ```
 
 The declared jurisdiction(s) this capability's data is permitted/
@@ -603,7 +585,7 @@ specifically.
 ##### deprecated?
 
 ```ts
-readonly optional deprecated?: boolean;
+readonly deprecated?: boolean;
 ```
 
 Whether this capability is documented as deprecated. Presence-only; nothing warns at runtime.
@@ -611,7 +593,7 @@ Whether this capability is documented as deprecated. Presence-only; nothing warn
 ##### deprecatedReason?
 
 ```ts
-readonly optional deprecatedReason?: string;
+readonly deprecatedReason?: string;
 ```
 
 Why this capability is deprecated, and what to use instead. Only meaningful alongside `deprecated`.
@@ -619,7 +601,7 @@ Why this capability is deprecated, and what to use instead. Only meaningful alon
 ##### description?
 
 ```ts
-readonly optional description?: string;
+readonly description?: string;
 ```
 
 Why this capability exists / what it's for.
@@ -627,7 +609,7 @@ Why this capability exists / what it's for.
 ##### evidence?
 
 ```ts
-readonly optional evidence?: {
+readonly evidence?: {
   fields?: Readonly<Record<string, EvidenceFieldDocs>>;
 };
 ```
@@ -639,13 +621,13 @@ separate for exactly that reason (see `EvidenceFieldDocs`).
 ###### fields?
 
 ```ts
-readonly optional fields?: Readonly<Record<string, EvidenceFieldDocs>>;
+readonly fields?: Readonly<Record<string, EvidenceFieldDocs>>;
 ```
 
 ##### exclusiveGroup?
 
 ```ts
-readonly optional exclusiveGroup?: string;
+readonly exclusiveGroup?: string;
 ```
 
 Mutual-exclusivity group: more than one *active* capability sharing this value is a real conflict (only one implementation of a group should be live at once).
@@ -653,7 +635,7 @@ Mutual-exclusivity group: more than one *active* capability sharing this value i
 ##### expiresAt?
 
 ```ts
-readonly optional expiresAt?: string;
+readonly expiresAt?: string;
 ```
 
 When this capability's data (or the credential/source behind it) is
@@ -664,7 +646,7 @@ specifically. Declared only -- nothing expires at runtime.
 ##### fields?
 
 ```ts
-readonly optional fields?: CapabilityFieldDocs<TSchema["fields"]>;
+readonly fields?: CapabilityFieldDocs<TSchema["fields"]>;
 ```
 
 Per-field documentation, overriding this capability's own `owner`/`sensitivity`/`protections` where declared. Keys are checked against the schema's real `fields` shape.
@@ -672,7 +654,7 @@ Per-field documentation, overriding this capability's own `owner`/`sensitivity`/
 ##### flowPolicy?
 
 ```ts
-readonly optional flowPolicy?: readonly FlowPolicyDocs[];
+readonly flowPolicy?: readonly FlowPolicyDocs[];
 ```
 
 Declared data-flow rules for this capability's fields, evaluated against the Flow Model (see `FlowPolicyDocs`).
@@ -680,7 +662,7 @@ Declared data-flow rules for this capability's fields, evaluated against the Flo
 ##### getters?
 
 ```ts
-readonly optional getters?: SchemaOperationDocs<TSchema, "getters">;
+readonly getters?: SchemaOperationDocs<TSchema, "getters">;
 ```
 
 Per-getter documentation. Keys are checked against the schema's real `getters` names -- a nonexistent or misspelled getter name is a compile error.
@@ -688,7 +670,7 @@ Per-getter documentation. Keys are checked against the schema's real `getters` n
 ##### legalBasis?
 
 ```ts
-readonly optional legalBasis?: string;
+readonly legalBasis?: string;
 ```
 
 The declared legal basis asserted for processing this capability's data
@@ -701,7 +683,7 @@ overrides this for that field specifically.
 ##### metadata?
 
 ```ts
-readonly optional metadata?: Readonly<Record<string, unknown>>;
+readonly metadata?: Readonly<Record<string, unknown>>;
 ```
 
 Free-form extension bag for anything data-cap itself has no named
@@ -715,7 +697,7 @@ did); everything else stays here.
 ##### mutators?
 
 ```ts
-readonly optional mutators?: SchemaOperationDocs<TSchema, "mutators">;
+readonly mutators?: SchemaOperationDocs<TSchema, "mutators">;
 ```
 
 Per-mutator documentation. Keys are checked against the schema's real `mutators` names.
@@ -723,7 +705,7 @@ Per-mutator documentation. Keys are checked against the schema's real `mutators`
 ##### name?
 
 ```ts
-readonly optional name?: string;
+readonly name?: string;
 ```
 
 Display name -- falls back to the export/binding name when omitted.
@@ -731,7 +713,7 @@ Display name -- falls back to the export/binding name when omitted.
 ##### owner?
 
 ```ts
-readonly optional owner?: string;
+readonly owner?: string;
 ```
 
 Who's accountable for this capability. A field's own `owner` (see `FieldDocs`) overrides this for that field specifically.
@@ -739,7 +721,7 @@ Who's accountable for this capability. A field's own `owner` (see `FieldDocs`) o
 ##### protections?
 
 ```ts
-readonly optional protections?: string;
+readonly protections?: string;
 ```
 
 Documented safeguard -- presence only, never an adequacy claim.
@@ -747,7 +729,7 @@ Documented safeguard -- presence only, never an adequacy claim.
 ##### purpose?
 
 ```ts
-readonly optional purpose?: string;
+readonly purpose?: string;
 ```
 
 The declared reason this capability's data is collected/retained.
@@ -758,7 +740,7 @@ for that field specifically.
 ##### retention?
 
 ```ts
-readonly optional retention?: string;
+readonly retention?: string;
 ```
 
 Documented retention policy -- presence only, never an enforcement claim.
@@ -766,7 +748,7 @@ Documented retention policy -- presence only, never an enforcement claim.
 ##### sensitivity?
 
 ```ts
-readonly optional sensitivity?: string;
+readonly sensitivity?: string;
 ```
 
 Data classification. Standard vocabulary: `"public"` / `"internal"` / `"confidential"` / `"restricted"` (ascending) -- custom values are allowed but flagged as non-standard, never blocking.
@@ -774,7 +756,7 @@ Data classification. Standard vocabulary: `"public"` / `"internal"` / `"confiden
 ##### subscriptions?
 
 ```ts
-readonly optional subscriptions?: SchemaOperationDocs<TSchema, "subscriptions">;
+readonly subscriptions?: SchemaOperationDocs<TSchema, "subscriptions">;
 ```
 
 Per-subscription documentation. Keys are checked against the schema's real `subscriptions` names.
@@ -782,7 +764,7 @@ Per-subscription documentation. Keys are checked against the schema's real `subs
 ##### transferSafeguard?
 
 ```ts
-readonly optional transferSafeguard?: string;
+readonly transferSafeguard?: string;
 ```
 
 The declared safeguard relied on for any transfer of this capability's
@@ -838,7 +820,7 @@ Which way data moves across this boundary.
 ##### handling?
 
 ```ts
-readonly optional handling?: FlowHandling;
+readonly handling?: FlowHandling;
 ```
 
 The declared data-safety state of this field's value AT this specific
@@ -868,7 +850,7 @@ Short identifier, e.g. "stripe-api", "postgres:users" -- a semantic label, not a
 ##### url?
 
 ```ts
-readonly optional url?: string;
+readonly url?: string;
 ```
 
 A literal, trackable location for this endpoint -- a URL, a route path, a `table:column` reference. Distinct from `name` (a short label): this is meant to be compared/matched across capabilities (e.g. flagging two capabilities that declare the same URL as likely-duplicate fetches), not just read by a person.
@@ -911,7 +893,7 @@ The default/example value for every field, declaring the capability's shape.
 ##### getters?
 
 ```ts
-readonly optional getters?: Record<string, GetterDefinition<InferFields<TFields>, any, any, any>>;
+readonly getters?: Record<string, GetterDefinition<InferFields<TFields>, any, any, any>>;
 ```
 
 Named getter operations, keyed by the name they're called/documented under.
@@ -919,7 +901,7 @@ Named getter operations, keyed by the name they're called/documented under.
 ##### mutators?
 
 ```ts
-readonly optional mutators?: Record<string, MutatorDefinition<InferFields<TFields>, any, any, any>>;
+readonly mutators?: Record<string, MutatorDefinition<InferFields<TFields>, any, any, any>>;
 ```
 
 Named mutator operations, keyed by the name they're called/documented under.
@@ -927,7 +909,7 @@ Named mutator operations, keyed by the name they're called/documented under.
 ##### subscriptions?
 
 ```ts
-readonly optional subscriptions?: Record<string, SubscriptionDefinition<InferFields<TFields>, any, any, any>>;
+readonly subscriptions?: Record<string, SubscriptionDefinition<InferFields<TFields>, any, any, any>>;
 ```
 
 Named subscription operations, keyed by the name they're called/documented under.
@@ -1060,7 +1042,7 @@ for the full reasoning.
 ##### auditRequired?
 
 ```ts
-readonly optional auditRequired?: boolean;
+readonly auditRequired?: boolean;
 ```
 
 Whether access to this field is documented as requiring an audit trail.
@@ -1071,7 +1053,7 @@ field specifically.
 ##### dataResidency?
 
 ```ts
-readonly optional dataResidency?: string | readonly string[];
+readonly dataResidency?: string | readonly string[];
 ```
 
 The declared jurisdiction(s) this field's data is permitted/expected to
@@ -1082,7 +1064,7 @@ the capability's own `dataResidency` for this field specifically.
 ##### dataSubjectCategory?
 
 ```ts
-readonly optional dataSubjectCategory?: string;
+readonly dataSubjectCategory?: string;
 ```
 
 The declared category of data subject this field's data concerns (e.g.
@@ -1096,7 +1078,7 @@ meaningfully state once for every field under it.
 ##### deprecated?
 
 ```ts
-readonly optional deprecated?: boolean;
+readonly deprecated?: boolean;
 ```
 
 Whether this field is documented as deprecated. Presence-only, same discipline as every other declared fact here -- nothing warns at runtime.
@@ -1104,7 +1086,7 @@ Whether this field is documented as deprecated. Presence-only, same discipline a
 ##### deprecatedReason?
 
 ```ts
-readonly optional deprecatedReason?: string;
+readonly deprecatedReason?: string;
 ```
 
 Why this field is deprecated, and what to use instead. Only meaningful alongside `deprecated`.
@@ -1112,7 +1094,7 @@ Why this field is deprecated, and what to use instead. Only meaningful alongside
 ##### description?
 
 ```ts
-readonly optional description?: string;
+readonly description?: string;
 ```
 
 Why this field exists / what it's for.
@@ -1120,7 +1102,7 @@ Why this field exists / what it's for.
 ##### expiresAt?
 
 ```ts
-readonly optional expiresAt?: string;
+readonly expiresAt?: string;
 ```
 
 When this field's data (or the credential/source behind it) is declared
@@ -1133,7 +1115,7 @@ passed is reported as expired, never acted on.
 ##### legalBasis?
 
 ```ts
-readonly optional legalBasis?: string;
+readonly legalBasis?: string;
 ```
 
 The declared legal basis asserted for processing this field (e.g.
@@ -1145,7 +1127,7 @@ field specifically.
 ##### metadata?
 
 ```ts
-readonly optional metadata?: Readonly<Record<string, unknown>>;
+readonly metadata?: Readonly<Record<string, unknown>>;
 ```
 
 Free-form extension bag for anything data-cap itself has no named
@@ -1156,7 +1138,7 @@ about, it gets its own named field above; everything else stays here.
 ##### owner?
 
 ```ts
-readonly optional owner?: string;
+readonly owner?: string;
 ```
 
 Overrides the capability's own `owner` for this field specifically.
@@ -1164,7 +1146,7 @@ Overrides the capability's own `owner` for this field specifically.
 ##### protections?
 
 ```ts
-readonly optional protections?: string;
+readonly protections?: string;
 ```
 
 Overrides the capability's own `protections` for this field specifically.
@@ -1172,7 +1154,7 @@ Overrides the capability's own `protections` for this field specifically.
 ##### purpose?
 
 ```ts
-readonly optional purpose?: string;
+readonly purpose?: string;
 ```
 
 The declared reason this field's data is collected/retained. Declared
@@ -1182,7 +1164,7 @@ Overrides the capability's own `purpose` for this field specifically.
 ##### recipientCategories?
 
 ```ts
-readonly optional recipientCategories?: readonly string[];
+readonly recipientCategories?: readonly string[];
 ```
 
 The declared categories of recipient this field's data has been or will
@@ -1199,7 +1181,7 @@ for the full reasoning on why this is never derived.
 ##### removeBy?
 
 ```ts
-readonly optional removeBy?: string;
+readonly removeBy?: string;
 ```
 
 The date by which a deprecated field is intended to be removed, ISO-8601.
@@ -1210,7 +1192,7 @@ which of its fields still need work.
 ##### renamedFrom?
 
 ```ts
-readonly optional renamedFrom?: string;
+readonly renamedFrom?: string;
 ```
 
 The previous name of this field, when it was renamed. Field-level only,
@@ -1223,7 +1205,7 @@ guessed from name similarity.
 ##### retention?
 
 ```ts
-readonly optional retention?: string;
+readonly retention?: string;
 ```
 
 Documented retention policy for this field -- presence only, never an enforcement claim.
@@ -1231,7 +1213,7 @@ Documented retention policy for this field -- presence only, never an enforcemen
 ##### sensitivity?
 
 ```ts
-readonly optional sensitivity?: string;
+readonly sensitivity?: string;
 ```
 
 Overrides the capability's own `sensitivity` for this field specifically.
@@ -1239,7 +1221,7 @@ Overrides the capability's own `sensitivity` for this field specifically.
 ##### transferSafeguard?
 
 ```ts
-readonly optional transferSafeguard?: string;
+readonly transferSafeguard?: string;
 ```
 
 The declared safeguard relied on for any transfer of this field's data
@@ -1267,7 +1249,7 @@ operation unless a still-newer operation has since set a different one.
 ##### error?
 
 ```ts
-readonly optional error?: DataError;
+readonly error?: DataError;
 ```
 
 The error the establishing operation settled with, if it failed.
@@ -1275,7 +1257,7 @@ The error the establishing operation settled with, if it failed.
 ##### fetchedAt?
 
 ```ts
-readonly optional fetchedAt?: number;
+readonly fetchedAt?: number;
 ```
 
 When `source` most recently committed a value via a getter/subscription, as epoch ms.
@@ -1283,7 +1265,7 @@ When `source` most recently committed a value via a getter/subscription, as epoc
 ##### optimistic?
 
 ```ts
-readonly optional optimistic?: boolean;
+readonly optimistic?: boolean;
 ```
 
 True while an uncommitted pending optimistic transition is contributing to this field's visible value.
@@ -1291,7 +1273,7 @@ True while an uncommitted pending optimistic transition is contributing to this 
 ##### source?
 
 ```ts
-readonly optional source?: string;
+readonly source?: string;
 ```
 
 The operation key that most recently established this field's current value.
@@ -1299,7 +1281,7 @@ The operation key that most recently established this field's current value.
 ##### stale?
 
 ```ts
-readonly optional stale?: boolean;
+readonly stale?: boolean;
 ```
 
 True once a newer request for this field has superseded the value currently shown.
@@ -1307,7 +1289,7 @@ True once a newer request for this field has superseded the value currently show
 ##### status?
 
 ```ts
-readonly optional status?: DataStatus;
+readonly status?: DataStatus;
 ```
 
 This field's current lifecycle status.
@@ -1315,7 +1297,7 @@ This field's current lifecycle status.
 ##### subscription?
 
 ```ts
-readonly optional subscription?: SubscriptionInfo;
+readonly subscription?: SubscriptionInfo;
 ```
 
 Connection/lifecycle metadata, populated only when this field is established by a subscription.
@@ -1323,7 +1305,7 @@ Connection/lifecycle metadata, populated only when this field is established by 
 ##### updatedAt?
 
 ```ts
-readonly optional updatedAt?: number;
+readonly updatedAt?: number;
 ```
 
 When `source` most recently committed a value via any operation, as epoch ms.
@@ -1339,7 +1321,7 @@ Which fields a data-flow rule governs; every supplied criterion must match, and 
 ##### classification?
 
 ```ts
-readonly optional classification?: string;
+readonly classification?: string;
 ```
 
 Every field of this capability whose resolved `sensitivity` equals this value.
@@ -1347,7 +1329,7 @@ Every field of this capability whose resolved `sensitivity` equals this value.
 ##### field?
 
 ```ts
-readonly optional field?: string;
+readonly field?: string;
 ```
 
 One field of this capability, by its top-level key.
@@ -1355,7 +1337,7 @@ One field of this capability, by its top-level key.
 ##### path?
 
 ```ts
-readonly optional path?: readonly string[];
+readonly path?: readonly string[];
 ```
 
 Narrows the rule to one path inside each governed field (for example `["passwordHash"]`).
@@ -1376,7 +1358,7 @@ Model's `indeterminate` outcome). At least one of `forbidDestinations`,
 ##### allowedDestinations?
 
 ```ts
-readonly optional allowedDestinations?: readonly FlowBoundaryKind[];
+readonly allowedDestinations?: readonly FlowBoundaryKind[];
 ```
 
 If set, the only destinations the governed data may reach.
@@ -1384,7 +1366,7 @@ If set, the only destinations the governed data may reach.
 ##### allowedHandling?
 
 ```ts
-readonly optional allowedHandling?: readonly FlowHandling[];
+readonly allowedHandling?: readonly FlowHandling[];
 ```
 
 Handling that exempts a crossing from `forbidDestinations`/`allowedDestinations`.
@@ -1400,7 +1382,7 @@ Which fields the rule governs.
 ##### description?
 
 ```ts
-readonly optional description?: string;
+readonly description?: string;
 ```
 
 Why the rule exists.
@@ -1408,7 +1390,7 @@ Why the rule exists.
 ##### forbidDestinations?
 
 ```ts
-readonly optional forbidDestinations?: readonly FlowBoundaryKind[];
+readonly forbidDestinations?: readonly FlowBoundaryKind[];
 ```
 
 Destinations the governed data must never reach.
@@ -1424,7 +1406,7 @@ Unique within this capability.
 ##### requireHandling?
 
 ```ts
-readonly optional requireHandling?: readonly FlowHandling[];
+readonly requireHandling?: readonly FlowHandling[];
 ```
 
 If set, every crossing of the governed data must declare one of these handlings.
@@ -1475,7 +1457,7 @@ Performs the actual acquisition (fetch, query, etc.), aborted via `signal`.
 ##### params?
 
 ```ts
-readonly optional params?: TParams;
+readonly params?: TParams;
 ```
 
 Default/example params, deep-merged with a caller's partial at call time. Omit and annotate via `{} as TParams` to require every param explicitly on every call.
@@ -1483,7 +1465,7 @@ Default/example params, deep-merged with a caller's partial at call time. Omit a
 ##### processor?
 
 ```ts
-readonly optional processor?: (raw, params) => OwnedPatch<TFields, TWrites>;
+readonly processor?: (raw, params) => OwnedPatch<TFields, TWrites>;
 ```
 
 Defaults to identity when omitted -- `execute`'s raw result is then used directly as the patch, and must already be shaped like one.
@@ -1549,7 +1531,7 @@ Performs the actual side effect (a write, an API call, etc.), aborted via `signa
 ##### optimistic?
 
 ```ts
-readonly optional optimistic?: (authoritativeState, params) => 
+readonly optimistic?: (authoritativeState, params) => 
   | OwnedPatch<TFields, TWrites extends undefined ? true : TWrites>
   | undefined;
 ```
@@ -1574,7 +1556,7 @@ Returning `undefined` means no optimistic transition for this call.
 ##### params?
 
 ```ts
-readonly optional params?: TParams;
+readonly params?: TParams;
 ```
 
 Default/example params, deep-merged with a caller's partial at call time.
@@ -1582,7 +1564,7 @@ Default/example params, deep-merged with a caller's partial at call time.
 ##### processor?
 
 ```ts
-readonly optional processor?: (raw, params) => OwnedPatch<TFields, TWrites extends undefined ? true : TWrites>;
+readonly processor?: (raw, params) => OwnedPatch<TFields, TWrites extends undefined ? true : TWrites>;
 ```
 
 Defaults to identity when omitted -- `execute`'s raw result is then used directly as the patch.
@@ -1601,7 +1583,7 @@ Defaults to identity when omitted -- `execute`'s raw result is then used directl
 ##### writes?
 
 ```ts
-readonly optional writes?: TWrites;
+readonly writes?: TWrites;
 ```
 
 Declares which fields this mutator may write -- omitting it defaults to the full capability tree.
@@ -1661,7 +1643,7 @@ session"` is never proof that authorization is actually enforced.
 ##### credentials?
 
 ```ts
-readonly optional credentials?: string;
+readonly credentials?: string;
 ```
 
 What's required to call this operation -- descriptive only, never an authorization/enforcement claim.
@@ -1669,7 +1651,7 @@ What's required to call this operation -- descriptive only, never an authorizati
 ##### description?
 
 ```ts
-readonly optional description?: string;
+readonly description?: string;
 ```
 
 What this operation does.
@@ -1677,7 +1659,7 @@ What this operation does.
 ##### endpoints?
 
 ```ts
-readonly optional endpoints?: readonly DataFlowEndpoint[];
+readonly endpoints?: readonly DataFlowEndpoint[];
 ```
 
 Declared data-flow boundaries this operation crosses -- see `DataFlowEndpoint`.
@@ -1685,7 +1667,7 @@ Declared data-flow boundaries this operation crosses -- see `DataFlowEndpoint`.
 ##### metadata?
 
 ```ts
-readonly optional metadata?: Readonly<Record<string, unknown>>;
+readonly metadata?: Readonly<Record<string, unknown>>;
 ```
 
 Free-form extension bag for anything data-cap itself has no named
@@ -1697,7 +1679,7 @@ the recommended place for new extension data going forward.
 ##### response?
 
 ```ts
-readonly optional response?: string;
+readonly response?: string;
 ```
 
 Documented shape of what this operation returns/produces.
@@ -1705,7 +1687,7 @@ Documented shape of what this operation returns/produces.
 ##### source?
 
 ```ts
-readonly optional source?: string;
+readonly source?: string;
 ```
 
 Short identifier for where this operation acquires/sends data (e.g. `"stripe-api"`, `"postgres:users"`), not prose.
@@ -1768,7 +1750,7 @@ the sanctioned way to stop a subscription.
 ##### params?
 
 ```ts
-readonly optional params?: TParams;
+readonly params?: TParams;
 ```
 
 Default/example params, deep-merged with a caller's partial at call time.
@@ -1776,7 +1758,7 @@ Default/example params, deep-merged with a caller's partial at call time.
 ##### processor?
 
 ```ts
-readonly optional processor?: (event, params) => OwnedPatch<TFields, TWrites>;
+readonly processor?: (event, params) => OwnedPatch<TFields, TWrites>;
 ```
 
 Defaults to identity when omitted -- the raw event is used directly as the patch.
@@ -1882,7 +1864,7 @@ Current connection/lifecycle metadata for a field's subscription, if it has one.
 ##### connectedAt?
 
 ```ts
-readonly optional connectedAt?: number;
+readonly connectedAt?: number;
 ```
 
 When the subscription most recently entered `"connected"`, as epoch ms.
@@ -1890,7 +1872,7 @@ When the subscription most recently entered `"connected"`, as epoch ms.
 ##### disconnectedAt?
 
 ```ts
-readonly optional disconnectedAt?: number;
+readonly disconnectedAt?: number;
 ```
 
 When the subscription most recently entered `"disconnected"`, as epoch ms.
@@ -1898,7 +1880,7 @@ When the subscription most recently entered `"disconnected"`, as epoch ms.
 ##### error?
 
 ```ts
-readonly optional error?: DataError;
+readonly error?: DataError;
 ```
 
 The error the connection settled with, if it's currently in an `"error"` status.
@@ -1906,7 +1888,7 @@ The error the connection settled with, if it's currently in an `"error"` status.
 ##### lastEventAt?
 
 ```ts
-readonly optional lastEventAt?: number;
+readonly lastEventAt?: number;
 ```
 
 When the subscription most recently delivered an event, as epoch ms.
@@ -1914,7 +1896,7 @@ When the subscription most recently delivered an event, as epoch ms.
 ##### reconnectAttempt?
 
 ```ts
-readonly optional reconnectAttempt?: number;
+readonly reconnectAttempt?: number;
 ```
 
 How many consecutive reconnect attempts have occurred since the last successful connection.
@@ -1922,7 +1904,7 @@ How many consecutive reconnect attempts have occurred since the last successful 
 ##### source?
 
 ```ts
-readonly optional source?: string;
+readonly source?: string;
 ```
 
 The subscription operation key that owns this connection.

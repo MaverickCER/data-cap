@@ -42,7 +42,7 @@ new DataProjectGenerationError(findings): DataProjectGenerationError;
 ##### cause?
 
 ```ts
-optional cause?: unknown;
+cause?: unknown;
 ```
 
 ###### Inherited from
@@ -92,7 +92,7 @@ name: string;
 ##### stack?
 
 ```ts
-optional stack?: string;
+stack?: string;
 ```
 
 ###### Inherited from
@@ -248,7 +248,7 @@ new FlowModelError(message): FlowModelError;
 ##### cause?
 
 ```ts
-optional cause?: unknown;
+cause?: unknown;
 ```
 
 ###### Inherited from
@@ -290,7 +290,7 @@ name: string;
 ##### stack?
 
 ```ts
-optional stack?: string;
+stack?: string;
 ```
 
 ###### Inherited from
@@ -621,7 +621,7 @@ Options for `buildSarifLog`.
 ##### flow?
 
 ```ts
-readonly optional flow?: FlowModel;
+readonly flow?: FlowModel;
 ```
 
 The Flow Model that findings' flow evidence refers to; without it findings keep their coarse, file-level location.
@@ -875,7 +875,7 @@ readonly exportName: string;
 ##### fields?
 
 ```ts
-readonly optional fields?: readonly {
+readonly fields?: readonly {
   docs?: {
      renamedFrom?: string;
   };
@@ -990,7 +990,7 @@ False when the static trace behind the claim touched an `unknown` fact: the real
 ##### truncatedScopes?
 
 ```ts
-readonly optional truncatedScopes?: readonly string[];
+readonly truncatedScopes?: readonly string[];
 ```
 
 Contributing observation scopes whose recorder reported leaving out evidence near this claim's field, sorted; absent when none.
@@ -1012,13 +1012,13 @@ readonly flow: FlowModel;
 ##### observation?
 
 ```ts
-readonly optional observation?: ObservationModel;
+readonly observation?: ObservationModel;
 ```
 
 ##### policy?
 
 ```ts
-readonly optional policy?: PolicyModel;
+readonly policy?: PolicyModel;
 ```
 
 ***
@@ -1135,7 +1135,7 @@ Options for [computeSourceFingerprint](#computesourcefingerprint).
 ##### exclude?
 
 ```ts
-readonly optional exclude?: readonly string[];
+readonly exclude?: readonly string[];
 ```
 
 Discovery exclusion globs.
@@ -1143,7 +1143,7 @@ Discovery exclusion globs.
 ##### extra?
 
 ```ts
-readonly optional extra?: string;
+readonly extra?: string;
 ```
 
 Anything beyond the source files that changes what the evidence contains -- see `evidenceOptionsKey` in the same file. Absent leaves the fingerprint exactly as it always was.
@@ -1159,7 +1159,7 @@ The filesystem capability -- `./build` never imports `node:fs` (ADR 0058).
 ##### include?
 
 ```ts
-readonly optional include?: readonly string[];
+readonly include?: readonly string[];
 ```
 
 Discovery globs. Defaults to the same globs as `discoverCapabilityFiles`.
@@ -1167,7 +1167,7 @@ Discovery globs. Defaults to the same globs as `discoverCapabilityFiles`.
 ##### packages?
 
 ```ts
-readonly optional packages?: readonly string[];
+readonly packages?: readonly string[];
 ```
 
 Allow-listed package names whose own resolved schema files also feed the fingerprint.
@@ -1270,7 +1270,7 @@ Root-relative POSIX path of the file declaring the capability -- the same value 
 ###### field?
 
 ```ts
-readonly optional field?: readonly string[];
+readonly field?: readonly string[];
 ```
 
 The specific field path being read, when `relationship` is `"reads-field"`.
@@ -1278,7 +1278,7 @@ The specific field path being read, when `relationship` is `"reads-field"`.
 ###### operation?
 
 ```ts
-readonly optional operation?: string;
+readonly operation?: string;
 ```
 
 The specific operation name being called, when `relationship` is `"calls-getter"`/`"calls-mutator"`/`"calls-subscription"`.
@@ -1509,7 +1509,7 @@ Options for `discoverCapabilityFiles`.
 ##### exclude?
 
 ```ts
-readonly optional exclude?: readonly string[];
+readonly exclude?: readonly string[];
 ```
 
 Glob patterns (relative to `root`) that prune a file or directory regardless of `include`.
@@ -1525,7 +1525,7 @@ The filesystem capability -- `./build` never imports `node:fs` (ADR 0058).
 ##### include?
 
 ```ts
-readonly optional include?: readonly string[];
+readonly include?: readonly string[];
 ```
 
 Glob patterns (relative to `root`) a file must match at least one of to be included. Defaults to every `.ts`/`.tsx` file.
@@ -1651,7 +1651,7 @@ Capability Model -- the base every other model is derived from or indexed agains
 ##### change?
 
 ```ts
-readonly optional change?: ChangeModel;
+readonly change?: ChangeModel;
 ```
 
 Change Model, when a previous manifest snapshot was available to diff against.
@@ -1659,7 +1659,7 @@ Change Model, when a previous manifest snapshot was available to diff against.
 ##### dependency?
 
 ```ts
-readonly optional dependency?: DependencyModel;
+readonly dependency?: DependencyModel;
 ```
 
 Dependency Model, when a usage scan was run.
@@ -1667,7 +1667,7 @@ Dependency Model, when a usage scan was run.
 ##### finding?
 
 ```ts
-readonly optional finding?: FindingModel;
+readonly finding?: FindingModel;
 ```
 
 Finding Model, when at least one rule/scan pass ran.
@@ -1675,7 +1675,7 @@ Finding Model, when at least one rule/scan pass ran.
 ##### flow?
 
 ```ts
-readonly optional flow?: FlowModel;
+readonly flow?: FlowModel;
 ```
 
 Flow Model (ADR 0070), when a flow pass ran.
@@ -1697,7 +1697,7 @@ the contents, never the availability.
 ##### observation?
 
 ```ts
-readonly optional observation?: ObservationModel;
+readonly observation?: ObservationModel;
 ```
 
 Observation Model, when runtime observations were ingested.
@@ -1705,7 +1705,7 @@ Observation Model, when runtime observations were ingested.
 ##### ownership?
 
 ```ts
-readonly optional ownership?: OwnershipModel;
+readonly ownership?: OwnershipModel;
 ```
 
 Ownership Model, when a usage scan was run.
@@ -1713,7 +1713,7 @@ Ownership Model, when a usage scan was run.
 ##### policy?
 
 ```ts
-readonly optional policy?: PolicyModel;
+readonly policy?: PolicyModel;
 ```
 
 Policy Model, when rules were evaluated. Requires `flow`: a policy is evaluated against a Flow Model.
@@ -2009,7 +2009,7 @@ Id of the source node.
 ##### handling?
 
 ```ts
-readonly optional handling?: FlowHandling;
+readonly handling?: FlowHandling;
 ```
 
 The data-safety state of the value at this hop, when declared or established -- policy evaluation reads it at boundary crossings.
@@ -2023,7 +2023,7 @@ readonly kind: FlowEdgeKind;
 ##### origin?
 
 ```ts
-readonly optional origin?: string;
+readonly origin?: string;
 ```
 
 Id of the `field` node whose data this edge carries. Present on every
@@ -2035,7 +2035,7 @@ destinations. Absent on edges that are not about one field's data (a
 ##### path?
 
 ```ts
-readonly optional path?: readonly string[];
+readonly path?: readonly string[];
 ```
 
 The field path this edge carries, for a field-sensitive edge; absent for an edge about the whole value or about control.
@@ -2043,7 +2043,7 @@ The field path this edge carries, for a field-sensitive edge; absent for an edge
 ##### source?
 
 ```ts
-readonly optional source?: SourceLocation;
+readonly source?: SourceLocation;
 ```
 
 Where in source this edge arises (a call site, a read), when known.
@@ -2103,7 +2103,7 @@ readonly edges: readonly FlowEdgeInput[];
 ##### edgeTags?
 
 ```ts
-readonly optional edgeTags?: readonly FlowEdgeTagInput[];
+readonly edgeTags?: readonly FlowEdgeTagInput[];
 ```
 
 What the scanner saw happen to the data of some edges. Optional and additive: edge ids do not depend on it.
@@ -2135,7 +2135,7 @@ One node as a producer supplies it -- the id is derived, never supplied.
 ##### boundaryKind?
 
 ```ts
-readonly optional boundaryKind?: FlowBoundaryKind;
+readonly boundaryKind?: FlowBoundaryKind;
 ```
 
 What kind of boundary this is; only meaningful (and required by policy evaluation) on a `boundary` node.
@@ -2143,7 +2143,7 @@ What kind of boundary this is; only meaningful (and required by policy evaluatio
 ##### classification?
 
 ```ts
-readonly optional classification?: string;
+readonly classification?: string;
 ```
 
 Declared or inherited sensitivity classification, when known -- carried verbatim, never inferred here.
@@ -2173,7 +2173,7 @@ Root-relative POSIX path of the file that declares this node, or a stable namesp
 ##### source?
 
 ```ts
-readonly optional source?: SourcePosition;
+readonly source?: SourcePosition;
 ```
 
 Declaration position within `scope`, when there is one.
@@ -2195,7 +2195,7 @@ Which fields a rule applies to; every supplied criterion must match, and at leas
 ##### classification?
 
 ```ts
-readonly optional classification?: string;
+readonly classification?: string;
 ```
 
 Exact match against a field node's `classification`.
@@ -2203,7 +2203,7 @@ Exact match against a field node's `classification`.
 ##### field?
 
 ```ts
-readonly optional field?: string;
+readonly field?: string;
 ```
 
 Exact match against a field node's `name` (for example `User.email`).
@@ -2211,7 +2211,7 @@ Exact match against a field node's `name` (for example `User.email`).
 ##### path?
 
 ```ts
-readonly optional path?: readonly string[];
+readonly path?: readonly string[];
 ```
 
 Narrows the rule to one path inside each matching field (for example `["passwordHash"]`): only flow of that path, or of the whole field, counts.
@@ -2219,7 +2219,7 @@ Narrows the rule to one path inside each matching field (for example `["password
 ##### scope?
 
 ```ts
-readonly optional scope?: string;
+readonly scope?: string;
 ```
 
 Restricts the rule to fields declared in this file (a root-relative path); never sufficient on its own.
@@ -2235,7 +2235,7 @@ One declared data-flow rule. At least one constraint must be set.
 ##### allowedDestinations?
 
 ```ts
-readonly optional allowedDestinations?: readonly FlowBoundaryKind[];
+readonly allowedDestinations?: readonly FlowBoundaryKind[];
 ```
 
 If set, the only boundary kinds the governed fields may reach.
@@ -2243,7 +2243,7 @@ If set, the only boundary kinds the governed fields may reach.
 ##### allowedHandling?
 
 ```ts
-readonly optional allowedHandling?: readonly FlowHandling[];
+readonly allowedHandling?: readonly FlowHandling[];
 ```
 
 Handling that exempts a crossing from `forbidDestinations`/`allowedDestinations`.
@@ -2259,7 +2259,7 @@ Which fields this rule governs.
 ##### description?
 
 ```ts
-readonly optional description?: string;
+readonly description?: string;
 ```
 
 Free-text rationale, carried through verbatim.
@@ -2267,7 +2267,7 @@ Free-text rationale, carried through verbatim.
 ##### forbidDestinations?
 
 ```ts
-readonly optional forbidDestinations?: readonly FlowBoundaryKind[];
+readonly forbidDestinations?: readonly FlowBoundaryKind[];
 ```
 
 Boundary kinds the governed fields must never reach.
@@ -2283,7 +2283,7 @@ Unique, stable identifier.
 ##### requireHandling?
 
 ```ts
-readonly optional requireHandling?: readonly FlowHandling[];
+readonly requireHandling?: readonly FlowHandling[];
 ```
 
 If set, every boundary crossing of a governed field must declare one of these handlings.
@@ -2328,7 +2328,7 @@ readonly callee: string;
 ##### handling?
 
 ```ts
-readonly optional handling?: FlowHandling;
+readonly handling?: FlowHandling;
 ```
 
 Declared data-safety state of what is sent here, when it is always the same.
@@ -2348,7 +2348,7 @@ One unknown as a producer supplies it.
 ##### data?
 
 ```ts
-readonly optional data?: readonly FlowUnknownData[];
+readonly data?: readonly FlowUnknownData[];
 ```
 
 The tracked data that entered the part of the program that could not be
@@ -2360,7 +2360,7 @@ only ever saw `email` says nothing about where `passwordHash` went.
 ##### detail?
 
 ```ts
-readonly optional detail?: string;
+readonly detail?: string;
 ```
 
 Human-readable detail (never parsed).
@@ -2382,7 +2382,7 @@ Where the unanalyzable construct is.
 ##### subject?
 
 ```ts
-readonly optional subject?: string;
+readonly subject?: string;
 ```
 
 The node this unknown prevents us from fully describing, when there is one.
@@ -2402,7 +2402,7 @@ Options for `computeDataArtifacts`/`generateDataArtifacts`/`checkArtifacts`.
 ##### commit?
 
 ```ts
-readonly optional commit?: string;
+readonly commit?: string;
 ```
 
 The commit SHA this run's evidence was generated against, stamped onto `EvidenceModel.provenance.commit`. Caller-supplied only -- `data-cap` never shells out to `git` itself, so omitting this records a stated absence, never a guess.
@@ -2410,7 +2410,7 @@ The commit SHA this run's evidence was generated against, stamped onto `Evidence
 ##### docs?
 
 ```ts
-readonly optional docs?: string;
+readonly docs?: string;
 ```
 
 Output path for the Markdown documentation catalog.
@@ -2418,7 +2418,7 @@ Output path for the Markdown documentation catalog.
 ##### evidence?
 
 ```ts
-readonly optional evidence?: string;
+readonly evidence?: string;
 ```
 
 Output path for the composed Evidence Model (ADR 0050), as JSON -- see `ReportResult.evidence`, which is always computed regardless of this option; this only controls whether it's additionally written to disk.
@@ -2426,7 +2426,7 @@ Output path for the composed Evidence Model (ADR 0050), as JSON -- see `ReportRe
 ##### exclude?
 
 ```ts
-readonly optional exclude?: readonly string[];
+readonly exclude?: readonly string[];
 ```
 
 Glob patterns (relative to `root`) that prune a file or directory regardless of `include`.
@@ -2434,7 +2434,7 @@ Glob patterns (relative to `root`) that prune a file or directory regardless of 
 ##### expiringWithinDays?
 
 ```ts
-readonly optional expiringWithinDays?: number;
+readonly expiringWithinDays?: number;
 ```
 
 How many days out counts as "expiring soon" for the Lifecycle Model and the documentation catalog's own expiring section. Defaults to `DEFAULT_EXPIRING_WITHIN_DAYS`.
@@ -2442,7 +2442,7 @@ How many days out counts as "expiring soon" for the Lifecycle Model and the docu
 ##### flow?
 
 ```ts
-readonly optional flow?: string;
+readonly flow?: string;
 ```
 
 Output directory for the Data Flow Diagram + Security Data-Flow Review set.
@@ -2450,7 +2450,7 @@ Output directory for the Data Flow Diagram + Security Data-Flow Review set.
 ##### flowEvidence?
 
 ```ts
-readonly optional flowEvidence?: boolean;
+readonly flowEvidence?: boolean;
 ```
 
 Run the flow pass (ADR 0070): field-level, interprocedural data-flow
@@ -2463,7 +2463,7 @@ discovered file's function bodies.
 ##### flowSinks?
 
 ```ts
-readonly optional flowSinks?: readonly FlowSinkPattern[];
+readonly flowSinks?: readonly FlowSinkPattern[];
 ```
 
 Sinks the flow pass recognises instead of the defaults (`DEFAULT_FLOW_SINKS`). Only meaningful with `flowEvidence`.
@@ -2471,7 +2471,7 @@ Sinks the flow pass recognises instead of the defaults (`DEFAULT_FLOW_SINKS`). O
 ##### flowSummaries?
 
 ```ts
-readonly optional flowSummaries?: readonly FlowSummary[];
+readonly flowSummaries?: readonly FlowSummary[];
 ```
 
 What calls into packages do, declared by the project (`FlowSummary`): without one, such a call that receives tracked data is an explicit unknown. Only meaningful with `flowEvidence`.
@@ -2487,7 +2487,7 @@ The filesystem capability, shared across every requested pass -- `./build` never
 ##### generatedAt?
 
 ```ts
-readonly optional generatedAt?: Date;
+readonly generatedAt?: Date;
 ```
 
 The single instant every time-sensitive computation in this run shares (`EvidenceModel.provenance.generatedAt`, Lifecycle Model's `daysRemaining`), so none of them can disagree about "now". Defaults to the wall clock at the moment this function is called.
@@ -2495,7 +2495,7 @@ The single instant every time-sensitive computation in this run shares (`Evidenc
 ##### include?
 
 ```ts
-readonly optional include?: readonly string[];
+readonly include?: readonly string[];
 ```
 
 Glob patterns (relative to `root`) a file must match at least one of to be discovered. Defaults to every `.ts`/`.tsx` file.
@@ -2503,7 +2503,7 @@ Glob patterns (relative to `root`) a file must match at least one of to be disco
 ##### location?
 
 ```ts
-readonly optional location?: string;
+readonly location?: string;
 ```
 
 Output path for the generated manifest `.ts` file. Omit to skip manifest generation (the inventory is still built and static rules still run).
@@ -2511,7 +2511,7 @@ Output path for the generated manifest `.ts` file. Omit to skip manifest generat
 ##### observations?
 
 ```ts
-readonly optional observations?: readonly ObservationEvent[];
+readonly observations?: readonly ObservationEvent[];
 ```
 
 Runtime observations already collected through `data-cap/observe`
@@ -2522,7 +2522,7 @@ this library never opens a file of its own.
 ##### observationSkips?
 
 ```ts
-readonly optional observationSkips?: readonly ObservationSkip[];
+readonly observationSkips?: readonly ObservationSkip[];
 ```
 
 What the recorder left out while collecting `observations` (`createMemorySink().skips()`), so a claim that
@@ -2531,7 +2531,7 @@ rests on an incompletely recorded scope reads `indeterminate` rather than `verif
 ##### ownership?
 
 ```ts
-readonly optional ownership?: string;
+readonly ownership?: string;
 ```
 
 Output path for the Dependency & Ownership report.
@@ -2539,7 +2539,7 @@ Output path for the Dependency & Ownership report.
 ##### packages?
 
 ```ts
-readonly optional packages?: readonly string[];
+readonly packages?: readonly string[];
 ```
 
 Explicit cross-package schema discovery allowlist -- see `resolve-package-schema.ts`.
@@ -2555,7 +2555,7 @@ Directory discovery/linking resolves against.
 ##### strict?
 
 ```ts
-readonly optional strict?: boolean;
+readonly strict?: boolean;
 ```
 
 Escalate every pass's `warning` findings to `error` (never `info`).
@@ -2563,7 +2563,7 @@ Escalate every pass's `warning` findings to `error` (never `info`).
 ##### strictDocs?
 
 ```ts
-readonly optional strictDocs?: boolean;
+readonly strictDocs?: boolean;
 ```
 
 Escalate static (ownership/sensitivity/duplication) findings to `error`.
@@ -2571,7 +2571,7 @@ Escalate static (ownership/sensitivity/duplication) findings to `error`.
 ##### strictFlow?
 
 ```ts
-readonly optional strictFlow?: boolean;
+readonly strictFlow?: boolean;
 ```
 
 Escalate every `flow`-family `warning` to `error`: `SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY`/`SENSITIVE_FIELD_ENDPOINT_MISSING_HANDLING`, and the flow pass's own `FLOW_POLICY_INDETERMINATE`, `LEAST_DATA_*` warnings.
@@ -2579,7 +2579,7 @@ Escalate every `flow`-family `warning` to `error`: `SENSITIVE_DATA_CROSSES_EXTER
 ##### strictOwnership?
 
 ```ts
-readonly optional strictOwnership?: boolean;
+readonly strictOwnership?: boolean;
 ```
 
 Escalate proven usage findings (abandoned capabilities, unconsumed owned fields) to `error` -- never escalates unresolved-consumer or indeterminate findings.
@@ -2587,7 +2587,7 @@ Escalate proven usage findings (abandoned capabilities, unconsumed owned fields)
 ##### tsconfig?
 
 ```ts
-readonly optional tsconfig?: string | false;
+readonly tsconfig?: string | false;
 ```
 
 Explicit `tsconfig.json` path override, or `false` to disable alias resolution -- see `LinkOptions.tsconfig`.
@@ -2603,7 +2603,7 @@ Options for `generateDocumentation`.
 ##### changes?
 
 ```ts
-readonly optional changes?: ManifestChangeReport;
+readonly changes?: ManifestChangeReport;
 ```
 
 Manifest changes since the last report, rendered as a "changes since last report" section when present.
@@ -2611,7 +2611,7 @@ Manifest changes since the last report, rendered as a "changes since last report
 ##### edges?
 
 ```ts
-readonly optional edges?: readonly DependencyEdge[];
+readonly edges?: readonly DependencyEdge[];
 ```
 
 Proven usage edges, when the caller already ran the usage scan (`--ownership`/`--flow`) -- renders exact `file:line:column` consumption sites per field when supplied. Omit when no usage scan ran; the catalog still renders, just without that column populated.
@@ -2619,7 +2619,7 @@ Proven usage edges, when the caller already ran the usage scan (`--ownership`/`-
 ##### evidencePath?
 
 ```ts
-readonly optional evidencePath?: string;
+readonly evidencePath?: string;
 ```
 
 This same run's own `--evidence` output path, when requested -- named in the generated banner's Evidence Model note.
@@ -2627,7 +2627,7 @@ This same run's own `--evidence` output path, when requested -- named in the gen
 ##### expiringWithinDays?
 
 ```ts
-readonly optional expiringWithinDays?: number;
+readonly expiringWithinDays?: number;
 ```
 
 How many days out counts as "expiring soon" in the rendered Lifecycle
@@ -2637,7 +2637,7 @@ env-cap's own default.
 ##### generatedAt?
 
 ```ts
-readonly optional generatedAt?: Date;
+readonly generatedAt?: Date;
 ```
 
 The instant `daysRemaining` is measured from. Defaults to the wall clock
@@ -2736,7 +2736,7 @@ Options for `generateFlow`.
 ##### additionalFindings?
 
 ```ts
-readonly optional additionalFindings?: readonly ReportFinding[];
+readonly additionalFindings?: readonly ReportFinding[];
 ```
 
 Findings from other passes (C2's static rules, C6's usage scan) to fold into the Security Data-Flow Review -- optional, so `--flow` alone still produces a meaningful review of just its own findings.
@@ -2752,7 +2752,7 @@ Proven consumer edges from a usage scan, used to derive in-repo flow paths.
 ##### evidencePath?
 
 ```ts
-readonly optional evidencePath?: string;
+readonly evidencePath?: string;
 ```
 
 This same run's own `--evidence` output path, when requested -- named in the generated banner's Evidence Model note.
@@ -2920,7 +2920,7 @@ Options for `generateUsage`.
 ##### evidencePath?
 
 ```ts
-readonly optional evidencePath?: string;
+readonly evidencePath?: string;
 ```
 
 This same run's own `--evidence` output path, when requested -- named in the generated banner's Evidence Model note.
@@ -3030,7 +3030,7 @@ guess at for where a project keeps this.
 ##### commit?
 
 ```ts
-readonly optional commit?: string;
+readonly commit?: string;
 ```
 
 The commit SHA this run's evidence was generated against, stamped onto `EvidenceModel.provenance.commit`. Caller-supplied only -- `data-cap` never shells out to `git` itself, so omitting this records a stated absence, never a guess.
@@ -3042,7 +3042,7 @@ The commit SHA this run's evidence was generated against, stamped onto `Evidence
 ##### docs?
 
 ```ts
-readonly optional docs?: string;
+readonly docs?: string;
 ```
 
 Output path for the Markdown documentation catalog.
@@ -3066,7 +3066,7 @@ Where the persisted evidence artifact (and its `.fingerprint` sidecar) live, e.g
 ##### exclude?
 
 ```ts
-readonly optional exclude?: readonly string[];
+readonly exclude?: readonly string[];
 ```
 
 Glob patterns (relative to `root`) that prune a file or directory regardless of `include`.
@@ -3078,7 +3078,7 @@ Glob patterns (relative to `root`) that prune a file or directory regardless of 
 ##### expiringWithinDays?
 
 ```ts
-readonly optional expiringWithinDays?: number;
+readonly expiringWithinDays?: number;
 ```
 
 How many days out counts as "expiring soon" for the Lifecycle Model and the documentation catalog's own expiring section. Defaults to `DEFAULT_EXPIRING_WITHIN_DAYS`.
@@ -3090,7 +3090,7 @@ How many days out counts as "expiring soon" for the Lifecycle Model and the docu
 ##### flow?
 
 ```ts
-readonly optional flow?: string;
+readonly flow?: string;
 ```
 
 Output directory for the Data Flow Diagram + Security Data-Flow Review set.
@@ -3102,7 +3102,7 @@ Output directory for the Data Flow Diagram + Security Data-Flow Review set.
 ##### flowEvidence?
 
 ```ts
-readonly optional flowEvidence?: boolean;
+readonly flowEvidence?: boolean;
 ```
 
 Run the flow pass (ADR 0070): field-level, interprocedural data-flow
@@ -3119,7 +3119,7 @@ discovered file's function bodies.
 ##### flowSinks?
 
 ```ts
-readonly optional flowSinks?: readonly FlowSinkPattern[];
+readonly flowSinks?: readonly FlowSinkPattern[];
 ```
 
 Sinks the flow pass recognises instead of the defaults (`DEFAULT_FLOW_SINKS`). Only meaningful with `flowEvidence`.
@@ -3131,7 +3131,7 @@ Sinks the flow pass recognises instead of the defaults (`DEFAULT_FLOW_SINKS`). O
 ##### flowSummaries?
 
 ```ts
-readonly optional flowSummaries?: readonly FlowSummary[];
+readonly flowSummaries?: readonly FlowSummary[];
 ```
 
 What calls into packages do, declared by the project (`FlowSummary`): without one, such a call that receives tracked data is an explicit unknown. Only meaningful with `flowEvidence`.
@@ -3155,7 +3155,7 @@ The filesystem capability, shared across every requested pass -- `./build` never
 ##### generatedAt?
 
 ```ts
-readonly optional generatedAt?: Date;
+readonly generatedAt?: Date;
 ```
 
 The single instant every time-sensitive computation in this run shares (`EvidenceModel.provenance.generatedAt`, Lifecycle Model's `daysRemaining`), so none of them can disagree about "now". Defaults to the wall clock at the moment this function is called.
@@ -3167,7 +3167,7 @@ The single instant every time-sensitive computation in this run shares (`Evidenc
 ##### include?
 
 ```ts
-readonly optional include?: readonly string[];
+readonly include?: readonly string[];
 ```
 
 Glob patterns (relative to `root`) a file must match at least one of to be discovered. Defaults to every `.ts`/`.tsx` file.
@@ -3179,7 +3179,7 @@ Glob patterns (relative to `root`) a file must match at least one of to be disco
 ##### location?
 
 ```ts
-readonly optional location?: string;
+readonly location?: string;
 ```
 
 Output path for the generated manifest `.ts` file. Omit to skip manifest generation (the inventory is still built and static rules still run).
@@ -3191,7 +3191,7 @@ Output path for the generated manifest `.ts` file. Omit to skip manifest generat
 ##### observations?
 
 ```ts
-readonly optional observations?: readonly ObservationEvent[];
+readonly observations?: readonly ObservationEvent[];
 ```
 
 Runtime observations already collected through `data-cap/observe`
@@ -3206,7 +3206,7 @@ this library never opens a file of its own.
 ##### observationSkips?
 
 ```ts
-readonly optional observationSkips?: readonly ObservationSkip[];
+readonly observationSkips?: readonly ObservationSkip[];
 ```
 
 What the recorder left out while collecting `observations` (`createMemorySink().skips()`), so a claim that
@@ -3219,7 +3219,7 @@ rests on an incompletely recorded scope reads `indeterminate` rather than `verif
 ##### ownership?
 
 ```ts
-readonly optional ownership?: string;
+readonly ownership?: string;
 ```
 
 Output path for the Dependency & Ownership report.
@@ -3231,7 +3231,7 @@ Output path for the Dependency & Ownership report.
 ##### packages?
 
 ```ts
-readonly optional packages?: readonly string[];
+readonly packages?: readonly string[];
 ```
 
 Explicit cross-package schema discovery allowlist -- see `resolve-package-schema.ts`.
@@ -3255,7 +3255,7 @@ Directory discovery/linking resolves against.
 ##### strict?
 
 ```ts
-readonly optional strict?: boolean;
+readonly strict?: boolean;
 ```
 
 Escalate every pass's `warning` findings to `error` (never `info`).
@@ -3267,7 +3267,7 @@ Escalate every pass's `warning` findings to `error` (never `info`).
 ##### strictDocs?
 
 ```ts
-readonly optional strictDocs?: boolean;
+readonly strictDocs?: boolean;
 ```
 
 Escalate static (ownership/sensitivity/duplication) findings to `error`.
@@ -3279,7 +3279,7 @@ Escalate static (ownership/sensitivity/duplication) findings to `error`.
 ##### strictFlow?
 
 ```ts
-readonly optional strictFlow?: boolean;
+readonly strictFlow?: boolean;
 ```
 
 Escalate every `flow`-family `warning` to `error`: `SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY`/`SENSITIVE_FIELD_ENDPOINT_MISSING_HANDLING`, and the flow pass's own `FLOW_POLICY_INDETERMINATE`, `LEAST_DATA_*` warnings.
@@ -3291,7 +3291,7 @@ Escalate every `flow`-family `warning` to `error`: `SENSITIVE_DATA_CROSSES_EXTER
 ##### strictOwnership?
 
 ```ts
-readonly optional strictOwnership?: boolean;
+readonly strictOwnership?: boolean;
 ```
 
 Escalate proven usage findings (abandoned capabilities, unconsumed owned fields) to `error` -- never escalates unresolved-consumer or indeterminate findings.
@@ -3303,7 +3303,7 @@ Escalate proven usage findings (abandoned capabilities, unconsumed owned fields)
 ##### tsconfig?
 
 ```ts
-readonly optional tsconfig?: string | false;
+readonly tsconfig?: string | false;
 ```
 
 Explicit `tsconfig.json` path override, or `false` to disable alias resolution -- see `LinkOptions.tsconfig`.
@@ -3627,7 +3627,7 @@ The filesystem capability -- `./build` never imports `node:fs` (ADR 0058).
 ##### packages?
 
 ```ts
-readonly optional packages?: readonly string[];
+readonly packages?: readonly string[];
 ```
 
 Explicit cross-package schema discovery allowlist -- see `resolve-package-schema.ts`.
@@ -3643,7 +3643,7 @@ Directory import specifiers/tsconfig auto-detection resolve against.
 ##### tsconfig?
 
 ```ts
-readonly optional tsconfig?: string | false;
+readonly tsconfig?: string | false;
 ```
 
 Explicit `tsconfig.json` path override, or `false` to disable alias resolution. Defaults to auto-detecting `root/tsconfig.json`.
@@ -3820,7 +3820,7 @@ Whether the capability was active at snapshot time.
 ##### citationSnapshots?
 
 ```ts
-readonly optional citationSnapshots?: Readonly<Record<string, readonly CitationSnapshotEntry[]>>;
+readonly citationSnapshots?: Readonly<Record<string, readonly CitationSnapshotEntry[]>>;
 ```
 
 Per-field citation integrity snapshots for declared `evidence.fields[key].dynamicAccess` entries, keyed by field name -- only present for a field that declares at least one citation that resolved to a real file at snapshot time (see `citation-verification.ts`).
@@ -4571,7 +4571,7 @@ claims more than "documented" vs. "not documented."
 ##### capability?
 
 ```ts
-readonly optional capability?: {
+readonly capability?: {
   exportName: string;
   file: string;
 };
@@ -4606,7 +4606,7 @@ Which kind of fact this finding reports.
 ##### evidence?
 
 ```ts
-readonly optional evidence?: readonly EvidenceRef[];
+readonly evidence?: readonly EvidenceRef[];
 ```
 
 The records in the Evidence Model this finding rests on -- flow nodes and edges, a policy result, an unknown
@@ -4624,7 +4624,7 @@ Which analysis pass produced this finding -- see `ReportFindingFamily`.
 ##### field?
 
 ```ts
-readonly optional field?: readonly string[];
+readonly field?: readonly string[];
 ```
 
 The field path this finding is about, if any.
@@ -4632,7 +4632,7 @@ The field path this finding is about, if any.
 ##### indeterminateSites?
 
 ```ts
-readonly optional indeterminateSites?: readonly SourceLocation[];
+readonly indeterminateSites?: readonly SourceLocation[];
 ```
 
 Every candidate access site a `"FIELD_ACCESS_INDETERMINATE"` finding could actually be about -- populated only for that code. Spans potentially multiple consuming files, so each entry carries its own `file` (`SourceLocation`, not just `SourcePosition`).
@@ -4648,7 +4648,7 @@ Human-readable explanation of the finding.
 ##### operation?
 
 ```ts
-readonly optional operation?: string;
+readonly operation?: string;
 ```
 
 The operation name this finding is about, if any.
@@ -4656,7 +4656,7 @@ The operation name this finding is about, if any.
 ##### position?
 
 ```ts
-readonly optional position?: SourcePosition;
+readonly position?: SourcePosition;
 ```
 
 Position of the declaration site (capability's own call, or field's own key) this finding is anchored to, when one is available -- see ADR 0052. Additive: absent for findings with no single declaration-site anchor (e.g. a usage-scan finding whose subject is a consuming file, not a declaration).
@@ -4672,7 +4672,7 @@ How strongly this finding should be treated.
 ##### source?
 
 ```ts
-readonly optional source?: string;
+readonly source?: string;
 ```
 
 The consuming file, for usage-scan-derived findings only.
@@ -4991,7 +4991,7 @@ The filesystem capability -- `./build` never imports `node:fs` (ADR 0058).
 ##### packages?
 
 ```ts
-readonly optional packages?: readonly string[];
+readonly packages?: readonly string[];
 ```
 
 Explicit cross-package schema discovery allowlist -- see `resolve-package-schema.ts`.
@@ -5007,7 +5007,7 @@ Directory import specifiers resolve against.
 ##### tsconfig?
 
 ```ts
-readonly optional tsconfig?: string | false;
+readonly tsconfig?: string | false;
 ```
 
 Explicit `tsconfig.json` path override, or `false` to disable alias resolution -- same meaning as `LinkOptions.tsconfig`.
@@ -5079,7 +5079,7 @@ The capabilities whose field data is tracked.
 ##### packages?
 
 ```ts
-readonly optional packages?: readonly string[];
+readonly packages?: readonly string[];
 ```
 
 Explicit cross-package allowlist, as for `scanDependencies`.
@@ -5095,7 +5095,7 @@ Directory import specifiers resolve against and paths are published relative to.
 ##### sinks?
 
 ```ts
-readonly optional sinks?: readonly FlowSinkPattern[];
+readonly sinks?: readonly FlowSinkPattern[];
 ```
 
 Sinks to recognise instead of `DEFAULT_FLOW_SINKS`.
@@ -5103,7 +5103,7 @@ Sinks to recognise instead of `DEFAULT_FLOW_SINKS`.
 ##### summaries?
 
 ```ts
-readonly optional summaries?: readonly FlowSummary[];
+readonly summaries?: readonly FlowSummary[];
 ```
 
 What calls into packages do, declared by the project. Each makes a call that would be an unknown a `declared` fact instead.
@@ -5111,7 +5111,7 @@ What calls into packages do, declared by the project. Each makes a call that wou
 ##### tsconfig?
 
 ```ts
-readonly optional tsconfig?: string | false;
+readonly tsconfig?: string | false;
 ```
 
 Explicit `tsconfig.json` path override, or `false` to disable alias resolution.
@@ -5443,7 +5443,7 @@ readonly field: readonly string[];
 ###### indeterminateSites?
 
 ```ts
-readonly optional indeterminateSites?: readonly SourceLocation[];
+readonly indeterminateSites?: readonly SourceLocation[];
 ```
 
 Every candidate access site a `"FIELD_ACCESS_INDETERMINATE"` finding
@@ -5463,7 +5463,7 @@ readonly kind: "field";
 ###### position?
 
 ```ts
-readonly optional position?: SourcePosition;
+readonly position?: SourcePosition;
 ```
 
 ***
@@ -5499,7 +5499,7 @@ readonly optional position?: SourcePosition;
 type FlowSummary = {
   export: string;
   module: string;
-} & 
+} & (
   | {
   approximate?: true;
   effect: "pass-through";
@@ -5519,7 +5519,7 @@ type FlowSummary = {
 }
   | {
   effect: "ignores";
-};
+});
 ```
 
 What a call to a function of a package does, as the project's author states it. A package's code is never read

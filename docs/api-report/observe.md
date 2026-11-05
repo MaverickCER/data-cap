@@ -65,7 +65,7 @@ The capability's export name, used to qualify each field path.
 ##### clock?
 
 ```ts
-readonly optional clock?: () => number;
+readonly clock?: () => number;
 ```
 
 ###### Returns
@@ -79,7 +79,7 @@ readonly optional clock?: () => number;
 ##### handling?
 
 ```ts
-readonly optional handling?: FlowHandling;
+readonly handling?: FlowHandling;
 ```
 
 ###### Inherited from
@@ -89,7 +89,7 @@ readonly optional handling?: FlowHandling;
 ##### observe?
 
 ```ts
-readonly optional observe?: InstrumentObserve;
+readonly observe?: InstrumentObserve;
 ```
 
 What to observe on each call: the first argument (default), the returned value, or both.
@@ -97,7 +97,7 @@ What to observe on each call: the first argument (default), the returned value, 
 ##### options?
 
 ```ts
-readonly optional options?: ObserveValueOptions;
+readonly options?: ObserveValueOptions;
 ```
 
 ##### scope
@@ -121,7 +121,7 @@ One observation: a field name was seen at a boundary during one scope. Never a v
 ##### at?
 
 ```ts
-readonly optional at?: string | number;
+readonly at?: string | number;
 ```
 
 When the crossing was seen: epoch milliseconds or an ISO 8601 string. Present only when the caller supplied a
@@ -144,7 +144,7 @@ Capability-qualified dotted field path, for example `userData.user.email` -- the
 ##### handling?
 
 ```ts
-readonly optional handling?: FlowHandling;
+readonly handling?: FlowHandling;
 ```
 
 Declared handling of the value at this crossing, when the caller knows it.
@@ -184,7 +184,7 @@ record(event): void;
 ##### skip()?
 
 ```ts
-optional skip(info): void;
+skip?(info): void;
 ```
 
 Optional channel for what the walker left out; pass `skips()` of the memory sink to `buildObservationModel`.
@@ -257,7 +257,7 @@ The capability's export name, used to qualify each field path.
 ##### clock?
 
 ```ts
-readonly optional clock?: () => number;
+readonly clock?: () => number;
 ```
 
 Caller-supplied time source (epoch ms), read once per call. The recorder never defaults to `Date.now()`.
@@ -277,7 +277,7 @@ Field paths (key names only) observed at the boundary.
 ##### handling?
 
 ```ts
-readonly optional handling?: FlowHandling;
+readonly handling?: FlowHandling;
 ```
 
 ##### scope
@@ -335,7 +335,7 @@ The capability's export name, used to qualify each field path.
 ##### clock?
 
 ```ts
-readonly optional clock?: () => number;
+readonly clock?: () => number;
 ```
 
 ###### Returns
@@ -345,7 +345,7 @@ readonly optional clock?: () => number;
 ##### handling?
 
 ```ts
-readonly optional handling?: FlowHandling;
+readonly handling?: FlowHandling;
 ```
 
 ##### scope
@@ -365,7 +365,7 @@ Bounds and switches for the walker.
 ##### collections?
 
 ```ts
-readonly optional collections?: boolean;
+readonly collections?: boolean;
 ```
 
 Walk `Map` values and `Set` members under the element marker `[]` (default off: they are leaves). Map keys are never read.
@@ -373,7 +373,7 @@ Walk `Map` values and `Set` members under the element marker `[]` (default off: 
 ##### maxDepth?
 
 ```ts
-readonly optional maxDepth?: number;
+readonly maxDepth?: number;
 ```
 
 Deepest nesting recorded (default 8); anything deeper is not walked and not recorded.
@@ -381,7 +381,7 @@ Deepest nesting recorded (default 8); anything deeper is not walked and not reco
 ##### maxNodes?
 
 ```ts
-readonly optional maxNodes?: number;
+readonly maxNodes?: number;
 ```
 
 Most values visited per call (default 1000).
@@ -389,7 +389,7 @@ Most values visited per call (default 1000).
 ##### onSkip?
 
 ```ts
-readonly optional onSkip?: (reason, path) => void;
+readonly onSkip?: (reason, path) => void;
 ```
 
 Called once per distinct (reason, path) when the walker leaves something out, with the path (dotted, relative to

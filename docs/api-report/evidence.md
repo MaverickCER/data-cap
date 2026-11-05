@@ -39,7 +39,7 @@ readonly kind: ClaimKind;
 ##### lastObservedAt?
 
 ```ts
-readonly optional lastObservedAt?: string;
+readonly lastObservedAt?: string;
 ```
 
 The latest time any backing observation was seen (ISO 8601, UTC); absent when none carried a time.
@@ -55,7 +55,7 @@ Boundary name (`field-reaches-boundary`) or rule id (`policy-holds`).
 ##### observedPaths?
 
 ```ts
-readonly optional observedPaths?: readonly string[];
+readonly observedPaths?: readonly string[];
 ```
 
 The capability-qualified names of the observed paths that back this claim, sorted and distinct; absent when none did.
@@ -63,7 +63,7 @@ The capability-qualified names of the observed paths that back this claim, sorte
 ##### pathCoverage?
 
 ```ts
-readonly optional pathCoverage?: ClaimPathCoverage;
+readonly pathCoverage?: ClaimPathCoverage;
 ```
 
 Whether those paths cover the claim's whole path scope; present exactly when `observedPaths` is.
@@ -191,7 +191,7 @@ readonly version: string;
 ##### bom-ref
 
 ```ts
-readonly bom-ref: string;
+readonly "bom-ref": string;
 ```
 
 ##### subjects
@@ -223,7 +223,7 @@ The CycloneDX 1.6 document, restricted to what this projection populates.
 ##### annotations?
 
 ```ts
-readonly optional annotations?: readonly CycloneDxAnnotation[];
+readonly annotations?: readonly CycloneDxAnnotation[];
 ```
 
 ##### bomFormat
@@ -237,7 +237,7 @@ readonly bomFormat: "CycloneDX";
 ```ts
 readonly metadata: {
   component: {
-     bom-ref: string;
+     "bom-ref": string;
      name: string;
      type: "application";
   };
@@ -245,7 +245,7 @@ readonly metadata: {
   timestamp: string;
   tools: {
      components: readonly {
-        bom-ref: string;
+        "bom-ref": string;
         name: string;
         type: "application";
         version: string;
@@ -258,7 +258,7 @@ readonly metadata: {
 
 ```ts
 readonly component: {
-  bom-ref: string;
+  "bom-ref": string;
   name: string;
   type: "application";
 };
@@ -267,7 +267,7 @@ readonly component: {
 ###### component.bom-ref
 
 ```ts
-readonly bom-ref: string;
+readonly "bom-ref": string;
 ```
 
 ###### component.name
@@ -299,7 +299,7 @@ readonly timestamp: string;
 ```ts
 readonly tools: {
   components: readonly {
-     bom-ref: string;
+     "bom-ref": string;
      name: string;
      type: "application";
      version: string;
@@ -311,7 +311,7 @@ readonly tools: {
 
 ```ts
 readonly components: readonly {
-  bom-ref: string;
+  "bom-ref": string;
   name: string;
   type: "application";
   version: string;
@@ -327,7 +327,7 @@ readonly serialNumber: string;
 ##### services?
 
 ```ts
-readonly optional services?: readonly CycloneDxService[];
+readonly services?: readonly CycloneDxService[];
 ```
 
 ##### specVersion
@@ -365,7 +365,7 @@ readonly description: string;
 ##### destination?
 
 ```ts
-readonly optional destination?: readonly string[];
+readonly destination?: readonly string[];
 ```
 
 ##### flow
@@ -377,7 +377,7 @@ readonly flow: "unknown" | "inbound" | "outbound" | "bi-directional";
 ##### governance?
 
 ```ts
-readonly optional governance?: {
+readonly governance?: {
   owners: readonly {
      organization: {
         name: string;
@@ -405,7 +405,7 @@ readonly name: string;
 ##### source?
 
 ```ts
-readonly optional source?: readonly string[];
+readonly source?: readonly string[];
 ```
 
 ***
@@ -419,7 +419,7 @@ Options for `buildCycloneDxBom`.
 ##### name?
 
 ```ts
-readonly optional name?: string;
+readonly name?: string;
 ```
 
 Name of the described system (`metadata.component.name`; default `data-cap data-flow`).
@@ -455,13 +455,13 @@ A CycloneDX service, restricted to what this projection populates.
 ##### bom-ref
 
 ```ts
-readonly bom-ref: string;
+readonly "bom-ref": string;
 ```
 
 ##### data?
 
 ```ts
-readonly optional data?: readonly CycloneDxData[];
+readonly data?: readonly CycloneDxData[];
 ```
 
 ##### description
@@ -776,7 +776,7 @@ The rules a gate can enforce. Each is optional; at least one is required.
 ##### maxContradictedClaims?
 
 ```ts
-readonly optional maxContradictedClaims?: number;
+readonly maxContradictedClaims?: number;
 ```
 
 At most this many claims are contradicted by evidence.
@@ -784,7 +784,7 @@ At most this many claims are contradicted by evidence.
 ##### maxObservationAgeDays?
 
 ```ts
-readonly optional maxObservationAgeDays?: number;
+readonly maxObservationAgeDays?: number;
 ```
 
 Every verified claim was last observed no more than this many days before the evidence was generated
@@ -794,7 +794,7 @@ time (the recorder was given no `clock`) is a violation, not a skip.
 ##### maxRedundantTransforms?
 
 ```ts
-readonly optional maxRedundantTransforms?: number;
+readonly maxRedundantTransforms?: number;
 ```
 
 At most this many redundant transformations (a needless round trip, a forwarding chain, a derivation nobody reads; ADR 0075).
@@ -802,7 +802,7 @@ At most this many redundant transformations (a needless round trip, a forwarding
 ##### maxUnknowns?
 
 ```ts
-readonly optional maxUnknowns?: number;
+readonly maxUnknowns?: number;
 ```
 
 The flow analysis left at most this many unknowns (parts of the program it could not follow).
@@ -810,7 +810,7 @@ The flow analysis left at most this many unknowns (parts of the program it could
 ##### maxUnusedSensitivePaths?
 
 ```ts
-readonly optional maxUnusedSensitivePaths?: number;
+readonly maxUnusedSensitivePaths?: number;
 ```
 
 At most this many paths of a sensitive field are never read, forwarded or sent.
@@ -818,7 +818,7 @@ At most this many paths of a sensitive field are never read, forwarded or sent.
 ##### maxWholeFieldToClient?
 
 ```ts
-readonly optional maxWholeFieldToClient?: number;
+readonly maxWholeFieldToClient?: number;
 ```
 
 At most this many multi-key fields are sent whole to a client response.
@@ -826,7 +826,7 @@ At most this many multi-key fields are sent whole to a client response.
 ##### minVerifiedClaims?
 
 ```ts
-readonly optional minVerifiedClaims?: number;
+readonly minVerifiedClaims?: number;
 ```
 
 At least this many claims are verified (static or declared, corroborated by an observation).
@@ -834,7 +834,7 @@ At least this many claims are verified (static or declared, corroborated by an o
 ##### noIndeterminatePolicies?
 
 ```ts
-readonly optional noIndeterminatePolicies?: boolean;
+readonly noIndeterminatePolicies?: boolean;
 ```
 
 Every declared flow policy could be decided (none is left `indeterminate`).
@@ -842,7 +842,7 @@ Every declared flow policy could be decided (none is left `indeterminate`).
 ##### noPolicyViolations?
 
 ```ts
-readonly optional noPolicyViolations?: boolean;
+readonly noPolicyViolations?: boolean;
 ```
 
 No declared flow policy is violated.
@@ -850,7 +850,7 @@ No declared flow policy is violated.
 ##### requireComplete?
 
 ```ts
-readonly optional requireComplete?: boolean;
+readonly requireComplete?: boolean;
 ```
 
 The flow analysis is complete: nothing was left unfollowed.
@@ -858,7 +858,7 @@ The flow analysis is complete: nothing was left unfollowed.
 ##### requireObservations?
 
 ```ts
-readonly optional requireObservations?: boolean;
+readonly requireObservations?: boolean;
 ```
 
 Runtime observations were ingested and there is at least one.
@@ -866,7 +866,7 @@ Runtime observations were ingested and there is at least one.
 ##### requireVerified?
 
 ```ts
-readonly optional requireVerified?: readonly string[];
+readonly requireVerified?: readonly string[];
 ```
 
 Each named policy rule (by id) has every one of its claims verified -- held statically and corroborated at runtime.
@@ -972,7 +972,7 @@ readonly boundary: string;
 ##### boundaryKind?
 
 ```ts
-readonly optional boundaryKind?: FlowBoundaryKind;
+readonly boundaryKind?: FlowBoundaryKind;
 ```
 
 ##### boundaryName
@@ -1022,7 +1022,7 @@ Ids of the claims about this field or a path inside it.
 ##### classification?
 
 ```ts
-readonly optional classification?: string;
+readonly classification?: string;
 ```
 
 ##### complete
@@ -1149,7 +1149,7 @@ Options shared by the diagram renderers.
 ##### field?
 
 ```ts
-readonly optional field?: string;
+readonly field?: string;
 ```
 
 Draw only this field's flow (by name, for example `userData.user`).
@@ -1157,7 +1157,7 @@ Draw only this field's flow (by name, for example `userData.user`).
 ##### includeCalls?
 
 ```ts
-readonly optional includeCalls?: boolean;
+readonly includeCalls?: boolean;
 ```
 
 Draw control-flow `calls` edges (default false: they obscure the data).
@@ -1165,7 +1165,7 @@ Draw control-flow `calls` edges (default false: they obscure the data).
 ##### path?
 
 ```ts
-readonly optional path?: readonly string[];
+readonly path?: readonly string[];
 ```
 
 Within `field`, draw only flow of this path (and of the whole field).
@@ -1255,7 +1255,7 @@ Id of the source node.
 ##### handling?
 
 ```ts
-readonly optional handling?: FlowHandling;
+readonly handling?: FlowHandling;
 ```
 
 The data-safety state of the value at this hop, when declared or established -- policy evaluation reads it at boundary crossings.
@@ -1285,7 +1285,7 @@ readonly kind: FlowEdgeKind;
 ##### origin?
 
 ```ts
-readonly optional origin?: string;
+readonly origin?: string;
 ```
 
 Id of the `field` node whose data this edge carries. Present on every
@@ -1301,7 +1301,7 @@ destinations. Absent on edges that are not about one field's data (a
 ##### path?
 
 ```ts
-readonly optional path?: readonly string[];
+readonly path?: readonly string[];
 ```
 
 The field path this edge carries, for a field-sensitive edge; absent for an edge about the whole value or about control.
@@ -1313,7 +1313,7 @@ The field path this edge carries, for a field-sensitive edge; absent for an edge
 ##### source?
 
 ```ts
-readonly optional source?: SourceLocation;
+readonly source?: SourceLocation;
 ```
 
 Where in source this edge arises (a call site, a read), when known.
@@ -1371,7 +1371,7 @@ Id of the existing edge that carries the data at this place (an edge id as `flow
 ##### fresh?
 
 ```ts
-readonly optional fresh?: true;
+readonly fresh?: true;
 ```
 
 With `copy`: the value copied was already a fresh copy.
@@ -1403,7 +1403,7 @@ Where the copy, the derivation or the hand-over is.
 ##### unused?
 
 ```ts
-readonly optional unused?: true;
+readonly unused?: true;
 ```
 
 With `derive`: nothing ever reads the derived value.
@@ -1445,7 +1445,7 @@ Id of the existing edge that carries the data at this place (an edge id as `flow
 ##### fresh?
 
 ```ts
-readonly optional fresh?: true;
+readonly fresh?: true;
 ```
 
 With `copy`: the value copied was already a fresh copy.
@@ -1461,7 +1461,7 @@ Where the copy, the derivation or the hand-over is.
 ##### unused?
 
 ```ts
-readonly optional unused?: true;
+readonly unused?: true;
 ```
 
 With `derive`: nothing ever reads the derived value.
@@ -1483,7 +1483,7 @@ Criteria for `filterFlow`; every supplied criterion must match.
 ##### classification?
 
 ```ts
-readonly optional classification?: string;
+readonly classification?: string;
 ```
 
 Exact `classification` match.
@@ -1491,7 +1491,7 @@ Exact `classification` match.
 ##### edgePathIncludes?
 
 ```ts
-readonly optional edgePathIncludes?: string;
+readonly edgePathIncludes?: string;
 ```
 
 Keep only edges with a path segment equal to this value (applied to edges, not nodes).
@@ -1499,13 +1499,13 @@ Keep only edges with a path segment equal to this value (applied to edges, not n
 ##### kinds?
 
 ```ts
-readonly optional kinds?: readonly FlowNodeKind[];
+readonly kinds?: readonly FlowNodeKind[];
 ```
 
 ##### nameIncludes?
 
 ```ts
-readonly optional nameIncludes?: string;
+readonly nameIncludes?: string;
 ```
 
 Case-insensitive substring of the node name.
@@ -1513,7 +1513,7 @@ Case-insensitive substring of the node name.
 ##### scope?
 
 ```ts
-readonly optional scope?: string;
+readonly scope?: string;
 ```
 
 Exact `scope` match (a root-relative file path, or a boundary namespace).
@@ -1521,7 +1521,7 @@ Exact `scope` match (a root-relative file path, or a boundary namespace).
 ##### statuses?
 
 ```ts
-readonly optional statuses?: readonly FlowStatus[];
+readonly statuses?: readonly FlowStatus[];
 ```
 
 ***
@@ -1535,7 +1535,7 @@ The graph view.
 ##### claims?
 
 ```ts
-readonly optional claims?: Readonly<Record<ClaimVerification, number>>;
+readonly claims?: Readonly<Record<ClaimVerification, number>>;
 ```
 
 Counts of claims by verification status, when claims were derived.
@@ -1615,7 +1615,7 @@ Every edge, ordered by id.
 ##### edgeTags?
 
 ```ts
-readonly optional edgeTags?: readonly FlowEdgeTag[];
+readonly edgeTags?: readonly FlowEdgeTag[];
 ```
 
 What the scanner saw happen to the data of some edges, ordered by id. Absent when it saw nothing worth noting (ADR 0075).
@@ -1659,7 +1659,7 @@ One node of the Flow Model.
 ##### boundaryKind?
 
 ```ts
-readonly optional boundaryKind?: FlowBoundaryKind;
+readonly boundaryKind?: FlowBoundaryKind;
 ```
 
 What kind of boundary this is; only meaningful (and required by policy evaluation) on a `boundary` node.
@@ -1671,7 +1671,7 @@ What kind of boundary this is; only meaningful (and required by policy evaluatio
 ##### classification?
 
 ```ts
-readonly optional classification?: string;
+readonly classification?: string;
 ```
 
 Declared or inherited sensitivity classification, when known -- carried verbatim, never inferred here.
@@ -1725,7 +1725,7 @@ Root-relative POSIX path of the file that declares this node, or a stable namesp
 ##### source?
 
 ```ts
-readonly optional source?: SourcePosition;
+readonly source?: SourcePosition;
 ```
 
 Declaration position within `scope`, when there is one.
@@ -1775,7 +1775,7 @@ Options for `renderFlowText`.
 ##### field?
 
 ```ts
-readonly optional field?: string;
+readonly field?: string;
 ```
 
 Limit the output to one field (by its name, for example `userData.user`) and the functions that touch it.
@@ -1783,7 +1783,7 @@ Limit the output to one field (by its name, for example `userData.user`) and the
 ##### headingLevel?
 
 ```ts
-readonly optional headingLevel?: number;
+readonly headingLevel?: number;
 ```
 
 Heading level of the title (default 1); sections nest below it, so the text can be embedded in a larger document.
@@ -1855,7 +1855,7 @@ Options narrowing a trace.
 ##### path?
 
 ```ts
-readonly optional path?: readonly string[];
+readonly path?: readonly string[];
 ```
 
 Follow only hops whose edge path is related (equal, prefix, or extension) to this path; an edge with no path applies to every path.
@@ -1863,7 +1863,7 @@ Follow only hops whose edge path is related (equal, prefix, or extension) to thi
 ##### statuses?
 
 ```ts
-readonly optional statuses?: readonly FlowStatus[];
+readonly statuses?: readonly FlowStatus[];
 ```
 
 Follow only edges, and visit only nodes, with one of these statuses.
@@ -1883,7 +1883,7 @@ An explicit record that part of the program could not be analyzed.
 ##### data?
 
 ```ts
-readonly optional data?: readonly FlowUnknownData[];
+readonly data?: readonly FlowUnknownData[];
 ```
 
 The tracked data that entered the part of the program that could not be
@@ -1899,7 +1899,7 @@ only ever saw `email` says nothing about where `passwordHash` went.
 ##### detail?
 
 ```ts
-readonly optional detail?: string;
+readonly detail?: string;
 ```
 
 Human-readable detail (never parsed).
@@ -1941,7 +1941,7 @@ Where the unanalyzable construct is.
 ##### subject?
 
 ```ts
-readonly optional subject?: string;
+readonly subject?: string;
 ```
 
 The node this unknown prevents us from fully describing, when there is one.
@@ -2043,7 +2043,7 @@ readonly boundary: string;
 ##### boundaryKind?
 
 ```ts
-readonly optional boundaryKind?: FlowBoundaryKind;
+readonly boundaryKind?: FlowBoundaryKind;
 ```
 
 ##### boundaryName
@@ -2061,7 +2061,7 @@ readonly field: string;
 ##### handling?
 
 ```ts
-readonly optional handling?: FlowHandling;
+readonly handling?: FlowHandling;
 ```
 
 ##### origin
@@ -2253,7 +2253,7 @@ readonly name: string;
 ##### output?
 
 ```ts
-readonly optional output?: string;
+readonly output?: string;
 ```
 
 ##### reads
@@ -2277,7 +2277,7 @@ readonly sideEffects: readonly FunctionEffect[];
 ##### source?
 
 ```ts
-readonly optional source?: {
+readonly source?: {
   column: number;
   line: number;
 };
@@ -2443,7 +2443,7 @@ Capability-qualified dotted field path -- the Flow Model's field-node naming.
 ##### firstSeen?
 
 ```ts
-readonly optional firstSeen?: string;
+readonly firstSeen?: string;
 ```
 
 Earliest time any matching event carried (ISO 8601, UTC); absent when none carried one. Never used in the id.
@@ -2451,7 +2451,7 @@ Earliest time any matching event carried (ISO 8601, UTC); absent when none carri
 ##### handling?
 
 ```ts
-readonly optional handling?: FlowHandling;
+readonly handling?: FlowHandling;
 ```
 
 ##### id
@@ -2465,7 +2465,7 @@ Content-addressed: `observation:scope|kind:boundary|field|handling-or-dash`.
 ##### lastSeen?
 
 ```ts
-readonly optional lastSeen?: string;
+readonly lastSeen?: string;
 ```
 
 Latest time any matching event carried; present exactly when `firstSeen` is.
@@ -2519,7 +2519,7 @@ Every distinct scope that contributed at least one observation, sorted.
 ##### scopeTimes?
 
 ```ts
-readonly optional scopeTimes?: readonly ObservationScopeTimes[];
+readonly scopeTimes?: readonly ObservationScopeTimes[];
 ```
 
 First/last seen per scope, ordered by scope; absent when no event carried a time.
@@ -2535,7 +2535,7 @@ Events (and skip reports) dropped as malformed -- stated, never silent.
 ##### truncatedScopes?
 
 ```ts
-readonly optional truncatedScopes?: readonly string[];
+readonly truncatedScopes?: readonly string[];
 ```
 
 The scopes with a truncation, sorted -- a claim built on one cannot be called verified near the cut. Absent when none.
@@ -2543,7 +2543,7 @@ The scopes with a truncation, sorted -- a claim built on one cannot be called ve
 ##### truncations?
 
 ```ts
-readonly optional truncations?: readonly ObservationTruncation[];
+readonly truncations?: readonly ObservationTruncation[];
 ```
 
 What the recorder reported leaving out, ordered by scope, field, reason; absent when it reported nothing.
@@ -2607,13 +2607,13 @@ The OSCAL assessment-results document, restricted to what this projection popula
 ##### assessment-results
 
 ```ts
-readonly assessment-results: {
-  import-ap: {
+readonly "assessment-results": {
+  "import-ap": {
      href: string;
   };
   metadata: {
-     last-modified: string;
-     oscal-version: string;
+     "last-modified": string;
+     "oscal-version": string;
      title: string;
      version: string;
   };
@@ -2622,8 +2622,8 @@ readonly assessment-results: {
      end: string;
      findings?: readonly {
         description: string;
-        related-observations?: readonly {
-           observation-uuid: string;
+        "related-observations"?: readonly {
+           "observation-uuid": string;
         }[];
         target: {
            status: {
@@ -2631,7 +2631,7 @@ readonly assessment-results: {
               remarks?: string;
               state: "satisfied" | "not-satisfied";
            };
-           target-id: string;
+           "target-id": string;
            type: "objective-id";
         };
         title: string;
@@ -2641,7 +2641,7 @@ readonly assessment-results: {
         collected: string;
         description: string;
         methods: readonly ("EXAMINE" | "TEST")[];
-        relevant-evidence?: readonly {
+        "relevant-evidence"?: readonly {
            description: string;
         }[];
         types: readonly string[];
@@ -2651,11 +2651,11 @@ readonly assessment-results: {
         name: string;
         value: string;
      }[];
-     reviewed-controls: {
-        control-selections: readonly {
+     "reviewed-controls": {
+        "control-selections": readonly {
            description?: string;
-           include-controls?: readonly {
-              control-id: string;
+           "include-controls"?: readonly {
+              "control-id": string;
            }[];
         }[];
      };
@@ -2670,7 +2670,7 @@ readonly assessment-results: {
 ###### import-ap
 
 ```ts
-readonly import-ap: {
+readonly "import-ap": {
   href: string;
 };
 ```
@@ -2685,8 +2685,8 @@ readonly href: string;
 
 ```ts
 readonly metadata: {
-  last-modified: string;
-  oscal-version: string;
+  "last-modified": string;
+  "oscal-version": string;
   title: string;
   version: string;
 };
@@ -2695,13 +2695,13 @@ readonly metadata: {
 ###### metadata.last-modified
 
 ```ts
-readonly last-modified: string;
+readonly "last-modified": string;
 ```
 
 ###### metadata.oscal-version
 
 ```ts
-readonly oscal-version: string;
+readonly "oscal-version": string;
 ```
 
 ###### metadata.title
@@ -2724,8 +2724,8 @@ readonly results: readonly {
   end: string;
   findings?: readonly {
      description: string;
-     related-observations?: readonly {
-        observation-uuid: string;
+     "related-observations"?: readonly {
+        "observation-uuid": string;
      }[];
      target: {
         status: {
@@ -2733,7 +2733,7 @@ readonly results: readonly {
            remarks?: string;
            state: "satisfied" | "not-satisfied";
         };
-        target-id: string;
+        "target-id": string;
         type: "objective-id";
      };
      title: string;
@@ -2743,7 +2743,7 @@ readonly results: readonly {
      collected: string;
      description: string;
      methods: readonly ("EXAMINE" | "TEST")[];
-     relevant-evidence?: readonly {
+     "relevant-evidence"?: readonly {
         description: string;
      }[];
      types: readonly string[];
@@ -2753,11 +2753,11 @@ readonly results: readonly {
      name: string;
      value: string;
   }[];
-  reviewed-controls: {
-     control-selections: readonly {
+  "reviewed-controls": {
+     "control-selections": readonly {
         description?: string;
-        include-controls?: readonly {
-           control-id: string;
+        "include-controls"?: readonly {
+           "control-id": string;
         }[];
      }[];
   };
@@ -2784,7 +2784,7 @@ Options for `buildOscalAssessmentResults`.
 ##### assessmentPlan?
 
 ```ts
-readonly optional assessmentPlan?: string;
+readonly assessmentPlan?: string;
 ```
 
 `href` of the assessment plan this result imports (OSCAL requires one; default `#data-cap-assessment-plan`).
@@ -2800,7 +2800,7 @@ data-cap rule id (as in `evidence.policy.rules[].id`, for example `userData/no-p
 ##### title?
 
 ```ts
-readonly optional title?: string;
+readonly title?: string;
 ```
 
 Document title (default `data-cap data-flow assessment`).
@@ -2836,7 +2836,7 @@ Options for `observationsToOtlp`.
 ##### scopeRoots?
 
 ```ts
-readonly optional scopeRoots?: boolean;
+readonly scopeRoots?: boolean;
 ```
 
 Also emit one root span per scope (`data_cap.scope.root = "true"`, spanning the scope's first..last seen when the
@@ -2846,7 +2846,7 @@ the flat output stays byte-identical. The reader skips roots without counting th
 ##### serviceName?
 
 ```ts
-readonly optional serviceName?: string;
+readonly serviceName?: string;
 ```
 
 `service.name` of the resource (default `data-cap`).
@@ -2862,7 +2862,7 @@ Options for `observationsFromOtlp`.
 ##### maxEventsPerSpan?
 
 ```ts
-readonly optional maxEventsPerSpan?: number;
+readonly maxEventsPerSpan?: number;
 ```
 
 The most events one span's `data_cap.count` may expand to (default 10 000), so a hostile or buggy count cannot exhaust memory.
@@ -2870,7 +2870,7 @@ The most events one span's `data_cap.count` may expand to (default 10 000), so a
 ##### trustForeignTimes?
 
 ```ts
-readonly optional trustForeignTimes?: boolean;
+readonly trustForeignTimes?: boolean;
 ```
 
 Also take `startTimeUnixNano`/`endTimeUnixNano` from spans NOT marked `data_cap.timed` (default false: such a
@@ -2895,7 +2895,7 @@ readonly events: readonly ObservationEvent[];
 ##### ignoredTimes?
 
 ```ts
-readonly optional ignoredTimes?: number;
+readonly ignoredTimes?: number;
 ```
 
 Start/end times that were read (the span was timed, or `trustForeignTimes` was set) but missing or not a decimal-nanosecond string; absent when none.
@@ -2945,7 +2945,7 @@ readonly name: string;
 ##### parentSpanId?
 
 ```ts
-readonly optional parentSpanId?: string;
+readonly parentSpanId?: string;
 ```
 
 Present on a scope's observation spans when `scopeRoots` is on: the root span of that scope.
@@ -3068,7 +3068,7 @@ The weakest epistemic status of the edges the result rests on (`unknown` for an 
 ##### boundary?
 
 ```ts
-readonly optional boundary?: string;
+readonly boundary?: string;
 ```
 
 Id of the boundary node this result concerns; absent when none was reached or the result is about the trace as a whole.
@@ -3090,7 +3090,7 @@ readonly outcome: PolicyOutcome;
 ##### reason?
 
 ```ts
-readonly optional reason?: PolicyIndeterminateReason;
+readonly reason?: PolicyIndeterminateReason;
 ```
 
 Present exactly when `outcome` is `indeterminate`.
@@ -3104,7 +3104,7 @@ readonly ruleId: string;
 ##### subject?
 
 ```ts
-readonly optional subject?: string;
+readonly subject?: string;
 ```
 
 Id of the field node the rule was evaluated for; absent only for `rule-matches-nothing`.
@@ -3144,31 +3144,31 @@ readonly prefix: Readonly<Record<string, string>>;
 ##### used?
 
 ```ts
-readonly optional used?: Record<string, Attributes>;
+readonly used?: Record<string, Attributes>;
 ```
 
 ##### wasAssociatedWith?
 
 ```ts
-readonly optional wasAssociatedWith?: Record<string, Attributes>;
+readonly wasAssociatedWith?: Record<string, Attributes>;
 ```
 
 ##### wasDerivedFrom?
 
 ```ts
-readonly optional wasDerivedFrom?: Record<string, Attributes>;
+readonly wasDerivedFrom?: Record<string, Attributes>;
 ```
 
 ##### wasGeneratedBy?
 
 ```ts
-readonly optional wasGeneratedBy?: Record<string, Attributes>;
+readonly wasGeneratedBy?: Record<string, Attributes>;
 ```
 
 ##### wasInformedBy?
 
 ```ts
-readonly optional wasInformedBy?: Record<string, Attributes>;
+readonly wasInformedBy?: Record<string, Attributes>;
 ```
 
 ***
@@ -3236,7 +3236,7 @@ The paths inside the field that are handled redundantly (`[]` is the whole field
 ##### source?
 
 ```ts
-readonly optional source?: SourceLocation;
+readonly source?: SourceLocation;
 ```
 
 Where it happens: the copy, the derivation, or the call that starts a forwarding chain.
@@ -3244,7 +3244,7 @@ Where it happens: the copy, the derivation, or the call that starts a forwarding
 ##### via?
 
 ```ts
-readonly optional via?: "serialized" | "copied";
+readonly via?: "serialized" | "copied";
 ```
 
 For `round-trip`: how the data was taken apart and put back, `serialized` or `copied`.
@@ -3340,7 +3340,7 @@ readonly from: string;
 ##### handling?
 
 ```ts
-readonly optional handling?: FlowHandling;
+readonly handling?: FlowHandling;
 ```
 
 ##### id
@@ -3358,19 +3358,19 @@ readonly kind: FlowEdgeKind;
 ##### origin?
 
 ```ts
-readonly optional origin?: string;
+readonly origin?: string;
 ```
 
 ##### path?
 
 ```ts
-readonly optional path?: readonly string[];
+readonly path?: readonly string[];
 ```
 
 ##### source?
 
 ```ts
-readonly optional source?: {
+readonly source?: {
   column: number;
   file: string;
   line: number;
@@ -3418,13 +3418,13 @@ A node, with a display label.
 ##### boundaryKind?
 
 ```ts
-readonly optional boundaryKind?: FlowBoundaryKind;
+readonly boundaryKind?: FlowBoundaryKind;
 ```
 
 ##### classification?
 
 ```ts
-readonly optional classification?: string;
+readonly classification?: string;
 ```
 
 ##### id
@@ -3462,7 +3462,7 @@ readonly scope: string;
 ##### source?
 
 ```ts
-readonly optional source?: {
+readonly source?: {
   column: number;
   line: number;
 };
