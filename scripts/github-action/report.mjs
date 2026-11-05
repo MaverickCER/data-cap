@@ -153,6 +153,7 @@ export function renderMarkdownSummary(result) {
       for (const violation of rules.violations) {
         lines.push(
           `| ${violation.rule} | ${String(violation.message)
+            .replace(/\\/g, "\\\\")
             .replace(/\|/g, "\\|")
             .replace(/\s*\n\s*/g, " ")} |`,
         )

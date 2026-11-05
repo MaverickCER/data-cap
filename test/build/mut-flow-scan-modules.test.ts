@@ -162,11 +162,7 @@ describe("flow-scan: the forms a module exports in", () => {
   it("export default of an arrow function", async () => {
     expect(
       await lines({
-        "app/lib.ts":
-          `export default ${SEND.replace("{ res.json(v) }", "=> res.json(v)")}\n`.replace(
-            "(res: any, v: any) =>",
-            "(res: any, v: any) =>",
-          ),
+        "app/lib.ts": `export default ${SEND.replace("{ res.json(v) }", "=> res.json(v)")}\n`,
         "app/main.ts": main(`send(res, ${USER}.email)`, `import send from "./lib.js"`),
       }),
     ).toMatchInlineSnapshot(`

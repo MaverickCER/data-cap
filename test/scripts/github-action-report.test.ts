@@ -265,6 +265,19 @@ describe("renderMarkdownSummary", () => {
     expect(bad).toContain("| x | a \\| b c |")
   })
 
+  it("escapes a backslash in a violation's message so it cannot cancel the pipe escape", () => {
+    const bad = renderMarkdownSummary({
+      ok: true,
+      findings: [],
+      evidenceRules: {
+        ok: false,
+        evaluated: ["x"],
+        violations: [{ rule: "x", message: "a\\| b", evidence: [] }],
+      },
+    } as unknown as ReportResult)
+    expect(bad).toContain("| x | a\\\\\\| b |")
+  })
+
   it("renders the drift-check section, up-to-date and stale variants", () => {
     const upToDate = renderMarkdownSummary({
       findings: [],

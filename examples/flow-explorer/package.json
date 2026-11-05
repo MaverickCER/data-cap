@@ -9,7 +9,7 @@
     "docs": "tsx scripts/build.ts",
     "build": "npm run docs",
     "check": "tsx scripts/check.ts",
-    "test": "node --import tsx --test test/*.test.ts"
+    "test": "node --import tsx --test --test-reporter=spec test/*.test.ts"
   },
   "dependencies": {
     "analytics-sdk": "file:./vendor/analytics-sdk",

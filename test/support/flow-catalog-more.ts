@@ -495,7 +495,7 @@ function prototypes(): Form[] {
 function commonjs(): Form[] {
   const g = "CommonJS"
   const use = (field: string, call: string, requires: string): Record<string, string> => ({
-    "app/p.ts": `${cap}${requires}\nexport function h() { ${call.replace("$", userField(field))} }\n`,
+    "app/p.ts": `${cap}${requires}\nexport function h() { ${call.replaceAll("$", () => userField(field))} }\n`,
   })
   return [
     multi(g, "exports.name = function", "A", (f) => ({

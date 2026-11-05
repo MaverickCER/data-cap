@@ -765,7 +765,7 @@ describe("flow-scan: registration and indexing", () => {
 
     it("files are analyzed in path order", async () => {
       const files = {
-        "z/b.ts": `${IMPORT_CAP.replace("../features", "../features")}export function zb(res: any) {\n  res.json(${USER}.id)\n}\n`,
+        "z/b.ts": `${IMPORT_CAP}export function zb(res: any) {\n  res.json(${USER}.id)\n}\n`,
         "a/c.ts": `${IMPORT_CAP}export function ac(res: any) {\n  res.json(${USER}.name)\n}\n`,
         "m/a.ts": `${IMPORT_CAP}export function ma(res: any) {\n  res.json(${USER}.role)\n}\n`,
       }

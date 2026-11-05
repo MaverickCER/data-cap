@@ -792,10 +792,10 @@ export default defineSuite({
       id: "compute-flow-evidence",
       name: "computeDataArtifacts",
       why: "It is the whole flow evidence build -- scan, model, declared policy, claims and least-data analysis -- that a pipeline pays when it turns on `flowEvidence`, so it is the number a team adopting the flow gate budgets for.",
-      poorPerformanceMeans: "A flow gate that is too slow to run on every pull request, so it gets skipped; the post-scan analyses trace each field across the whole graph, and if they are quadratic a project twice as large costs four times as much.",
-      expectedComplexity: "quadratic",
+      poorPerformanceMeans: "A flow gate that is too slow to run on every pull request, so it gets skipped; the post-scan analyses trace each field across the whole graph, and if they regress to a scan of every edge per node a project twice as large costs four times as much.",
+      expectedComplexity: "linear",
       complexityReason:
-        "The policy, claims and least-data passes each trace a field's flow with a walk that scans every edge for each node it visits, so the work grows with nodes times edges, and both grow with the number of modules.",
+        "The policy, claims and least-data passes each trace a field's flow through an index of edges by node, so every edge is visited a bounded number of times and the work grows with the number of modules.",
       variables: [MODULES, FLOW_SHAPE, FLOW_CAPABILITIES, DISK, RUNTIME, { name: "post-scan analyses", how: "fixed", value: "policy with two rules, claims, least-data", description: "All three run whenever flow evidence is on; none can be requested alone." }],
       tiers: FLOW_SLOW_TIERS,
       tiersReason: FLOW_SLOW_REASON,
