@@ -283,25 +283,28 @@ function main() {
   const summary = renderMarkdownSummary(result)
   const summaryPath = process.env.GITHUB_STEP_SUMMARY
   if (summaryPath) {
-    const maxBytesPerSide = 480 * 1024;
-    const buffer = Buffer.from(`${summary}\n`, "utf8");
+    const maxBytesPerSide = 480 * 1024
+    const buffer = Buffer.from(`${summary}\n`, "utf8")
 
     if (buffer.byteLength <= 1024 * 1024) {
-      appendFileSync(summaryPath, buffer);
+      appendFileSync(summaryPath, buffer)
     } else {
-      const start = buffer.subarray(0, maxBytesPerSide);
-      const end = buffer.subarray(-maxBytesPerSide);
+      const start = buffer.subarray(0, maxBytesPerSide)
+      const end = buffer.subarray(-maxBytesPerSide)
 
       const truncateUtf8 = (value) =>
-        value.toString("utf8").replace(/\uFFFD+$/g, "").replace(/^\uFFFD+/g, "");
+        value
+          .toString("utf8")
+          .replace(/\uFFFD+$/g, "")
+          .replace(/^\uFFFD+/g, "")
 
       const truncated = [
         truncateUtf8(start),
         "\n\n... CONTENT OMITTED ...\n\n",
         truncateUtf8(end),
-      ].join("");
+      ].join("")
 
-      appendFileSync(summaryPath, `${truncated}\n`);
+      appendFileSync(summaryPath, `${truncated}\n`)
     }
   }
 
