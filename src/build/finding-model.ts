@@ -156,6 +156,9 @@ export function buildFindingModel(findings: readonly ReportFinding[]): FindingMo
       severity: finding.severity,
       message: finding.message,
       location: locationOf(finding),
+      ...(finding.evidence !== undefined && finding.evidence.length > 0
+        ? { evidence: finding.evidence }
+        : {}),
     })),
   }
 }

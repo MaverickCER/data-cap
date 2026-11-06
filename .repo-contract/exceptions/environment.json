@@ -13,6 +13,20 @@
       "residualRisk": "A finding the App never raised is not seen; the same is true of any reviewer.",
       "revisitWhen": "CodeRabbit ships a CI mode for the CLI, or the App is uninstalled.",
       "expires": ""
+    },
+    {
+      "id": "environment:DocsLinks:https://github.com/MaverickCER/data-cap/tree/main/examples/flow-explorer",
+      "version": 2,
+      "justification": "The flow-explorer example is added by this change, so https://github.com/MaverickCER/data-cap/tree/main/examples/flow-explorer returns 404 until the change is merged to main.",
+      "check": "DocsLinks",
+      "code": "https://github.com/MaverickCER/data-cap/tree/main/examples/flow-explorer",
+      "ruleBroken": "Documentation links must resolve.",
+      "attempted": "Checked that examples/flow-explorer exists on this branch and is linked from examples/README.md and the guide.",
+      "constraint": "The link names the main branch on GitHub, which only has the directory after the merge.",
+      "whyPreferable": "The alternative is to omit the link to the example from the docs until after the merge, which would leave the new feature undiscoverable in the same release.",
+      "residualRisk": "If the example is never merged, the link stays broken; the next DocsLinks run after the merge would report it.",
+      "revisitWhen": "The change is merged to main; remove this record then.",
+      "expires": "2026-12-01"
     }
   ]
 }

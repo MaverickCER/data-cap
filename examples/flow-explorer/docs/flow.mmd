@@ -1,0 +1,51 @@
+flowchart LR
+  %% Data flow -- NOT complete: parts could not be followed
+  cov["Coverage: NOT complete -- a missing flow is not proof of absence"]
+  n0[("database: postgres:users")]
+  n1[("client-response: http-response")]
+  n2[/"userData.user<br/>(confidential)"/]
+  n3(["exportEverything"])
+  n4(["buildUserProfile"])
+  n5(["profileHandler"])
+  n6(["sendProfileToClient"])
+  n7(["trackUser"])
+  n8("user")
+  n9("profile")
+  n10("return")
+  n11{{"unknown: unresolved-call<br/>src/app/track.ts:11:3<br/>an unresolved call that receives tracked data"}}
+  n0 -. "crosses-boundary [declared]" .-> n2
+  n4 -- "discards passwordHash" --> n2
+  n4 -- "discards role" --> n2
+  n7 -- "discards id" --> n2
+  n7 -- "discards name" --> n2
+  n7 -- "discards passwordHash" --> n2
+  n7 -- "discards role" --> n2
+  n5 -- "passes (whole)" --> n8
+  n5 -- "passes email" --> n9
+  n5 -- "passes id" --> n9
+  n5 -- "passes name" --> n9
+  n10 -- "passes email" --> n5
+  n10 -- "passes id" --> n5
+  n10 -- "passes name" --> n5
+  n2 == "reads (whole)" ==> n3
+  n2 -- "reads (whole)" --> n5
+  n2 -- "reads (whole)" --> n7
+  n2 -- "reads email" --> n7
+  n8 -- "reads email" --> n4
+  n8 -- "reads id" --> n4
+  n8 -- "reads name" --> n4
+  n9 -- "reads email" --> n6
+  n9 -- "reads id" --> n6
+  n9 -- "reads name" --> n6
+  n4 -- "returns email" --> n10
+  n4 -- "returns id" --> n10
+  n4 -- "returns name" --> n10
+  n3 == "side-effect (whole)" ==> n1
+  n6 -- "side-effect email" --> n1
+  n6 -- "side-effect id" --> n1
+  n6 -- "side-effect name" --> n1
+  n7 -. "could not follow" .-> n11
+  linkStyle 0 stroke:#0072b2
+  linkStyle 14 stroke:#d00,stroke-width:3px
+  linkStyle 27 stroke:#d00,stroke-width:3px
+  linkStyle 31 stroke:#d00,stroke-dasharray:4

@@ -1,6 +1,6 @@
 # Examples
 
-Three real, standalone npm projects, each depending on the root package via
+Four real, standalone npm projects, each depending on the root package via
 `"data-cap": "file:../.."`. npm installs a `file:` dependency
 pointing at a local directory as a symlink back to that directory (not a
 filtered, packed copy), so each example always runs against whatever
@@ -18,8 +18,8 @@ Two other, genuinely different questions are answered elsewhere, on purpose
 used to be, and why it no longer is:
 
 - **`examples/`** (here) -- a human deciding whether/how to adopt data-cap.
-  Three examples, telling one story that grows, rather than three unrelated
-  demos or a feature checklist.
+  Three examples telling one story that grows, rather than three unrelated
+  demos or a feature checklist -- and a fourth, of a different kind (below).
 - **[`test/integration/`](https://github.com/MaverickCER/data-cap/blob/main/test/integration/README.md)** -- "does data-cap
   actually work?" The 16 focused regression fixtures that used to live here,
   each proving one specific mechanism (dedup, cache, retry, subscription
@@ -40,6 +40,12 @@ the order an organization actually grows into them:
 | 1 | [`application/`](https://github.com/MaverickCER/data-cap/tree/main/examples/application) -- Task Manager | One developer | Is *my* data access correct? Loading/error/success, optimistic updates, retry, dedup, caching -- the individual-developer feature surface, on one capability. |
 | 2 | [`team-service/`](https://github.com/MaverickCER/data-cap/tree/main/examples/team-service) -- Project Management Service | One team | Do *our* data capabilities compose without silently duplicating work? Capability-per-file ownership, real cross-capability composition that stays analyzable, a real duplicate-network-fetch finding. |
 | 3 | [`enterprise-platform/`](https://github.com/MaverickCER/data-cap/tree/main/examples/enterprise-platform) -- Atlas | An organization | Can we *prove*, to someone who wasn't in the room, what data exists, how it's handled, and where the governance gaps actually are? Three independently-owned capabilities, a real running service, and generated litigation-evidence/audit-prep reports. |
+| 4 | [`flow-explorer/`](https://github.com/MaverickCER/data-cap/tree/main/examples/flow-explorer) -- Data flow explorer | Anyone who has to trust the picture | For any one field, can I see every function that touches it and everywhere it goes -- and does the page say when it could not tell? One evidence file in; an interactive, keyboard-operable, accessible explorer and every standards export (Mermaid, DOT, PROV, SARIF, OSCAL, OpenTelemetry, CycloneDX) out, plus a full comparison of two commits (added, removed and changed, with source drill-down), drawn with a devDependency, not part of the package. |
+
+Tier 4 is not the next chapter of that story; it is a different kind of example. It takes
+the evidence file any of the others produces and shows what can be done with it **outside the
+package**: an interactive explorer built on a devDependency renderer, every standards export, and
+the end-to-end test of the data-flow analysis (see its README).
 
 Tier 2 is what Tier 1 becomes once a second developer, and a second
 capability, join the picture. Tier 3 is what Tier 2 becomes once that one

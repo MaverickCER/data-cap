@@ -25,6 +25,7 @@ const ENTRIES = [
   { name: "build", dtsPath: "./.dts/build/index.js" },
   { name: "node", dtsPath: "./.dts/node/index.js" },
   { name: "evidence", dtsPath: "./.dts/evidence/index.js" },
+  { name: "observe", dtsPath: "./.dts/observe/index.js" },
   { name: "helpers", dtsPath: "./.dts/helpers/index.js" },
   { name: "eslint-plugin/index", dtsPath: "../.dts/eslint-plugin/index.js" },
 ]

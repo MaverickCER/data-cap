@@ -1,0 +1,150 @@
+{
+  "assessment-results": {
+    "uuid": "5ea5552d-fa34-5e4a-9568-a70f031605c7",
+    "metadata": {
+      "title": "Profile service: data-flow assessment",
+      "last-modified": "2026-01-01T00:00:00.000Z",
+      "version": "0.8.2",
+      "oscal-version": "1.1.2"
+    },
+    "import-ap": {
+      "href": "#data-cap-assessment-plan"
+    },
+    "results": [
+      {
+        "uuid": "5addeb8f-38e1-5434-a716-a6707b6dd304",
+        "title": "Data-flow policy results",
+        "description": "data-cap data-flow assessment of 2 rule(s) against 3 control(s).",
+        "start": "2026-01-01T00:00:00.000Z",
+        "end": "2026-01-01T00:00:00.000Z",
+        "reviewed-controls": {
+          "control-selections": [
+            {
+              "include-controls": [
+                {
+                  "control-id": "ac-4"
+                },
+                {
+                  "control-id": "au-3"
+                },
+                {
+                  "control-id": "sc-28"
+                }
+              ]
+            }
+          ]
+        },
+        "observations": [
+          {
+            "uuid": "f756131d-4bf7-5e51-8a9a-07e666f2ee06",
+            "description": "Rule userData/no-password-to-client holds for userData.user: contradicted (static).",
+            "methods": [
+              "EXAMINE",
+              "TEST"
+            ],
+            "types": [
+              "finding"
+            ],
+            "collected": "2026-01-01T00:00:00.000Z",
+            "relevant-evidence": [
+              {
+                "description": "supporting: policy userData/no-password-to-client#field:src/features/user.capability.ts#userData.user"
+              },
+              {
+                "description": "contradicting: policy userData/no-password-to-client#field:src/features/user.capability.ts#userData.user"
+              },
+              {
+                "description": "contradicting: flow reads:field:src/features/user.capability.ts#userData.user->function:src/app/export.ts#exportEverything:@static^field:src/features/user.capability.ts#userData.user"
+              },
+              {
+                "description": "contradicting: flow side-effect:function:src/app/export.ts#exportEverything->boundary:boundary:code#http-response:@static^field:src/features/user.capability.ts#userData.user"
+              },
+              {
+                "description": "contradicting: observation observation:scenario:debug-export|client-response:http-response|userData.user.passwordHash|-"
+              }
+            ]
+          },
+          {
+            "uuid": "8949de51-731a-5212-8518-24bb19a039f1",
+            "description": "Rule userData/no-role-to-log holds for userData.user: verified (static).",
+            "methods": [
+              "EXAMINE",
+              "TEST"
+            ],
+            "types": [
+              "finding"
+            ],
+            "collected": "2026-01-01T00:00:00.000Z",
+            "relevant-evidence": [
+              {
+                "description": "supporting: policy userData/no-role-to-log#field:src/features/user.capability.ts#userData.user"
+              },
+              {
+                "description": "supporting: observation observation:scenario:debug-export|client-response:http-response|userData.user.role|-"
+              }
+            ]
+          }
+        ],
+        "findings": [
+          {
+            "uuid": "734e6c02-fb84-54a4-826b-9a08dceb3286",
+            "title": "userData/no-role-to-log -- au-3",
+            "description": "data-cap data-flow rule userData/no-role-to-log as evidence for au-3.",
+            "target": {
+              "type": "objective-id",
+              "target-id": "au-3",
+              "status": {
+                "state": "satisfied",
+                "reason": "pass",
+                "remarks": "Established by static analysis and corroborated by runtime observation in 1 scope(s)."
+              }
+            },
+            "related-observations": [
+              {
+                "observation-uuid": "8949de51-731a-5212-8518-24bb19a039f1"
+              }
+            ]
+          },
+          {
+            "uuid": "78ef8058-cd35-5100-863e-81fcb5f4ee20",
+            "title": "userData/no-password-to-client -- sc-28",
+            "description": "data-cap data-flow rule userData/no-password-to-client as evidence for sc-28.",
+            "target": {
+              "type": "objective-id",
+              "target-id": "sc-28",
+              "status": {
+                "state": "not-satisfied",
+                "reason": "fail",
+                "remarks": "Violated for field:src/features/user.capability.ts#userData.user (established by static analysis)."
+              }
+            },
+            "related-observations": [
+              {
+                "observation-uuid": "f756131d-4bf7-5e51-8a9a-07e666f2ee06"
+              }
+            ]
+          },
+          {
+            "uuid": "b99c2b7f-da2b-5e1f-b317-dbbf468b9247",
+            "title": "userData/no-password-to-client -- ac-4",
+            "description": "data-cap data-flow rule userData/no-password-to-client as evidence for ac-4.",
+            "target": {
+              "type": "objective-id",
+              "target-id": "ac-4",
+              "status": {
+                "state": "not-satisfied",
+                "reason": "fail",
+                "remarks": "Violated for field:src/features/user.capability.ts#userData.user (established by static analysis)."
+              }
+            },
+            "related-observations": [
+              {
+                "observation-uuid": "f756131d-4bf7-5e51-8a9a-07e666f2ee06"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

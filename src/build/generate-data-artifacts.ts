@@ -9,7 +9,11 @@
 
 import path from "node:path"
 import { discoverCapabilityFiles } from "./discover.js"
-import { computeSourceFingerprint, writeEvidenceFingerprint } from "./evidence-fingerprint.js"
+import {
+  computeSourceFingerprint,
+  evidenceOptionsKey,
+  writeEvidenceFingerprint,
+} from "./evidence-fingerprint.js"
 import { displayPath } from "./display-path.js"
 import { linkCapabilityFiles } from "./link.js"
 import { buildInventory } from "./inventory.js"
@@ -40,6 +44,21 @@ import { buildChangeModel } from "./change-model.js"
 import { DEFAULT_EXPIRING_WITHIN_DAYS } from "./expiring-window.js"
 import { buildLifecycleModel } from "./lifecycle-model.js"
 import { buildEvidenceModel } from "./evidence-model.js"
+import { analyzeLeastData, leastDataFindings } from "../flow/least-data.js"
+import {
+  analyzeRedundantTransforms,
+  redundantTransformFindings,
+} from "../flow/redundant-transform.js"
+import { flowAnalysisFindings, policyFindings } from "../flow/flow-findings.js"
+import { buildFlowModel } from "../flow/flow-model.js"
+import type { FlowModel } from "../flow/flow-model.js"
+import { scanFlow } from "./flow-scan.js"
+import type { FlowSinkPattern, FlowSummary } from "./flow-scan.js"
+import { buildObservationModel } from "../flow/observation-model.js"
+import type { ObservationModel } from "../flow/observation-model.js"
+import { buildPolicyModel, collectFlowPolicyRules } from "../flow/policy-model.js"
+import type { PolicyModel } from "../flow/policy-model.js"
+import type { ObservationEvent, ObservationSkip } from "../observe/index.js"
 import type { EvidenceModel } from "./evidence-model.js"
 import { PACKAGE_VERSION } from "./package-version.js"
 import { DataProjectGenerationError } from "./errors.js"
@@ -77,8 +96,33 @@ export interface GenerateDataArtifactsOptions {
   readonly strictDocs?: boolean
   /** Escalate proven usage findings (abandoned capabilities, unconsumed owned fields) to `error` -- never escalates unresolved-consumer or indeterminate findings. */
   readonly strictOwnership?: boolean
-  /** Escalate `SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY`/`SENSITIVE_FIELD_ENDPOINT_MISSING_HANDLING` findings to `error` -- every finding `buildFlowGraph` produces. */
+  /** Escalate every `flow`-family `warning` to `error`: `SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY`/`SENSITIVE_FIELD_ENDPOINT_MISSING_HANDLING`, and the flow pass's own `FLOW_POLICY_INDETERMINATE`, `LEAST_DATA_*` warnings. */
   readonly strictFlow?: boolean
+  /**
+   * Run the flow pass (ADR 0070): field-level, interprocedural data-flow
+   * analysis over the discovered files, evaluation of every capability's
+   * declared `flowPolicy`, and the claims derived from both. Their results
+   * land in the one Evidence Model (`flow`, `policy`, `claims`) and their
+   * findings in `findings`. Opt-in because it reads and analyzes every
+   * discovered file's function bodies.
+   */
+  readonly flowEvidence?: boolean | undefined
+  /** Sinks the flow pass recognises instead of the defaults (`DEFAULT_FLOW_SINKS`). Only meaningful with `flowEvidence`. */
+  readonly flowSinks?: readonly FlowSinkPattern[] | undefined
+  /** What calls into packages do, declared by the project (`FlowSummary`): without one, such a call that receives tracked data is an explicit unknown. Only meaningful with `flowEvidence`. */
+  readonly flowSummaries?: readonly FlowSummary[] | undefined
+  /**
+   * Runtime observations already collected through `data-cap/observe`
+   * (ADR 0072), ingested into the Evidence Model's `observation` and, with
+   * `flowEvidence`, joined to the static claims. Events, not a file path:
+   * this library never opens a file of its own.
+   */
+  readonly observations?: readonly ObservationEvent[] | undefined
+  /**
+   * What the recorder left out while collecting `observations` (`createMemorySink().skips()`), so a claim that
+   * rests on an incompletely recorded scope reads `indeterminate` rather than `verified`.
+   */
+  readonly observationSkips?: readonly ObservationSkip[] | undefined
   /** The commit SHA this run's evidence was generated against, stamped onto `EvidenceModel.provenance.commit`. Caller-supplied only -- `data-cap` never shells out to `git` itself, so omitting this records a stated absence, never a guess. */
   readonly commit?: string
   /** The single instant every time-sensitive computation in this run shares (`EvidenceModel.provenance.generatedAt`, Lifecycle Model's `daysRemaining`), so none of them can disagree about "now". Defaults to the wall clock at the moment this function is called. */
@@ -172,10 +216,9 @@ async function readManifestSnapshot(
 }
 
 function escalateGroup(
-  findings: readonly ReportFinding[] | undefined,
+  findings: readonly ReportFinding[],
   shouldEscalate: boolean,
 ): readonly ReportFinding[] {
-  if (findings === undefined) return []
   if (!shouldEscalate) return findings
   return findings.map((finding) =>
     finding.severity === "warning" ? { ...finding, severity: "error" as const } : finding,
@@ -351,6 +394,39 @@ export async function computeDataArtifacts(
     groupEscalates(options, options.strictOwnership),
   )
 
+  // The flow pass (ADR 0070): opt-in. Everything it derives is a pure
+  // function of the inventory plus the one scan, and lands in the Evidence
+  // Model; nothing here is persisted anywhere else.
+  let flowModel: FlowModel | undefined
+  let policyModel: PolicyModel | undefined
+  let flowPassFindings: readonly ReportFinding[] = []
+  const flowPassWarnings: ParseWarning[] = []
+  if (options.flowEvidence === true) {
+    const scanned = await scanFlow({
+      inventory,
+      files,
+      fs: options.fs,
+      root: options.root,
+      tsconfig: options.tsconfig,
+      packages,
+      sinks: options.flowSinks,
+      summaries: options.flowSummaries,
+    })
+    flowPassWarnings.push(...scanned.warnings)
+    flowModel = buildFlowModel(scanned.input)
+    policyModel = buildPolicyModel(flowModel, collectFlowPolicyRules(inventory))
+    flowPassFindings = [
+      ...policyFindings(policyModel, flowModel),
+      ...leastDataFindings(analyzeLeastData({ capability: inventory, flow: flowModel })),
+      ...redundantTransformFindings(analyzeRedundantTransforms(flowModel), flowModel),
+      ...flowAnalysisFindings(flowModel),
+    ]
+  }
+  const observationModel: ObservationModel | undefined =
+    options.observations === undefined
+      ? undefined
+      : buildObservationModel(options.observations, options.observationSkips)
+
   let documentation: GenerateDocumentationResult | undefined
   if (options.docs !== undefined) {
     documentation = generateDocumentation({
@@ -381,7 +457,10 @@ export async function computeDataArtifacts(
     })
     for (const file of flow.files) writes.push(file)
   }
-  const flowFindings = escalateGroup(flow?.findings, groupEscalates(options, options.strictFlow))
+  const flowFindings = escalateGroup(
+    [...(flow?.findings ?? []), ...flowPassFindings],
+    groupEscalates(options, options.strictFlow),
+  )
   // Citation integrity findings escalate alongside `staticFindings` -- both
   // are about a documentData()-declared fact's own quality (missing owner,
   // missing purpose, a citation that no longer checks out), not about
@@ -436,6 +515,9 @@ export async function computeDataArtifacts(
       ownership: ownershipModel,
       finding: findingModel,
       ...(changeModel !== undefined ? { change: changeModel } : {}),
+      ...(flowModel !== undefined ? { flow: flowModel } : {}),
+      ...(policyModel !== undefined ? { policy: policyModel } : {}),
+      ...(observationModel !== undefined ? { observation: observationModel } : {}),
     },
     {
       generatedAt: generatedAt.toISOString(),
@@ -456,7 +538,7 @@ export async function computeDataArtifacts(
     findings: allFindings,
     // Root-relative, matching `inventory.warnings` (OUT-01) -- `--json`'s
     // own warning list must not be the one place an absolute path survives.
-    warnings: [...packageWarnings, ...linkResult.warnings].map((warning) => ({
+    warnings: [...packageWarnings, ...linkResult.warnings, ...flowPassWarnings].map((warning) => ({
       ...warning,
       file: displayPath(options.root, warning.file),
     })),
@@ -506,6 +588,7 @@ export async function generateDataArtifacts(
         ...(options.include !== undefined ? { include: options.include } : {}),
         ...(options.exclude !== undefined ? { exclude: options.exclude } : {}),
         ...(options.packages !== undefined ? { packages: options.packages } : {}),
+        extra: evidenceOptionsKey(options),
       }),
       options.fs,
     )

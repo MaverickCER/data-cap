@@ -18,6 +18,7 @@ const ISOMORPHIC = [
   "./runtime/retry",
   "./helpers",
   "./evidence",
+  "./observe",
 ]
 const built = existsSync(path.join(root, "dist"))
 

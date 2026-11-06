@@ -643,6 +643,11 @@ describe("generateDataArtifacts", () => {
         ownership: true,
         finding: true,
         change: true,
+        // The flow pass is opt-in (ADR 0070); a default run does not compute it.
+        flow: false,
+        policy: false,
+        observation: false,
+        claims: false,
       })
     })
 
@@ -673,6 +678,11 @@ describe("generateDataArtifacts", () => {
         ownership: true,
         finding: true,
         change: true,
+        // The flow pass is opt-in (ADR 0070); a default run does not compute it.
+        flow: false,
+        policy: false,
+        observation: false,
+        claims: false,
       })
       expect(result.evidence.change?.blastRadius).toEqual([
         { capability: "user.ts#userCapability", consumers: ["consumer.ts"] },

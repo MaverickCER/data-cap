@@ -13,7 +13,7 @@
 // embed (toolVersion, generatedAt). There is no code change in that commit
 // for a rewritten golden to accidentally paper over.
 //
-// Two maps, not one: FLAGSHIPS are the 3 curated `examples/` projects;
+// Two maps, not one: FLAGSHIPS are the curated `examples/` projects;
 // FIXTURES are the 16 real-mechanism regression fixtures relocated into
 // `test/integration/` (see this session's three-tier restructuring). Same
 // `npm start` step either way (real `node:assert/strict` checks), but only
@@ -34,7 +34,7 @@ const examplesRoot = path.join(root, "examples")
 const integrationRoot = path.join(root, "test/integration")
 const cliDist = path.join(root, "dist/cli/index.js")
 
-const FLAGSHIPS = ["application", "team-service", "enterprise-platform"]
+const FLAGSHIPS = ["application", "team-service", "enterprise-platform", "flow-explorer"]
 
 const FIXTURES = [
   "runtime-core/basic-standalone",
@@ -70,6 +70,7 @@ const DOCS_PROJECTS = new Set([
   "application",
   "team-service",
   "enterprise-platform",
+  "flow-explorer",
   "runtime-core/server-database-integration",
 ])
 

@@ -27,6 +27,8 @@ import type {
   DataFlowEndpointKind,
   EvidenceFieldDocs,
   FieldDocs,
+  FlowBoundaryKind,
+  FlowPolicyDocs,
   OperationDocs,
 } from "../core/document.js"
 import type { DataSchema } from "../core/index.js"
@@ -674,6 +676,175 @@ export function readMetadataProp(
   return undefined
 }
 
+const FLOW_POLICY_RULE_KEYS: ReadonlySet<string> = new Set([
+  "id",
+  "description",
+  "appliesTo",
+  "forbidDestinations",
+  "allowedDestinations",
+  "allowedHandling",
+  "requireHandling",
+])
+const FLOW_POLICY_APPLIES_TO_KEYS: ReadonlySet<string> = new Set([
+  "classification",
+  "field",
+  "path",
+])
+
+/** @internal One of the destinations a `flowPolicy` rule can name: a declared endpoint kind, `"client-response"` or `"log"`. */
+function isFlowBoundaryKind(value: unknown): value is FlowBoundaryKind {
+  return isDataFlowEndpointKind(value) || value === "client-response" || value === "log"
+}
+
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+}
+
+/** Returns the reason a list is not a list of members of a closed vocabulary, or the list itself. */
+function closedList<T extends string>(
+  value: unknown,
+  accepts: (candidate: unknown) => candidate is T,
+  name: string,
+): readonly T[] | string {
+  if (!Array.isArray(value)) return `"${name}" must be an array`
+  const entries: readonly unknown[] = value
+  const accepted = entries.filter(accepts)
+  if (accepted.length === entries.length) return accepted
+  const bad = entries.find((entry) => !accepts(entry))
+  return `"${name}" contains ${JSON.stringify(bad)}, which is not a recognised value`
+}
+
+/** Validates one literal-evaluated rule; returns the rule, or the one reason it was dropped. */
+function validateFlowPolicyRule(record: Record<string, unknown>): FlowPolicyDocs | string {
+  const unknownKey = Object.keys(record).find((key) => !FLOW_POLICY_RULE_KEYS.has(key))
+  if (unknownKey !== undefined) return `has an unrecognised key "${unknownKey}"`
+  const { id, description, appliesTo } = record
+  if (typeof id !== "string" || id.length === 0) return `has no "id" (a non-empty string)`
+  if (description !== undefined && typeof description !== "string")
+    return `"description" must be a string`
+  if (!isPlainRecord(appliesTo)) return `has no "appliesTo" object`
+  const unknownApplies = Object.keys(appliesTo).find((key) => !FLOW_POLICY_APPLIES_TO_KEYS.has(key))
+  if (unknownApplies !== undefined) return `"appliesTo" has an unrecognised key "${unknownApplies}"`
+  const { classification, field, path } = appliesTo
+  if (classification !== undefined && typeof classification !== "string")
+    return `"appliesTo.classification" must be a string`
+  if (field !== undefined && typeof field !== "string") return `"appliesTo.field" must be a string`
+  if (classification === undefined && field === undefined)
+    return `"appliesTo" needs "classification" or "field"`
+  if (
+    path !== undefined &&
+    (!Array.isArray(path) ||
+      path.length === 0 ||
+      !path.every((segment) => typeof segment === "string" && segment.length > 0))
+  ) {
+    return `"appliesTo.path" must be a non-empty array of non-empty strings`
+  }
+
+  const lists = {
+    forbidDestinations: closedList(
+      record["forbidDestinations"],
+      isFlowBoundaryKind,
+      "forbidDestinations",
+    ),
+    allowedDestinations: closedList(
+      record["allowedDestinations"],
+      isFlowBoundaryKind,
+      "allowedDestinations",
+    ),
+    allowedHandling: closedList(
+      record["allowedHandling"],
+      isDataFlowHandlingValue,
+      "allowedHandling",
+    ),
+    requireHandling: closedList(
+      record["requireHandling"],
+      isDataFlowHandlingValue,
+      "requireHandling",
+    ),
+  }
+  const result: Record<string, unknown> = { id }
+  if (description !== undefined) result["description"] = description
+  result["appliesTo"] = {
+    ...(classification === undefined ? {} : { classification }),
+    ...(field === undefined ? {} : { field }),
+    ...(path === undefined ? {} : { path }),
+  }
+  for (const [name, list] of Object.entries(lists)) {
+    if (record[name] === undefined) continue
+    if (typeof list === "string") return list
+    result[name] = list
+  }
+  const forbidden = result["forbidDestinations"]
+  const constrains =
+    (Array.isArray(forbidden) && forbidden.length > 0) ||
+    result["allowedDestinations"] !== undefined ||
+    result["requireHandling"] !== undefined
+  if (!constrains)
+    return `does not constrain anything: set "forbidDestinations", "allowedDestinations" or "requireHandling"`
+  return result as unknown as FlowPolicyDocs
+}
+
+/**
+ * Reads a capability's `flowPolicy` array (ADR 0070): each element must be a
+ * statically-resolvable object literal naming a rule. A malformed rule is
+ * dropped with a warning naming the problem -- never passed through half
+ * understood, since a rule that silently stops constraining anything is the
+ * dangerous failure.
+ */
+function readFlowPolicyProp(
+  obj: TS.ObjectLiteralExpression,
+  contextLabel: string,
+  file: string,
+  warnings: ParseWarning[],
+): readonly FlowPolicyDocs[] | undefined {
+  const prop = findProp(obj, "flowPolicy")
+  if (prop === undefined) return undefined
+  if (!ts.isArrayLiteralExpression(prop.initializer)) {
+    warnings.push({
+      file,
+      message: `"flowPolicy" for "${contextLabel}" is not an inline array literal; ignoring it.`,
+    })
+    return undefined
+  }
+  const rules: FlowPolicyDocs[] = []
+  const seen = new Set<string>()
+  for (const element of prop.initializer.elements) {
+    if (ts.isSpreadElement(element)) {
+      warnings.push({
+        file,
+        message: `A "flowPolicy" entry for "${contextLabel}" is a spread element, not statically resolvable; dropping it.`,
+      })
+      continue
+    }
+    const evaluated = evaluateLiteral(element)
+    if (!evaluated.ok || !isPlainRecord(evaluated.value)) {
+      warnings.push({
+        file,
+        message: `A "flowPolicy" entry for "${contextLabel}" is not a statically-resolvable object literal; dropping it.`,
+      })
+      continue
+    }
+    const rule = validateFlowPolicyRule(evaluated.value)
+    if (typeof rule === "string") {
+      warnings.push({
+        file,
+        message: `A "flowPolicy" rule for "${contextLabel}" ${rule}; dropping it.`,
+      })
+      continue
+    }
+    if (seen.has(rule.id)) {
+      warnings.push({
+        file,
+        message: `A "flowPolicy" rule for "${contextLabel}" reuses the id "${rule.id}"; dropping the later one.`,
+      })
+      continue
+    }
+    seen.add(rule.id)
+    rules.push(rule)
+  }
+  return rules
+}
+
 /** `dataResidency` accepts either a single jurisdiction string or a list of them. */
 /** @internal Exported for direct unit coverage (reached only through the recursive parse walk in production). */
 export function readDataResidencyProp(
@@ -1025,6 +1196,7 @@ export function extractCapabilityDocs(
     deprecated: readBooleanProp(docsNode, "deprecated", contextLabel, file, warnings),
     deprecatedReason: readStringProp(docsNode, "deprecatedReason", contextLabel, file, warnings),
     metadata: readMetadataProp(docsNode, contextLabel, file, warnings),
+    flowPolicy: readFlowPolicyProp(docsNode, contextLabel, file, warnings),
     evidence: extractEvidenceDocs(docsNode, contextLabel, file, warnings),
     fields:
       fieldsProp !== undefined

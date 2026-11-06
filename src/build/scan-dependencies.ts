@@ -82,7 +82,7 @@ function targetKey(file: string, exportName: string): string {
   return `${file}#${exportName}`
 }
 
-function collectFileImports(sourceFile: TS.SourceFile): readonly ImportBinding[] {
+export function collectFileImports(sourceFile: TS.SourceFile): readonly ImportBinding[] {
   const imports: ImportBinding[] = []
   for (const statement of sourceFile.statements) {
     if (ts.isImportDeclaration(statement)) collectImportBindings(statement, imports)
@@ -101,7 +101,7 @@ function collectFileImports(sourceFile: TS.SourceFile): readonly ImportBinding[]
  * dropped. An imported name shared by more than one target is too
  * ambiguous to guess at all, and is dropped.
  */
-async function matchFileImports(
+export async function matchFileImports(
   file: string,
   imports: readonly ImportBinding[],
   targets: readonly ScanTarget[],

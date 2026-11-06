@@ -1,20 +1,21 @@
 {
   "when": "Load when a task creates or edits a data-cap capability (a schema with fields, getters, mutators or subscriptions), calls createData or buildData, or generates data-cap manifests, docs or reports. Skip it for state that does not use data-cap.",
-  "purpose": "data-cap gives each capability (a feature or package) an analyzable data contract: the fields it owns and the getters, mutators and subscriptions that acquire, change or observe them.",
-  "notFor": "fetching data or holding UI state. It declares and checks ownership; your own functions do the I/O.",
+  "purpose": "data-cap gives each capability (a feature or package) an analyzable data contract: the fields it owns and the getters, mutators and subscriptions that change or observe them.",
+  "notFor": "fetching data or holding UI state. It declares and checks ownership; your functions do the I/O.",
   "example": {
     "file": "examples/team-service/src/capabilities/member.capability.ts",
     "lines": [15, 49]
   },
   "rules": [
-    "Declare the schema once as a literal and pass that object to `createData(schema)` and `documentData(schema, docs)`, which follows it in the example's file.",
-    "Give every getter and subscription a `writes` map naming the fields it may write. A mutator without one may write the whole declared schema.",
-    "Keep `execute` and `subscribe` references stable. Sharing and dedupe are by function identity, so a fresh arrow per render defeats them.",
-    "Import only from the exports in package.json; `/build` and `/node` are Node-only."
+    "Declare the schema once as a literal and pass it to `createData(schema)` and `documentData(schema, docs)`, as the example does.",
+    "Give every getter and subscription a `writes` map naming the fields it may write; a mutator without one may write the whole schema.",
+    "Keep `execute` and `subscribe` references stable: sharing and dedupe are by function identity, so a fresh arrow per render defeats them.",
+    "Import only from package.json exports; `/build` and `/node` are Node-only.",
+    "To govern where a field's data may go, add `flowPolicy` to `documentData`; run the CLI with `--flow-evidence`."
   ],
   "behavior": [
-    "A newer getter call discards an older in-flight getter commit. A mutator commit is never discarded: each folds onto the current authoritative state as it finishes.",
-    "A thrown processor fails the whole operation; one invalid field resets to its default and its valid siblings survive."
+    "A newer getter call discards an older in-flight getter commit. A mutator commit is never discarded.",
+    "A thrown processor fails the whole operation; an invalid field resets to its default and valid siblings survive."
   ],
   "mistakes": [
     {
@@ -28,11 +29,11 @@
   ],
   "verify": [
     "Run the type check and tests.",
-    "Update the `documentData()` entry, run the project's data-cap script, and commit generated files only if the project does."
+    "Update the `documentData()` entry and run the project's data-cap script."
   ],
   "references": [
     {
-      "when": "Every option of the generators and the CLI",
+      "when": "Every option of the generators and CLI, and flow policies",
       "path": "GUIDE.md"
     }
   ],
@@ -42,10 +43,11 @@
     "data-cap/runtime/cache": "`createDataCache`, optional",
     "data-cap/runtime/retry": "`withRetry`, `isStillDefault`, optional",
     "data-cap/helpers": "`processors`, `identity`, `canonicalize`, `shape`",
-    "data-cap/build": "Node only: discovery, the models, and generating manifests, docs and reports",
-    "data-cap/node": "Node only: `nodeBuildFileSystem`, the file system a build script hands to `/build`",
-    "data-cap/evidence": "`defineEvidenceProjection`, projections over the evidence model",
+    "data-cap/build": "Node only: discovery, models, and generating manifests, docs and reports",
+    "data-cap/node": "Node only: `nodeBuildFileSystem`, for `/build`",
+    "data-cap/evidence": "`defineEvidenceProjection`, projections over the evidence model, and (experimental) the flow views",
+    "data-cap/observe": "Experimental: `observeBoundary` records field names crossing a boundary, never values",
     "data-cap/eslint-plugin": "Lint rules: `stable-operation-reference`, `no-raw-external-io`, `no-fields-escape`, `no-node-fs`",
-    "data-cap/schema": "The JSON Schemas for `data-cap --json` output"
+    "data-cap/schema": "JSON Schemas for `data-cap --json` output"
   }
 }

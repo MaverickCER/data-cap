@@ -1,4 +1,4 @@
-import type { ReportFinding, ReportResult } from "../build/index.js"
+import type { EvidenceRulesResult, ReportFinding, ReportResult } from "../build/index.js"
 import { PACKAGE_VERSION } from "../build/package-version.js"
 
 /**
@@ -29,6 +29,8 @@ export interface JsonSuccessPayload extends ReportResult {
    *  its existing, unrelated meaning: "did generation complete without
    *  throwing"). */
   readonly checkResult?: { readonly ok: boolean; readonly stale: readonly string[] }
+  /** Present only when invoked with --rules: the verdict of the rules enforced over this run's evidence. */
+  readonly evidenceRules?: EvidenceRulesResult
 }
 
 /** A thrown error's shape in the `--json` envelope. */
@@ -60,6 +62,7 @@ function hasFindings(error: unknown): error is { findings: readonly ReportFindin
 export function serializeSuccess(
   result: ReportResult,
   checkResult?: { readonly ok: boolean; readonly stale: readonly string[] },
+  evidenceRules?: EvidenceRulesResult,
 ): JsonSuccessPayload {
   return {
     schemaVersion: JSON_SCHEMA_VERSION,
@@ -68,6 +71,7 @@ export function serializeSuccess(
     ok: true,
     ...result,
     ...(checkResult ? { checkResult } : {}),
+    ...(evidenceRules ? { evidenceRules } : {}),
   }
 }
 

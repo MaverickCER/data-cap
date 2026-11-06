@@ -236,6 +236,13 @@
           "type": "object",
           "additionalProperties": {},
           "description": "Free-form extension bag for anything data-cap itself has no named concept for -- opaque, never inspected or validated by any code path in this package (e.g. jurisdiction-specific regulatory classification: `{ regulatory: \"GDPR,PCI-DSS\" }`). Once a concept matters enough for data-cap to reason about, it gets its own named field above (as `purpose`/`legalBasis`/`dataResidency`/`transferSafeguard`/`auditRequired` did); everything else stays here."
+        },
+        "flowPolicy": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FlowPolicyDocs"
+          },
+          "description": "Declared data-flow rules for this capability's fields, evaluated against the Flow Model (see `FlowPolicyDocs`)."
         }
       }
     },
@@ -394,14 +401,7 @@
           "description": "A literal, trackable location for this endpoint -- a URL, a route path, a `table:column` reference. Distinct from `name` (a short label): this is meant to be compared/matched across capabilities (e.g. flagging two capabilities that declare the same URL as likely-duplicate fetches), not just read by a person."
         },
         "handling": {
-          "type": "string",
-          "enum": [
-            "plaintext",
-            "masked",
-            "redacted",
-            "hashed",
-            "encrypted"
-          ],
+          "$ref": "#/definitions/FlowHandling",
           "description": "The declared data-safety state of this field's value AT this specific boundary crossing -- e.g. a field that arrives `\"encrypted\"` on an `\"input\"` endpoint and is sent back out `\"redacted\"` on an `\"output\"` endpoint. Declared only, same presence-only discipline as every other field in this vocabulary: this records what a developer states about handling at this crossing, never that data-cap has verified the field's actual runtime value matches the claim."
         }
       },
@@ -436,6 +436,17 @@
       ],
       "description": "What kind of boundary a declared data-flow endpoint crosses -- a data store (`database`/`cache`/`storage`/`queue`), an external entity (`api`/`external-service`/`user-input`), or something internal to this codebase (`computed`/`internal`)."
     },
+    "FlowHandling": {
+      "type": "string",
+      "enum": [
+        "plaintext",
+        "masked",
+        "redacted",
+        "hashed",
+        "encrypted"
+      ],
+      "description": "The declared data-safety state of a value at a boundary crossing -- the vocabulary of `DataFlowEndpoint.handling` and of flow policy rules."
+    },
     "Loosen<EvidenceFieldDocs>": {
       "type": "object",
       "properties": {
@@ -449,6 +460,95 @@
       },
       "additionalProperties": false,
       "description": "Every property here is always assigned (never conditionally omitted -- see extractCapabilityDocs()/extractOperationDocsMap()/ extractEvidenceFieldsMap() below), just sometimes with an `undefined` value when the AST literal didn't declare it. exactOptionalPropertyTypes distinguishes \"key absent\" from \"key present holding undefined\"; widening every property to explicitly include `| undefined` (rather than routing every assignment through a conditional-spread \"omit if absent\" instead) matches what this type actually represents: a raw, unconstrained parse result, not a validated CapabilityDocs."
+    },
+    "FlowPolicyDocs": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique within this capability."
+        },
+        "description": {
+          "type": "string",
+          "description": "Why the rule exists."
+        },
+        "appliesTo": {
+          "$ref": "#/definitions/FlowPolicyAppliesToDocs",
+          "description": "Which fields the rule governs."
+        },
+        "forbidDestinations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FlowBoundaryKind"
+          },
+          "description": "Destinations the governed data must never reach."
+        },
+        "allowedDestinations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FlowBoundaryKind"
+          },
+          "description": "If set, the only destinations the governed data may reach."
+        },
+        "allowedHandling": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FlowHandling"
+          },
+          "description": "Handling that exempts a crossing from `forbidDestinations`/`allowedDestinations`."
+        },
+        "requireHandling": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FlowHandling"
+          },
+          "description": "If set, every crossing of the governed data must declare one of these handlings."
+        }
+      },
+      "required": [
+        "id",
+        "appliesTo"
+      ],
+      "additionalProperties": false,
+      "description": "One declared data-flow rule: which of this capability's fields it governs, and what must hold wherever their data goes. Evaluated against the Flow Model at build time; a rule is a declaration, never a runtime check, and a result is only as complete as the analysis behind it (see the Policy Model's `indeterminate` outcome). At least one of `forbidDestinations`, `allowedDestinations` and `requireHandling` is required."
+    },
+    "FlowPolicyAppliesToDocs": {
+      "type": "object",
+      "properties": {
+        "classification": {
+          "type": "string",
+          "description": "Every field of this capability whose resolved `sensitivity` equals this value."
+        },
+        "field": {
+          "type": "string",
+          "description": "One field of this capability, by its top-level key."
+        },
+        "path": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Narrows the rule to one path inside each governed field (for example `[\"passwordHash\"]`)."
+        }
+      },
+      "additionalProperties": false,
+      "description": "Which fields a data-flow rule governs; every supplied criterion must match, and `classification` or `field` is required."
+    },
+    "FlowBoundaryKind": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/DataFlowEndpointKind"
+        },
+        {
+          "type": "string",
+          "const": "client-response"
+        },
+        {
+          "type": "string",
+          "const": "log"
+        }
+      ],
+      "description": "What a data-flow rule can name as a destination: the declared endpoint kinds, plus the two destinations only code analysis can see."
     },
     "SourcePosition": {
       "type": "object",

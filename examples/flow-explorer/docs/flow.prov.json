@@ -1,0 +1,641 @@
+{
+  "prefix": {
+    "prov": "http://www.w3.org/ns/prov#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "dc": "urn:data-cap:ns:"
+  },
+  "entity": {
+    "dc:boundary%2Fboundary%3Aboundary%23postgres%3Ausers": {
+      "prov:type": "dc:Boundary",
+      "dc:name": "postgres:users",
+      "dc:scope": "boundary",
+      "dc:status": "declared",
+      "dc:boundaryKind": "database"
+    },
+    "dc:boundary%2Fboundary%3Aboundary%3Acode%23http-response": {
+      "prov:type": "dc:Boundary",
+      "dc:name": "http-response",
+      "dc:scope": "boundary:code",
+      "dc:status": "static",
+      "dc:boundaryKind": "client-response"
+    },
+    "dc:field%2Ffield%3Asrc%2Ffeatures%2Fuser.capability.ts%23userData.user": {
+      "prov:type": "dc:Field",
+      "dc:name": "userData.user",
+      "dc:scope": "src/features/user.capability.ts",
+      "dc:status": "static",
+      "dc:classification": "confidential"
+    },
+    "dc:parameter%2Fparameter%3Asrc%2Fapp%2Fexport.ts%23exportEverything.res": {
+      "prov:type": "dc:Parameter",
+      "dc:name": "exportEverything.res",
+      "dc:scope": "src/app/export.ts",
+      "dc:status": "static"
+    },
+    "dc:parameter%2Fparameter%3Asrc%2Fapp%2Fprofile.ts%23buildUserProfile.user": {
+      "prov:type": "dc:Parameter",
+      "dc:name": "buildUserProfile.user",
+      "dc:scope": "src/app/profile.ts",
+      "dc:status": "static"
+    },
+    "dc:parameter%2Fparameter%3Asrc%2Fapp%2Fprofile.ts%23profileHandler.res": {
+      "prov:type": "dc:Parameter",
+      "dc:name": "profileHandler.res",
+      "dc:scope": "src/app/profile.ts",
+      "dc:status": "static"
+    },
+    "dc:parameter%2Fparameter%3Asrc%2Fapp%2Fprofile.ts%23sendProfileToClient.profile": {
+      "prov:type": "dc:Parameter",
+      "dc:name": "sendProfileToClient.profile",
+      "dc:scope": "src/app/profile.ts",
+      "dc:status": "static"
+    },
+    "dc:parameter%2Fparameter%3Asrc%2Fapp%2Fprofile.ts%23sendProfileToClient.res": {
+      "prov:type": "dc:Parameter",
+      "dc:name": "sendProfileToClient.res",
+      "dc:scope": "src/app/profile.ts",
+      "dc:status": "static"
+    },
+    "dc:return%2Freturn%3Asrc%2Fapp%2Fexport.ts%23exportEverything%23return": {
+      "prov:type": "dc:ReturnValue",
+      "dc:name": "exportEverything#return",
+      "dc:scope": "src/app/export.ts",
+      "dc:status": "static"
+    },
+    "dc:return%2Freturn%3Asrc%2Fapp%2Fprofile.ts%23buildUserProfile%23return": {
+      "prov:type": "dc:ReturnValue",
+      "dc:name": "buildUserProfile#return",
+      "dc:scope": "src/app/profile.ts",
+      "dc:status": "static"
+    },
+    "dc:return%2Freturn%3Asrc%2Fapp%2Fprofile.ts%23profileHandler%23return": {
+      "prov:type": "dc:ReturnValue",
+      "dc:name": "profileHandler#return",
+      "dc:scope": "src/app/profile.ts",
+      "dc:status": "static"
+    },
+    "dc:return%2Freturn%3Asrc%2Fapp%2Fprofile.ts%23sendProfileToClient%23return": {
+      "prov:type": "dc:ReturnValue",
+      "dc:name": "sendProfileToClient#return",
+      "dc:scope": "src/app/profile.ts",
+      "dc:status": "static"
+    },
+    "dc:return%2Freturn%3Asrc%2Fapp%2Ftrack.ts%23trackUser%23return": {
+      "prov:type": "dc:ReturnValue",
+      "dc:name": "trackUser#return",
+      "dc:scope": "src/app/track.ts",
+      "dc:status": "static"
+    },
+    "dc:observation%2Fobservation%3Ascenario%3Adebug-export%7Cclient-response%3Ahttp-response%7CuserData.user.email%7C-": {
+      "prov:type": "dc:Observation",
+      "dc:field": "userData.user.email",
+      "dc:boundary": "client-response:http-response",
+      "dc:count": 1,
+      "dc:status": "observed"
+    },
+    "dc:observation%2Fobservation%3Ascenario%3Adebug-export%7Cclient-response%3Ahttp-response%7CuserData.user.id%7C-": {
+      "prov:type": "dc:Observation",
+      "dc:field": "userData.user.id",
+      "dc:boundary": "client-response:http-response",
+      "dc:count": 1,
+      "dc:status": "observed"
+    },
+    "dc:observation%2Fobservation%3Ascenario%3Adebug-export%7Cclient-response%3Ahttp-response%7CuserData.user.name%7C-": {
+      "prov:type": "dc:Observation",
+      "dc:field": "userData.user.name",
+      "dc:boundary": "client-response:http-response",
+      "dc:count": 1,
+      "dc:status": "observed"
+    },
+    "dc:observation%2Fobservation%3Ascenario%3Adebug-export%7Cclient-response%3Ahttp-response%7CuserData.user.passwordHash%7C-": {
+      "prov:type": "dc:Observation",
+      "dc:field": "userData.user.passwordHash",
+      "dc:boundary": "client-response:http-response",
+      "dc:count": 1,
+      "dc:status": "observed"
+    },
+    "dc:observation%2Fobservation%3Ascenario%3Adebug-export%7Cclient-response%3Ahttp-response%7CuserData.user.role%7C-": {
+      "prov:type": "dc:Observation",
+      "dc:field": "userData.user.role",
+      "dc:boundary": "client-response:http-response",
+      "dc:count": 1,
+      "dc:status": "observed"
+    },
+    "dc:observation%2Fobservation%3Ascenario%3Aprofile%7Cclient-response%3Ahttp-response%7CuserData.user.email%7C-": {
+      "prov:type": "dc:Observation",
+      "dc:field": "userData.user.email",
+      "dc:boundary": "client-response:http-response",
+      "dc:count": 1,
+      "dc:status": "observed"
+    },
+    "dc:observation%2Fobservation%3Ascenario%3Aprofile%7Cclient-response%3Ahttp-response%7CuserData.user.id%7C-": {
+      "prov:type": "dc:Observation",
+      "dc:field": "userData.user.id",
+      "dc:boundary": "client-response:http-response",
+      "dc:count": 1,
+      "dc:status": "observed"
+    },
+    "dc:observation%2Fobservation%3Ascenario%3Aprofile%7Cclient-response%3Ahttp-response%7CuserData.user.name%7C-": {
+      "prov:type": "dc:Observation",
+      "dc:field": "userData.user.name",
+      "dc:boundary": "client-response:http-response",
+      "dc:count": 1,
+      "dc:status": "observed"
+    },
+    "dc:claim%2Fclaim%3Afield-reaches-boundary%3AuserData.user-%3Eclient-response%3Ahttp-response": {
+      "prov:type": "dc:Claim",
+      "dc:kind": "field-reaches-boundary",
+      "dc:statement": "userData.user reaches client-response http-response",
+      "dc:status": "static",
+      "dc:verification": "verified",
+      "dc:traceComplete": false
+    },
+    "dc:claim%2Fclaim%3Afield-sourced-from-boundary%3AuserData.user%3C-database%3Apostgres%3Ausers": {
+      "prov:type": "dc:Claim",
+      "dc:kind": "field-sourced-from-boundary",
+      "dc:statement": "userData.user is sourced from database postgres:users",
+      "dc:status": "declared",
+      "dc:verification": "unobserved",
+      "dc:traceComplete": true
+    },
+    "dc:claim%2Fclaim%3Apolicy-holds%3AuserData%2Fno-password-to-client%3AuserData.user": {
+      "prov:type": "dc:Claim",
+      "dc:kind": "policy-holds",
+      "dc:statement": "Rule userData/no-password-to-client holds for userData.user",
+      "dc:status": "static",
+      "dc:verification": "contradicted",
+      "dc:traceComplete": true
+    },
+    "dc:claim%2Fclaim%3Apolicy-holds%3AuserData%2Fno-role-to-log%3AuserData.user": {
+      "prov:type": "dc:Claim",
+      "dc:kind": "policy-holds",
+      "dc:statement": "Rule userData/no-role-to-log holds for userData.user",
+      "dc:status": "static",
+      "dc:verification": "verified",
+      "dc:traceComplete": true
+    }
+  },
+  "activity": {
+    "dc:analysis": {
+      "prov:type": "dc:Analysis",
+      "prov:startTime": {
+        "$": "2026-01-01T00:00:00.000Z",
+        "type": "xsd:dateTime"
+      },
+      "prov:endTime": {
+        "$": "2026-01-01T00:00:00.000Z",
+        "type": "xsd:dateTime"
+      },
+      "dc:commit": "0000000000000000000000000000000000000000"
+    },
+    "dc:function%2Ffunction%3Asrc%2Fapp%2Fexport.ts%23exportEverything": {
+      "prov:type": "dc:Function",
+      "dc:name": "exportEverything",
+      "dc:scope": "src/app/export.ts",
+      "dc:status": "static"
+    },
+    "dc:function%2Ffunction%3Asrc%2Fapp%2Fprofile.ts%23buildUserProfile": {
+      "prov:type": "dc:Function",
+      "dc:name": "buildUserProfile",
+      "dc:scope": "src/app/profile.ts",
+      "dc:status": "static"
+    },
+    "dc:function%2Ffunction%3Asrc%2Fapp%2Fprofile.ts%23profileHandler": {
+      "prov:type": "dc:Function",
+      "dc:name": "profileHandler",
+      "dc:scope": "src/app/profile.ts",
+      "dc:status": "static"
+    },
+    "dc:function%2Ffunction%3Asrc%2Fapp%2Fprofile.ts%23sendProfileToClient": {
+      "prov:type": "dc:Function",
+      "dc:name": "sendProfileToClient",
+      "dc:scope": "src/app/profile.ts",
+      "dc:status": "static"
+    },
+    "dc:function%2Ffunction%3Asrc%2Fapp%2Ftrack.ts%23trackUser": {
+      "prov:type": "dc:Function",
+      "dc:name": "trackUser",
+      "dc:scope": "src/app/track.ts",
+      "dc:status": "static"
+    },
+    "dc:scope%2Fscenario%3Adebug-export": {
+      "prov:type": "dc:ObservationScope",
+      "dc:name": "scenario:debug-export"
+    },
+    "dc:scope%2Fscenario%3Aprofile": {
+      "prov:type": "dc:ObservationScope",
+      "dc:name": "scenario:profile"
+    }
+  },
+  "agent": {
+    "dc:tool": {
+      "prov:type": "prov:SoftwareAgent",
+      "dc:name": "data-cap",
+      "dc:version": "0.8.2"
+    }
+  },
+  "used": {
+    "_:r000001": {
+      "prov:activity": "dc:function%2Ffunction%3Asrc%2Fapp%2Fprofile.ts%23buildUserProfile",
+      "prov:entity": "dc:field%2Ffield%3Asrc%2Ffeatures%2Fuser.capability.ts%23userData.user",
+      "dc:role": "discarded",
+      "dc:edge": "discards:function:src/app/profile.ts#buildUserProfile->field:src/features/user.capability.ts#userData.user:passwordHash@static^field:src/features/user.capability.ts#userData.user",
+      "dc:kind": "discards",
+      "dc:status": "static",
+      "dc:path": "passwordHash"
+    },
+    "_:r000002": {
+      "prov:activity": "dc:function%2Ffunction%3Asrc%2Fapp%2Fprofile.ts%23buildUserProfile",
+      "prov:entity": "dc:field%2Ffield%3Asrc%2Ffeatures%2Fuser.capability.ts%23userData.user",
+      "dc:role": "discarded",
+      "dc:edge": "discards:function:src/app/profile.ts#buildUserProfile->field:src/features/user.capability.ts#userData.user:role@static^field:src/features/user.capability.ts#userData.user",
+      "dc:kind": "discards",
+      "dc:status": "static",
+      "dc:path": "role"
+    },
+    "_:r000003": {
+      "prov:activity": "dc:function%2Ffunction%3Asrc%2Fapp%2Ftrack.ts%23trackUser",
+      "prov:entity": "dc:field%2Ffield%3Asrc%2Ffeatures%2Fuser.capability.ts%23userData.user",
+      "dc:role": "discarded",
+      "dc:edge": "discards:function:src/app/track.ts#trackUser->field:src/features/user.capability.ts#userData.user:id@static^field:src/features/user.capability.ts#userData.user",
+      "dc:kind": "discards",
+      "dc:status": "static",
+      "dc:path": "id"
+    },
+    "_:r000004": {
+      "prov:activity": "dc:function%2Ffunction%3Asrc%2Fapp%2Ftrack.ts%23trackUser",
+      "prov:entity": "dc:field%2Ffield%3Asrc%2Ffeatures%2Fuser.capability.ts%23userData.user",
+      "dc:role": "discarded",
+      "dc:edge": "discards:function:src/app/track.ts#trackUser->field:src/features/user.capability.ts#userData.user:name@static^field:src/features/user.capability.ts#userData.user",
+      "dc:kind": "discards",
+      "dc:status": "static",
+      "dc:path": "name"
+    },
+    "_:r000005": {
+      "prov:activity": "dc:function%2Ffunction%3Asrc%2Fapp%2Ftrack.ts%23trackUser",
+      "prov:entity": "dc:field%2Ffield%3Asrc%2Ffeatures%2Fuser.capability.ts%23userData.user",
+      "dc:role": "discarded",
+      "dc:edge": "discards:function:src/app/track.ts#trackUser->field:src/features/user.capability.ts#userData.user:passwordHash@static^field:src/features/user.capability.ts#userData.user",
+      "dc:kind": "discards",
+      "dc:status": "static",
+      "dc:path": "passwordHash"
+    },
+    "_:r000006": {
+      "prov:activity": "dc:function%2Ffunction%3Asrc%2Fapp%2Ftrack.ts%23trackUser",
+      "prov:entity": "dc:field%2Ffield%3Asrc%2Ffeatures%2Fuser.capability.ts%23userData.user",
+      "dc:role": "discarded",
+      "dc:edge": "discards:function:src/app/track.ts#trackUser->field:src/features/user.capability.ts#userData.user:role@static^field:src/features/user.capability.ts#userData.user",
+      "dc:kind": "discards",
+      "dc:status": "static",
+      "dc:path": "role"
+    },
+    "_:r000007": {
+      "prov:activity": "dc:function%2Ffunction%3Asrc%2Fapp%2Fprofile.ts%23profileHandler",
+      "prov:entity": "dc:return%2Freturn%3Asrc%2Fapp%2Fprofile.ts%23buildUserProfile%23return",
+      "dc:edge": "passes:return:src/app/profile.ts#buildUserProfile#return->function:src/app/profile.ts#profileHandler:email@static^field:src/features/user.capability.ts#userData.user",
+      "dc:kind": "passes",
+      "dc:status": "static",
+      "dc:path": "email"
+    },
+    "_:r000008": {
+      "prov:activity": "dc:function%2Ffunction%3Asrc%2Fapp%2Fprofile.ts%23profileHandler",
+      "prov:entity": "dc:return%2Freturn%3Asrc%2Fapp%2Fprofile.ts%23buildUserProfile%23return",
+      "dc:edge": "passes:return:src/app/profile.ts#buildUserProfile#return->function:src/app/profile.ts#profileHandler:id@static^field:src/features/user.capability.ts#userData.user",
+      "dc:kind": "passes",
+      "dc:status": "static",
+      "dc:path": "id"
+    },
+    "_:r000009": {
+      "prov:activity": "dc:function%2Ffunction%3Asrc%2Fapp%2Fprofile.ts%23profileHandler",
+      "prov:entity": "dc:return%2Freturn%3Asrc%2Fapp%2Fprofile.ts%23buildUserProfile%23return",
+      "dc:edge": "passes:return:src/app/profile.ts#buildUserProfile#return->function:src/app/profile.ts#profileHandler:name@static^field:src/features/user.capability.ts#userData.user",
+      "dc:kind": "passes",
+      "dc:status": "static",
+      "dc:path": "name"
+    },
+    "_:r000010": {
+      "prov:activity": "dc:function%2Ffunction%3Asrc%2Fapp%2Fexport.ts%23exportEverything",
+      "prov:entity": "dc:field%2Ffield%3Asrc%2Ffeatures%2Fuser.capability.ts%23userData.user",
+      "dc:edge": "reads:field:src/features/user.capability.ts#userData.user->function:src/app/export.ts#exportEverything:@static^field:src/features/user.capability.ts#userData.user",
+      "dc:kind": "reads",
+      "dc:status": "static",
+      "dc:path": ""
+    },
+    "_:r000011": {
+      "prov:activity": "dc:function%2Ffunction%3Asrc%2Fapp%2Fprofile.ts%23profileHandler",
+      "prov:entity": "dc:field%2Ffield%3Asrc%2Ffeatures%2Fuser.capability.ts%23userData.user",
+      "dc:edge": "reads:field:src/features/user.capability.ts#userData.user->function:src/app/profile.ts#profileHandler:@static^field:src/features/user.capability.ts#userData.user",
+      "dc:kind": "reads",
+      "dc:status": "static",
+      "dc:path": ""
+    },
+    "_:r000012": {
+      "prov:activity": "dc:function%2Ffunction%3Asrc%2Fapp%2Ftrack.ts%23trackUser",
+      "prov:entity": "dc:field%2Ffield%3Asrc%2Ffeatures%2Fuser.capability.ts%23userData.user",
+      "dc:edge": "reads:field:src/features/user.capability.ts#userData.user->function:src/app/track.ts#trackUser:@static^field:src/features/user.capability.ts#userData.user",
+      "dc:kind": "reads",
+      "dc:status": "static",
+      "dc:path": ""
+    },
+    "_:r000013": {
+      "prov:activity": "dc:function%2Ffunction%3Asrc%2Fapp%2Ftrack.ts%23trackUser",
+      "prov:entity": "dc:field%2Ffield%3Asrc%2Ffeatures%2Fuser.capability.ts%23userData.user",
+      "dc:edge": "reads:field:src/features/user.capability.ts#userData.user->function:src/app/track.ts#trackUser:email@static^field:src/features/user.capability.ts#userData.user",
+      "dc:kind": "reads",
+      "dc:status": "static",
+      "dc:path": "email"
+    },
+    "_:r000014": {
+      "prov:activity": "dc:function%2Ffunction%3Asrc%2Fapp%2Fprofile.ts%23buildUserProfile",
+      "prov:entity": "dc:parameter%2Fparameter%3Asrc%2Fapp%2Fprofile.ts%23buildUserProfile.user",
+      "dc:edge": "reads:parameter:src/app/profile.ts#buildUserProfile.user->function:src/app/profile.ts#buildUserProfile:email@static^field:src/features/user.capability.ts#userData.user",
+      "dc:kind": "reads",
+      "dc:status": "static",
+      "dc:path": "email"
+    },
+    "_:r000015": {
+      "prov:activity": "dc:function%2Ffunction%3Asrc%2Fapp%2Fprofile.ts%23buildUserProfile",
+      "prov:entity": "dc:parameter%2Fparameter%3Asrc%2Fapp%2Fprofile.ts%23buildUserProfile.user",
+      "dc:edge": "reads:parameter:src/app/profile.ts#buildUserProfile.user->function:src/app/profile.ts#buildUserProfile:id@static^field:src/features/user.capability.ts#userData.user",
+      "dc:kind": "reads",
+      "dc:status": "static",
+      "dc:path": "id"
+    },
+    "_:r000016": {
+      "prov:activity": "dc:function%2Ffunction%3Asrc%2Fapp%2Fprofile.ts%23buildUserProfile",
+      "prov:entity": "dc:parameter%2Fparameter%3Asrc%2Fapp%2Fprofile.ts%23buildUserProfile.user",
+      "dc:edge": "reads:parameter:src/app/profile.ts#buildUserProfile.user->function:src/app/profile.ts#buildUserProfile:name@static^field:src/features/user.capability.ts#userData.user",
+      "dc:kind": "reads",
+      "dc:status": "static",
+      "dc:path": "name"
+    },
+    "_:r000017": {
+      "prov:activity": "dc:function%2Ffunction%3Asrc%2Fapp%2Fprofile.ts%23sendProfileToClient",
+      "prov:entity": "dc:parameter%2Fparameter%3Asrc%2Fapp%2Fprofile.ts%23sendProfileToClient.profile",
+      "dc:edge": "reads:parameter:src/app/profile.ts#sendProfileToClient.profile->function:src/app/profile.ts#sendProfileToClient:email@static^field:src/features/user.capability.ts#userData.user",
+      "dc:kind": "reads",
+      "dc:status": "static",
+      "dc:path": "email"
+    },
+    "_:r000018": {
+      "prov:activity": "dc:function%2Ffunction%3Asrc%2Fapp%2Fprofile.ts%23sendProfileToClient",
+      "prov:entity": "dc:parameter%2Fparameter%3Asrc%2Fapp%2Fprofile.ts%23sendProfileToClient.profile",
+      "dc:edge": "reads:parameter:src/app/profile.ts#sendProfileToClient.profile->function:src/app/profile.ts#sendProfileToClient:id@static^field:src/features/user.capability.ts#userData.user",
+      "dc:kind": "reads",
+      "dc:status": "static",
+      "dc:path": "id"
+    },
+    "_:r000019": {
+      "prov:activity": "dc:function%2Ffunction%3Asrc%2Fapp%2Fprofile.ts%23sendProfileToClient",
+      "prov:entity": "dc:parameter%2Fparameter%3Asrc%2Fapp%2Fprofile.ts%23sendProfileToClient.profile",
+      "dc:edge": "reads:parameter:src/app/profile.ts#sendProfileToClient.profile->function:src/app/profile.ts#sendProfileToClient:name@static^field:src/features/user.capability.ts#userData.user",
+      "dc:kind": "reads",
+      "dc:status": "static",
+      "dc:path": "name"
+    }
+  },
+  "wasGeneratedBy": {
+    "_:r000001": {
+      "prov:entity": "dc:parameter%2Fparameter%3Asrc%2Fapp%2Fprofile.ts%23buildUserProfile.user",
+      "prov:activity": "dc:function%2Ffunction%3Asrc%2Fapp%2Fprofile.ts%23profileHandler",
+      "dc:edge": "passes:function:src/app/profile.ts#profileHandler->parameter:src/app/profile.ts#buildUserProfile.user:@static^field:src/features/user.capability.ts#userData.user",
+      "dc:kind": "passes",
+      "dc:status": "static",
+      "dc:path": ""
+    },
+    "_:r000002": {
+      "prov:entity": "dc:parameter%2Fparameter%3Asrc%2Fapp%2Fprofile.ts%23sendProfileToClient.profile",
+      "prov:activity": "dc:function%2Ffunction%3Asrc%2Fapp%2Fprofile.ts%23profileHandler",
+      "dc:edge": "passes:function:src/app/profile.ts#profileHandler->parameter:src/app/profile.ts#sendProfileToClient.profile:email@static^field:src/features/user.capability.ts#userData.user",
+      "dc:kind": "passes",
+      "dc:status": "static",
+      "dc:path": "email"
+    },
+    "_:r000003": {
+      "prov:entity": "dc:parameter%2Fparameter%3Asrc%2Fapp%2Fprofile.ts%23sendProfileToClient.profile",
+      "prov:activity": "dc:function%2Ffunction%3Asrc%2Fapp%2Fprofile.ts%23profileHandler",
+      "dc:edge": "passes:function:src/app/profile.ts#profileHandler->parameter:src/app/profile.ts#sendProfileToClient.profile:id@static^field:src/features/user.capability.ts#userData.user",
+      "dc:kind": "passes",
+      "dc:status": "static",
+      "dc:path": "id"
+    },
+    "_:r000004": {
+      "prov:entity": "dc:parameter%2Fparameter%3Asrc%2Fapp%2Fprofile.ts%23sendProfileToClient.profile",
+      "prov:activity": "dc:function%2Ffunction%3Asrc%2Fapp%2Fprofile.ts%23profileHandler",
+      "dc:edge": "passes:function:src/app/profile.ts#profileHandler->parameter:src/app/profile.ts#sendProfileToClient.profile:name@static^field:src/features/user.capability.ts#userData.user",
+      "dc:kind": "passes",
+      "dc:status": "static",
+      "dc:path": "name"
+    },
+    "_:r000005": {
+      "prov:entity": "dc:return%2Freturn%3Asrc%2Fapp%2Fprofile.ts%23buildUserProfile%23return",
+      "prov:activity": "dc:function%2Ffunction%3Asrc%2Fapp%2Fprofile.ts%23buildUserProfile",
+      "dc:edge": "returns:function:src/app/profile.ts#buildUserProfile->return:src/app/profile.ts#buildUserProfile#return:email@static^field:src/features/user.capability.ts#userData.user",
+      "dc:kind": "returns",
+      "dc:status": "static",
+      "dc:path": "email"
+    },
+    "_:r000006": {
+      "prov:entity": "dc:return%2Freturn%3Asrc%2Fapp%2Fprofile.ts%23buildUserProfile%23return",
+      "prov:activity": "dc:function%2Ffunction%3Asrc%2Fapp%2Fprofile.ts%23buildUserProfile",
+      "dc:edge": "returns:function:src/app/profile.ts#buildUserProfile->return:src/app/profile.ts#buildUserProfile#return:id@static^field:src/features/user.capability.ts#userData.user",
+      "dc:kind": "returns",
+      "dc:status": "static",
+      "dc:path": "id"
+    },
+    "_:r000007": {
+      "prov:entity": "dc:return%2Freturn%3Asrc%2Fapp%2Fprofile.ts%23buildUserProfile%23return",
+      "prov:activity": "dc:function%2Ffunction%3Asrc%2Fapp%2Fprofile.ts%23buildUserProfile",
+      "dc:edge": "returns:function:src/app/profile.ts#buildUserProfile->return:src/app/profile.ts#buildUserProfile#return:name@static^field:src/features/user.capability.ts#userData.user",
+      "dc:kind": "returns",
+      "dc:status": "static",
+      "dc:path": "name"
+    },
+    "_:r000008": {
+      "prov:entity": "dc:boundary%2Fboundary%3Aboundary%3Acode%23http-response",
+      "prov:activity": "dc:function%2Ffunction%3Asrc%2Fapp%2Fexport.ts%23exportEverything",
+      "dc:edge": "side-effect:function:src/app/export.ts#exportEverything->boundary:boundary:code#http-response:@static^field:src/features/user.capability.ts#userData.user",
+      "dc:kind": "side-effect",
+      "dc:status": "static",
+      "dc:path": ""
+    },
+    "_:r000009": {
+      "prov:entity": "dc:boundary%2Fboundary%3Aboundary%3Acode%23http-response",
+      "prov:activity": "dc:function%2Ffunction%3Asrc%2Fapp%2Fprofile.ts%23sendProfileToClient",
+      "dc:edge": "side-effect:function:src/app/profile.ts#sendProfileToClient->boundary:boundary:code#http-response:email@static^field:src/features/user.capability.ts#userData.user",
+      "dc:kind": "side-effect",
+      "dc:status": "static",
+      "dc:path": "email"
+    },
+    "_:r000010": {
+      "prov:entity": "dc:boundary%2Fboundary%3Aboundary%3Acode%23http-response",
+      "prov:activity": "dc:function%2Ffunction%3Asrc%2Fapp%2Fprofile.ts%23sendProfileToClient",
+      "dc:edge": "side-effect:function:src/app/profile.ts#sendProfileToClient->boundary:boundary:code#http-response:id@static^field:src/features/user.capability.ts#userData.user",
+      "dc:kind": "side-effect",
+      "dc:status": "static",
+      "dc:path": "id"
+    },
+    "_:r000011": {
+      "prov:entity": "dc:boundary%2Fboundary%3Aboundary%3Acode%23http-response",
+      "prov:activity": "dc:function%2Ffunction%3Asrc%2Fapp%2Fprofile.ts%23sendProfileToClient",
+      "dc:edge": "side-effect:function:src/app/profile.ts#sendProfileToClient->boundary:boundary:code#http-response:name@static^field:src/features/user.capability.ts#userData.user",
+      "dc:kind": "side-effect",
+      "dc:status": "static",
+      "dc:path": "name"
+    },
+    "_:r000012": {
+      "prov:entity": "dc:observation%2Fobservation%3Ascenario%3Adebug-export%7Cclient-response%3Ahttp-response%7CuserData.user.email%7C-",
+      "prov:activity": "dc:scope%2Fscenario%3Adebug-export"
+    },
+    "_:r000013": {
+      "prov:entity": "dc:observation%2Fobservation%3Ascenario%3Adebug-export%7Cclient-response%3Ahttp-response%7CuserData.user.id%7C-",
+      "prov:activity": "dc:scope%2Fscenario%3Adebug-export"
+    },
+    "_:r000014": {
+      "prov:entity": "dc:observation%2Fobservation%3Ascenario%3Adebug-export%7Cclient-response%3Ahttp-response%7CuserData.user.name%7C-",
+      "prov:activity": "dc:scope%2Fscenario%3Adebug-export"
+    },
+    "_:r000015": {
+      "prov:entity": "dc:observation%2Fobservation%3Ascenario%3Adebug-export%7Cclient-response%3Ahttp-response%7CuserData.user.passwordHash%7C-",
+      "prov:activity": "dc:scope%2Fscenario%3Adebug-export"
+    },
+    "_:r000016": {
+      "prov:entity": "dc:observation%2Fobservation%3Ascenario%3Adebug-export%7Cclient-response%3Ahttp-response%7CuserData.user.role%7C-",
+      "prov:activity": "dc:scope%2Fscenario%3Adebug-export"
+    },
+    "_:r000017": {
+      "prov:entity": "dc:observation%2Fobservation%3Ascenario%3Aprofile%7Cclient-response%3Ahttp-response%7CuserData.user.email%7C-",
+      "prov:activity": "dc:scope%2Fscenario%3Aprofile"
+    },
+    "_:r000018": {
+      "prov:entity": "dc:observation%2Fobservation%3Ascenario%3Aprofile%7Cclient-response%3Ahttp-response%7CuserData.user.id%7C-",
+      "prov:activity": "dc:scope%2Fscenario%3Aprofile"
+    },
+    "_:r000019": {
+      "prov:entity": "dc:observation%2Fobservation%3Ascenario%3Aprofile%7Cclient-response%3Ahttp-response%7CuserData.user.name%7C-",
+      "prov:activity": "dc:scope%2Fscenario%3Aprofile"
+    },
+    "_:r000020": {
+      "prov:entity": "dc:claim%2Fclaim%3Afield-reaches-boundary%3AuserData.user-%3Eclient-response%3Ahttp-response",
+      "prov:activity": "dc:analysis"
+    },
+    "_:r000021": {
+      "prov:entity": "dc:claim%2Fclaim%3Afield-sourced-from-boundary%3AuserData.user%3C-database%3Apostgres%3Ausers",
+      "prov:activity": "dc:analysis"
+    },
+    "_:r000022": {
+      "prov:entity": "dc:claim%2Fclaim%3Apolicy-holds%3AuserData%2Fno-password-to-client%3AuserData.user",
+      "prov:activity": "dc:analysis"
+    },
+    "_:r000023": {
+      "prov:entity": "dc:claim%2Fclaim%3Apolicy-holds%3AuserData%2Fno-role-to-log%3AuserData.user",
+      "prov:activity": "dc:analysis"
+    }
+  },
+  "wasDerivedFrom": {
+    "_:r000001": {
+      "prov:generatedEntity": "dc:field%2Ffield%3Asrc%2Ffeatures%2Fuser.capability.ts%23userData.user",
+      "prov:usedEntity": "dc:boundary%2Fboundary%3Aboundary%23postgres%3Ausers",
+      "dc:edge": "crosses-boundary:boundary:boundary#postgres:users->field:src/features/user.capability.ts#userData.user@declared^field:src/features/user.capability.ts#userData.user",
+      "dc:kind": "crosses-boundary",
+      "dc:status": "declared"
+    },
+    "_:r000002": {
+      "prov:generatedEntity": "dc:claim%2Fclaim%3Afield-reaches-boundary%3AuserData.user-%3Eclient-response%3Ahttp-response",
+      "prov:usedEntity": "dc:field%2Ffield%3Asrc%2Ffeatures%2Fuser.capability.ts%23userData.user",
+      "dc:role": "subject"
+    },
+    "_:r000003": {
+      "prov:generatedEntity": "dc:claim%2Fclaim%3Afield-reaches-boundary%3AuserData.user-%3Eclient-response%3Ahttp-response",
+      "prov:usedEntity": "dc:boundary%2Fboundary%3Aboundary%3Acode%23http-response",
+      "dc:role": "object"
+    },
+    "_:r000004": {
+      "prov:generatedEntity": "dc:claim%2Fclaim%3Afield-reaches-boundary%3AuserData.user-%3Eclient-response%3Ahttp-response",
+      "prov:usedEntity": "dc:observation%2Fobservation%3Ascenario%3Adebug-export%7Cclient-response%3Ahttp-response%7CuserData.user.email%7C-",
+      "dc:role": "supporting"
+    },
+    "_:r000005": {
+      "prov:generatedEntity": "dc:claim%2Fclaim%3Afield-reaches-boundary%3AuserData.user-%3Eclient-response%3Ahttp-response",
+      "prov:usedEntity": "dc:observation%2Fobservation%3Ascenario%3Adebug-export%7Cclient-response%3Ahttp-response%7CuserData.user.id%7C-",
+      "dc:role": "supporting"
+    },
+    "_:r000006": {
+      "prov:generatedEntity": "dc:claim%2Fclaim%3Afield-reaches-boundary%3AuserData.user-%3Eclient-response%3Ahttp-response",
+      "prov:usedEntity": "dc:observation%2Fobservation%3Ascenario%3Adebug-export%7Cclient-response%3Ahttp-response%7CuserData.user.name%7C-",
+      "dc:role": "supporting"
+    },
+    "_:r000007": {
+      "prov:generatedEntity": "dc:claim%2Fclaim%3Afield-reaches-boundary%3AuserData.user-%3Eclient-response%3Ahttp-response",
+      "prov:usedEntity": "dc:observation%2Fobservation%3Ascenario%3Adebug-export%7Cclient-response%3Ahttp-response%7CuserData.user.passwordHash%7C-",
+      "dc:role": "supporting"
+    },
+    "_:r000008": {
+      "prov:generatedEntity": "dc:claim%2Fclaim%3Afield-reaches-boundary%3AuserData.user-%3Eclient-response%3Ahttp-response",
+      "prov:usedEntity": "dc:observation%2Fobservation%3Ascenario%3Adebug-export%7Cclient-response%3Ahttp-response%7CuserData.user.role%7C-",
+      "dc:role": "supporting"
+    },
+    "_:r000009": {
+      "prov:generatedEntity": "dc:claim%2Fclaim%3Afield-reaches-boundary%3AuserData.user-%3Eclient-response%3Ahttp-response",
+      "prov:usedEntity": "dc:observation%2Fobservation%3Ascenario%3Aprofile%7Cclient-response%3Ahttp-response%7CuserData.user.email%7C-",
+      "dc:role": "supporting"
+    },
+    "_:r000010": {
+      "prov:generatedEntity": "dc:claim%2Fclaim%3Afield-reaches-boundary%3AuserData.user-%3Eclient-response%3Ahttp-response",
+      "prov:usedEntity": "dc:observation%2Fobservation%3Ascenario%3Aprofile%7Cclient-response%3Ahttp-response%7CuserData.user.id%7C-",
+      "dc:role": "supporting"
+    },
+    "_:r000011": {
+      "prov:generatedEntity": "dc:claim%2Fclaim%3Afield-reaches-boundary%3AuserData.user-%3Eclient-response%3Ahttp-response",
+      "prov:usedEntity": "dc:observation%2Fobservation%3Ascenario%3Aprofile%7Cclient-response%3Ahttp-response%7CuserData.user.name%7C-",
+      "dc:role": "supporting"
+    },
+    "_:r000012": {
+      "prov:generatedEntity": "dc:claim%2Fclaim%3Afield-sourced-from-boundary%3AuserData.user%3C-database%3Apostgres%3Ausers",
+      "prov:usedEntity": "dc:field%2Ffield%3Asrc%2Ffeatures%2Fuser.capability.ts%23userData.user",
+      "dc:role": "subject"
+    },
+    "_:r000013": {
+      "prov:generatedEntity": "dc:claim%2Fclaim%3Apolicy-holds%3AuserData%2Fno-password-to-client%3AuserData.user",
+      "prov:usedEntity": "dc:field%2Ffield%3Asrc%2Ffeatures%2Fuser.capability.ts%23userData.user",
+      "dc:role": "subject"
+    },
+    "_:r000014": {
+      "prov:generatedEntity": "dc:claim%2Fclaim%3Apolicy-holds%3AuserData%2Fno-password-to-client%3AuserData.user",
+      "prov:usedEntity": "dc:observation%2Fobservation%3Ascenario%3Adebug-export%7Cclient-response%3Ahttp-response%7CuserData.user.passwordHash%7C-",
+      "dc:role": "contradicting"
+    },
+    "_:r000015": {
+      "prov:generatedEntity": "dc:claim%2Fclaim%3Apolicy-holds%3AuserData%2Fno-role-to-log%3AuserData.user",
+      "prov:usedEntity": "dc:field%2Ffield%3Asrc%2Ffeatures%2Fuser.capability.ts%23userData.user",
+      "dc:role": "subject"
+    },
+    "_:r000016": {
+      "prov:generatedEntity": "dc:claim%2Fclaim%3Apolicy-holds%3AuserData%2Fno-role-to-log%3AuserData.user",
+      "prov:usedEntity": "dc:observation%2Fobservation%3Ascenario%3Adebug-export%7Cclient-response%3Ahttp-response%7CuserData.user.role%7C-",
+      "dc:role": "supporting"
+    }
+  },
+  "wasAssociatedWith": {
+    "_:r000001": {
+      "prov:activity": "dc:analysis",
+      "prov:agent": "dc:tool"
+    }
+  },
+  "wasInformedBy": {
+    "_:r000001": {
+      "prov:informed": "dc:function%2Ffunction%3Asrc%2Fapp%2Fprofile.ts%23buildUserProfile",
+      "prov:informant": "dc:function%2Ffunction%3Asrc%2Fapp%2Fprofile.ts%23profileHandler",
+      "dc:edge": "calls:function:src/app/profile.ts#profileHandler->function:src/app/profile.ts#buildUserProfile@static",
+      "dc:kind": "calls",
+      "dc:status": "static"
+    },
+    "_:r000002": {
+      "prov:informed": "dc:function%2Ffunction%3Asrc%2Fapp%2Fprofile.ts%23sendProfileToClient",
+      "prov:informant": "dc:function%2Ffunction%3Asrc%2Fapp%2Fprofile.ts%23profileHandler",
+      "dc:edge": "calls:function:src/app/profile.ts#profileHandler->function:src/app/profile.ts#sendProfileToClient@static",
+      "dc:kind": "calls",
+      "dc:status": "static"
+    }
+  }
+}

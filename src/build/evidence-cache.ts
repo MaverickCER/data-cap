@@ -22,7 +22,11 @@
 import path from "node:path"
 import { EVIDENCE_MODEL_SCHEMA_VERSION } from "./evidence-model.js"
 import type { EvidenceModel } from "./evidence-model.js"
-import { computeSourceFingerprint, fingerprintPathFor } from "./evidence-fingerprint.js"
+import {
+  computeSourceFingerprint,
+  evidenceOptionsKey,
+  fingerprintPathFor,
+} from "./evidence-fingerprint.js"
 import { computeDataArtifacts } from "./generate-data-artifacts.js"
 import type { GenerateDataArtifactsOptions } from "./generate-data-artifacts.js"
 import type { BuildFileSystem } from "./types.js"
@@ -146,6 +150,7 @@ export async function getEvidenceModel(
       ...(options.include !== undefined ? { include: options.include } : {}),
       ...(options.exclude !== undefined ? { exclude: options.exclude } : {}),
       ...(options.packages !== undefined ? { packages: options.packages } : {}),
+      extra: evidenceOptionsKey(options),
     })
   } catch (error) {
     return recompute(

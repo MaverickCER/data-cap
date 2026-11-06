@@ -165,6 +165,212 @@ describe("main() -- real --evidence run", () => {
   })
 })
 
+describe("main() -- flow analysis (ADR 0070)", () => {
+  beforeEach(async () => {
+    await write(
+      "app/handler.ts",
+      `import { userCapability } from "../features/identity/user.js";
+export function handler(res: { json(v: unknown): void }) { res.json(userCapability.getSnapshot().fields.email) }
+`,
+    )
+  })
+
+  it("--flow-evidence writes the flow, policy and claims into the one evidence file and prints a summary", async () => {
+    process.argv = [
+      "node",
+      "data-cap",
+      "--root",
+      fixtureRoot,
+      "--evidence",
+      "docs/data.evidence.json",
+      "--flow-evidence",
+    ]
+    await main()
+    const output = writes.join("")
+    expect(output).toContain("Flow analysis: ")
+    expect(output).toContain("Claims: ")
+    const written = JSON.parse(
+      await fs.readFile(path.join(fixtureRoot, "docs/data.evidence.json"), "utf8"),
+    ) as {
+      flow?: { nodes: unknown[] }
+      claims?: { claims: unknown[] }
+      computed: Record<string, boolean>
+    }
+    expect(written.computed).toMatchObject({ flow: true, policy: true, claims: true })
+    expect(written.flow?.nodes.length).toBeGreaterThan(0)
+    expect(written.claims?.claims.length).toBeGreaterThan(0)
+  })
+
+  it("without --flow-evidence the evidence has no flow and nothing about it is printed", async () => {
+    process.argv = [
+      "node",
+      "data-cap",
+      "--root",
+      fixtureRoot,
+      "--evidence",
+      "docs/data.evidence.json",
+    ]
+    await main()
+    expect(writes.join("")).not.toContain("Flow analysis:")
+    const written = JSON.parse(
+      await fs.readFile(path.join(fixtureRoot, "docs/data.evidence.json"), "utf8"),
+    ) as { flow?: unknown }
+    expect(written.flow).toBeUndefined()
+  })
+
+  it("--observations ingests the file, resolved against --root, and joins it to the claims", async () => {
+    await write(
+      "obs.json",
+      JSON.stringify([
+        {
+          scope: "e2e",
+          boundary: { kind: "client-response", name: "http-response" },
+          field: "userCapability.email",
+        },
+      ]),
+    )
+    process.argv = [
+      "node",
+      "data-cap",
+      "--root",
+      fixtureRoot,
+      "--evidence",
+      "docs/data.evidence.json",
+      "--flow-evidence",
+      "--observations",
+      "obs.json",
+    ]
+    await main()
+    expect(writes.join("")).toContain("Observations: 1 across 1 scope(s)")
+    const written = JSON.parse(
+      await fs.readFile(path.join(fixtureRoot, "docs/data.evidence.json"), "utf8"),
+    ) as {
+      claims: { summary: { verified: number } }
+    }
+    expect(written.claims.summary.verified).toBe(1)
+  })
+
+  it("--observations pointing at a bad file fails with a message naming the flag", async () => {
+    await write("obs.json", "{nope")
+    process.argv = [
+      "node",
+      "data-cap",
+      "--root",
+      fixtureRoot,
+      "--evidence",
+      "docs/data.evidence.json",
+      "--observations",
+      "obs.json",
+    ]
+    await expect(main()).rejects.toThrow(/--observations .*not valid JSON/)
+  })
+
+  it("--check notices when the flow evidence on disk was written without --flow-evidence", async () => {
+    process.argv = [
+      "node",
+      "data-cap",
+      "--root",
+      fixtureRoot,
+      "--evidence",
+      "docs/data.evidence.json",
+    ]
+    await main()
+    writes.length = 0
+    process.argv = [
+      "node",
+      "data-cap",
+      "--root",
+      fixtureRoot,
+      "--evidence",
+      "docs/data.evidence.json",
+      "--flow-evidence",
+      "--check",
+    ]
+    await main()
+    expect(process.exitCode).toBe(1)
+    expect(writes.join("")).toContain("STALE")
+  })
+})
+
+describe("main() -- --rules (CI enforcement over the evidence)", () => {
+  beforeEach(async () => {
+    await write(
+      "app/handler.ts",
+      `import { userCapability } from "../features/identity/user.js";
+export function handler(res: { json(v: unknown): void }) { res.json(userCapability.getSnapshot().fields.email) }
+`,
+    )
+  })
+  const args = (extra: string[]) => [
+    "node",
+    "data-cap",
+    "--root",
+    fixtureRoot,
+    "--evidence",
+    "docs/data.evidence.json",
+    ...extra,
+  ]
+
+  it("exits 0 and says so when every rule is satisfied", async () => {
+    await write(
+      "rules.json",
+      JSON.stringify({ noPolicyViolations: true, maxUnknowns: 0, requireComplete: true }),
+    )
+    process.argv = args(["--flow-evidence", "--rules", "rules.json"])
+    await main()
+    expect(writes.join("")).toContain("Evidence rules: 3 evaluated, all satisfied.")
+    expect(process.exitCode).toBeUndefined()
+  })
+
+  it("exits 1 after writing the evidence when a rule is violated, and lists the violation", async () => {
+    await write("rules.json", JSON.stringify({ requireObservations: true }))
+    process.argv = args(["--flow-evidence", "--rules", "rules.json"])
+    await main()
+    const output = writes.join("")
+    expect(output).toContain("Wrote evidence model")
+    expect(output).toContain("Evidence rules: 1 evaluated, 1 violation(s):")
+    expect(output).toContain("[requireObservations]")
+    expect(process.exitCode).toBe(1)
+  })
+
+  it("fails closed: a rule that needs flow analysis is a violation when --flow-evidence was not given", async () => {
+    await write("rules.json", JSON.stringify({ noPolicyViolations: true }))
+    process.argv = args(["--rules", "rules.json"])
+    await main()
+    expect(writes.join("")).toContain("--flow-evidence")
+    expect(process.exitCode).toBe(1)
+  })
+
+  it("puts the verdict in the --json report", async () => {
+    await write("rules.json", JSON.stringify({ maxUnknowns: 0 }))
+    process.argv = args(["--flow-evidence", "--rules", "rules.json", "--json"])
+    await main()
+    const payload = JSON.parse(writes.join("")) as {
+      evidenceRules?: { ok: boolean; evaluated: string[] }
+    }
+    expect(payload.evidenceRules).toEqual({ ok: true, evaluated: ["maxUnknowns"], violations: [] })
+  })
+
+  it("rejects an invalid rules file before generating anything", async () => {
+    await write("rules.json", JSON.stringify({ nope: true }))
+    process.argv = args(["--rules", "rules.json"])
+    await expect(main()).rejects.toThrow(/--rules [\s\S]*"nope" is not a rule/)
+    await expect(fs.stat(path.join(fixtureRoot, "docs/data.evidence.json"))).rejects.toBeTruthy()
+  })
+
+  it("applies to --check too, on top of the staleness result", async () => {
+    process.argv = args(["--flow-evidence"])
+    await main()
+    writes.length = 0
+    await write("rules.json", JSON.stringify({ requireObservations: true }))
+    process.argv = args(["--flow-evidence", "--check", "--rules", "rules.json"])
+    await main()
+    expect(writes.join("")).toContain("OK")
+    expect(writes.join("")).toContain("[requireObservations]")
+    expect(process.exitCode).toBe(1)
+  })
+})
+
 describe("main() -- --json wiring", () => {
   it("emits a parseable ok:true JSON report on success, with the full evidence model populated", async () => {
     process.argv = [

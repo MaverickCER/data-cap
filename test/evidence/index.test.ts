@@ -18,9 +18,47 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../
 const evidenceDir = path.join(repoRoot, "src/evidence")
 
 describe("evidence public barrel exports", () => {
-  it("exposes defineEvidenceProjection as its one runtime export", () => {
+  it("exposes defineEvidenceProjection and the pure flow queries and analyses (ADR 0070), and nothing else", () => {
     expect(evidence.defineEvidenceProjection).toBeTypeOf("function")
-    expect(Object.keys(evidence)).toEqual(["defineEvidenceProjection"])
+    expect(Object.keys(evidence).sort()).toEqual(
+      [
+        "analyzeLeastData",
+        "analyzeRedundantTransforms",
+        "buildCycloneDxBom",
+        "buildFlowGraphView",
+        "buildOscalAssessmentResults",
+        "buildProvDocument",
+        "defineEvidenceProjection",
+        "diffFlow",
+        "evaluateEvidenceRules",
+        "EVIDENCE_RULE_NAMES",
+        "filterFlow",
+        "flowEdgeId",
+        "flowNodeId",
+        "FLOW_GRAPH_VIEW_VERSION",
+        "leastDataFindings",
+        "MIN_FORWARDING_HOPS",
+        "observationsFromOtlp",
+        "observationsToOtlp",
+        "observedFlow",
+        "parseEvidenceRules",
+        "redundantTransformFindings",
+        "renderFlowCycloneDx",
+        "renderFlowDot",
+        "renderFlowMermaid",
+        "renderFlowText",
+        "traceFlow",
+        "traceFlowBetween",
+      ].sort(),
+    )
+  })
+
+  it("the flow queries are the very functions the build entry exports (one implementation)", async () => {
+    const build = await import("../../src/build/index.js")
+    expect(evidence.traceFlow).toBe(build.traceFlow)
+    expect(evidence.filterFlow).toBe(build.filterFlow)
+    expect(evidence.diffFlow).toBe(build.diffFlow)
+    expect(evidence.analyzeLeastData).toBe(build.analyzeLeastData)
   })
 })
 

@@ -8,6 +8,7 @@
     "src/helpers/index.ts!",
     "src/build/index.ts!",
     "src/evidence/index.ts!",
+    "src/observe/index.ts!",
     "src/eslint-plugin/index.ts!",
     "src/cli/index.ts!",
     "src/cli/json.ts!",

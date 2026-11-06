@@ -77,4 +77,67 @@ describe("build public barrel exports", () => {
     expect(build.buildCitationSnapshots).toBeTypeOf("function")
     expect(build.verifyDynamicAccessCitations).toBeTypeOf("function")
   })
+
+  it("exposes the flow, policy, observation and claims models and their queries (ADR 0070)", () => {
+    expect(build.FLOW_MODEL_SCHEMA_VERSION).toBe(1)
+    expect(build.POLICY_MODEL_SCHEMA_VERSION).toBe(1)
+    expect(build.OBSERVATION_MODEL_SCHEMA_VERSION).toBe(1)
+    expect(build.CLAIMS_MODEL_SCHEMA_VERSION).toBe(1)
+    expect(build.buildFlowModel).toBeTypeOf("function")
+    expect(build.flowNodeId).toBeTypeOf("function")
+    expect(build.flowEdgeId).toBeTypeOf("function")
+    expect(build.FlowModelError).toBeTypeOf("function")
+    expect(build.traceFlow).toBeTypeOf("function")
+    expect(build.filterFlow).toBeTypeOf("function")
+    expect(build.diffFlow).toBeTypeOf("function")
+    expect(build.traceFlowBetween).toBeTypeOf("function")
+    expect(build.observedFlow).toBeTypeOf("function")
+    expect(build.buildPolicyModel).toBeTypeOf("function")
+    expect(build.collectFlowPolicyRules).toBeTypeOf("function")
+    expect(build.buildObservationModel).toBeTypeOf("function")
+    expect(build.buildClaimsModel).toBeTypeOf("function")
+  })
+
+  it("exposes the flow pass and the analyses derived from it (ADR 0070)", () => {
+    expect(build.scanFlow).toBeTypeOf("function")
+    expect(build.DEFAULT_FLOW_SINKS.length).toBeGreaterThan(0)
+    expect(build.analyzeLeastData).toBeTypeOf("function")
+    expect(build.leastDataFindings).toBeTypeOf("function")
+    expect(build.policyFindings).toBeTypeOf("function")
+    expect(build.flowAnalysisFindings).toBeTypeOf("function")
+  })
+
+  it("re-exports the isomorphic flow projections and standards adapters from the evidence entry (one implementation)", async () => {
+    const evidence = await import("../../src/evidence/index.js")
+    for (const name of [
+      "buildFlowGraphView",
+      "renderFlowText",
+      "renderFlowDot",
+      "renderFlowMermaid",
+      "buildProvDocument",
+      "buildOscalAssessmentResults",
+      "buildCycloneDxBom",
+      "renderFlowCycloneDx",
+      "observationsToOtlp",
+      "observationsFromOtlp",
+      "evaluateEvidenceRules",
+      "parseEvidenceRules",
+      "EVIDENCE_RULE_NAMES",
+    ] as const) {
+      expect(build[name], name).toBe(evidence[name])
+    }
+  })
+
+  it("keeps the flow pass's internal helpers off the public surface", () => {
+    for (const internal of [
+      "flowPathTo",
+      "pathsRelated",
+      "weakestStatus",
+      "judgeCrossing",
+      "buildScanTargets",
+      "evidenceOptionsKey",
+    ]) {
+      expect(internal in build, internal).toBe(false)
+    }
+  })
 })
