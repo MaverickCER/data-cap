@@ -250,6 +250,12 @@ export function methods() {
       const rounds = 6
       let settled = false
       for (let round = 0; round < rounds && !settled; round += 1) {
+        // A counter that stopped advancing, or a cap that stopped holding, would turn this into an endless loop; fail at
+        // once instead of hanging.
+        // Stryker disable next-line ConditionalExpression,LogicalOperator: equivalent -- the loop as written never moves its counter backwards nor past the cap, so a guard that never fires changes nothing a test can see; the guard exists so that a mutant that does fails fast instead of timing out.
+        if (round < 0 || round === rounds)
+          // Stryker disable next-line StringLiteral,CallExpression: equivalent -- the message of a guard that never fires is never read.
+          throw new Error("flow scan: the round counter left its bounds")
         // Stryker disable next-line ArithmeticOperator: equivalent -- rounds are only compared with one another and with 0, which no closure made while a round runs carries, so counting them from another number tells them apart the same way.
         this.round = round + 1
         // Stryker disable next-line ConditionalExpression,EqualityOperator: equivalent -- before the first round the heap holds nothing to move on, so moving it on then changes nothing.
