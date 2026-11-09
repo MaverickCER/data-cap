@@ -231,7 +231,7 @@
     "dc:tool": {
       "prov:type": "prov:SoftwareAgent",
       "dc:name": "data-cap",
-      "dc:version": "0.8.2"
+      "dc:version": "0.9.0"
     }
   },
   "used": {
