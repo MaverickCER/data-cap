@@ -138,6 +138,53 @@ const TARGETS = [
       "src/build/runtime-contract-model.ts's RuntimeContractModel type -- never hand-authored.",
   },
   {
+    name: "flow-model",
+    sourceFile: "src/flow/flow-model.ts",
+    type: "FlowModel",
+    outputFile: "schemas/flow-model.schema.json",
+    id: "https://maverickcer.github.io/data-cap/schema/flow-model.schema.json",
+    title: "data-cap Flow Model",
+    description:
+      "Canonical, versioned function-level, field-sensitive data-flow facts (nodes, edges, explicit " +
+      "unknowns and a coverage summary), each with an epistemic status (see ADR 0070, ADR 0071). " +
+      "Generated from src/flow/flow-model.ts's FlowModel type -- never hand-authored.",
+  },
+  {
+    name: "policy-model",
+    sourceFile: "src/flow/policy-model.ts",
+    type: "PolicyModel",
+    outputFile: "schemas/policy-model.schema.json",
+    id: "https://maverickcer.github.io/data-cap/schema/policy-model.schema.json",
+    title: "data-cap Policy Model",
+    description:
+      "Canonical, versioned declared data-flow rules and their evaluation results against the Flow " +
+      "Model (see ADR 0070). Generated from src/flow/policy-model.ts's PolicyModel type -- never hand-authored.",
+  },
+  {
+    name: "observation-model",
+    sourceFile: "src/flow/observation-model.ts",
+    type: "ObservationModel",
+    outputFile: "schemas/observation-model.schema.json",
+    id: "https://maverickcer.github.io/data-cap/schema/observation-model.schema.json",
+    title: "data-cap Observation Model",
+    description:
+      "Canonical, versioned runtime observations: which field names were seen at which boundaries in " +
+      "which scopes -- names and paths only, never values (see ADR 0070, ADR 0072). Generated from " +
+      "src/flow/observation-model.ts's ObservationModel type -- never hand-authored.",
+  },
+  {
+    name: "claims-model",
+    sourceFile: "src/flow/claims-model.ts",
+    type: "ClaimsModel",
+    outputFile: "schemas/claims-model.schema.json",
+    id: "https://maverickcer.github.io/data-cap/schema/claims-model.schema.json",
+    title: "data-cap Claims Model",
+    description:
+      "Canonical, versioned claims with supporting and contradicting evidence, scope and a derived " +
+      "verification status (see ADR 0070, ADR 0071). Generated from src/flow/claims-model.ts's " +
+      "ClaimsModel type -- never hand-authored.",
+  },
+  {
     name: "evidence-model",
     sourceFile: "src/build/evidence-model.ts",
     type: "EvidenceModel",
@@ -145,8 +192,9 @@ const TARGETS = [
     id: "https://maverickcer.github.io/data-cap/schema/evidence-model.schema.json",
     title: "data-cap Evidence Model",
     description:
-      "Canonical, versioned composition of Capability/Dependency/Ownership/Finding/Change/Runtime " +
-      "Contract Model into one provenance-stamped artifact (see ADR 0050). Generated from " +
+      "Canonical, versioned composition of Capability/Lifecycle/Dependency/Ownership/Finding/Change/" +
+      "Flow/Policy/Observation/Claims/Runtime Contract Model into one provenance-stamped artifact " +
+      "(see ADR 0050, ADR 0070). Generated from " +
       "src/build/evidence-model.ts's EvidenceModel type -- never hand-authored.",
   },
 ]
@@ -207,6 +255,22 @@ export function generateChangeModelSchema() {
 
 export function generateRuntimeContractModelSchema() {
   return generateSchema(targetNamed("runtime-contract-model"))
+}
+
+export function generateFlowModelSchema() {
+  return generateSchema(targetNamed("flow-model"))
+}
+
+export function generatePolicyModelSchema() {
+  return generateSchema(targetNamed("policy-model"))
+}
+
+export function generateObservationModelSchema() {
+  return generateSchema(targetNamed("observation-model"))
+}
+
+export function generateClaimsModelSchema() {
+  return generateSchema(targetNamed("claims-model"))
 }
 
 export function generateEvidenceModelSchema() {

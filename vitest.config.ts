@@ -1,5 +1,7 @@
 import { readFileSync } from "node:fs"
 import { defineConfig } from "vitest/config"
+import { BaseSequencer } from "vitest/node"
+import type { TestSpecification } from "vitest/node"
 
 // Mirrors tsup.config.ts's `define`: tests run against `src/` directly, not
 // the bundle, so `__PACKAGE_VERSION__` (a build-time constant, see ADR 0058)
@@ -9,6 +11,21 @@ const packageVersion: string = (
     version: string
   }
 ).version
+
+/**
+ * Mutation testing runs the tests that cover a mutant until one fails, and every test file costs a worker and a
+ * compiler import before its first test. Vitest orders files slowest first, so a mutant that a small test catches in
+ * moments waited behind the scale and example tests (minutes in all) and ran out of time instead of being caught.
+ * Under Stryker the files written to kill mutants (`mut-*`) run first, then the rest fastest first: the slow tests
+ * run only for a mutant that every other test let through.
+ */
+class MutantKillersFirstSequencer extends BaseSequencer {
+  override async sort(files: TestSpecification[]): Promise<TestSpecification[]> {
+    const fastestFirst = (await super.sort(files)).reverse()
+    const killers = (spec: TestSpecification): boolean => /[\\/]mut-[^\\/]*$/.test(spec.moduleId)
+    return [...fastestFirst.filter(killers), ...fastestFirst.filter((spec) => !killers(spec))]
+  }
+}
 
 export default defineConfig({
   define: { __PACKAGE_VERSION__: JSON.stringify(packageVersion) },
@@ -20,6 +37,9 @@ export default defineConfig({
     // `Deno` namespace, neither of which exists under Node/vitest.
     exclude: ["test/cross-runtime/**", "**/node_modules/**"],
     watch: false,
+    ...(process.env["STRYKER_MUTATOR_WORKER"] === undefined
+      ? {}
+      : { sequence: { sequencer: MutantKillersFirstSequencer } }),
     // Several integration/example tests spawn real subprocesses (npm pack +
     // install, a spawned CLI, a full ts-json-schema-generator program). Those
     // clear vitest's 5000ms default easily in isolation but blow past it under

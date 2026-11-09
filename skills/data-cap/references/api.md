@@ -285,6 +285,16 @@ Every export a consumer can import, by entry point, for version 0.8.2. Generated
 - `EvidenceProjector` (typealias): `type EvidenceProjector<T> = (evidence: EvidenceModel) => T`
 - `EvidenceProvenance` (interface): `interface EvidenceProvenance`
 
+## `data-cap/observe`
+
+- `createMemorySink` (function): `function createMemorySink(): { readonly sink: ObservationSink; events(): readonly ObservationEvent[]; }`
+- `fieldPathName` (function): `function fieldPathName(capability: string, path: readonly string[]): string`
+- `ObservationEvent` (interface): `interface ObservationEvent`
+- `ObservationSink` (interface): `interface ObservationSink`
+- `observeBoundary` (function): `function observeBoundary(sink: ObservationSink, input: ObserveBoundaryInput): number`
+- `ObserveBoundaryInput` (interface): `interface ObserveBoundaryInput`
+- `ObservedBoundary` (interface): `interface ObservedBoundary`
+
 ## `data-cap/eslint-plugin`
 
 - `noFieldsEscape` (variable): `noFieldsEscape: import("@typescript-eslint/utils/ts-eslint").RuleModule<"prop" | "spread" | "argument" | "exported", [RuleOptions], unknown, import("@typescript-eslint/utils/ts-eslint").RuleListener> & { name: string; }`

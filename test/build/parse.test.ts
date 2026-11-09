@@ -1906,3 +1906,115 @@ describe("compactLoose", () => {
     expect(result).toEqual({ a: "", b: 0, c: false })
   })
 })
+
+describe("extractCapabilityDocs -- flowPolicy (ADR 0070)", () => {
+  it("extracts a well-formed rule with every supported criterion and constraint", () => {
+    const warnings: ParseWarning[] = []
+    const docs = extract(
+      `{ flowPolicy: [{
+        id: "no-secret-to-client",
+        description: "secrets never reach a response",
+        appliesTo: { classification: "secret", field: "user", path: ["passwordHash"] },
+        forbidDestinations: ["client-response", "log"],
+        allowedDestinations: ["database"],
+        allowedHandling: ["hashed"],
+        requireHandling: ["masked", "redacted"],
+      }] }`,
+      warnings,
+    )
+    expect(warnings).toEqual([])
+    expect(docs?.flowPolicy).toEqual([
+      {
+        id: "no-secret-to-client",
+        description: "secrets never reach a response",
+        appliesTo: { classification: "secret", field: "user", path: ["passwordHash"] },
+        forbidDestinations: ["client-response", "log"],
+        allowedDestinations: ["database"],
+        allowedHandling: ["hashed"],
+        requireHandling: ["masked", "redacted"],
+      },
+    ])
+  })
+
+  it("is undefined when the capability declares no flowPolicy", () => {
+    expect(extract(`{ owner: "team" }`)?.flowPolicy).toBeUndefined()
+  })
+
+  it("warns and ignores a flowPolicy that is not an array of object literals", () => {
+    const warnings: ParseWarning[] = []
+    expect(extract(`{ flowPolicy: "nope" }`, warnings)?.flowPolicy).toBeUndefined()
+    expect(warnings.map((w) => w.message).join("\n")).toMatch(/flowPolicy/)
+  })
+
+  it("drops a rule without an id, with a warning, keeping the valid ones", () => {
+    const warnings: ParseWarning[] = []
+    const docs = extract(
+      `{ flowPolicy: [
+        { appliesTo: { classification: "pii" }, forbidDestinations: ["log"] },
+        { id: "ok", appliesTo: { classification: "pii" }, forbidDestinations: ["log"] },
+      ] }`,
+      warnings,
+    )
+    expect(docs?.flowPolicy?.map((rule) => rule.id)).toEqual(["ok"])
+    expect(warnings.some((w) => w.message.includes("id"))).toBe(true)
+  })
+
+  it("drops a rule with an unrecognised destination kind or handling, naming the offender", () => {
+    const warnings: ParseWarning[] = []
+    const docs = extract(
+      `{ flowPolicy: [
+        { id: "a", appliesTo: { classification: "pii" }, forbidDestinations: ["moon"] },
+        { id: "b", appliesTo: { classification: "pii" }, requireHandling: ["rot13"] },
+      ] }`,
+      warnings,
+    )
+    expect(docs?.flowPolicy).toEqual([])
+    expect(warnings.map((w) => w.message).join("\n")).toMatch(/moon/)
+    expect(warnings.map((w) => w.message).join("\n")).toMatch(/rot13/)
+  })
+
+  it("drops a rule with no appliesTo criterion, or a bad path, or no constraint", () => {
+    const warnings: ParseWarning[] = []
+    const docs = extract(
+      `{ flowPolicy: [
+        { id: "a", appliesTo: {}, forbidDestinations: ["log"] },
+        { id: "b", appliesTo: { classification: "x", path: [] }, forbidDestinations: ["log"] },
+        { id: "c", appliesTo: { classification: "x" } },
+        { id: "d", forbidDestinations: ["log"] },
+      ] }`,
+      warnings,
+    )
+    expect(docs?.flowPolicy).toEqual([])
+    expect(warnings).toHaveLength(4)
+  })
+
+  it("drops a rule that has an unknown key (a misspelled constraint must not silently pass)", () => {
+    const warnings: ParseWarning[] = []
+    const docs = extract(
+      `{ flowPolicy: [{ id: "a", appliesTo: { classification: "pii" }, forbidDestination: ["log"] }] }`,
+      warnings,
+    )
+    expect(docs?.flowPolicy).toEqual([])
+    expect(warnings.map((w) => w.message).join("\n")).toMatch(/forbidDestination/)
+  })
+
+  it("drops later rules that reuse an id within the capability", () => {
+    const warnings: ParseWarning[] = []
+    const docs = extract(
+      `{ flowPolicy: [
+        { id: "dup", appliesTo: { classification: "a" }, forbidDestinations: ["log"] },
+        { id: "dup", appliesTo: { classification: "b" }, forbidDestinations: ["log"] },
+      ] }`,
+      warnings,
+    )
+    expect(docs?.flowPolicy?.map((rule) => rule.appliesTo.classification)).toEqual(["a"])
+    expect(warnings.some((w) => w.message.includes("dup"))).toBe(true)
+  })
+
+  it("warns when an element is a spread or not statically resolvable", () => {
+    const warnings: ParseWarning[] = []
+    const docs = extract(`{ flowPolicy: [...others, someVariable] }`, warnings)
+    expect(docs?.flowPolicy).toEqual([])
+    expect(warnings.length).toBe(2)
+  })
+})

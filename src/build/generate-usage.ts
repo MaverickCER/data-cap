@@ -54,7 +54,10 @@ export interface GenerateUsageResult {
  * edges the scan produces are relativized again on the way out (see
  * `scan-dependencies.ts`), so this absolute form never escapes the scan.
  */
-function buildScanTargets(inventory: CapabilityInventory, root: string): readonly ScanTarget[] {
+export function buildScanTargets(
+  inventory: CapabilityInventory,
+  root: string,
+): readonly ScanTarget[] {
   return inventory.capabilities.map((capability) => ({
     file: absolutePathFrom(root, capability.file),
     exportName: capability.exportName,

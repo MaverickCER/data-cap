@@ -1,0 +1,66 @@
+[
+  {
+    "scope": "scenario:profile",
+    "boundary": {
+      "kind": "client-response",
+      "name": "http-response"
+    },
+    "field": "userData.user.id"
+  },
+  {
+    "scope": "scenario:profile",
+    "boundary": {
+      "kind": "client-response",
+      "name": "http-response"
+    },
+    "field": "userData.user.name"
+  },
+  {
+    "scope": "scenario:profile",
+    "boundary": {
+      "kind": "client-response",
+      "name": "http-response"
+    },
+    "field": "userData.user.email"
+  },
+  {
+    "scope": "scenario:debug-export",
+    "boundary": {
+      "kind": "client-response",
+      "name": "http-response"
+    },
+    "field": "userData.user.id"
+  },
+  {
+    "scope": "scenario:debug-export",
+    "boundary": {
+      "kind": "client-response",
+      "name": "http-response"
+    },
+    "field": "userData.user.name"
+  },
+  {
+    "scope": "scenario:debug-export",
+    "boundary": {
+      "kind": "client-response",
+      "name": "http-response"
+    },
+    "field": "userData.user.email"
+  },
+  {
+    "scope": "scenario:debug-export",
+    "boundary": {
+      "kind": "client-response",
+      "name": "http-response"
+    },
+    "field": "userData.user.passwordHash"
+  },
+  {
+    "scope": "scenario:debug-export",
+    "boundary": {
+      "kind": "client-response",
+      "name": "http-response"
+    },
+    "field": "userData.user.role"
+  }
+]

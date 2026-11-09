@@ -38,6 +38,8 @@ export interface ComputeSourceFingerprintOptions {
   readonly exclude?: readonly string[] | undefined
   /** Allow-listed package names whose own resolved schema files also feed the fingerprint. */
   readonly packages?: readonly string[] | undefined
+  /** Anything beyond the source files that changes what the evidence contains -- see `evidenceOptionsKey` in the same file. Absent leaves the fingerprint exactly as it always was. */
+  readonly extra?: string | undefined
 }
 
 /**
@@ -55,7 +57,7 @@ export interface ComputeSourceFingerprintOptions {
 export async function computeSourceFingerprint(
   options: ComputeSourceFingerprintOptions,
 ): Promise<string> {
-  const { fs, root, include, exclude, packages } = options
+  const { fs, root, include, exclude, packages, extra } = options
 
   const localFiles = await discoverCapabilityFiles({
     fs,
@@ -95,7 +97,112 @@ export async function computeSourceFingerprint(
     }
     hash.update("\0")
   }
+  if (extra !== undefined) {
+    hash.update("\u0001options\0")
+    hash.update(extra)
+  }
   return hash.digest("hex")
+}
+
+/** The options that change what an evidence artifact contains without changing any source file. */
+export interface EvidenceOptionsKeyInput {
+  readonly flowEvidence?: boolean | undefined
+  readonly flowSinks?:
+    | readonly {
+        readonly callee: string
+        readonly boundary: { readonly kind: string; readonly name: string }
+        readonly handling?: string | undefined
+      }[]
+    | undefined
+  readonly flowSummaries?:
+    | readonly {
+        readonly module: string
+        readonly export: string
+        readonly effect: string
+        readonly arg?: number | undefined
+        readonly approximate?: true | undefined
+        readonly boundary?: { readonly kind: string; readonly name: string } | undefined
+        readonly handling?: string | undefined
+      }[]
+    | undefined
+  readonly observations?:
+    | readonly {
+        readonly scope: string
+        readonly boundary: { readonly kind: string; readonly name: string }
+        readonly field: string
+        readonly handling?: string | undefined
+        readonly at?: string | number | undefined
+      }[]
+    | undefined
+  readonly observationSkips?:
+    | readonly {
+        readonly scope: string
+        readonly boundary: { readonly kind: string; readonly name: string }
+        readonly field: string
+        readonly reason: string
+      }[]
+    | undefined
+}
+
+/**
+ * A stable key for the options that make two runs over the same source
+ * produce different evidence (flow analysis on or off, which sinks it
+ * recognises, which runtime observations were ingested), or `undefined` when
+ * none is set -- so a run that uses none of them fingerprints exactly as it
+ * did before they existed. Observations are reduced to their names and
+ * paths and sorted, so neither a smuggled value nor their arrival order can
+ * change the key.
+ */
+export function evidenceOptionsKey(input: EvidenceOptionsKeyInput): string | undefined {
+  const parts: Record<string, unknown> = {}
+  if (input.flowEvidence === true) {
+    parts["flow"] = true
+    if (input.flowSinks !== undefined) {
+      parts["sinks"] = input.flowSinks.map((sink) => [
+        sink.callee,
+        sink.boundary.kind,
+        sink.boundary.name,
+        sink.handling ?? "",
+      ])
+    }
+    // The first summary that matches a call wins, so their order is part of what the evidence says.
+    if (input.flowSummaries !== undefined && input.flowSummaries.length > 0) {
+      parts["summaries"] = input.flowSummaries.map((summary) => [
+        summary.module,
+        summary.export,
+        summary.effect,
+        summary.arg ?? "",
+        summary.approximate === true,
+        summary.boundary?.kind ?? "",
+        summary.boundary?.name ?? "",
+        summary.handling ?? "",
+      ])
+    }
+  }
+  if (input.observations !== undefined) {
+    parts["observations"] = input.observations
+      .map((event) =>
+        [
+          event.scope,
+          event.boundary.kind,
+          event.boundary.name,
+          event.field,
+          event.handling ?? "",
+          ...(event.at === undefined ? [] : [String(event.at)]),
+        ].join("\u0000"),
+      )
+      .sort()
+  }
+  if (input.observationSkips !== undefined && input.observationSkips.length > 0) {
+    parts["skips"] = input.observationSkips
+      .map((skip) =>
+        [skip.scope, skip.boundary.kind, skip.boundary.name, skip.field, skip.reason].join(
+          "\u0000",
+        ),
+      )
+      .sort()
+  }
+  return Object.keys(parts).length === 0 ? undefined : JSON.stringify(parts)
 }
 
 /** The sidecar path paired with an evidence artifact -- `<evidence-path>.fingerprint`. */

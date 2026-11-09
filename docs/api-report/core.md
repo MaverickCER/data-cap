@@ -20,6 +20,7 @@ message -- only field paths (key names), which are never sensitive.
 - [`InvalidFieldDefaultError`](#invalidfielddefaulterror)
 - [`UnknownGetterError`](runtime.md#unknowngettererror)
 - [`DataProjectGenerationError`](build.md#dataprojectgenerationerror)
+- [`FlowModelError`](build.md#flowmodelerror)
 
 #### Constructors
 
@@ -650,6 +651,14 @@ readonly fields?: CapabilityFieldDocs<TSchema["fields"]>;
 
 Per-field documentation, overriding this capability's own `owner`/`sensitivity`/`protections` where declared. Keys are checked against the schema's real `fields` shape.
 
+##### flowPolicy?
+
+```ts
+readonly flowPolicy?: readonly FlowPolicyDocs[];
+```
+
+Declared data-flow rules for this capability's fields, evaluated against the Flow Model (see `FlowPolicyDocs`).
+
 ##### getters?
 
 ```ts
@@ -811,7 +820,7 @@ Which way data moves across this boundary.
 ##### handling?
 
 ```ts
-readonly handling?: "plaintext" | "masked" | "redacted" | "hashed" | "encrypted";
+readonly handling?: FlowHandling;
 ```
 
 The declared data-safety state of this field's value AT this specific
@@ -1300,6 +1309,107 @@ readonly updatedAt?: number;
 ```
 
 When `source` most recently committed a value via any operation, as epoch ms.
+
+***
+
+### FlowPolicyAppliesToDocs
+
+Which fields a data-flow rule governs; every supplied criterion must match, and `classification` or `field` is required.
+
+#### Properties
+
+##### classification?
+
+```ts
+readonly classification?: string;
+```
+
+Every field of this capability whose resolved `sensitivity` equals this value.
+
+##### field?
+
+```ts
+readonly field?: string;
+```
+
+One field of this capability, by its top-level key.
+
+##### path?
+
+```ts
+readonly path?: readonly string[];
+```
+
+Narrows the rule to one path inside each governed field (for example `["passwordHash"]`).
+
+***
+
+### FlowPolicyDocs
+
+One declared data-flow rule: which of this capability's fields it governs,
+and what must hold wherever their data goes. Evaluated against the Flow
+Model at build time; a rule is a declaration, never a runtime check, and a
+result is only as complete as the analysis behind it (see the Policy
+Model's `indeterminate` outcome). At least one of `forbidDestinations`,
+`allowedDestinations` and `requireHandling` is required.
+
+#### Properties
+
+##### allowedDestinations?
+
+```ts
+readonly allowedDestinations?: readonly FlowBoundaryKind[];
+```
+
+If set, the only destinations the governed data may reach.
+
+##### allowedHandling?
+
+```ts
+readonly allowedHandling?: readonly FlowHandling[];
+```
+
+Handling that exempts a crossing from `forbidDestinations`/`allowedDestinations`.
+
+##### appliesTo
+
+```ts
+readonly appliesTo: FlowPolicyAppliesToDocs;
+```
+
+Which fields the rule governs.
+
+##### description?
+
+```ts
+readonly description?: string;
+```
+
+Why the rule exists.
+
+##### forbidDestinations?
+
+```ts
+readonly forbidDestinations?: readonly FlowBoundaryKind[];
+```
+
+Destinations the governed data must never reach.
+
+##### id
+
+```ts
+readonly id: string;
+```
+
+Unique within this capability.
+
+##### requireHandling?
+
+```ts
+readonly requireHandling?: readonly FlowHandling[];
+```
+
+If set, every crossing of the governed data must declare one of these handlings.
 
 ***
 
@@ -1958,6 +2068,29 @@ The generic *bound* only, never surfaced to a consumer's inferred type --
 the same variance workaround env-cap's `EnvSchema` uses so `TFields extends
 FieldsShape` still infers a precise, per-key literal type from the actual
 object literal passed to `buildData`.
+
+***
+
+### FlowBoundaryKind
+
+```ts
+type FlowBoundaryKind = 
+  | DataFlowEndpointKind
+  | "client-response"
+  | "log";
+```
+
+What a data-flow rule can name as a destination: the declared endpoint kinds, plus the two destinations only code analysis can see.
+
+***
+
+### FlowHandling
+
+```ts
+type FlowHandling = "plaintext" | "masked" | "redacted" | "hashed" | "encrypted";
+```
+
+The declared data-safety state of a value at a boundary crossing -- the vocabulary of `DataFlowEndpoint.handling` and of flow policy rules.
 
 ***
 

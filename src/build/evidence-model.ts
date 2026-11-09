@@ -17,6 +17,12 @@
  * it the way it might not have run a usage scan.
  */
 
+import { buildClaimsModel } from "../flow/claims-model.js"
+import type { ClaimsModel } from "../flow/claims-model.js"
+import type { FlowModel } from "../flow/flow-model.js"
+import { FlowModelError } from "../flow/flow-model.js"
+import type { ObservationModel } from "../flow/observation-model.js"
+import type { PolicyModel } from "../flow/policy-model.js"
 import { buildRuntimeContractModel } from "./runtime-contract-model.js"
 import type { RuntimeContractModel } from "./runtime-contract-model.js"
 import type { CapabilityInventory } from "./inventory.js"
@@ -31,9 +37,11 @@ import type { LifecycleModel } from "./lifecycle-model.js"
  * every other model's schema-version constant already documents. Bumped
  * 1 -> 2: `provenance` became required and gained `toolVersion`/`commit`
  * (OUT-06), `lifecycle` was added (EVD-05), and `computed` was added
- * (OUT-04).
+ * (OUT-04). Bumped 2 -> 3 (ADR 0070): `flow`, `policy`, `observation` and
+ * `claims` were added, each with its own `computed` flag. Additive -- a v2
+ * reader's interpretation of every field it knew is unchanged.
  */
-export const EVIDENCE_MODEL_SCHEMA_VERSION = 2
+export const EVIDENCE_MODEL_SCHEMA_VERSION = 3
 
 /**
  * Who/when/what produced a given `EvidenceModel` instance -- matching
@@ -81,6 +89,12 @@ export interface EvidenceModelInputs {
   readonly finding?: FindingModel
   /** Change Model, when a previous manifest snapshot was available to diff against. */
   readonly change?: ChangeModel
+  /** Flow Model (ADR 0070), when a flow pass ran. */
+  readonly flow?: FlowModel
+  /** Policy Model, when rules were evaluated. Requires `flow`: a policy is evaluated against a Flow Model. */
+  readonly policy?: PolicyModel
+  /** Observation Model, when runtime observations were ingested. */
+  readonly observation?: ObservationModel
 }
 
 /**
@@ -117,6 +131,14 @@ export interface EvidenceComputedModels {
   readonly finding: boolean
   /** Whether a manifest diff was available and produced a Change Model this run. */
   readonly change: boolean
+  /** Whether a flow pass ran and produced a Flow Model this run. */
+  readonly flow: boolean
+  /** Whether policy rules were evaluated and produced a Policy Model this run. */
+  readonly policy: boolean
+  /** Whether runtime observations were ingested and produced an Observation Model this run. */
+  readonly observation: boolean
+  /** Whether claims were derived this run -- true exactly when `flow` was computed. */
+  readonly claims: boolean
 }
 
 /**
@@ -151,6 +173,19 @@ export interface EvidenceModel {
    * project-varying fields conceptually are -- it already IS a diff.
    */
   readonly change: ChangeModel | undefined
+  /** Flow Model, or `undefined` when no flow pass ran -- see `computed.flow` before reading absence as "no flows." */
+  readonly flow: FlowModel | undefined
+  /** Policy Model, or `undefined` when no rules were evaluated -- see `computed.policy`. */
+  readonly policy: PolicyModel | undefined
+  /** Observation Model, or `undefined` when no observations were ingested -- see `computed.observation` before reading absence as "nothing was observed." */
+  readonly observation: ObservationModel | undefined
+  /**
+   * Claims Model, derived by `buildEvidenceModel` from `flow` (plus `policy`
+   * and `observation` when present), never supplied by a caller -- one
+   * derivation path, so the claims can never disagree with the facts they
+   * cite. `undefined` exactly when `flow` is.
+   */
+  readonly claims: ClaimsModel | undefined
   /**
    * Runtime Contract Model -- always populated, package-scoped rather than
    * project-scoped (see this module's own doc comment). A static append,
@@ -164,6 +199,19 @@ export function buildEvidenceModel(
   models: EvidenceModelInputs,
   provenance: EvidenceProvenance,
 ): EvidenceModel {
+  if (models.policy !== undefined && models.flow === undefined) {
+    throw new FlowModelError(
+      "A Policy Model was supplied without the flow model it is evaluated against; supply `flow` too.",
+    )
+  }
+  const claims =
+    models.flow === undefined
+      ? undefined
+      : buildClaimsModel({
+          flow: models.flow,
+          policy: models.policy,
+          observation: models.observation,
+        })
   return {
     schemaVersion: EVIDENCE_MODEL_SCHEMA_VERSION,
     provenance,
@@ -177,11 +225,19 @@ export function buildEvidenceModel(
       ownership: models.ownership !== undefined,
       finding: models.finding !== undefined,
       change: models.change !== undefined,
+      flow: models.flow !== undefined,
+      policy: models.policy !== undefined,
+      observation: models.observation !== undefined,
+      claims: claims !== undefined,
     },
     dependency: models.dependency,
     ownership: models.ownership,
     finding: models.finding,
     change: models.change,
+    flow: models.flow,
+    policy: models.policy,
+    observation: models.observation,
+    claims,
     runtimeContract: buildRuntimeContractModel(),
   }
 }

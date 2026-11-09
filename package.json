@@ -107,6 +107,16 @@
         "default": "./dist/evidence.cjs"
       }
     },
+    "./observe": {
+      "import": {
+        "types": "./dist/observe.d.ts",
+        "default": "./dist/observe.js"
+      },
+      "require": {
+        "types": "./dist/observe.d.cts",
+        "default": "./dist/observe.cjs"
+      }
+    },
     "./eslint-plugin": {
       "import": {
         "types": "./dist/eslint-plugin/index.d.ts",
@@ -171,7 +181,7 @@
     "verify": "npm run typecheck && npm run lint && npm run format:check && npm run build && npm run schema && npm run test:coverage && npm run size && npm run verify:ambient && npm run verify:compiler-isolation && npm run verify:readme-example && npm run docs:api:report:check",
     "precommit": "npm run typecheck && npm run lint && npm run format && npm run build && npm run schema && npm run test:coverage && npm run size && npm run verify:ambient && npm run verify:compiler-isolation && npm run verify:readme-example && npm run docs:api:report:check",
     "prepublishOnly": "npm run verify",
-    "version": "changeset version && npm run build && npm run examples:update-golden && internal-package-contract skill && internal-package-contract site",
+    "version": "changeset version && npm install --package-lock-only --ignore-scripts && npm run build && npm run examples:update-golden && internal-package-contract skill && internal-package-contract site",
     "release": "changeset publish",
     "benchmark:check": "node benchmarks/run-benchmarks.mjs --check"
   },
@@ -205,13 +215,15 @@
     "@typescript-eslint/utils": "^8.65.0",
     "@vitest/coverage-v8": "^5.0.3",
     "ajv": "^8.20.0",
+    "ajv-draft-04": "^1.0.0",
+    "ajv-formats": "^3.0.1",
     "esbuild": "^0.28.1",
     "eslint": "^10.9.0",
     "eslint-config-prettier": "10.1.8",
     "espree": "^11.2.0",
     "fast-check": "^4.10.2",
     "globals": "^17.9.0",
-    "internal-package-contract": "github:MaverickCER/internal-package-contract#v0.14.0",
+    "internal-package-contract": "github:MaverickCER/internal-package-contract#v0.15.1",
     "prettier": "3.9.10",
     "ts-json-schema-generator": "^2.9.0",
     "tsup": "^9.0.0",

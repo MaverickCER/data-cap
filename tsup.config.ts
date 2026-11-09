@@ -131,6 +131,19 @@ const bundles: Options[] = [
     treeshake: true,
   },
   {
+    name: "observe",
+    entry: { observe: "src/observe/index.ts" },
+    format: ["esm", "cjs"],
+    // The runtime-observation recorder (ADR 0072) runs inside the consumer's own application, in
+    // a browser, an edge runtime or Node alike. It imports nothing but types, so "neutral" is
+    // what keeps it honest: no `node:fs`, no compiler, no build module can reach this bundle.
+    platform: "neutral",
+    target: "es2022",
+    dts: false,
+    sourcemap: true,
+    treeshake: true,
+  },
+  {
     name: "eslint-plugin",
     entry: { "eslint-plugin/index": "src/eslint-plugin/index.ts" },
     format: ["esm", "cjs"],

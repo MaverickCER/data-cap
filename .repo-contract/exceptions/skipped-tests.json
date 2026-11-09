@@ -272,6 +272,32 @@
       "residualRisk": "None while the examples and integration-fixtures jobs stay required checks; they run these files with the fixtures installed.",
       "revisitWhen": "The fixtures are installed by the root install, or the contract job runs after them.",
       "expires": ""
+    },
+    {
+      "id": "skipped-test:test/examples/flow-corpus.test.ts",
+      "version": 2,
+      "justification": "Skipped in the contract job because its fixture project has its own node_modules, which only the examples and integration-fixtures CI jobs install; those jobs run this file for real.",
+      "file": "test/examples/flow-corpus.test.ts",
+      "ruleBroken": "Tests are not skipped.",
+      "attempted": "Installing every example and fixture project inside the contract job.",
+      "constraint": "Each fixture is a separate npm project, and the contract job installs only the root package.",
+      "whyPreferable": "Installing them again in the contract job would duplicate the examples and integration-fixtures jobs and slow the gate that also runs mutation testing.",
+      "residualRisk": "None while the examples and integration-fixtures jobs stay required checks; they run these files with the fixtures installed.",
+      "revisitWhen": "The fixtures are installed by the root install, or the contract job runs after them.",
+      "expires": ""
+    },
+    {
+      "id": "skipped-test:test/examples/flow-explorer.test.ts",
+      "version": 2,
+      "justification": "Skipped in the contract job because its fixture project has its own node_modules, which only the examples and integration-fixtures CI jobs install; those jobs run this file for real.",
+      "file": "test/examples/flow-explorer.test.ts",
+      "ruleBroken": "Tests are not skipped.",
+      "attempted": "Installing every example and fixture project inside the contract job.",
+      "constraint": "Each fixture is a separate npm project, and the contract job installs only the root package.",
+      "whyPreferable": "Installing them again in the contract job would duplicate the examples and integration-fixtures jobs and slow the gate that also runs mutation testing.",
+      "residualRisk": "None while the examples and integration-fixtures jobs stay required checks; they run these files with the fixtures installed.",
+      "revisitWhen": "The fixtures are installed by the root install, or the contract job runs after them.",
+      "expires": ""
     }
   ]
 }

@@ -224,3 +224,131 @@ export type {
 export { checkArtifacts } from "./check-artifacts.js"
 export type { CheckArtifactsResult } from "./check-artifacts.js"
 export { DataProjectGenerationError } from "./errors.js"
+
+// Field-level data flow, policy, observation and claims (ADR 0070): the sub-models of the one Evidence Model,
+// the flow pass that populates them, and the analyses derived from them. Pure queries over a Flow Model
+// (`traceFlow`/`filterFlow`/`diffFlow`) are also re-exported by the isomorphic `data-cap/evidence`.
+export {
+  buildFlowModel,
+  FLOW_MODEL_SCHEMA_VERSION,
+  flowEdgeId,
+  flowNodeId,
+  FlowModelError,
+} from "../flow/flow-model.js"
+export type {
+  FlowBoundaryKind,
+  FlowCoverage,
+  FlowEdge,
+  FlowEdgeInput,
+  FlowEdgeKind,
+  FlowHandling,
+  FlowModel,
+  FlowModelInput,
+  FlowNode,
+  FlowNodeInput,
+  FlowNodeKind,
+  FlowStatus,
+  FlowUnknown,
+  FlowUnknownInput,
+  FlowUnknownReason,
+} from "../flow/flow-model.js"
+export { diffFlow, filterFlow, traceFlow, traceFlowBetween } from "../flow/flow-projections.js"
+export { observedFlow } from "../flow/observed-flow.js"
+export type { ObservedFlow } from "../flow/observed-flow.js"
+export type {
+  FlowDiff,
+  FlowFilter,
+  FlowNodeChange,
+  FlowTrace,
+  FlowTraceDirection,
+  FlowTraceOptions,
+  FlowView,
+} from "../flow/flow-projections.js"
+export { DEFAULT_FLOW_SINKS, scanFlow } from "./flow-scan.js"
+export type { FlowSinkPattern, FlowSummary, ScanFlowOptions, ScanFlowResult } from "./flow-scan.js"
+export {
+  buildPolicyModel,
+  collectFlowPolicyRules,
+  POLICY_MODEL_SCHEMA_VERSION,
+} from "../flow/policy-model.js"
+export type {
+  FlowPolicyAppliesTo,
+  FlowPolicyRule,
+  PolicyIndeterminateReason,
+  PolicyModel,
+  PolicyOutcome,
+  PolicyResult,
+  PolicySummary,
+} from "../flow/policy-model.js"
+export {
+  buildObservationModel,
+  OBSERVATION_MODEL_SCHEMA_VERSION,
+} from "../flow/observation-model.js"
+export type { Observation, ObservationModel } from "../flow/observation-model.js"
+export type {
+  ObservationEvent,
+  ObservationSink,
+  ObservedBoundary,
+  ObserveBoundaryInput,
+} from "../observe/index.js"
+export { buildClaimsModel, CLAIMS_MODEL_SCHEMA_VERSION } from "../flow/claims-model.js"
+export type {
+  Claim,
+  ClaimKind,
+  ClaimScope,
+  ClaimsModel,
+  ClaimsModelInputs,
+  ClaimsSummary,
+  ClaimVerification,
+  EvidenceRef,
+  EvidenceRefModel,
+} from "../flow/claims-model.js"
+export { analyzeLeastData, leastDataFindings } from "../flow/least-data.js"
+export type {
+  LeastDataCapability,
+  LeastDataIndeterminate,
+  LeastDataInput,
+  LeastDataReport,
+  UnusedPath,
+  WholeFieldToClient,
+} from "../flow/least-data.js"
+export { flowAnalysisFindings, policyFindings } from "../flow/flow-findings.js"
+export {
+  analyzeRedundantTransforms,
+  MIN_FORWARDING_HOPS,
+  redundantTransformFindings,
+} from "../flow/redundant-transform.js"
+export type { RedundantTransform, RedundantTransformKind } from "../flow/redundant-transform.js"
+export type { FlowEdgeTag, FlowEdgeTagInput, FlowVia } from "../flow/flow-model.js"
+// The isomorphic projections and standards adapters, re-exported so one import covers a build script.
+export {
+  buildCycloneDxBom,
+  buildFlowGraphView,
+  buildOscalAssessmentResults,
+  buildProvDocument,
+  evaluateEvidenceRules,
+  EVIDENCE_RULE_NAMES,
+  FLOW_GRAPH_VIEW_VERSION,
+  observationsFromOtlp,
+  observationsToOtlp,
+  parseEvidenceRules,
+  renderFlowCycloneDx,
+  renderFlowDot,
+  renderFlowMermaid,
+  renderFlowText,
+} from "../evidence/index.js"
+export type {
+  CycloneDxBom,
+  CycloneDxOptions,
+  EvidenceRules,
+  EvidenceRulesResult,
+  EvidenceRuleViolation,
+  FlowDiagramOptions,
+  FlowGraphView,
+  FlowTextOptions,
+  OscalAssessmentResults,
+  OscalOptions,
+  OtlpTraces,
+  ProvDocument,
+} from "../evidence/index.js"
+export type { BuildSarifLogOptions } from "./sarif.js"

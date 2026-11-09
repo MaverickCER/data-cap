@@ -1,0 +1,257 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://maverickcer.github.io/data-cap/schema/policy-model.schema.json",
+  "title": "data-cap Policy Model",
+  "description": "Canonical, versioned declared data-flow rules and their evaluation results against the Flow Model (see ADR 0070). Generated from src/flow/policy-model.ts's PolicyModel type -- never hand-authored.",
+  "$ref": "#/definitions/PolicyModel",
+  "definitions": {
+    "PolicyModel": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "number",
+          "const": 1,
+          "description": "Always `POLICY_MODEL_SCHEMA_VERSION`."
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FlowPolicyRule"
+          },
+          "description": "The declared rules, ordered by id."
+        },
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PolicyResult"
+          },
+          "description": "Every evaluation result, ordered by rule, subject, boundary."
+        },
+        "summary": {
+          "$ref": "#/definitions/PolicySummary",
+          "description": "Counts by outcome."
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "rules",
+        "results",
+        "summary"
+      ],
+      "additionalProperties": false,
+      "description": "`data-cap`'s Policy Model."
+    },
+    "FlowPolicyRule": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique, stable identifier."
+        },
+        "appliesTo": {
+          "$ref": "#/definitions/FlowPolicyAppliesTo",
+          "description": "Which fields this rule governs."
+        },
+        "forbidDestinations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FlowBoundaryKind"
+          },
+          "description": "Boundary kinds the governed fields must never reach."
+        },
+        "allowedDestinations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FlowBoundaryKind"
+          },
+          "description": "If set, the only boundary kinds the governed fields may reach."
+        },
+        "allowedHandling": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FlowHandling"
+          },
+          "description": "Handling that exempts a crossing from `forbidDestinations`/`allowedDestinations`."
+        },
+        "requireHandling": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FlowHandling"
+          },
+          "description": "If set, every boundary crossing of a governed field must declare one of these handlings."
+        },
+        "description": {
+          "type": "string",
+          "description": "Free-text rationale, carried through verbatim."
+        }
+      },
+      "required": [
+        "id",
+        "appliesTo"
+      ],
+      "additionalProperties": false,
+      "description": "One declared data-flow rule. At least one constraint must be set."
+    },
+    "FlowPolicyAppliesTo": {
+      "type": "object",
+      "properties": {
+        "classification": {
+          "type": "string",
+          "description": "Exact match against a field node's `classification`."
+        },
+        "field": {
+          "type": "string",
+          "description": "Exact match against a field node's `name` (for example `User.email`)."
+        },
+        "scope": {
+          "type": "string",
+          "description": "Restricts the rule to fields declared in this file (a root-relative path); never sufficient on its own."
+        },
+        "path": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Narrows the rule to one path inside each matching field (for example `[\"passwordHash\"]`): only flow of that path, or of the whole field, counts."
+        }
+      },
+      "additionalProperties": false,
+      "description": "Which fields a rule applies to; every supplied criterion must match, and at least one is required."
+    },
+    "FlowBoundaryKind": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/DataFlowEndpointKind"
+        },
+        {
+          "type": "string",
+          "const": "client-response"
+        },
+        {
+          "type": "string",
+          "const": "log"
+        }
+      ],
+      "description": "What a data-flow rule can name as a destination: the declared endpoint kinds, plus the two destinations only code analysis can see."
+    },
+    "DataFlowEndpointKind": {
+      "type": "string",
+      "enum": [
+        "database",
+        "cache",
+        "storage",
+        "queue",
+        "api",
+        "external-service",
+        "user-input",
+        "computed",
+        "internal"
+      ],
+      "description": "What kind of boundary a declared data-flow endpoint crosses -- a data store (`database`/`cache`/`storage`/`queue`), an external entity (`api`/`external-service`/`user-input`), or something internal to this codebase (`computed`/`internal`)."
+    },
+    "FlowHandling": {
+      "type": "string",
+      "enum": [
+        "plaintext",
+        "masked",
+        "redacted",
+        "hashed",
+        "encrypted"
+      ],
+      "description": "The declared data-safety state of a value at a boundary crossing -- the vocabulary of `DataFlowEndpoint.handling` and of flow policy rules."
+    },
+    "PolicyResult": {
+      "type": "object",
+      "properties": {
+        "ruleId": {
+          "type": "string"
+        },
+        "subject": {
+          "type": "string",
+          "description": "Id of the field node the rule was evaluated for; absent only for `rule-matches-nothing`."
+        },
+        "boundary": {
+          "type": "string",
+          "description": "Id of the boundary node this result concerns; absent when none was reached or the result is about the trace as a whole."
+        },
+        "outcome": {
+          "$ref": "#/definitions/PolicyOutcome"
+        },
+        "reason": {
+          "$ref": "#/definitions/PolicyIndeterminateReason",
+          "description": "Present exactly when `outcome` is `indeterminate`."
+        },
+        "basis": {
+          "$ref": "#/definitions/FlowStatus",
+          "description": "The weakest epistemic status of the edges the result rests on (`unknown` for an indeterminate result)."
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Ids of the edges on the path that justifies this result."
+        }
+      },
+      "required": [
+        "ruleId",
+        "outcome",
+        "basis",
+        "edges"
+      ],
+      "additionalProperties": false,
+      "description": "One evaluation result."
+    },
+    "PolicyOutcome": {
+      "type": "string",
+      "enum": [
+        "satisfied",
+        "violated",
+        "indeterminate"
+      ],
+      "description": "How a rule fared against one field (and, when relevant, one boundary)."
+    },
+    "PolicyIndeterminateReason": {
+      "type": "string",
+      "enum": [
+        "rule-matches-nothing",
+        "trace-incomplete",
+        "handling-not-declared",
+        "boundary-kind-unknown"
+      ],
+      "description": "Why a result is `indeterminate`."
+    },
+    "FlowStatus": {
+      "type": "string",
+      "enum": [
+        "declared",
+        "static",
+        "observed",
+        "inferred",
+        "unknown"
+      ],
+      "description": "ADR 0071: the five epistemic statuses, shared by every flow fact, claim and finding."
+    },
+    "PolicySummary": {
+      "type": "object",
+      "properties": {
+        "satisfied": {
+          "type": "number"
+        },
+        "violated": {
+          "type": "number"
+        },
+        "indeterminate": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "satisfied",
+        "violated",
+        "indeterminate"
+      ],
+      "additionalProperties": false,
+      "description": "Counts by outcome."
+    }
+  }
+}

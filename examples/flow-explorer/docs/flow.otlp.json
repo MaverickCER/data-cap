@@ -1,0 +1,370 @@
+{
+  "resourceSpans": [
+    {
+      "resource": {
+        "attributes": [
+          {
+            "key": "service.name",
+            "value": {
+              "stringValue": "profile-service"
+            }
+          }
+        ]
+      },
+      "scopeSpans": [
+        {
+          "scope": {
+            "name": "data-cap",
+            "version": "0.8.2"
+          },
+          "spans": [
+            {
+              "traceId": "de4a0075751c5dd4b9828253dcdd95da",
+              "spanId": "a632bcd8cb105205",
+              "name": "data-cap.boundary.crossing",
+              "kind": 1,
+              "startTimeUnixNano": "1767225600000000000",
+              "endTimeUnixNano": "1767225600000000000",
+              "attributes": [
+                {
+                  "key": "data_cap.boundary.kind",
+                  "value": {
+                    "stringValue": "client-response"
+                  }
+                },
+                {
+                  "key": "data_cap.boundary.name",
+                  "value": {
+                    "stringValue": "http-response"
+                  }
+                },
+                {
+                  "key": "data_cap.count",
+                  "value": {
+                    "intValue": "1"
+                  }
+                },
+                {
+                  "key": "data_cap.field",
+                  "value": {
+                    "stringValue": "userData.user.email"
+                  }
+                },
+                {
+                  "key": "data_cap.scope",
+                  "value": {
+                    "stringValue": "scenario:debug-export"
+                  }
+                }
+              ],
+              "status": {
+                "code": 1
+              }
+            },
+            {
+              "traceId": "de4a0075751c5dd4b9828253dcdd95da",
+              "spanId": "1c2f047fffa35e89",
+              "name": "data-cap.boundary.crossing",
+              "kind": 1,
+              "startTimeUnixNano": "1767225600000000000",
+              "endTimeUnixNano": "1767225600000000000",
+              "attributes": [
+                {
+                  "key": "data_cap.boundary.kind",
+                  "value": {
+                    "stringValue": "client-response"
+                  }
+                },
+                {
+                  "key": "data_cap.boundary.name",
+                  "value": {
+                    "stringValue": "http-response"
+                  }
+                },
+                {
+                  "key": "data_cap.count",
+                  "value": {
+                    "intValue": "1"
+                  }
+                },
+                {
+                  "key": "data_cap.field",
+                  "value": {
+                    "stringValue": "userData.user.id"
+                  }
+                },
+                {
+                  "key": "data_cap.scope",
+                  "value": {
+                    "stringValue": "scenario:debug-export"
+                  }
+                }
+              ],
+              "status": {
+                "code": 1
+              }
+            },
+            {
+              "traceId": "de4a0075751c5dd4b9828253dcdd95da",
+              "spanId": "1d0f1ca731315fb5",
+              "name": "data-cap.boundary.crossing",
+              "kind": 1,
+              "startTimeUnixNano": "1767225600000000000",
+              "endTimeUnixNano": "1767225600000000000",
+              "attributes": [
+                {
+                  "key": "data_cap.boundary.kind",
+                  "value": {
+                    "stringValue": "client-response"
+                  }
+                },
+                {
+                  "key": "data_cap.boundary.name",
+                  "value": {
+                    "stringValue": "http-response"
+                  }
+                },
+                {
+                  "key": "data_cap.count",
+                  "value": {
+                    "intValue": "1"
+                  }
+                },
+                {
+                  "key": "data_cap.field",
+                  "value": {
+                    "stringValue": "userData.user.name"
+                  }
+                },
+                {
+                  "key": "data_cap.scope",
+                  "value": {
+                    "stringValue": "scenario:debug-export"
+                  }
+                }
+              ],
+              "status": {
+                "code": 1
+              }
+            },
+            {
+              "traceId": "de4a0075751c5dd4b9828253dcdd95da",
+              "spanId": "82f1771a30135392",
+              "name": "data-cap.boundary.crossing",
+              "kind": 1,
+              "startTimeUnixNano": "1767225600000000000",
+              "endTimeUnixNano": "1767225600000000000",
+              "attributes": [
+                {
+                  "key": "data_cap.boundary.kind",
+                  "value": {
+                    "stringValue": "client-response"
+                  }
+                },
+                {
+                  "key": "data_cap.boundary.name",
+                  "value": {
+                    "stringValue": "http-response"
+                  }
+                },
+                {
+                  "key": "data_cap.count",
+                  "value": {
+                    "intValue": "1"
+                  }
+                },
+                {
+                  "key": "data_cap.field",
+                  "value": {
+                    "stringValue": "userData.user.passwordHash"
+                  }
+                },
+                {
+                  "key": "data_cap.scope",
+                  "value": {
+                    "stringValue": "scenario:debug-export"
+                  }
+                }
+              ],
+              "status": {
+                "code": 1
+              }
+            },
+            {
+              "traceId": "de4a0075751c5dd4b9828253dcdd95da",
+              "spanId": "0d06b10a587756f5",
+              "name": "data-cap.boundary.crossing",
+              "kind": 1,
+              "startTimeUnixNano": "1767225600000000000",
+              "endTimeUnixNano": "1767225600000000000",
+              "attributes": [
+                {
+                  "key": "data_cap.boundary.kind",
+                  "value": {
+                    "stringValue": "client-response"
+                  }
+                },
+                {
+                  "key": "data_cap.boundary.name",
+                  "value": {
+                    "stringValue": "http-response"
+                  }
+                },
+                {
+                  "key": "data_cap.count",
+                  "value": {
+                    "intValue": "1"
+                  }
+                },
+                {
+                  "key": "data_cap.field",
+                  "value": {
+                    "stringValue": "userData.user.role"
+                  }
+                },
+                {
+                  "key": "data_cap.scope",
+                  "value": {
+                    "stringValue": "scenario:debug-export"
+                  }
+                }
+              ],
+              "status": {
+                "code": 1
+              }
+            },
+            {
+              "traceId": "d5cba8a435f1572da5cc2e280a24260f",
+              "spanId": "8272e8ac88525e3f",
+              "name": "data-cap.boundary.crossing",
+              "kind": 1,
+              "startTimeUnixNano": "1767225600000000000",
+              "endTimeUnixNano": "1767225600000000000",
+              "attributes": [
+                {
+                  "key": "data_cap.boundary.kind",
+                  "value": {
+                    "stringValue": "client-response"
+                  }
+                },
+                {
+                  "key": "data_cap.boundary.name",
+                  "value": {
+                    "stringValue": "http-response"
+                  }
+                },
+                {
+                  "key": "data_cap.count",
+                  "value": {
+                    "intValue": "1"
+                  }
+                },
+                {
+                  "key": "data_cap.field",
+                  "value": {
+                    "stringValue": "userData.user.email"
+                  }
+                },
+                {
+                  "key": "data_cap.scope",
+                  "value": {
+                    "stringValue": "scenario:profile"
+                  }
+                }
+              ],
+              "status": {
+                "code": 1
+              }
+            },
+            {
+              "traceId": "d5cba8a435f1572da5cc2e280a24260f",
+              "spanId": "a9c00781bf885e9c",
+              "name": "data-cap.boundary.crossing",
+              "kind": 1,
+              "startTimeUnixNano": "1767225600000000000",
+              "endTimeUnixNano": "1767225600000000000",
+              "attributes": [
+                {
+                  "key": "data_cap.boundary.kind",
+                  "value": {
+                    "stringValue": "client-response"
+                  }
+                },
+                {
+                  "key": "data_cap.boundary.name",
+                  "value": {
+                    "stringValue": "http-response"
+                  }
+                },
+                {
+                  "key": "data_cap.count",
+                  "value": {
+                    "intValue": "1"
+                  }
+                },
+                {
+                  "key": "data_cap.field",
+                  "value": {
+                    "stringValue": "userData.user.id"
+                  }
+                },
+                {
+                  "key": "data_cap.scope",
+                  "value": {
+                    "stringValue": "scenario:profile"
+                  }
+                }
+              ],
+              "status": {
+                "code": 1
+              }
+            },
+            {
+              "traceId": "d5cba8a435f1572da5cc2e280a24260f",
+              "spanId": "8fe058c66e1c5047",
+              "name": "data-cap.boundary.crossing",
+              "kind": 1,
+              "startTimeUnixNano": "1767225600000000000",
+              "endTimeUnixNano": "1767225600000000000",
+              "attributes": [
+                {
+                  "key": "data_cap.boundary.kind",
+                  "value": {
+                    "stringValue": "client-response"
+                  }
+                },
+                {
+                  "key": "data_cap.boundary.name",
+                  "value": {
+                    "stringValue": "http-response"
+                  }
+                },
+                {
+                  "key": "data_cap.count",
+                  "value": {
+                    "intValue": "1"
+                  }
+                },
+                {
+                  "key": "data_cap.field",
+                  "value": {
+                    "stringValue": "userData.user.name"
+                  }
+                },
+                {
+                  "key": "data_cap.scope",
+                  "value": {
+                    "stringValue": "scenario:profile"
+                  }
+                }
+              ],
+              "status": {
+                "code": 1
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

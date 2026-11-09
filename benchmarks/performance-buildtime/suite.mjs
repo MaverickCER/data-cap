@@ -12,6 +12,7 @@ import { fileURLToPath } from "node:url"
 import { defineSuite } from "internal-package-contract/benchmark"
 import {
   UNOWNED,
+  buildCycloneDxBom,
   buildEvidenceModel,
   buildFlowGraph,
   buildInventory,
@@ -52,12 +53,15 @@ import {
   projectSubscriptions,
   renderDocumentation,
   renderManifest,
+  renderFlowCycloneDx,
   renderOwnershipGraphDot,
   renderUsageReport,
+  scanFlow,
 } from "data-cap/build"
 import { defineEvidenceProjection } from "data-cap/evidence"
 import { nodeBuildFileSystem } from "data-cap/node"
 import { generateBuildtimeFixtures } from "../benchmark-fixtures/generator.mjs"
+import { flowProjectFiles, writeFlowProject } from "../benchmark-fixtures/flow-generator.mjs"
 
 const here = path.dirname(fileURLToPath(import.meta.url))
 const fixturesRoot = path.join(here, "fixtures", "generated")
@@ -110,6 +114,58 @@ function inventoryAt(n) {
   }
   return inventoryCache.get(n)
 }
+
+/**
+ * The flow scan's fixtures: a project of `n` application modules (five functions each, chains of wrappers from a
+ * read of a capability field to a response) plus the one capability they read. Written once per size and shared.
+ */
+const flowFixtureCache = new Map()
+function flowFixture(n) {
+  if (!flowFixtureCache.has(n)) {
+    const root = path.join(fixturesRoot, `flow-n${String(n)}`)
+    flowFixtureCache.set(n, writeFlowProject(root, { files: n }).then(() => root))
+  }
+  return flowFixtureCache.get(n)
+}
+
+/** The inventory of the flow project, and the absolute path of every file the scan reads, once per size. */
+const flowScanCache = new Map()
+function flowScanInput(n) {
+  if (!flowScanCache.has(n)) {
+    flowScanCache.set(
+      n,
+      (async () => {
+        const root = await flowFixture(n)
+        const files = await discoverCapabilityFiles({ root, fs: nodeBuildFileSystem })
+        const linkResult = await linkCapabilityFiles(files, { fs: nodeBuildFileSystem, root, tsconfig: false })
+        const sources = Object.keys(flowProjectFiles({ files: n })).map((relative) => path.join(root, relative))
+        return { root, inventory: buildInventory(linkResult), files: sources }
+      })(),
+    )
+  }
+  return flowScanCache.get(n)
+}
+
+const FLOW_GENERATED_AT = new Date(0)
+/** The evidence model with the flow computed, the input of every flow projection, once per size. */
+const flowEvidenceCache = new Map()
+function flowEvidenceAt(n) {
+  if (!flowEvidenceCache.has(n)) {
+    flowEvidenceCache.set(
+      n,
+      flowFixture(n).then((root) =>
+        computeDataArtifacts({ root, fs: nodeBuildFileSystem, tsconfig: false, flowEvidence: true, generatedAt: FLOW_GENERATED_AT, commit: undefined }).then(({ result }) => result.evidence),
+      ),
+    )
+  }
+  return flowEvidenceCache.get(n)
+}
+
+const MODULES = { name: "application modules", how: "swept", description: "The size axis of the flow benchmarks: how many source modules the project has, each with five functions (a handler, a wrapper chain and a sender) that carry one capability's data to a response. The suite's own unit, a file, counts these modules here." }
+const FLOW_SHAPE = { name: "source shape", how: "fixed", value: "per module: a handler that reads the capability, three wrapper hops, a sender; chains cross at most six modules; every 50th module sends the whole record, every 75th also logs a field", description: "Cost depends on how deep the wrapper chains are and how much data each function touches; deeper chains and wider records are not covered." }
+const FLOW_CAPABILITIES = { name: "tracked capabilities", how: "fixed", value: "one capability with a single five-field record", description: "A project with many capabilities tracks more data through every function; not covered." }
+const FLOW_SLOW_TIERS = [20, 40, 80, 160, 320, 640]
+const FLOW_SLOW_REASON = "Every sample runs the whole flow evidence pipeline (scan, model, policy, claims and least-data analysis) over a real project; that analysis grows faster than linearly, so at 1,280 modules one sample takes minutes."
 
 const INVENTORY = {
   "inventory.capabilities": "swept",
@@ -707,6 +763,120 @@ export default defineSuite({
       setup: async (n) => inventoryAt(n),
       run: ({ inventory, root }) => generateFlow({ inventory, root, location: path.join(root, "flow"), edges: [] }),
     },
+    {
+      id: "scan-flow",
+      name: "scanFlow",
+      why: "It is the pass that reads every source module and follows each capability field through the functions that touch it, in every pipeline that computes flow evidence -- the one step whose cost grows with the amount of application code, not with the number of capabilities.",
+      poorPerformanceMeans: "A slower evidence build in proportion to the application's size, on every pull request that runs the flow gate: a regression that made it quadratic would make a 10,000-function service take minutes before any policy is evaluated.",
+      expectedComplexity: "linear",
+      complexityReason:
+        "Each module is parsed and indexed once and every function body is evaluated once per distinct shape of argument (results are memoised by signature), and chains cross files only within a bounded group, so the work is proportional to the number of functions.",
+      variables: [MODULES, FLOW_SHAPE, FLOW_CAPABILITIES, DISK, RUNTIME, { name: "analysis budget", how: "fixed", value: "the scanner's own limits (call depth 40, 3,000,000 steps)", description: "These fixtures stay far inside both limits; what happens beyond them is proven by test/build/flow-scale.test.ts, which asserts an explicit unknown, not measured here." }],
+      covers: {
+        scanFlow: {
+          "options.inventory": "fixed: one capability, so the cost measured is that of reading application code, not of tracking many capabilities",
+          "options.files": "swept",
+          "options.fs": FS_FIXED,
+          "options.root": ROOT_FIXED,
+          "options.tsconfig": TSCONFIG_FIXED,
+          "options.packages": PACKAGES_NOT,
+          "options.sinks": "fixed: the default sinks (response, console and logger calls), which every module here uses",
+        },
+      },
+      inEndToEnd: { callsPerOperation: 0, description: "Run only when flow evidence is requested, which the end-to-end operation does not do; measured on its own." },
+      sampling: SLOW,
+      setup: async (_n, _o, context) => flowScanInput(context.values.file),
+      run: ({ inventory, files, root }) => scanFlow({ inventory, files, fs: nodeBuildFileSystem, root, tsconfig: false }),
+    },
+    {
+      id: "compute-flow-evidence",
+      name: "computeDataArtifacts",
+      why: "It is the whole flow evidence build -- scan, model, declared policy, claims and least-data analysis -- that a pipeline pays when it turns on `flowEvidence`, so it is the number a team adopting the flow gate budgets for.",
+      poorPerformanceMeans: "A flow gate that is too slow to run on every pull request, so it gets skipped; the post-scan analyses trace each field across the whole graph, and if they regress to a scan of every edge per node a project twice as large costs four times as much.",
+      expectedComplexity: "linear",
+      complexityReason:
+        "The policy, claims and least-data passes each trace a field's flow through an index of edges by node, so every edge is visited a bounded number of times and the work grows with the number of modules.",
+      variables: [MODULES, FLOW_SHAPE, FLOW_CAPABILITIES, DISK, RUNTIME, { name: "post-scan analyses", how: "fixed", value: "policy with two rules, claims, least-data", description: "All three run whenever flow evidence is on; none can be requested alone." }],
+      tiers: FLOW_SLOW_TIERS,
+      tiersReason: FLOW_SLOW_REASON,
+      covers: {
+        computeDataArtifacts: {
+          "options.commit": "not covered: it calls the caller's own function once, whose cost is the caller's",
+          "options.exclude": EXCLUDE_FIXED,
+          "options.expiringWithinDays": WINDOW_FIXED,
+          "options.fs": FS_FIXED,
+          "options.generatedAt": "fixed: one instant, which is only printed in the headers",
+          "options.include": INCLUDE_FIXED,
+          "options.packages": PACKAGES_NOT,
+          "options.root": "swept",
+          "options.strict": STRICT_NOT,
+          "options.strictDocs": STRICT_NOT,
+          "options.strictFlow": STRICT_NOT,
+          "options.strictOwnership": STRICT_NOT,
+          "options.tsconfig": TSCONFIG_FIXED,
+          "options.docs": "not covered: no documentation is requested, which is what a flow-only gate does",
+          "options.evidence": "not covered: nothing is written, the evidence is computed in memory",
+          "options.flow": "not covered: no diagram folder is requested",
+          "options.location": "not covered: no manifest is requested",
+          "options.ownership": "not covered: no ownership report is requested",
+          "options.flowEvidence": "fixed: on, which is what this benchmark measures",
+          "options.observations": "not covered: runtime observations are joined to the static flow by a separate step whose cost depends on how many events were recorded",
+        },
+      },
+      inEndToEnd: { callsPerOperation: 0, description: "Run only when flow evidence is requested, which the end-to-end operation does not do; measured on its own." },
+      sampling: SLOW,
+      setup: async (_n, _o, context) => ({ root: await flowFixture(context.values.file) }),
+      run: ({ root }) => computeDataArtifacts({ root, fs: nodeBuildFileSystem, tsconfig: false, flowEvidence: true, generatedAt: FLOW_GENERATED_AT, commit: undefined }),
+    },
+    pure({
+      id: "build-cyclonedx-bom",
+      name: "buildCycloneDxBom",
+      why: "It turns the evidence's flow, policy, claims and observations into a CycloneDX 1.6 document for the supply-chain tools that read it, once per published evidence build.",
+      poorPerformanceMeans: "A slower export step in proportion to the size of the flow graph; a regression to quadratic would make exporting a large project's data flows slower than computing them.",
+      expectedComplexity: "linear",
+      complexityReason:
+        "Each edge that crosses a boundary is folded into one flow record by a map lookup, each record is written once on each of its two services, and annotations are written once per unknown, non-satisfied policy result and unverified claim, so the work is proportional to the nodes plus the edges.",
+      variables: [MODULES, FLOW_SHAPE, FLOW_CAPABILITIES, RUNTIME],
+      tiers: FLOW_SLOW_TIERS,
+      tiersReason: "Its input is the evidence of a project, which is built by the flow pipeline whose cost grows faster than linearly, so the largest sizes are not built here.",
+      covers: {
+        buildCycloneDxBom: {
+          "evidence.flow": "swept",
+          "evidence.policy": "fixed: two rules, evaluated against the flow, which add one annotation each at most",
+          "evidence.claims": "fixed: the claims the pipeline derives, one annotation each when not simply verified",
+          "evidence.observation": "not covered: the fixtures record no runtime observations; each observation adds one flow record and is matched against the field and boundary nodes only",
+          "evidence.provenance": "fixed: one small record, which is copied",
+          "evidence.capability": "fixed: one capability, looked up once per field node for its owner",
+          "options.name": "not covered: it is copied into the document's metadata",
+        },
+      },
+      setup: async (_n, _o, context) => flowEvidenceAt(context.values.file),
+      run: (evidence) => buildCycloneDxBom(evidence),
+    }),
+    pure({
+      id: "render-flow-cyclonedx",
+      name: "renderFlowCycloneDx",
+      why: "It writes the CycloneDX document as the text a pipeline publishes, once per evidence build that exports it.",
+      poorPerformanceMeans: "A slower export step in proportion to the size of the flow graph.",
+      expectedComplexity: "linear",
+      complexityReason: "It builds the document once and serializes it once; both are single passes over the nodes, edges and annotations.",
+      variables: [MODULES, FLOW_SHAPE, FLOW_CAPABILITIES, RUNTIME],
+      tiers: FLOW_SLOW_TIERS,
+      tiersReason: "Its input is the evidence of a project, which is built by the flow pipeline whose cost grows faster than linearly, so the largest sizes are not built here.",
+      covers: {
+        renderFlowCycloneDx: {
+          "evidence.flow": "swept",
+          "evidence.policy": "fixed: two rules, evaluated against the flow, which add one annotation each at most",
+          "evidence.claims": "fixed: the claims the pipeline derives, one annotation each when not simply verified",
+          "evidence.observation": "not covered: the fixtures record no runtime observations",
+          "evidence.provenance": "fixed: one small record, which is copied",
+          "evidence.capability": "fixed: one capability, looked up once per field node for its owner",
+          "options.name": "not covered: it is copied into the document's metadata",
+        },
+      },
+      setup: async (_n, _o, context) => flowEvidenceAt(context.values.file),
+      run: (evidence) => renderFlowCycloneDx(evidence),
+    }),
     {
       id: "diff-manifest-snapshots",
       name: "diffManifestSnapshots",

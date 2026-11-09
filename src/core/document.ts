@@ -21,6 +21,9 @@ export type DataFlowEndpointKind =
   | "computed"
   | "internal"
 
+/** The declared data-safety state of a value at a boundary crossing -- the vocabulary of `DataFlowEndpoint.handling` and of flow policy rules. */
+export type FlowHandling = "plaintext" | "masked" | "redacted" | "hashed" | "encrypted"
+
 /**
  * One declared data-flow boundary an operation crosses. A getter/
  * subscription's endpoints are typically `"input"` (where `execute`/
@@ -46,7 +49,45 @@ export interface DataFlowEndpoint {
    * handling at this crossing, never that data-cap has verified the field's
    * actual runtime value matches the claim.
    */
-  readonly handling?: "plaintext" | "masked" | "redacted" | "hashed" | "encrypted"
+  readonly handling?: FlowHandling
+}
+
+/** What a data-flow rule can name as a destination: the declared endpoint kinds, plus the two destinations only code analysis can see. */
+export type FlowBoundaryKind = DataFlowEndpointKind | "client-response" | "log"
+
+/** Which fields a data-flow rule governs; every supplied criterion must match, and `classification` or `field` is required. */
+export interface FlowPolicyAppliesToDocs {
+  /** Every field of this capability whose resolved `sensitivity` equals this value. */
+  readonly classification?: string
+  /** One field of this capability, by its top-level key. */
+  readonly field?: string
+  /** Narrows the rule to one path inside each governed field (for example `["passwordHash"]`). */
+  readonly path?: readonly string[]
+}
+
+/**
+ * One declared data-flow rule: which of this capability's fields it governs,
+ * and what must hold wherever their data goes. Evaluated against the Flow
+ * Model at build time; a rule is a declaration, never a runtime check, and a
+ * result is only as complete as the analysis behind it (see the Policy
+ * Model's `indeterminate` outcome). At least one of `forbidDestinations`,
+ * `allowedDestinations` and `requireHandling` is required.
+ */
+export interface FlowPolicyDocs {
+  /** Unique within this capability. */
+  readonly id: string
+  /** Why the rule exists. */
+  readonly description?: string
+  /** Which fields the rule governs. */
+  readonly appliesTo: FlowPolicyAppliesToDocs
+  /** Destinations the governed data must never reach. */
+  readonly forbidDestinations?: readonly FlowBoundaryKind[]
+  /** If set, the only destinations the governed data may reach. */
+  readonly allowedDestinations?: readonly FlowBoundaryKind[]
+  /** Handling that exempts a crossing from `forbidDestinations`/`allowedDestinations`. */
+  readonly allowedHandling?: readonly FlowHandling[]
+  /** If set, every crossing of the governed data must declare one of these handlings. */
+  readonly requireHandling?: readonly FlowHandling[]
 }
 
 /**
@@ -393,6 +434,8 @@ export interface CapabilityDocs<TSchema extends DataSchema<FieldsShape>> {
    * did); everything else stays here.
    */
   readonly metadata?: Readonly<Record<string, unknown>>
+  /** Declared data-flow rules for this capability's fields, evaluated against the Flow Model (see `FlowPolicyDocs`). */
+  readonly flowPolicy?: readonly FlowPolicyDocs[]
   /**
    * Developer-supplied evidence assertions -- verified over time, unlike
    * every other field above, which is declared-only. Kept structurally

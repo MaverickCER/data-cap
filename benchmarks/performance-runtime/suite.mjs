@@ -128,6 +128,10 @@ export default defineSuite({
   },
 
   notBenchmarked: {
+    fieldPathName:
+      "It joins one capability name and one field path into one string, a constant amount of work done once per observed field.",
+    observeBoundary:
+      "It makes one call to the caller's sink per field it is given, so its cost is the length of that list times the cost of the sink, and the sink is the caller's own (a memory array, a log line, a metrics client); a benchmark would measure whichever sink we chose, not data-cap.",
     documentData:
       "A deliberate no-op at runtime: it exists so build tooling can read the call site and so the compiler checks the documentation's shape, and it does nothing with its arguments, so it costs the same whatever they hold.",
     createDataStore:

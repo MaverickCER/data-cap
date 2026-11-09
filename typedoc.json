@@ -8,6 +8,7 @@
     "src/runtime/retry.ts",
     "src/node/index.ts",
     "src/evidence/index.ts",
+    "src/observe/index.ts",
     "src/build/index.ts",
     "src/helpers/index.ts",
     "src/eslint-plugin/index.ts"

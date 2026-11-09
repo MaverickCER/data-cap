@@ -1,6 +1,40 @@
 {
   "exceptions": [
     {
+      "id": "dist-url:http://www.w3.org/2001/XMLSchema#",
+      "version": 2,
+      "justification": "The PROV-JSON `prefix` map data-cap emits for a flow export. `xsd` must be bound to this exact namespace for the `xsd:dateTime` typed timestamps to be understood.",
+      "alternatives": "Emit timestamps as untyped strings: valid JSON, but PROV-JSON consumers lose the datatype of every start and end time.",
+      "attempted": "Checked PROV-JSON and PROV-DM: the namespace IRI is the identity of the vocabulary, so it cannot be reworded, shortened or built at runtime without changing what the document says.",
+      "constraint": "A W3C-assigned namespace identifier fixed by the standard, not a link followed at runtime.",
+      "exceptionType": "platform-or-vendor-constraint",
+      "expires": "",
+      "method": "independent-human-review",
+      "remediation": "None possible while the PROV-JSON export exists.",
+      "residualRisk": "One informational supply-chain alert (a string literal); nothing is fetched and there is no behaviour.",
+      "revisitWhen": "Socket stops reporting urlStrings, or the PROV-JSON export is removed.",
+      "ruleBroken": "DistNoUrls: no scheme-prefixed URL may ship in the build output unexplained (Socket.dev urlStrings alert).",
+      "url": "http://www.w3.org/2001/XMLSchema#",
+      "whyPreferable": "The export is only useful if it is valid PROV-JSON; one informational alert is the price of that."
+    },
+    {
+      "id": "dist-url:http://www.w3.org/ns/prov#",
+      "version": 2,
+      "justification": "The PROV-JSON `prefix` map data-cap emits for a flow export. `prov` must be bound to this exact namespace for any PROV consumer to recognise the `prov:` terms in the document.",
+      "alternatives": "Bind the prefix to a different string: the document would no longer be PROV, and validators and provenance tools would reject or ignore it.",
+      "attempted": "Checked PROV-JSON and PROV-DM: the namespace IRI is the identity of the vocabulary, so it cannot be reworded, shortened or built at runtime without changing what the document says.",
+      "constraint": "A W3C-assigned namespace identifier fixed by the standard, not a link followed at runtime.",
+      "exceptionType": "platform-or-vendor-constraint",
+      "expires": "",
+      "method": "independent-human-review",
+      "remediation": "None possible while the PROV-JSON export exists.",
+      "residualRisk": "One informational supply-chain alert (a string literal); nothing is fetched and there is no behaviour.",
+      "revisitWhen": "Socket stops reporting urlStrings, or the PROV-JSON export is removed.",
+      "ruleBroken": "DistNoUrls: no scheme-prefixed URL may ship in the build output unexplained (Socket.dev urlStrings alert).",
+      "url": "http://www.w3.org/ns/prov#",
+      "whyPreferable": "The export is only useful if it is valid PROV-JSON; one informational alert is the price of that."
+    },
+    {
       "id": "dist-url:https://docs.oasis-open.org/sarif/sarif/v2.1.0/",
       "version": 2,
       "justification": "A pointer to the SARIF 2.1.0 specification in the shipped type declarations; it documents the shape of the SARIF log data-cap emits.",
