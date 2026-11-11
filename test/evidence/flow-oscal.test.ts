@@ -70,6 +70,96 @@ describe("buildOscalAssessmentResults", () => {
     expect(ok).toBe(true)
   })
 
+  it("names the placeholder assessment plan as one, and drops the remark when a real plan is given", () => {
+    const importAp = doc["assessment-results"]["import-ap"]
+    expect(importAp.href).toBe("#data-cap-assessment-plan")
+    expect(importAp.remarks).toContain("Placeholder: no assessment plan was supplied")
+    const planned = buildOscalAssessmentResults(fixture.evidence, {
+      controls: CONTROLS,
+      assessmentPlan: "https://example.test/plans/data-flow.json",
+    })!
+    expect(planned["assessment-results"]["import-ap"]).toEqual({
+      href: "https://example.test/plans/data-flow.json",
+    })
+  })
+
+  it("with an evidence href, every evidence reference is a back-matter resource the observations point at", () => {
+    const linked = buildOscalAssessmentResults(fixture.evidence, {
+      controls: CONTROLS,
+      evidenceHref: "docs/data.evidence.json",
+    })!
+    const resources = linked["assessment-results"]["back-matter"]?.resources ?? []
+    expect(resources.length).toBeGreaterThan(0)
+    for (const resource of resources) {
+      expect(resource.uuid).toMatch(UUID)
+      expect(resource.rlinks).toEqual([
+        { href: "docs/data.evidence.json", "media-type": "application/json" },
+      ])
+    }
+    const uuids = new Set(resources.map((r) => r.uuid))
+    const refs = (linked["assessment-results"].results[0]?.observations ?? []).flatMap(
+      (o) => o["relevant-evidence"] ?? [],
+    )
+    expect(refs.length).toBeGreaterThan(0)
+    for (const ref of refs) {
+      expect(ref.href).toMatch(/^#/)
+      expect(uuids.has(ref.href!.slice(1)), `${ref.href} resolves to a resource`).toBe(true)
+    }
+    // Still valid against the official schema with the trail in place.
+    const validate = validator()
+    const ok = validate(linked)
+    if (!ok) console.error(JSON.stringify(validate.errors?.slice(0, 6), null, 1))
+    expect(ok).toBe(true)
+    // Resources are sorted and deterministic.
+    expect(resources.map((r) => r.uuid)).toEqual([...resources.map((r) => r.uuid)].sort())
+    expect(
+      buildOscalAssessmentResults(fixture.evidence, {
+        controls: CONTROLS,
+        evidenceHref: "docs/data.evidence.json",
+      }),
+    ).toEqual(linked)
+  })
+
+  it("without an evidence href the references stay descriptive and there is no back-matter", () => {
+    expect(doc["assessment-results"]["back-matter"]).toBeUndefined()
+    for (const observation of result().observations ?? []) {
+      for (const ref of observation["relevant-evidence"] ?? []) {
+        expect(ref.href).toBeUndefined()
+        expect(ref.description).toMatch(/^(supporting|contradicting): /)
+      }
+    }
+  })
+
+  it("strict mode refuses a document a tool-chain could not resolve", () => {
+    expect(() =>
+      buildOscalAssessmentResults(fixture.evidence, { controls: CONTROLS, strict: true }),
+    ).toThrow("assessmentPlan and evidenceHref")
+    // Blank values are refused the same way: a tool-chain cannot follow an empty href.
+    expect(() =>
+      buildOscalAssessmentResults(fixture.evidence, {
+        controls: CONTROLS,
+        strict: true,
+        assessmentPlan: " ",
+        evidenceHref: "",
+      }),
+    ).toThrow("assessmentPlan and evidenceHref")
+    expect(() =>
+      buildOscalAssessmentResults(fixture.evidence, {
+        controls: CONTROLS,
+        strict: true,
+        assessmentPlan: "plan.json",
+      }),
+    ).toThrow("evidenceHref")
+    expect(
+      buildOscalAssessmentResults(fixture.evidence, {
+        controls: CONTROLS,
+        strict: true,
+        assessmentPlan: "plan.json",
+        evidenceHref: "docs/data.evidence.json",
+      }),
+    ).toBeDefined()
+  })
+
   it("stamps the metadata from the evidence's own provenance", () => {
     const { metadata } = doc["assessment-results"]
     expect(metadata["oscal-version"]).toBe("1.1.2")
@@ -89,7 +179,7 @@ describe("buildOscalAssessmentResults", () => {
     const findings = result().findings ?? []
     expect(findings).toHaveLength(3)
     const status = (control: string) =>
-      findings.find((f) => f.target["target-id"] === control)?.target.status
+      findings.find((f) => f.target["target-id"] === `${control}_obj`)?.target.status
     expect(status("ac-4")).toMatchObject({ state: "not-satisfied", reason: "fail" })
     expect(status("sc-28")).toMatchObject({ state: "not-satisfied", reason: "fail" })
     expect(findings.map((f) => f.target.type)).toEqual([
@@ -99,14 +189,41 @@ describe("buildOscalAssessmentResults", () => {
     ])
   })
 
+  it("targets each control's assessment objective by the part id NIST's SP 800-53 catalog gives it", () => {
+    // In NIST's OSCAL catalog, ac-4's assessment objective is the part `ac-4_obj`; `ac-4` is the
+    // control itself, which an objective-id target cannot name.
+    const targets = (result().findings ?? []).map((f) => f.target["target-id"]).sort()
+    expect(targets).toEqual(["ac-4_obj", "au-3_obj", "sc-28_obj"])
+  })
+
+  it("uses a part id the caller already gave as it is, typed by the part it names", () => {
+    const given = buildOscalAssessmentResults(fixture.evidence, {
+      controls: { "userData/no-password-to-client": ["ac-2.1_obj", "sc-28_smt"] },
+    })!
+    const targets = (given["assessment-results"].results[0]!.findings ?? []).map((f) => [
+      f.target.type,
+      f.target["target-id"],
+    ])
+    expect(targets.sort()).toEqual([
+      ["objective-id", "ac-2.1_obj"],
+      ["statement-id", "sc-28_smt"],
+    ])
+    // The reviewed controls are still the controls, whichever part was targeted.
+    const reviewed = given["assessment-results"].results[0]!["reviewed-controls"][
+      "control-selections"
+    ][0]?.["include-controls"]?.map((c) => c["control-id"])
+    expect(reviewed).toEqual(["ac-2.1", "sc-28"])
+    expect(validator()(given)).toBe(true)
+  })
+
   it("a rule that holds statically is satisfied, and says it was not observed at runtime", () => {
-    const finding = (result().findings ?? []).find((f) => f.target["target-id"] === "au-3")
+    const finding = (result().findings ?? []).find((f) => f.target["target-id"] === "au-3_obj")
     expect(finding?.target.status).toMatchObject({ state: "satisfied", reason: "pass" })
     expect(finding?.target.status.remarks).toMatch(/not observed at runtime/)
   })
 
   it("links each finding to an observation describing the claim, with the evidence it rests on", () => {
-    const finding = (result().findings ?? []).find((f) => f.target["target-id"] === "ac-4")!
+    const finding = (result().findings ?? []).find((f) => f.target["target-id"] === "ac-4_obj")!
     const linked = finding["related-observations"]?.map((o) => o["observation-uuid"]) ?? []
     expect(linked.length).toBeGreaterThan(0)
     const observations = (result().observations ?? []).filter((o) => linked.includes(o.uuid))

@@ -17,6 +17,11 @@
 // `--no-check` still fully exercises.
 import { fields } from "../../dist/index.js"
 import { createData, createDataStore, InvalidFieldDefaultError } from "../../dist/runtime/index.js"
+import { createDataCache } from "../../dist/runtime/cache.js"
+import { defaultBackoff } from "../../dist/runtime/retry.js"
+import { canonicalize, processors } from "../../dist/helpers.js"
+import { flowNodeId } from "../../dist/evidence.js"
+import { createMemorySink, observeBoundary } from "../../dist/observe.js"
 
 function assertEqual<T>(actual: T, expected: T, message: string): void {
   if (actual !== expected) {
@@ -105,3 +110,52 @@ Deno.test(
     )
   },
 )
+
+Deno.test("helpers run under Deno: processors coerce and canonicalize is stable", () => {
+  assertEqual(processors.toBoolean("yes"), true, "toBoolean")
+  assertEqual(processors.toInteger("42"), 42, "toInteger")
+  assertEqual(canonicalize({ b: 1, a: [2, 1] }), canonicalize({ a: [2, 1], b: 1 }), "canonicalize")
+})
+
+Deno.test("cache and retry run under Deno", () => {
+  const cache = createDataCache<{ name: string }>({ maxEntries: 2 })
+  // A complete DataState: fields plus their info (empty here: nothing has been fetched).
+  cache.set("a", { fields: { name: "a" }, info: {} })
+  assertEqual(
+    JSON.stringify(cache.get("a")),
+    JSON.stringify({ fields: { name: "a" }, info: {} }),
+    "get a",
+  )
+  cache.set("b", { fields: { name: "b" }, info: {} })
+  cache.set("c", { fields: { name: "c" }, info: {} })
+  assertEqual(cache.size, 2, "lru size")
+  if (!(defaultBackoff(1) > 0)) throw new Error("defaultBackoff(1) should be positive")
+})
+
+Deno.test("evidence helpers run under Deno: node ids are deterministic", () => {
+  assertEqual(
+    flowNodeId("field", "users", "email"),
+    flowNodeId("field", "users", "email"),
+    "flowNodeId",
+  )
+})
+
+Deno.test("observe runs under Deno and records only what it was given", () => {
+  const memory = createMemorySink()
+  const recorded = observeBoundary(memory.sink, {
+    scope: "svc",
+    capability: "user",
+    boundary: { kind: "http", name: "GET /me" },
+    fields: [["email"], ["id"]],
+    clock: () => 1,
+  })
+  assertEqual(recorded, 2, "recorded")
+  assertEqual(
+    memory
+      .events()
+      .map((e) => e.field)
+      .join(","),
+    "user.email,user.id",
+    "fields",
+  )
+})

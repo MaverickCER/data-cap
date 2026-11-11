@@ -26,7 +26,7 @@ const bundles: Options[] = [
     // browser/edge/worker build gets exactly this platform-agnostic output.
     platform: "neutral",
     // Matches tsconfig.json's target -- Object.hasOwn (ES2022) is load-bearing
-    // for the ownership algorithm and has shipped natively since Node 18.
+    // for the ownership algorithm and has shipped natively since Node 16.9, well below the >=22 floor.
     target: "es2022",
     dts: false,
     sourcemap: true,

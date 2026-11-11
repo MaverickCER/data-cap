@@ -161,6 +161,7 @@ describe("buildOscalAssessmentResults exact output", () => {
           "metadata": {
             "last-modified": "2026-02-03T04:05:06.000Z",
             "oscal-version": "1.1.2",
+            "remarks": "Machine-generated engineering artifact assembled from statically-provable code facts and author-declared documentation. It can support a security, privacy, or compliance review. It does not itself establish compliance with any standard. Incomplete traces are recorded as unknown, never hidden; an absent flow is not evidence of no flow.",
             "title": "Custom title",
             "version": "4.5.6",
           },
@@ -182,7 +183,7 @@ describe("buildOscalAssessmentResults exact output", () => {
                       "remarks": "Holds statically but is contradicted by runtime observation.",
                       "state": "not-satisfied",
                     },
-                    "target-id": "C-1",
+                    "target-id": "C-1_obj",
                     "type": "objective-id",
                   },
                   "title": "contradicted -- C-1",
@@ -204,7 +205,7 @@ describe("buildOscalAssessmentResults exact output", () => {
                       "remarks": "Established by static analysis and corroborated by runtime observation in 3 scope(s).",
                       "state": "satisfied",
                     },
-                    "target-id": "C-4",
+                    "target-id": "C-4_obj",
                     "type": "objective-id",
                   },
                   "title": "corroborated -- C-4",
@@ -218,7 +219,7 @@ describe("buildOscalAssessmentResults exact output", () => {
                       "remarks": "Violated for elsewhere (established by static analysis).",
                       "state": "not-satisfied",
                     },
-                    "target-id": "C-4",
+                    "target-id": "C-4_obj",
                     "type": "objective-id",
                   },
                   "title": "bare -- C-4",
@@ -237,7 +238,7 @@ describe("buildOscalAssessmentResults exact output", () => {
                       "remarks": "Violated for cap.a, a field (established by static, declared analysis).",
                       "state": "not-satisfied",
                     },
-                    "target-id": "C-1",
+                    "target-id": "C-1_obj",
                     "type": "objective-id",
                   },
                   "title": "violated -- C-1",
@@ -256,7 +257,7 @@ describe("buildOscalAssessmentResults exact output", () => {
                       "remarks": "Holds statically but is contradicted by runtime observation.",
                       "state": "not-satisfied",
                     },
-                    "target-id": "C-9",
+                    "target-id": "C-9_obj",
                     "type": "objective-id",
                   },
                   "title": "contradicted -- C-9",
@@ -275,7 +276,7 @@ describe("buildOscalAssessmentResults exact output", () => {
                       "remarks": "Violated for cap.a, a field (established by static, declared analysis).",
                       "state": "not-satisfied",
                     },
-                    "target-id": "C-2",
+                    "target-id": "C-2_obj",
                     "type": "objective-id",
                   },
                   "title": "violated -- C-2",
@@ -289,7 +290,7 @@ describe("buildOscalAssessmentResults exact output", () => {
                       "remarks": "Violated for elsewhere (established by static analysis).",
                       "state": "not-satisfied",
                     },
-                    "target-id": "C-5",
+                    "target-id": "C-5_obj",
                     "type": "objective-id",
                   },
                   "title": "bare -- C-5",
@@ -303,7 +304,7 @@ describe("buildOscalAssessmentResults exact output", () => {
                       "remarks": "Could not be decided by static analysis: the rule matches no field; a governed crossing declares no handling.",
                       "state": "not-satisfied",
                     },
-                    "target-id": "C-3",
+                    "target-id": "C-3_obj",
                     "type": "objective-id",
                   },
                   "title": "undecided -- C-3",
@@ -424,6 +425,79 @@ describe("buildOscalAssessmentResults exact output", () => {
     `)
   })
 
+  it("with an evidence href, lists each referenced record once as a back-matter resource", () => {
+    const out = buildOscalAssessmentResults(
+      input(
+        ["r"],
+        [result("r", "satisfied")],
+        [
+          claim("k-1", "r", {
+            supporting: [
+              { model: "flow", id: "f-1" },
+              { model: "observation", id: "o-1" },
+            ],
+            contradicting: [{ model: "observation", id: "o-1" }],
+          }),
+          claim("k-2", "r", { supporting: [{ model: "flow", id: "f-1" }] }),
+        ],
+      ),
+      { controls: { r: ["C"] }, evidenceHref: "docs/data.evidence.json" },
+    )!
+    const observations = out["assessment-results"].results[0]!.observations!
+    expect(observations.map((o) => o["relevant-evidence"])).toMatchInlineSnapshot(`
+      [
+        [
+          {
+            "description": "supporting: flow f-1",
+            "href": "#8f030729-56f9-548c-a72c-ce8589c4bcf4",
+          },
+          {
+            "description": "supporting: observation o-1",
+            "href": "#f2a705ec-88f1-5d6d-b776-97cce473fec0",
+          },
+          {
+            "description": "contradicting: observation o-1",
+            "href": "#f2a705ec-88f1-5d6d-b776-97cce473fec0",
+          },
+        ],
+        [
+          {
+            "description": "supporting: flow f-1",
+            "href": "#8f030729-56f9-548c-a72c-ce8589c4bcf4",
+          },
+        ],
+      ]
+    `)
+    expect(out["assessment-results"]["back-matter"]).toMatchInlineSnapshot(`
+      {
+        "resources": [
+          {
+            "description": "data-cap evidence: the flow record f-1 in the Evidence Model.",
+            "rlinks": [
+              {
+                "href": "docs/data.evidence.json",
+                "media-type": "application/json",
+              },
+            ],
+            "title": "flow f-1",
+            "uuid": "8f030729-56f9-548c-a72c-ce8589c4bcf4",
+          },
+          {
+            "description": "data-cap evidence: the observation record o-1 in the Evidence Model.",
+            "rlinks": [
+              {
+                "href": "docs/data.evidence.json",
+                "media-type": "application/json",
+              },
+            ],
+            "title": "observation o-1",
+            "uuid": "f2a705ec-88f1-5d6d-b776-97cce473fec0",
+          },
+        ],
+      }
+    `)
+  })
+
   it("states plainly that no controls were mapped, and defaults title and plan", () => {
     const out = buildOscalAssessmentResults(
       input(["a", "b"], [result("a", "violated")], [claim("k", "a")]),
@@ -434,10 +508,12 @@ describe("buildOscalAssessmentResults exact output", () => {
         "assessment-results": {
           "import-ap": {
             "href": "#data-cap-assessment-plan",
+            "remarks": "Placeholder: no assessment plan was supplied. Pass \`assessmentPlan\` to reference a real one; this document supports a review and establishes nothing by itself.",
           },
           "metadata": {
             "last-modified": "2026-02-03T04:05:06.000Z",
             "oscal-version": "1.1.2",
+            "remarks": "Machine-generated engineering artifact assembled from statically-provable code facts and author-declared documentation. It can support a security, privacy, or compliance review. It does not itself establish compliance with any standard. Incomplete traces are recorded as unknown, never hidden; an absent flow is not evidence of no flow.",
             "title": "data-cap data-flow assessment",
             "version": "4.5.6",
           },
@@ -491,10 +567,12 @@ describe("buildOscalAssessmentResults exact output", () => {
         "assessment-results": {
           "import-ap": {
             "href": "#data-cap-assessment-plan",
+            "remarks": "Placeholder: no assessment plan was supplied. Pass \`assessmentPlan\` to reference a real one; this document supports a review and establishes nothing by itself.",
           },
           "metadata": {
             "last-modified": "2026-02-03T04:05:06.000Z",
             "oscal-version": "1.1.2",
+            "remarks": "Machine-generated engineering artifact assembled from statically-provable code facts and author-declared documentation. It can support a security, privacy, or compliance review. It does not itself establish compliance with any standard. Incomplete traces are recorded as unknown, never hidden; an absent flow is not evidence of no flow.",
             "title": "data-cap data-flow assessment",
             "version": "1",
           },

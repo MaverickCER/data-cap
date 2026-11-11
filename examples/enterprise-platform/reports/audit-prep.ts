@@ -1,6 +1,6 @@
 /**
  * The audit-prep report -- this tier's second generated governance report
- * (`reports/litigation-evidence.ts` is the other). Where the litigation
+ * (`reports/data-handling-record.ts` is the other). Where the data-handling
  * report is field-by-field ("what do we know about `invoices`"), this one
  * is capability-by-capability ("which of our capabilities are actually
  * audit-ready, and where are the real gaps") -- the rollup an auditor
@@ -15,7 +15,7 @@
  * session -- endpoint `handling`) are present versus silently absent.
  * **Presence only, never an adequacy or compliance claim** -- a checked box
  * means "declared," never "correct" or "sufficient." See
- * `litigation-evidence.ts`'s own header comment for the same epistemic
+ * `data-handling-record.ts`'s own header comment for the same epistemic
  * discipline this file follows, and for the "both reports read one
  * shared, fingerprint-verified `EvidenceModel` instead of each
  * recomputing it" architecture (ADR 0054, `evidence-cache.ts`) this file
@@ -80,7 +80,7 @@ function handlingCompletenessFor(capability: CapabilityNode, fieldKey: string): 
 
 /**
  * The same shared, fingerprint-verified `EvidenceModel`
- * `litigation-evidence.ts` reads (`getEvidence()`, `evidence-cache.ts`) --
+ * `data-handling-record.ts` reads (`getEvidence()`, `evidence-cache.ts`) --
  * `evidence.finding` already carries every finding data-cap produces
  * (static, usage, AND flow --
  * SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY/SENSITIVE_FIELD_ENDPOINT_MISSING_HANDLING

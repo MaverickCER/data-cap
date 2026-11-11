@@ -41,6 +41,21 @@ discovered file); and the dual-package hazard (two coordinator instances
 under mixed ESM/CJS resolution) is a checked, documented, gracefully-
 degrading risk class, not a silently unstated one.
 
+The runtime entry points import nothing. What installing the package adds, generated from `package.json`:
+
+<!-- ipc:begin dependencies -->
+
+Installing `data-cap` installs 1 package directly, and whatever it depends on. It names 3 optional peers, which you install yourself when you use the part that needs them.
+
+| Package                    | Kind          | Range                              | Why                                                                                                                                                                                                                                      |
+| -------------------------- | ------------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@typescript/typescript6`  | dependency    | `^6.0.2`                           | The TypeScript 6 compiler the build entry parses sources with when the project's own TypeScript is 7 or missing. Bundled inside the tarball, about 5 MB packed and 24 MB unpacked; no runtime entry can reach it (`compiler-isolation`). |
+| `@typescript-eslint/utils` | optional peer | `^8.0.0`                           | Only for `data-cap/eslint-plugin`; projects linting TypeScript already have it through `typescript-eslint`.                                                                                                                              |
+| `eslint`                   | optional peer | `^8.57.0 \|\| ^9.0.0 \|\| ^10.0.0` | Only for `data-cap/eslint-plugin`, which runs inside the project's own ESLint.                                                                                                                                                           |
+| `typescript`               | optional peer | `^5.0.0 \|\| ^6.0.0 \|\| ^7.0.0`   | The project's own compiler, used by the build entry instead of `@typescript/typescript6` when it is version 5 or 6.                                                                                                                      |
+
+<!-- ipc:end dependencies -->
+
 ## Versioning, stability, and long-term support
 
 Pre-`1.0` — see [`VERSIONING.md`](VERSIONING.md) for the three-tier
@@ -60,13 +75,15 @@ blocker for your evaluation today, wait for a `1.0` release or track
 
 ## Bundle size and performance
 
-Every consumer-facing entry point carries a hard gzip budget, enforced in
-CI (`ci/size-budgets.mjs`) — see [`PERFORMANCE.md`](PERFORMANCE.md) for
-current numbers and methodology. `core` and `helpers` are each single-digit
-KB gzipped; `runtime`'s cache/retry features are separate, independently
-tree-shaken entry points so importing `./runtime` alone never pays for
-either. `build` and `eslint-plugin` are Node-only, dev-time-only, and
-carry only a 999 KB ceiling (they never ship to a browser bundle).
+Every entry point carries a gzip budget, enforced in CI
+(`ci/size-budgets.mjs`, run by the `verify` and `contract` jobs) — see
+[`PERFORMANCE.md`](PERFORMANCE.md) for current numbers and methodology.
+`core`, `helpers` and `observe` are each single-digit KB gzipped; `runtime`'s
+cache/retry features are separate, independently tree-shaken entry points so
+importing `./runtime` alone never pays for either; `evidence` carries the flow
+views and seven standards adapters and is budgeted at 32 KB. `build`,
+`eslint-plugin` and the CLI are Node-only, dev-time-only, and carry only a
+999 KB ceiling (they never ship to a browser bundle).
 
 ## Architectural guarantees worth knowing before you adopt
 

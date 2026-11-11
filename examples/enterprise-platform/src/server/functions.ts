@@ -151,7 +151,7 @@ export async function markInvoicePaid(
 
 /**
  * Marks an invoice disputed -- the concrete scenario this example's own
- * litigation-evidence report (`reports/litigation-evidence.ts`) is scoped
+ * data-handling record (`reports/data-handling-record.ts`) is scoped
  * to: "a client disputes a charge; prove what billing data existed and how
  * it was handled."
  */

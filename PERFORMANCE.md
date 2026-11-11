@@ -16,8 +16,8 @@ and don't reliably predict a specific application's real workload.
 
 ## Bundle size budgets
 
-Enforced in `ci/size-budgets.mjs`, run as a required step in CI's
-`verify` job (`npm run size`). Current budgets (gzip of the unminified
+Enforced in `ci/size-budgets.mjs`, run as a step in CI's
+`verify` and `contract` jobs (`npm run size`). Current budgets (gzip of the unminified
 build — the published code is never minified, so stack traces and
 reviews read the source as written):
 
@@ -28,8 +28,12 @@ reviews read the source as written):
 | `./runtime/cache` | 1 KB   | ~0.5 KB                  |
 | `./runtime/retry` | 2 KB   | ~1.6 KB                  |
 | `./helpers`       | 3 KB   | ~2.5 KB                  |
+| `./observe`       | 2.5 KB | ~2.1 KB                  |
+| `./evidence`      | 32 KB  | ~26 KB                   |
+| `./node`          | 1 KB   | ~0.3 KB                  |
 | `./build`         | 999 KB | Node-only, dev-time-only |
 | `./eslint-plugin` | 999 KB | Node-only, dev-time-only |
+| CLI (`bin`)       | 999 KB | Node-only, dev-time-only |
 
 `./runtime`'s budget was raised to 8 KB when minification was dropped, and
 before that from 4 KB alongside

@@ -11,7 +11,7 @@
 // requested pass contributes to, not the thinner one a standalone
 // `data-cap --check --evidence` alone would recompute -- so this is the one
 // place that artifact's freshness is verified, not the CLI's own `--check`.
-// `reports/litigation-evidence.ts --check`/`reports/audit-prep.ts --check`
+// `reports/data-handling-record.ts --check`/`reports/audit-prep.ts --check`
 // (chained after this in package.json's `check` script) separately verify
 // the two hand-written governance reports, so between the two, every
 // artifact this example generates is drift-checked exactly as it was

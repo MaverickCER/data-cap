@@ -9,6 +9,7 @@
  * proof that no such flow exists unless the picture is complete (ADR 0071).
  */
 
+import { flowEvidenceDisclaimer } from "./flow-disclaimer.js"
 import { unknownText } from "../flow/flow-findings.js"
 import type { FlowUnknown } from "../flow/flow-model.js"
 import { buildFlowGraphView } from "./flow-graph-view.js"
@@ -211,6 +212,7 @@ function unknownsBlock(view: FlowGraphView, heading: string): string[] {
 }
 
 /** Renders the graph as Markdown, or `undefined` when no flow was computed. */
+
 export function renderFlowText(
   evidence: FlowGraphViewInput,
   options: FlowTextOptions = {},
@@ -220,7 +222,14 @@ export function renderFlowText(
 
   const level = Math.max(1, Math.min(4, options.headingLevel ?? 1))
   const h = (offset: number): string => "#".repeat(level + offset)
-  const lines: string[] = [`${h(0)} Data flow`, "", coverageLine(view.coverage), ""]
+  const lines: string[] = [
+    `${h(0)} Data flow`,
+    "",
+    `> ${flowEvidenceDisclaimer()}`,
+    "",
+    coverageLine(view.coverage),
+    "",
+  ]
 
   const wantedField = options.field
   const { fields, functions } = selectByField(view, wantedField)

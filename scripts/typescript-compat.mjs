@@ -6,10 +6,11 @@
 //      points. TypeScript 7 ships no programmatic compiler API, so under a 7 root the scanner has to
 //      fall back to the bundled `@typescript/typescript6` (src/build/typescript.ts) -- the case no
 //      unit test can reach, because it needs a real TypeScript 7 root in `node_modules`.
-//   2. The shipped `.d.ts` files type-check in a consumer under `moduleResolution: nodenext` and
-//      `strict`: the runtime, helpers and node entries with full library checking, and `./build` /
-//      `./evidence` with `skipLibCheck` (their declarations name TypeScript AST types, and
-//      TypeScript 7's `typescript` package exports none -- see VERSIONING.md, "Supported toolchain").
+//   2. The shipped `.d.ts` files type-check in a consumer under `moduleResolution: nodenext`,
+//      `strict` and full library checking (no `skipLibCheck`), every entry point included. Under a 7
+//      root the `types@>=7` export conditions serve `dist/.dts7`, whose compiler-API types come from
+//      the bundled `@typescript/typescript6` (TypeScript 7's own package ships none); under 5 and 6 the
+//      primary declarations typed from the consumer's `typescript` are served (ADR 0069).
 //
 // Under a 7 root it also removes the bundled compiler and asserts the readable failure, so the
 // "no usable compiler" message cannot rot unseen.
@@ -56,22 +57,25 @@ for (const [label, build] of [["esm", esm], ["cjs", cjs]]) {
 console.log("scanner ok (esm + cjs)")
 `
 
+// Every entry point, with the compiler-API-typed result read back so the build declarations are
+// really resolved, not only imported.
 const strictConsumer = `import * as core from "${PACKAGE}"
 import * as runtime from "${PACKAGE}/runtime"
 import * as cache from "${PACKAGE}/runtime/cache"
 import * as retry from "${PACKAGE}/runtime/retry"
 import * as helpers from "${PACKAGE}/helpers"
 import * as node from "${PACKAGE}/node"
-console.log(typeof core, typeof runtime, typeof cache, typeof retry, typeof helpers, typeof node)
-`
-
-const libSkippedConsumer = `import { parseCapabilityFile } from "${PACKAGE}/build"
+import * as observe from "${PACKAGE}/observe"
+import { parseCapabilityFile } from "${PACKAGE}/build"
 import * as evidence from "${PACKAGE}/evidence"
 const result = parseCapabilityFile("a.ts", "export const e = 1")
-console.log(result.createDataCalls.length, typeof evidence)
+// localConsts is typed with the compiler API (ReadonlyMap<string, ts.Expression>), so this line only
+// compiles when the declaration set in use resolves the types of typescript.
+const consts: ReadonlyMap<string, { readonly kind: number }> = result.localConsts
+console.log(typeof core, typeof runtime, typeof cache, typeof retry, typeof helpers, typeof node, typeof observe, result.createDataCalls.length, consts.size, typeof evidence)
 `
 
-function tsconfig(file, skipLibCheck) {
+function tsconfig(file) {
   return JSON.stringify({
     compilerOptions: {
       module: "nodenext",
@@ -79,7 +83,7 @@ function tsconfig(file, skipLibCheck) {
       strict: true,
       noEmit: true,
       types: ["node"],
-      skipLibCheck,
+      skipLibCheck: false,
     },
     files: [file],
   })
@@ -124,15 +128,25 @@ try {
       console.log(`tsc bin is still the root compiler (${linked})`)
       mkdirSync(path.join(dir, "src"))
       writeFileSync(path.join(dir, "strict.ts"), strictConsumer)
-      writeFileSync(path.join(dir, "tsconfig.strict.json"), tsconfig("strict.ts", false))
-      writeFileSync(path.join(dir, "libskipped.ts"), libSkippedConsumer)
-      writeFileSync(path.join(dir, "tsconfig.skipped.json"), tsconfig("libskipped.ts", true))
+      writeFileSync(path.join(dir, "tsconfig.strict.json"), tsconfig("strict.ts"))
       writeFileSync(path.join(dir, "scan.mjs"), scanScript)
 
       run("node", [tsc, "-p", "tsconfig.strict.json"], dir)
-      console.log("types ok: runtime, helpers, node entries (full library check)")
-      run("node", [tsc, "-p", "tsconfig.skipped.json"], dir)
-      console.log("types ok: build, evidence entries (skipLibCheck)")
+      console.log("types ok: every entry point, full library check, no skipLibCheck")
+      // Which declaration set answered: the primary one under 5 and 6, the `types@>=7` one under 7.
+      const trace = run(
+        "node",
+        [tsc, "-p", "tsconfig.strict.json", "--traceResolution"],
+        dir,
+      ).stdout
+      const expected = version === "7" ? "types@>=7" : "types"
+      if (!trace.includes(`Resolved under condition '${expected}'`)) {
+        console.error(
+          `expected the '${expected}' export condition to resolve the declarations under typescript@${version}`,
+        )
+        process.exit(1)
+      }
+      console.log(`declarations served under the '${expected}' export condition`)
       console.log(run("node", ["scan.mjs"], dir).stdout.trim())
 
       if (version === "7") {

@@ -75,7 +75,7 @@ const DOCS_PROJECTS = new Set([
 ])
 
 // `enterprise-platform` also has two hand-written report generators
-// (`reports/litigation-evidence.ts`/`audit-prep.ts`) outside the CLI's own
+// (`reports/data-handling-record.ts`/`audit-prep.ts`) outside the CLI's own
 // docs/ownership/flow generation -- `npm run reports` regenerates both.
 const EXTRA_GOLDEN_SCRIPTS = {
   "enterprise-platform": ["reports"],

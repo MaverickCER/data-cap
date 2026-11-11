@@ -17,7 +17,8 @@ describe("renderFlowDot", () => {
 
   it("is a well-formed digraph whose every edge endpoint is a declared node", () => {
     const text = dot()
-    expect(text.startsWith("digraph ")).toBe(true)
+    // The disclaimer rides in a leading // comment; the graph itself follows.
+    expect(text.split("\n")[1]?.startsWith("digraph ")).toBe(true)
     expect(text.trimEnd().endsWith("}")).toBe(true)
     const declared = new Set([...text.matchAll(/^\s*"(n\d+)" \[/gm)].map((m) => m[1]))
     const edges = [...text.matchAll(/^\s*"(n\d+)" -> "(n\d+)"/gm)]
@@ -127,7 +128,8 @@ describe("renderFlowMermaid", () => {
 
   it("is a flowchart whose every edge endpoint is a declared node", () => {
     const text = mmd()
-    expect(text.startsWith("flowchart LR\n")).toBe(true)
+    // The disclaimer rides in a leading %% comment; the flowchart itself follows.
+    expect(text.split("\n")[1]).toBe("flowchart LR")
     const declared = new Set([...text.matchAll(/^\s+(n\d+)(?:\[|\(|\{)/gm)].map((m) => m[1]))
     const edges = [...text.matchAll(/^\s+(n\d+) (?:--|-\.|==)[^\n]*?(?:-->|\.->|==>) (n\d+)\s*$/gm)]
     expect(edges.length).toBeGreaterThan(0)

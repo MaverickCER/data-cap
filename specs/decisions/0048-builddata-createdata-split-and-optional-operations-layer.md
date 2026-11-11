@@ -1,4 +1,4 @@
-# 0048: `buildData`/`createData` split — an optional, Experimental-tier operations layer, composed entirely from existing Stable primitives
+# 0048: `buildData`/`createData` split — an optional operations layer (promoted to Stable by ADR 0065), composed entirely from existing Stable primitives
 
 ## Status
 

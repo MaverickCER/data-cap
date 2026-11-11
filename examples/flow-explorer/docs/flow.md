@@ -1,5 +1,7 @@
 # Data flow
 
+> Machine-generated engineering artifact assembled from statically-provable code facts and author-declared documentation. It can support a security, privacy, or compliance review. It does not itself establish compliance with any standard. Incomplete traces are recorded as unknown, never hidden; an absent flow is not evidence of no flow.
+
 Coverage: 5 function(s) analyzed, 1 unknown(s) -- not complete: parts of the program could not be followed, so a flow missing below is not proof that it does not exist.
 
 ## Status legend
@@ -103,6 +105,7 @@ Coverage: 5 function(s) analyzed, 1 unknown(s) -- not complete: parts of the pro
 ## Diagram
 
 ```mermaid
+%% Machine-generated engineering artifact assembled from statically-provable code facts and author-declared documentation. It can support a security, privacy, or compliance review. It does not itself establish compliance with any standard. Incomplete traces are recorded as unknown, never hidden; an absent flow is not evidence of no flow.
 flowchart LR
   %% Data flow -- NOT complete: parts could not be followed
   cov["Coverage: NOT complete -- a missing flow is not proof of absence"]

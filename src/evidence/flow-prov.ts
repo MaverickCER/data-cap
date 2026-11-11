@@ -19,6 +19,7 @@
  * names derived from the evidence's own content-addressed ids.
  */
 
+import { flowEvidenceDisclaimer } from "./flow-disclaimer.js"
 import type { EvidenceModel } from "../build/evidence-model.js"
 import type { Claim } from "../flow/claims-model.js"
 import type { FlowEdge, FlowNode } from "../flow/flow-model.js"
@@ -121,6 +122,7 @@ function addAgentAndAnalysis(evidence: ProvInput, sections: Sections): void {
     "prov:type": "prov:SoftwareAgent",
     "dc:name": "data-cap",
     "dc:version": evidence.provenance.toolVersion,
+    "dc:disclaimer": flowEvidenceDisclaimer(),
   }
   sections.activity["dc:analysis"] = {
     "prov:type": "dc:Analysis",
@@ -277,6 +279,7 @@ function addClaims(claims: readonly Claim[], sections: Sections, lookups: Lookup
 }
 
 /** Projects the flow, claims and observations into a PROV-JSON document, or `undefined` when no flow was computed. */
+
 export function buildProvDocument(evidence: ProvInput): ProvDocument | undefined {
   const { flow } = evidence
   if (flow === undefined) return undefined

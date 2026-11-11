@@ -8,7 +8,7 @@ platform three departments actually use -- the same "project" concept
 (finance-team, `confidential`) are three independently-owned capabilities
 against one real running service, not three toy demos. The domain question
 shifts again, from Tier 2's "how do teams compose capabilities" to "how do
-we generate the documentation an org actually needs -- for litigation
+we generate the documentation an org actually needs -- for a dispute
 review, for audit prep, and for a CI gate that blocks a real governance
 gap before it ships."
 
@@ -32,7 +32,7 @@ New this tier: `DataFlowEndpoint` can declare `handling`
 (`plaintext`/`masked`/`redacted`/`hashed`/`encrypted`) alongside its `url`.
 `billingData.invoices` declares `handling: "encrypted"` on every endpoint it
 crosses; `identityData.currentUser` declares `"plaintext"` on its single
-read endpoint. `reports/litigation-evidence.ts` reads this straight off
+read endpoint. `reports/data-handling-record.ts` reads this straight off
 each field's own `writtenBy` operations and renders it as a real lifecycle
 table -- which operation, which direction, which endpoint, what handling
 was declared there. **Declared, never independently verified** -- the same
@@ -51,7 +51,7 @@ below.
 the kind of access `src/build/dependency-graph.ts` can prove happens, but
 can't statically attribute to one specific field. `billing.capability.ts`'s
 own `evidence.fields.invoices.dynamicAccess` citation names the exact
-line, so `reports/litigation-evidence.ts` resolves `invoices` to
+line, so `reports/data-handling-record.ts` resolves `invoices` to
 `"declared-dynamic"`. **`identity.capability.ts` has no matching citation**
 -- `currentUser` resolves to `"indeterminate"` instead: a real,
 undisclosed gap, not a mistake either report papers over.
@@ -124,7 +124,7 @@ project, issue an invoice, and dispute it to see the live SSE sync.
   `billingData`) against one real running service, each with its own
   `documentData()` governance declarations.
 - A field's declared `handling` at every endpoint it crosses renders as a
-  real, source-grounded lifecycle table in `reports/litigation-evidence.ts`
+  real, source-grounded lifecycle table in `reports/data-handling-record.ts`
   -- never a claim of actual encryption/redaction, only what was declared.
 - The same uncited-dynamic-access utility produces two different, honest
   outcomes for two different fields (`"declared-dynamic"` vs.
@@ -142,7 +142,7 @@ project, issue an invoice, and dispute it to see the live SSE sync.
 
 ```sh
 npm run docs     # regenerate manifest/DATA.md/OWNERSHIP.md/flow diagrams/data.evidence.json
-npm run reports  # regenerate reports/litigation-evidence.{md,json} and audit-prep.{md,json}
+npm run reports  # regenerate reports/data-handling-record.{md,json} and audit-prep.{md,json}
 npm run check    # verify every committed artifact above matches a fresh generation (no write)
 npm run guard    # data-cap --strict-docs against Atlas's own capabilities (passes cleanly)
 ```

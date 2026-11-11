@@ -2608,12 +2608,25 @@ The OSCAL assessment-results document, restricted to what this projection popula
 
 ```ts
 readonly "assessment-results": {
+  "back-matter"?: {
+     resources: readonly {
+        description: string;
+        rlinks: readonly {
+           href: string;
+           "media-type": string;
+        }[];
+        title: string;
+        uuid: string;
+     }[];
+  };
   "import-ap": {
      href: string;
+     remarks?: string;
   };
   metadata: {
      "last-modified": string;
      "oscal-version": string;
+     remarks: string;
      title: string;
      version: string;
   };
@@ -2632,7 +2645,7 @@ readonly "assessment-results": {
               state: "satisfied" | "not-satisfied";
            };
            "target-id": string;
-           type: "objective-id";
+           type: "objective-id" | "statement-id";
         };
         title: string;
         uuid: string;
@@ -2643,6 +2656,7 @@ readonly "assessment-results": {
         methods: readonly ("EXAMINE" | "TEST")[];
         "relevant-evidence"?: readonly {
            description: string;
+           href?: string;
         }[];
         types: readonly string[];
         uuid: string;
@@ -2667,11 +2681,44 @@ readonly "assessment-results": {
 };
 ```
 
+###### back-matter?
+
+```ts
+readonly "back-matter"?: {
+  resources: readonly {
+     description: string;
+     rlinks: readonly {
+        href: string;
+        "media-type": string;
+     }[];
+     title: string;
+     uuid: string;
+  }[];
+};
+```
+
+One resource per evidence reference, each resolving to the evidence file; present only with `evidenceHref`.
+
+###### back-matter.resources
+
+```ts
+readonly resources: readonly {
+  description: string;
+  rlinks: readonly {
+     href: string;
+     "media-type": string;
+  }[];
+  title: string;
+  uuid: string;
+}[];
+```
+
 ###### import-ap
 
 ```ts
 readonly "import-ap": {
   href: string;
+  remarks?: string;
 };
 ```
 
@@ -2681,12 +2728,19 @@ readonly "import-ap": {
 readonly href: string;
 ```
 
+###### import-ap.remarks?
+
+```ts
+readonly remarks?: string;
+```
+
 ###### metadata
 
 ```ts
 readonly metadata: {
   "last-modified": string;
   "oscal-version": string;
+  remarks: string;
   title: string;
   version: string;
 };
@@ -2703,6 +2757,14 @@ readonly "last-modified": string;
 ```ts
 readonly "oscal-version": string;
 ```
+
+###### metadata.remarks
+
+```ts
+readonly remarks: string;
+```
+
+The shared evidence disclaimer: this document supports a review and establishes nothing by itself.
 
 ###### metadata.title
 
@@ -2734,7 +2796,7 @@ readonly results: readonly {
            state: "satisfied" | "not-satisfied";
         };
         "target-id": string;
-        type: "objective-id";
+        type: "objective-id" | "statement-id";
      };
      title: string;
      uuid: string;
@@ -2745,6 +2807,7 @@ readonly results: readonly {
      methods: readonly ("EXAMINE" | "TEST")[];
      "relevant-evidence"?: readonly {
         description: string;
+        href?: string;
      }[];
      types: readonly string[];
      uuid: string;
@@ -2787,7 +2850,9 @@ Options for `buildOscalAssessmentResults`.
 readonly assessmentPlan?: string;
 ```
 
-`href` of the assessment plan this result imports (OSCAL requires one; default `#data-cap-assessment-plan`).
+`href` of the assessment plan this result imports. OSCAL requires one; without it the document
+carries the placeholder `#data-cap-assessment-plan` and says so in `import-ap.remarks`, which is
+enough for review and nothing an OSCAL tool-chain should resolve. See [strict](#strict).
 
 ##### controls
 
@@ -2795,7 +2860,32 @@ readonly assessmentPlan?: string;
 readonly controls: Readonly<Record<string, readonly string[]>>;
 ```
 
-data-cap rule id (as in `evidence.policy.rules[].id`, for example `userData/no-pii-to-log`) to the control ids it is evidence for. Never inferred.
+data-cap rule id (as in `evidence.policy.rules[].id`, for example `userData/no-pii-to-log`) to the
+control ids it is evidence for. Never inferred. A control id (`ac-4`) is targeted at its
+assessment objective (`ac-4_obj`), the part id NIST's SP 800-53 OSCAL catalog gives it; an id that
+already names a part (`ac-4_obj`, `ac-4_smt`, `ac-4_smt.a`) is targeted as given. Name each
+objective once: `ac-4` and `ac-4_obj` are the same target and would give two findings.
+
+##### evidenceHref?
+
+```ts
+readonly evidenceHref?: string;
+```
+
+`href` the evidence file is reachable at from where the document will live (for example
+`docs/data.evidence.json`). With it, every evidence reference becomes a back-matter resource
+with an `rlink`, and each observation's `relevant-evidence` points at that resource, so a
+tool-chain can follow the trail; without it the references stay descriptive text.
+
+##### strict?
+
+```ts
+readonly strict?: boolean;
+```
+
+Refuse to build a document a tool-chain could not use: `true` requires [assessmentPlan](#assessmentplan)
+and [evidenceHref](#evidencehref), and throws when either is missing. The default builds the reviewable
+document with placeholders named as such.
 
 ##### title?
 

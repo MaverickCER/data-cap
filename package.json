@@ -29,100 +29,120 @@
   "exports": {
     ".": {
       "import": {
+        "types@>=7": "./dist/index.ts7.d.ts",
         "types": "./dist/index.d.ts",
         "default": "./dist/index.js"
       },
       "require": {
+        "types@>=7": "./dist/index.ts7.d.cts",
         "types": "./dist/index.d.cts",
         "default": "./dist/index.cjs"
       }
     },
     "./runtime": {
       "import": {
+        "types@>=7": "./dist/runtime/index.ts7.d.ts",
         "types": "./dist/runtime/index.d.ts",
         "default": "./dist/runtime/index.js"
       },
       "require": {
+        "types@>=7": "./dist/runtime/index.ts7.d.cts",
         "types": "./dist/runtime/index.d.cts",
         "default": "./dist/runtime/index.cjs"
       }
     },
     "./runtime/cache": {
       "import": {
+        "types@>=7": "./dist/runtime/cache.ts7.d.ts",
         "types": "./dist/runtime/cache.d.ts",
         "default": "./dist/runtime/cache.js"
       },
       "require": {
+        "types@>=7": "./dist/runtime/cache.ts7.d.cts",
         "types": "./dist/runtime/cache.d.cts",
         "default": "./dist/runtime/cache.cjs"
       }
     },
     "./runtime/retry": {
       "import": {
+        "types@>=7": "./dist/runtime/retry.ts7.d.ts",
         "types": "./dist/runtime/retry.d.ts",
         "default": "./dist/runtime/retry.js"
       },
       "require": {
+        "types@>=7": "./dist/runtime/retry.ts7.d.cts",
         "types": "./dist/runtime/retry.d.cts",
         "default": "./dist/runtime/retry.cjs"
       }
     },
     "./helpers": {
       "import": {
+        "types@>=7": "./dist/helpers.ts7.d.ts",
         "types": "./dist/helpers.d.ts",
         "default": "./dist/helpers.js"
       },
       "require": {
+        "types@>=7": "./dist/helpers.ts7.d.cts",
         "types": "./dist/helpers.d.cts",
         "default": "./dist/helpers.cjs"
       }
     },
     "./build": {
       "import": {
+        "types@>=7": "./dist/build.ts7.d.ts",
         "types": "./dist/build.d.ts",
         "default": "./dist/build.js"
       },
       "require": {
+        "types@>=7": "./dist/build.ts7.d.cts",
         "types": "./dist/build.d.cts",
         "default": "./dist/build.cjs"
       }
     },
     "./node": {
       "import": {
+        "types@>=7": "./dist/node.ts7.d.ts",
         "types": "./dist/node.d.ts",
         "default": "./dist/node.js"
       },
       "require": {
+        "types@>=7": "./dist/node.ts7.d.cts",
         "types": "./dist/node.d.cts",
         "default": "./dist/node.cjs"
       }
     },
     "./evidence": {
       "import": {
+        "types@>=7": "./dist/evidence.ts7.d.ts",
         "types": "./dist/evidence.d.ts",
         "default": "./dist/evidence.js"
       },
       "require": {
+        "types@>=7": "./dist/evidence.ts7.d.cts",
         "types": "./dist/evidence.d.cts",
         "default": "./dist/evidence.cjs"
       }
     },
     "./observe": {
       "import": {
+        "types@>=7": "./dist/observe.ts7.d.ts",
         "types": "./dist/observe.d.ts",
         "default": "./dist/observe.js"
       },
       "require": {
+        "types@>=7": "./dist/observe.ts7.d.cts",
         "types": "./dist/observe.d.cts",
         "default": "./dist/observe.cjs"
       }
     },
     "./eslint-plugin": {
       "import": {
+        "types@>=7": "./dist/eslint-plugin/index.ts7.d.ts",
         "types": "./dist/eslint-plugin/index.d.ts",
         "default": "./dist/eslint-plugin/index.js"
       },
       "require": {
+        "types@>=7": "./dist/eslint-plugin/index.ts7.d.cts",
         "types": "./dist/eslint-plugin/index.d.cts",
         "default": "./dist/eslint-plugin/index.cjs"
       }
@@ -176,14 +196,15 @@
     "benchmark:history": "node node_modules/internal-package-contract/scripts/benchmark/append-history.mjs",
     "benchmark:summary": "node node_modules/internal-package-contract/scripts/benchmark/render-summary.mjs",
     "benchmark:page": "node node_modules/internal-package-contract/scripts/benchmark/render-page.mjs",
-    "setup": "npm install && npm run build && npm run schema",
+    "setup": "npm install && npm run build && npm run schema && internal-package-contract install-hooks",
     "stage": "npm run typecheck && npm run build && npm run test && npm run size",
     "verify": "npm run typecheck && npm run lint && npm run format:check && npm run build && npm run schema && npm run test:coverage && npm run size && npm run verify:ambient && npm run verify:compiler-isolation && npm run verify:readme-example && npm run docs:api:report:check",
     "precommit": "npm run typecheck && npm run lint && npm run format && npm run build && npm run schema && npm run test:coverage && npm run size && npm run verify:ambient && npm run verify:compiler-isolation && npm run verify:readme-example && npm run docs:api:report:check",
     "prepublishOnly": "npm run verify",
     "version": "changeset version && npm install --package-lock-only --ignore-scripts && npm run build && npm run examples:update-golden && internal-package-contract skill && internal-package-contract site",
     "release": "changeset publish",
-    "benchmark:check": "node benchmarks/run-benchmarks.mjs --check"
+    "benchmark:check": "node benchmarks/run-benchmarks.mjs --check",
+    "package-managers": "node scripts/package-managers-smoke.mjs"
   },
   "dependencies": {
     "@typescript/typescript6": "^6.0.2"
@@ -223,7 +244,7 @@
     "espree": "^11.2.0",
     "fast-check": "^4.10.2",
     "globals": "^17.9.0",
-    "internal-package-contract": "github:MaverickCER/internal-package-contract#v0.16.0",
+    "internal-package-contract": "github:MaverickCER/internal-package-contract#v0.17.0",
     "prettier": "3.9.10",
     "ts-json-schema-generator": "^2.9.0",
     "tsup": "^9.0.0",
@@ -259,6 +280,8 @@
     "copies": [
       "benchmark-budgets",
       "build-fs",
+      "ci-jobs",
+      "ci-jobs-test",
       "code-of-conduct",
       "compiler-api",
       "display-path",
@@ -269,6 +292,12 @@
       "reading-benchmarks",
       "releasing",
       "resolve-tsconfig-paths",
+      "schema-cyclonedx-1.6",
+      "schema-cyclonedx-jsf-0.82",
+      "schema-cyclonedx-spdx",
+      "schema-oscal-assessment-results-1.1.2",
+      "schema-sarif-2.1.0",
+      "standards-readme",
       "support",
       "typedoc-markdown",
       "typescript",
@@ -284,6 +313,9 @@
         "bin",
         "./eslint-plugin",
         "./node"
+      ],
+      "env": [
+        "bin"
       ]
     }
   }

@@ -7,6 +7,7 @@
  * drawn thick and red.
  */
 
+import { flowEvidenceDisclaimer } from "./flow-disclaimer.js"
 import { nodeLabel } from "./flow-graph-view.js"
 import { edgeLabel, selectDiagram } from "./flow-diagram-selection.js"
 import type { DiagramInput, FlowDiagramOptions } from "./flow-diagram-selection.js"
@@ -62,6 +63,7 @@ function nodeStyle(node: FlowNode): string {
 }
 
 /** Renders DOT, or `undefined` when no flow was computed. */
+
 export function renderFlowDot(
   evidence: DiagramInput,
   options: FlowDiagramOptions = {},
@@ -69,7 +71,7 @@ export function renderFlowDot(
   const selection = selectDiagram(evidence, options)
   if (selection === undefined) return undefined
   if (selection.missingField !== undefined) {
-    return `digraph "data-flow" {\n  label="No field named ${escape(selection.missingField)} in this evidence";\n}\n`
+    return `// ${flowEvidenceDisclaimer()}\ndigraph "data-flow" {\n  label="No field named ${escape(selection.missingField)} in this evidence";\n}\n`
   }
 
   // Keyed by `string | undefined` so an unknown with no subject simply finds no node.
@@ -82,7 +84,12 @@ export function renderFlowDot(
     return id
   }
 
-  const lines: string[] = ['digraph "data-flow" {', "  rankdir=LR;", `  labelloc=t;`]
+  const lines: string[] = [
+    `// ${flowEvidenceDisclaimer()}`,
+    'digraph "data-flow" {',
+    "  rankdir=LR;",
+    `  labelloc=t;`,
+  ]
   lines.push(
     `  label="Data flow -- ${selection.complete ? "complete" : "NOT complete: parts could not be followed, so a missing flow is not proof of absence"}";`,
   )

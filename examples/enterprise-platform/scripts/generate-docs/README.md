@@ -18,7 +18,7 @@ which also passes `location`/`docs`/`ownership`/`flow`/`evidence` to
 `computeDataArtifacts()` directly -- but only to populate the composed
 `EvidenceModel`'s own finding set (manifest export-collision findings,
 flow's sensitive-boundary findings) that
-`reports/litigation-evidence.ts`/`reports/audit-prep.ts` read; it never
+`reports/data-handling-record.ts`/`reports/audit-prep.ts` read; it never
 writes any of those artifacts to disk (see its own header comment). This
 script is what actually writes them.
 
@@ -42,7 +42,7 @@ exported `checkArtifacts()` — the removed
 function, called directly with the same (evidence-inclusive) options
 `run.ts` passes to `generateDataArtifacts()`. `npm run check` (see
 `package.json`) runs this script, then
-`reports/litigation-evidence.ts --check`/`reports/audit-prep.ts --check` --
+`reports/data-handling-record.ts --check`/`reports/audit-prep.ts --check` --
 not a separate `data-cap --check --evidence`, which would recompute the
 thinner, CLI-flags-only Evidence Model and always report the richer
 committed file stale.

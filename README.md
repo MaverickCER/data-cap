@@ -91,8 +91,8 @@ This is real output from the example's own `npm run docs` (a `data-cap --evidenc
 ### Evidence it works
 
 - **Real fixtures:** the output above comes from a runnable example, and [complete applications](https://github.com/MaverickCER/data-cap/tree/main/examples) cover the model from one capability to a whole application.
-- **Enforced in CI:** coverage is a ratchet that may only move up, mutation score is a gate ([CODE_REVIEW.md](CODE_REVIEW.md)), and a bundle-size budget is checked ([`ci/size-budgets.mjs`](https://github.com/MaverickCER/data-cap/blob/main/ci/size-budgets.mjs)).
-- **Runtime-tested:** core, runtime, and helpers are verified against real Node, Bun, and Deno engines in CI ([support matrix](GUIDE.md#runtime-support-matrix)).
+- **Enforced in CI:** coverage thresholds are fixed floors (90% branches, 100% functions, 95% lines and statements) that are only ever raised, mutation score is a gate ([CODE_REVIEW.md](CODE_REVIEW.md)), and a bundle-size budget is checked ([`ci/size-budgets.mjs`](https://github.com/MaverickCER/data-cap/blob/main/ci/size-budgets.mjs)).
+- **Runtime-tested:** every isomorphic entry point (core, runtime, cache, retry, helpers, evidence, observe) is executed under real Node, Bun and Deno engines in CI ([support matrix](GUIDE.md#runtime-support-matrix)); `./build`, `./node` and the CLI are Node-only.
 - **Known hazards tested:** the dual-package (ESM and CommonJS) hazard is pinned by a test that states its exact consequence ([SECURITY.md](SECURITY.md#dual-package-hazard)).
 - **Verifiable release:** published with npm OIDC provenance and no long-lived token ([SECURITY.md](SECURITY.md#supply-chain-posture)).
 
@@ -141,7 +141,7 @@ Use the capability from your application without coupling its ownership to a par
 
 **How it works:** the runtime and the build tooling are separate. The runtime coordinates fields, operations, and subscriptions; the build pass analyzes declarations and usage in development and CI ([Architecture](specs/architecture.md)).
 
-**Integration:** it sits under or next to TanStack Query, Redux, Zustand, Apollo, or plain `fetch`, with no transport, database, or state-library change. **Runtimes:** Node.js 22+, browsers, Bun, and Deno for core, runtime, and helpers; `./build` and the ESLint plugin are Node-only ([support matrix](GUIDE.md#runtime-support-matrix)). **Configuration and extension:** pick manual control or `createData` per capability, add cache and retry policy ([Cache and retry](GUIDE.md#cache-and-retry)), and share capabilities from a [reusable package](GUIDE.md#reusable-packages).
+**Integration:** it sits under or next to TanStack Query, Redux, Zustand, Apollo, or plain `fetch`, with no transport, database, or state-library change. **Runtimes:** Node.js 22+, browsers, Bun, and Deno for core, runtime, helpers, evidence and observe; `./build`, `./node`, the CLI and the ESLint plugin are Node-only ([support matrix](GUIDE.md#runtime-support-matrix)). **Configuration and extension:** pick manual control or `createData` per capability, add cache and retry policy ([Cache and retry](GUIDE.md#cache-and-retry)), and share capabilities from a [reusable package](GUIDE.md#reusable-packages). **Package managers:** npm is supported; pnpm, Yarn 1 and Yarn Berry (node-modules linker) are tested for install and import of every entry point only ([details](GUIDE.md#package-managers)).
 
 ## Limits and when not to use it
 
@@ -149,19 +149,19 @@ Use the capability from your application without coupling its ownership to a par
 - **Trade-offs:** it adds a declaration per capability and a build step. There is no automatic rollback or conflict resolution: a failed optimistic update reverts by removing its pending transition ([ADR 0023](specs/decisions/0023-no-automatic-rollback-or-conflict-resolution.md), [troubleshooting](GUIDE.md#my-mutations-optimistic-value-doesnt-automatically-roll-back-on-failure)).
 - **Not a replacement** for a fetching or state library: on the manual path you supply execution, retry, and caching, and `createData` adds dedup, status, and an optimistic lifecycle but not your transport. It is not an authorization, encryption, or compliance system.
 - **Data flow is syntactic:** it follows your project's own code (classes, modules, closures, common builtins), not packages unless you declare what a call does. It records what it could not follow and calls that trace incomplete, but it cannot prove a flow absent from code it cannot see ([what it follows](GUIDE.md#what-it-follows-and-what-it-says-when-it-cannot)).
-- **Install weight:** the build entry bundles a TypeScript 6 compiler, adding roughly 26 MB to the install, used only in development and CI.
+- **Install weight:** the package's one dependency is a TypeScript 6 compiler, bundled inside the tarball (about 5 MB packed, 24 MB unpacked), that only the build entry uses, in development and CI.
 - **Automation:** generated manifests and ownership documentation give agents repository-local context, but they do not guarantee a correct change; the automation owns its retry and validation loop.
 
 ## Security and supply chain
 
 - **Guarantees:** an operation writing a field it does not own has that write dropped with a development-mode warning that never includes the offending value, so a warning cannot leak a secret ([runtime security model](SECURITY.md#runtime-security-model)).
 - **Trust boundaries:** the build tool analyzes files statically and never imports or evaluates them, which covers the build tooling only, not your application at runtime ([build-time model](SECURITY.md#build-time-security-model), [your responsibilities](SECURITY.md#application-responsibilities)).
-- **Dependencies and licence:** the runtime has no dependencies; the build entry bundles one compiler. MIT licensed.
+- **Dependencies and licence:** the runtime entry points import nothing. Everything installing the package adds is listed, with the reason for each, in the [Adoption guide](ADOPTION.md#security--threat-model), generated from `package.json`. MIT licensed.
 - **Release integrity:** npm OIDC trusted publishing with provenance ([supply-chain posture](SECURITY.md#supply-chain-posture)). Report a vulnerability through [SECURITY.md](SECURITY.md#reporting-a-vulnerability).
 
 ## Maturity, versioning and support
 
-Pre-1.0 (see the npm badge for the current version). The core runtime, build tooling, CLI, ESLint integration, and generated artifacts (including `createData`) are implemented, tested, and Stable; [VERSIONING.md](VERSIONING.md) lists the exact surface semver covers, and a `0.x` minor may still change a Stable API, so pin accordingly. Security fixes target the latest published `0.x` only until 1.0 ([Adoption guide](ADOPTION.md#versioning-stability-and-long-term-support)).
+Pre-1.0 (see the npm badge for the current version). The core runtime, build tooling, CLI, ESLint integration, and generated artifacts (including `createData`) are implemented, tested, and Stable, while the data-flow surface added in 0.9 (the flow sub-models, `./observe`, and the `./evidence` views and adapters) is Experimental; [VERSIONING.md](VERSIONING.md) lists the exact surface semver covers, and a `0.x` minor may still change a Stable API, so pin accordingly. Security fixes target the latest published `0.x` only until 1.0 ([Adoption guide](ADOPTION.md#versioning-stability-and-long-term-support)).
 
 - **Upgrade and migrate:** read the [CHANGELOG](CHANGELOG.md) on every minor; [migration guides](specs/migrations/README.md) cover adoption from common data-management patterns.
 - **Release history:** [CHANGELOG](CHANGELOG.md) and [GitHub releases](https://github.com/MaverickCER/data-cap/releases); the process is in [RELEASING.md](RELEASING.md).

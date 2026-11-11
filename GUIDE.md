@@ -231,20 +231,32 @@ otherwise. See `test/integration/coordinator/coordinator-dedup/` and
 
 ## Runtime support matrix
 
-| Entry point                                       | Node                                                                                                                                                | Browser | Bun                                      | Deno | Edge/serverless |
-| ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | ---------------------------------------- | ---- | --------------- |
-| `.` (core)                                        | ✅                                                                                                                                                  | ✅      | ✅                                       | ✅   | ✅              |
-| `./runtime`, `./runtime/cache`, `./runtime/retry` | ✅                                                                                                                                                  | ✅      | ✅                                       | ✅   | ✅              |
-| `./helpers`                                       | ✅                                                                                                                                                  | ✅      | ✅                                       | ✅   | ✅              |
-| `./build`                                         | ✅ (Node-only — uses the TypeScript Compiler API; never `node:fs`, see [ADR 0058](specs/decisions/0058-library-surfaces-do-not-acquire-node-fs.md)) | ❌      | ✅                                       | ✅   | ❌              |
-| `./evidence`                                      | ✅                                                                                                                                                  | ✅      | ✅                                       | ✅   | ✅              |
-| `./eslint-plugin`                                 | ✅ (Node-only — runs inside ESLint)                                                                                                                 | ❌      | ❌ (ESLint itself doesn't run under Bun) | ❌   | ❌              |
+| Entry point                                       | Node                                                                                                                                                | Browser ² | Bun                                      | Deno                | Edge/serverless ² |
+| ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---------------------------------------- | ------------------- | ----------------- |
+| `.` (core)                                        | ✅                                                                                                                                                  | ✅        | ✅ (executed in CI)                      | ✅ (executed in CI) | ✅                |
+| `./runtime`, `./runtime/cache`, `./runtime/retry` | ✅                                                                                                                                                  | ✅        | ✅ (executed in CI)                      | ✅ (executed in CI) | ✅                |
+| `./helpers`                                       | ✅                                                                                                                                                  | ✅        | ✅ (executed in CI)                      | ✅ (executed in CI) | ✅                |
+| `./evidence`                                      | ✅                                                                                                                                                  | ✅        | ✅ (executed in CI)                      | ✅ (executed in CI) | ✅                |
+| `./observe` (Experimental)                        | ✅                                                                                                                                                  | ✅        | ✅ (executed in CI)                      | ✅ (executed in CI) | ✅                |
+| `./build`                                         | ✅ (Node-only — uses the TypeScript Compiler API; never `node:fs`, see [ADR 0058](specs/decisions/0058-library-surfaces-do-not-acquire-node-fs.md)) | ❌        | not tested                               | not tested          | ❌                |
+| `./node`, CLI                                     | ✅ (Node-only — reads the file system through `node:fs`, declared in `package.json` `ambientCapabilities`)                                          | ❌        | not tested                               | not tested          | ❌                |
+| `./eslint-plugin`                                 | ✅ (Node-only — runs inside ESLint)                                                                                                                 | ❌        | ❌ (ESLint itself doesn't run under Bun) | ❌                  | ❌                |
 
-Bun/Deno rows for `core`/`runtime`/`helpers` are verified directly against real Bun and Deno engines in CI (`test/cross-runtime/`), not just claimed by analogy to Node. See the further reading below for the full architectural model, and [the docs site's comparison and FAQ sections](https://maverickcer.github.io/data-cap/#comparison) for more on how this compares to conventional fetch-and-`useState`/global-store patterns.
+Every isomorphic entry point (core, runtime, cache, retry, helpers, evidence, observe) is executed under real Bun and Deno engines in CI (`test/cross-runtime/`), not claimed by analogy to Node.
+
+² Bundled for the browser and then executed in a V8 context that has only Web globals (no `process`, `Buffer`, `require` or timers) in `test/runtime/browser-bundle.test.ts`; not run in a real browser or edge runtime in CI. See the further reading below for the full architectural model, and [the docs site's comparison and FAQ sections](https://maverickcer.github.io/data-cap/#comparison) for more on how this compares to conventional fetch-and-`useState`/global-store patterns.
+
+### Package managers
+
+npm is the supported and fully tested package manager: every CI job installs with it. pnpm, Yarn 1
+and Yarn Berry with the `node-modules` linker are tested for one thing, in CI's `package-managers`
+job (`scripts/package-managers-smoke.mjs`): the packed tarball installs and every entry point
+imports, as ESM and as CommonJS. Nothing wider is claimed for them. Yarn Plug'n'Play and pnpm
+with the `pnp` node linker are unsupported.
 
 ### Requirements
 
-Node.js `>=22`. TypeScript 5, 6 or 7 is only required for build-time manifest generation: a bundled TypeScript 6 parses the sources when yours is 7, is bundled inside the package and used only by the build entry, and adds about 26 MB to the install. The runtime works in plain JavaScript. TypeScript consumers need `moduleResolution` set to `node16`, `nodenext` or `bundler` to resolve the subpath exports (`data-cap/build`, `data-cap/helpers`, ...); the legacy `node10` resolver is not supported. `data-cap/eslint-plugin` also needs `@typescript-eslint/utils` installed (an optional peer).
+Node.js `>=22`. Your own TypeScript is optional and matters only for build-time manifest generation: the generator parses with it when it is version 5 or 6, and otherwise (TypeScript 7, or none installed) with the TypeScript 6 compiler that `data-cap` declares as its one npm dependency and bundles inside its tarball (`bundleDependencies`), so it arrives with the package rather than from the registry. Only the build entry uses that compiler, and it adds about 24 MB unpacked to the install. The runtime works in plain JavaScript. TypeScript consumers need `moduleResolution` set to `node16`, `nodenext` or `bundler` to resolve the subpath exports (`data-cap/build`, `data-cap/helpers`, ...); the legacy `node10` resolver is not supported. `data-cap/eslint-plugin` also needs `@typescript-eslint/utils` installed (an optional peer).
 
 ## The low-level path: full manual control
 
@@ -602,12 +614,13 @@ takes every field; a closure that nothing calls but that returns tracked data
 is an `unanalyzed-function` unknown; module-state chains are re-analyzed for at
 most 6 rounds, and a project still moving data at the cap gets an unknown that
 makes every trace incomplete. The post-scan analysis is linear in the size of
-the flow, and a project of 600 files and 3000 functions is analyzed in about 7
-seconds (`test/build/flow-scale.test.ts`).
+the flow, and a project of 600 files and 3000 functions is analyzed well inside
+the 30-second budget `test/build/flow-scale.test.ts` enforces (about 7 seconds on a
+GitHub-hosted runner).
 
 The headline guarantee is **never silently safe**: a leak the scan cannot
 follow surfaces as an incomplete trace, never as a complete trace with no flow.
-`test/flow/never-silently-safe.test.ts` pins it with a 335-row catalog of ways
+`test/flow/never-silently-safe.test.ts` pins it with a 343-row catalog of ways
 to leak one field of a record, plus a property test that swaps the field for
 its sibling. Every row must end in one of three outcomes: followed to the sink
 (with the sibling clean), an honest `unknown` that names the data, or the whole
@@ -867,19 +880,19 @@ Everything below is a pure function of the evidence, exported from
 same code; also re-exported from `data-cap/build`). The package draws nothing
 interactively: a renderer is yours to choose.
 
-| Function                                                                  | Produces                                                                                                                                                                                                                                                                                                                                                     |
-| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `traceFlow`, `traceFlowBetween`, `filterFlow`, `diffFlow`, `observedFlow` | Trace a field upstream or downstream (optionally one path, or only the routes to one boundary); filter; compare two revisions; the part of the flow an execution actually witnessed' evidence.                                                                                                                                                               |
-| `buildFlowGraphView`                                                      | A stable, library-independent graph model: per-function inputs, reads, forwards, side effects, discards, callers, confidence.                                                                                                                                                                                                                                |
-| `renderFlowText`                                                          | The textual equivalent of the graph, as Markdown a screen reader or a code review can read.                                                                                                                                                                                                                                                                  |
-| `renderFlowDot`, `renderFlowMermaid`                                      | Graphviz DOT and Mermaid; status in text as well as colour, unknowns drawn as nodes, violated policies in red.                                                                                                                                                                                                                                               |
-| `buildProvDocument`                                                       | W3C PROV-JSON: lineage, with the path and status on every relation.                                                                                                                                                                                                                                                                                          |
-| `buildSarifLog` (`data-cap/build`)                                        | SARIF 2.1.0 results anchored at the exact code, with a `codeFlow` for a policy violation.                                                                                                                                                                                                                                                                    |
-| `buildOscalAssessmentResults`                                             | NIST OSCAL assessment-results. Control ids are supplied by you, never inferred; an unmapped rule is listed, not dropped.                                                                                                                                                                                                                                     |
-| `observationsToOtlp`/`observationsFromOtlp`                               | OpenTelemetry (OTLP/JSON) spans carrying `data_cap.*` attributes, and the reverse. Timed observations become timed spans (`data_cap.timed`); `scopeRoots` adds one root span per scope. `trustForeignTimes` lets `observationsFromOtlp` read times from spans not marked timed; unreadable times are counted in `ignoredTimes`. No OpenTelemetry dependency. |
-| `buildCycloneDxBom`, `renderFlowCycloneDx`                                | CycloneDX 1.6: one `service` per boundary and per capability-owning file, `data[]` flows with classification, status in the description and as a property; unknowns, violated policies and unverified claims as annotations. Deterministic ids. `undefined` when no flow was computed.                                                                       |
-| `analyzeRedundantTransforms`, `redundantTransformFindings`                | The redundant-transformation analysis below.                                                                                                                                                                                                                                                                                                                 |
-| `analyzeLeastData`                                                        | The unused-path and whole-field analysis above.                                                                                                                                                                                                                                                                                                              |
+| Function                                                                  | Produces                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `traceFlow`, `traceFlowBetween`, `filterFlow`, `diffFlow`, `observedFlow` | Trace a field upstream or downstream (optionally one path, or only the routes to one boundary); filter; compare two revisions; the part of the flow an execution actually witnessed' evidence.                                                                                                                                                                                                                                                                                                                                              |
+| `buildFlowGraphView`                                                      | A stable, library-independent graph model: per-function inputs, reads, forwards, side effects, discards, callers, confidence.                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `renderFlowText`                                                          | The textual equivalent of the graph, as Markdown a screen reader or a code review can read.                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `renderFlowDot`, `renderFlowMermaid`                                      | Graphviz DOT and Mermaid; status in text as well as colour, unknowns drawn as nodes, violated policies in red.                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `buildProvDocument`                                                       | W3C PROV-JSON: lineage, with the path and status on every relation.                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `buildSarifLog` (`data-cap/build`)                                        | SARIF 2.1.0 results anchored at the exact code, with a `codeFlow` for a policy violation.                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `buildOscalAssessmentResults`                                             | NIST OSCAL assessment-results. Control ids are supplied by you, never inferred; an unmapped rule is listed, not dropped. A control id is targeted at its assessment objective (`ac-4_obj`), as NIST's catalog names it; pass `assessmentPlan` with your real plan's href (the default is a placeholder, named as one in `import-ap.remarks`) and `evidenceHref` with the evidence file's location, which turns every evidence reference into a back-matter resource the observations link to; `strict: true` refuses to build without both. |
+| `observationsToOtlp`/`observationsFromOtlp`                               | OpenTelemetry (OTLP/JSON) spans carrying `data_cap.*` attributes, and the reverse. Timed observations become timed spans (`data_cap.timed`); `scopeRoots` adds one root span per scope. `trustForeignTimes` lets `observationsFromOtlp` read times from spans not marked timed; unreadable times are counted in `ignoredTimes`. No OpenTelemetry dependency.                                                                                                                                                                                |
+| `buildCycloneDxBom`, `renderFlowCycloneDx`                                | CycloneDX 1.6: one `service` per boundary and per capability-owning file, `data[]` flows with classification, status in the description and as a property; unknowns, violated policies and unverified claims as annotations. Deterministic ids. `undefined` when no flow was computed.                                                                                                                                                                                                                                                      |
+| `analyzeRedundantTransforms`, `redundantTransformFindings`                | The redundant-transformation analysis below.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| `analyzeLeastData`                                                        | The unused-path and whole-field analysis above.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 
 To embed the graph in generated documentation, write the text and a diagram into one Markdown file (GitHub,
 GitLab and most documentation sites render the `mermaid` fence):
@@ -1067,6 +1080,39 @@ userData.fields;`) stays out of scope on purpose — this rule follows a
   and [ADR 0064](specs/decisions/0064-no-fields-escape-export-argument-and-prop.md)
   (the rename and the three added escape kinds).
 
+## Using the CLI outside GitHub Actions
+
+The GitHub Action is a thin wrapper: it runs `data-cap --json` with the arguments you give it and
+turns the JSON report into annotations and a summary comment. Every other CI system gets the same
+gate from the CLI alone.
+
+1. Install the package as a devDependency and run the generator in your pipeline:
+
+   ```bash
+   npx data-cap --evidence docs/data.evidence.json --flow-evidence --rules data-cap.rules.json --check --json > data-cap.json
+   ```
+
+2. Fail the job on the exit code: `0` when the evidence is current and no rule is violated, `1`
+   when the evidence is stale, a rule is violated or the run failed (the JSON report then carries an
+   `error`), `2` only from the Action's wrapper when the CLI is not installed and no `version` was
+   given, or the `version` input is not a plain version or dist-tag.
+
+3. Read `data-cap.json` for what to show: `checkResult.stale` names each stale artifact,
+   `evidenceRules` holds the rules verdict, and when generation failed on findings `error.findings`
+   carries one entry per issue with its `severity`, `message` and, where known, the capability's
+   `file` and a `position`. The report validates against the published JSON Schema
+   (`data-cap/schema`), so a GitLab, Jenkins or Buildkite step can render it with any JSON Schema
+   aware tool. Two inputs are read before any report is written: a `--rules` or `--observations`
+   file that cannot be read or is not valid exits `1` with the reason on stderr and nothing on
+   stdout, so treat an empty `data-cap.json` as a failure too. For a SARIF
+   upload, project the persisted evidence with `buildSarifLog` from `data-cap/build` (with its
+   `flow` option for data-flow findings); the output is validated against the official OASIS schema
+   in `test/build/sarif-flow.test.ts`. The other standards outputs (OSCAL, CycloneDX, PROV, OTLP) come
+   from `data-cap/evidence` the same way.
+
+Nothing in the CLI reads GitHub-specific environment variables; the Action's inputs are the CLI's
+flags.
+
 ## GitHub Action
 
 The first-party GitHub Action runs `data-cap --json` and turns the result
@@ -1092,19 +1138,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - run: npm ci # the action runs the data-cap your project installs
+
       - uses: maverickcer/data-cap@v0
         with:
           args: "--evidence docs/data.evidence.json --strict-docs --strict-ownership"
 ```
 
-| Input               | Default               | Purpose                                                                                                         |
-| ------------------- | --------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `args`              | _(required)_          | Arguments passed to `data-cap --json`, such as `--evidence`, `--flow-evidence`, `--rules` and `--strict*` flags |
-| `working-directory` | `.`                   | Directory where `data-cap` executes                                                                             |
-| `version`           | _(latest)_            | Version to execute through `npx` when `data-cap` is not installed locally                                       |
-| `comment`           | `true`                | Creates or updates a sticky pull request summary comment                                                        |
-| `annotations`       | `true`                | Emits GitHub workflow annotations for detected findings                                                         |
-| `report-key`        | _(working-directory)_ | Identifies this report when multiple workflows run against the same pull request                                |
+| Input               | Default                 | Purpose                                                                                                                                                   |
+| ------------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `args`              | _(required)_            | Arguments passed to `data-cap --json`, such as `--evidence`, `--flow-evidence`, `--rules` and `--strict*` flags                                           |
+| `working-directory` | `.`                     | Directory where `data-cap` executes                                                                                                                       |
+| `version`           | _(none; required then)_ | Version to execute through `npx` when `data-cap` is not a local devDependency; the action refuses to run without one (pin a version rather than `latest`) |
+| `comment`           | `true`                  | Creates or updates a sticky pull request summary comment                                                                                                  |
+| `annotations`       | `true`                  | Emits GitHub workflow annotations for detected findings                                                                                                   |
+| `report-key`        | _(working-directory)_   | Identifies this report when multiple workflows run against the same pull request                                                                          |
 
 The Action does not create its own policy layer. Pass/fail behavior always
 follows the CLI exit code and configured flags such as `--strict`,
@@ -1232,9 +1280,9 @@ field never re-allocates unrelated branches, and every published snapshot
 is deep-frozen at a cost proportional to what actually changed, not to
 total state size (see
 [ADR 0044](specs/decisions/0044-snapshots-deep-frozen-amortized.md)).
-Every consumer-facing entry point carries a hard gzip budget, enforced in
-CI (`ci/size-budgets.mjs`) — see [`PERFORMANCE.md`](PERFORMANCE.md) for
-current numbers and methodology. `benchmarks/performance-runtime` and
+Every entry point carries a gzip budget, enforced in CI
+(`ci/size-budgets.mjs`, run by the `verify` and `contract` jobs) — see
+[`PERFORMANCE.md`](PERFORMANCE.md) for current numbers and methodology. `benchmarks/performance-runtime` and
 `benchmarks/performance-buildtime` (run via `npm run benchmark`, and on
 every PR via `.github/workflows/ci.yml (benchmark-pr job)`) report raw times without
 judging them; a run fails only when a function's growth class or the package's relative

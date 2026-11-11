@@ -191,8 +191,8 @@ an assistant was (or should have been) working against.
 ## 7. Required verification
 
 - `npm run verify` green locally or in CI.
-- `npm run test:coverage` — coverage is ratchet-up-only; a threshold is
-  raised when coverage improves, never lowered to accommodate a drop.
+- `npm run test:coverage` — thresholds are fixed floors, raised in review
+  when coverage improves and never lowered to accommodate a drop.
 - Mutation score (Stryker) must not regress. New logic needs tests that
   actually kill mutants by asserting behavior.
 - Type-level tests: a public-surface type change needs both a positive

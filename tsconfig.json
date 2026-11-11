@@ -14,7 +14,7 @@
     // implements these natively too; this is a type-only addition and never
     // implies a runtime browser/DOM dependency (core remains zero-dependency
     // and platform-neutral -- see specs/architecture.md). ES2022 is required
-    // for `Object.hasOwn` -- the package's `engines.node` floor (>=18) has
+    // for `Object.hasOwn` -- the package's `engines.node` floor (>=22) has
     // shipped it natively since Node 16.9/18.0, and the ownership algorithm's
     // core safety property depends on it over `in`/truthiness checks.
     "lib": ["ES2022", "DOM"],

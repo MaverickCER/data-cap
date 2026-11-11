@@ -39,7 +39,7 @@ the order an organization actually grows into them:
 | --- | --- | --- | --- |
 | 1 | [`application/`](https://github.com/MaverickCER/data-cap/tree/main/examples/application) -- Task Manager | One developer | Is *my* data access correct? Loading/error/success, optimistic updates, retry, dedup, caching -- the individual-developer feature surface, on one capability. |
 | 2 | [`team-service/`](https://github.com/MaverickCER/data-cap/tree/main/examples/team-service) -- Project Management Service | One team | Do *our* data capabilities compose without silently duplicating work? Capability-per-file ownership, real cross-capability composition that stays analyzable, a real duplicate-network-fetch finding. |
-| 3 | [`enterprise-platform/`](https://github.com/MaverickCER/data-cap/tree/main/examples/enterprise-platform) -- Atlas | An organization | Can we *prove*, to someone who wasn't in the room, what data exists, how it's handled, and where the governance gaps actually are? Three independently-owned capabilities, a real running service, and generated litigation-evidence/audit-prep reports. |
+| 3 | [`enterprise-platform/`](https://github.com/MaverickCER/data-cap/tree/main/examples/enterprise-platform) -- Atlas | An organization | Can we show someone who wasn't in the room what data exists, how it's handled, and where the governance gaps are, with every statement traced to a declaration or to the code? Three independently-owned capabilities, a real running service, and generated data-handling-record/audit-prep reports. |
 | 4 | [`flow-explorer/`](https://github.com/MaverickCER/data-cap/tree/main/examples/flow-explorer) -- Data flow explorer | Anyone who has to trust the picture | For any one field, can I see every function that touches it and everywhere it goes -- and does the page say when it could not tell? One evidence file in; an interactive, keyboard-operable, accessible explorer and every standards export (Mermaid, DOT, PROV, SARIF, OSCAL, OpenTelemetry, CycloneDX) out, plus a full comparison of two commits (added, removed and changed, with source drill-down), drawn with a devDependency, not part of the package. |
 
 Tier 4 is not the next chapter of that story; it is a different kind of example. It takes
@@ -93,7 +93,7 @@ above the fetch, and what that contract makes provable.
 Every example commits real, `data-cap`-generated documentation --
 `docs/DATA.md`, `docs/OWNERSHIP.md`, `docs/flow/*.mmd`, `docs/data.evidence.json`
 (the composed `EvidenceModel`, ADR 0050/0054 -- the same one everything else
-is a projection of), and (Tier 3 only) `reports/litigation-evidence.md`/
+is a projection of), and (Tier 3 only) `reports/data-handling-record.md`/
 `audit-prep.md`, which read that same evidence model directly rather than
 re-deriving it -- alongside its source. Two independent, complementary
 regression signals, per example:
@@ -149,7 +149,7 @@ another simulated fetch.
 | --- | --- | --- |
 | [`application`](https://github.com/MaverickCER/data-cap/tree/main/examples/application) | Client | The batteries-included `createData` (`data-cap/runtime`) -- fields/getters/mutators/subscriptions declared together via a shared, type-checked schema; dedup, optimistic mutation + `withRetry`, request cancellation, caching |
 | [`team-service`](https://github.com/MaverickCER/data-cap/tree/main/examples/team-service) | Client | Capability-per-file ownership; `projectData` composing `memberData` directly for a real, proven cross-capability dependency; `assignmentsData` independently duplicating the same endpoint, caught by `DUPLICATE_ENDPOINT_ACROSS_CAPABILITIES`; identity-stable array reconciliation via `createDataStore` |
-| [`enterprise-platform`](https://github.com/MaverickCER/data-cap/tree/main/examples/enterprise-platform) | Server | Atlas -- a real TanStack Start + MongoDB/Mongoose service with three independently-owned capabilities (`identityData`/`projectsData`/`billingData`), declared per-endpoint `handling` (plaintext/masked/redacted/hashed/encrypted) feeding a real field-lifecycle table, and two generated reports (`litigation-evidence`, `audit-prep`) plus a real `--strict-docs`/`--strict-flow` CI guard proven against a synthetic gap |
+| [`enterprise-platform`](https://github.com/MaverickCER/data-cap/tree/main/examples/enterprise-platform) | Server | Atlas -- a real TanStack Start + MongoDB/Mongoose service with three independently-owned capabilities (`identityData`/`projectsData`/`billingData`), declared per-endpoint `handling` (plaintext/masked/redacted/hashed/encrypted) feeding a real field-lifecycle table, and two generated reports (`data-handling-record`, `audit-prep`) plus a real `--strict-docs`/`--strict-flow` CI guard proven against a synthetic gap |
 
 See [`test/integration/README.md`](https://github.com/MaverickCER/data-cap/blob/main/test/integration/README.md) for the
 16 mechanism-level fixtures, and each example's own README for its full

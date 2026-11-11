@@ -159,30 +159,35 @@ export default tseslint.config(
     // block is data-cap's own, needing no plugin build.
     // the `AmbientCapabilities` check is the release-blocking backstop
     // that checks the actual tarball.
+    // One `no-restricted-imports` entry per file set: in flat config a later block's entry for the
+    // same rule REPLACES an earlier one's options, so two blocks (fs here, child_process below)
+    // left the fs ban dead for every file both matched. The lists are merged instead.
     files: ["src/**/*.ts"],
     ignores: ["src/cli/**"],
     rules: {
       "no-restricted-imports": [
         "error",
         {
-          paths: ["fs", "node:fs", "fs/promises", "node:fs/promises"].map((name) => ({
-            name,
-            message:
-              "ADR 0058: a library surface must not import node:fs. Accept a BuildFileSystem capability from the caller (see src/build/types.ts). Only src/cli/** may import node:fs.",
-          })),
+          paths: [
+            ...["fs", "node:fs", "fs/promises", "node:fs/promises"].map((name) => ({
+              name,
+              message:
+                "ADR 0058: a library surface must not import node:fs. Accept a BuildFileSystem capability from the caller (see src/build/types.ts). Only src/cli/** may import node:fs.",
+            })),
+            ...["child_process", "node:child_process"].map((name) => ({
+              name,
+              message:
+                "data-cap never spawns a process itself -- there is no capability-injection escape hatch for this one, unlike node:fs. If a real need appears, it belongs in dev/build tooling (scripts/), never in src/.",
+            })),
+          ],
         },
       ],
     },
   },
   {
-    // Same discipline as the node:fs ban above, for node:child_process --
-    // but with no src/cli/** exemption: unlike node:fs (which the CLI
-    // legitimately needs to construct the fs adapter it hands to ./build),
-    // data-cap has no legitimate reason to spawn a process anywhere,
-    // including its own CLI. This mechanically enforces "the consumer
-    // provides shell access, this package never defaults to it" as a
-    // standing guarantee rather than resting on today's absence of usage.
-    files: ["src/**/*.ts"],
+    // src/cli/** may import node:fs (it builds the fs adapter it hands to ./build) but, like the rest
+    // of src/, never a process spawner: data-cap has no capability-injection escape hatch for that one.
+    files: ["src/cli/**/*.ts"],
     rules: {
       "no-restricted-imports": [
         "error",

@@ -36,6 +36,7 @@
  * random, and everything is ordered. Isomorphic: no Node modules.
  */
 
+import { flowEvidenceDisclaimer } from "./flow-disclaimer.js"
 import type { EvidenceModel } from "../build/evidence-model.js"
 import type { Claim } from "../flow/claims-model.js"
 import type { FlowHandling, FlowModel, FlowNode, FlowStatus } from "../flow/flow-model.js"
@@ -595,6 +596,7 @@ function annotationsOf(context: Context): CycloneDxAnnotation[] {
 function metadataProperties(evidence: CycloneDxInput, flow: FlowModel): CycloneDxProperty[] {
   const { coverage } = flow
   const entries: [string, string][] = [
+    ["data-cap:disclaimer", flowEvidenceDisclaimer()],
     ["data-cap:coverage.complete", String(coverage.complete)],
     ["data-cap:coverage.functionsAnalyzed", String(coverage.functionsAnalyzed)],
     ["data-cap:coverage.functionsUnanalyzed", String(coverage.functionsUnanalyzed)],

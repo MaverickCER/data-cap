@@ -113,6 +113,16 @@ resolution anchored at your project root — it never scans `node_modules`
 for arbitrary schema-looking files, and never resolves a package you
 haven't named.
 
+What the package can reach on the machine is checked mechanically, not by
+inspection. A lint rule bans `node:fs` and `node:child_process` imports
+throughout `src/` (the CLI alone may import `node:fs`, to build the
+file-system adapter it hands to `./build`). Then the `AmbientCapabilities`
+contract check scans the packed tarball and fails when any shipped file
+outside the CLI (`bin`), the ESLint plugin or `./node` reaches `fs`, when any
+file at all reaches `child_process`, or when any file outside the CLI reads
+`process.env`. The `./observe` entry is additionally held, by test, to import
+nothing but types from the rest of the package and to perform no I/O.
+
 ## Application responsibilities
 
 `data-cap` does not determine:
@@ -136,12 +146,12 @@ secret in this repository to leak, rotate, or scope; the workflow's
 `id-token: write` permission is exchanged for a short-lived publish
 credential per run, tied to this exact repository and workflow file, and
 that same OIDC flow attaches npm provenance attestations to each published
-version. `core`/`runtime`/`helpers` are verified against real Node, Bun, and
-Deno engines in CI (`test/cross-runtime/`), not just asserted to be
-isomorphic by code inspection. Test coverage is enforced with a
-ratchet-up-only policy (currently: 90% branches, 100% functions, 95%
-lines/statements — see `vitest.config.ts`; CONTRIBUTING.md's release
-process forbids lowering these to accommodate a drop). See
+version. Every isomorphic entry point (core, runtime, cache, retry, helpers,
+evidence, observe) is executed under real Node, Bun and Deno engines in CI
+(`test/cross-runtime/`), not just asserted to be isomorphic by code inspection. Test coverage is enforced against
+fixed floors (90% branches, 100% functions, 95% lines/statements — see
+`vitest.config.ts`; CONTRIBUTING.md allows raising one in review and
+forbids lowering one to accommodate a drop). See
 [`CONTRIBUTING.md`](CONTRIBUTING.md)'s "Release process" section for the
 full one-time trusted-publisher setup this depends on.
 
