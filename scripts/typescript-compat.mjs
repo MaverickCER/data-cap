@@ -7,7 +7,8 @@
 //      fall back to the bundled `@typescript/typescript6` (src/build/typescript.ts) -- the case no
 //      unit test can reach, because it needs a real TypeScript 7 root in `node_modules`.
 //   2. The shipped `.d.ts` files type-check in a consumer under `moduleResolution: nodenext`,
-//      `strict` and full library checking (no `skipLibCheck`), every entry point included. Under a 7
+//      `strict` and full library checking (no `skipLibCheck`), every entry point but `./eslint-plugin`
+//      (its declarations type themselves from the `@typescript-eslint/utils` peer) included. Under a 7
 //      root the `types@>=7` export conditions serve `dist/.dts7`, whose compiler-API types come from
 //      the bundled `@typescript/typescript6` (TypeScript 7's own package ships none); under 5 and 6 the
 //      primary declarations typed from the consumer's `typescript` are served (ADR 0069).
@@ -134,7 +135,9 @@ try {
       writeFileSync(path.join(dir, "scan.mjs"), scanScript)
 
       run("node", [tsc, "-p", "tsconfig.strict.json"], dir)
-      console.log("types ok: every entry point, full library check, no skipLibCheck")
+      console.log(
+        "types ok: every entry point but ./eslint-plugin, full library check, no skipLibCheck",
+      )
       // Which declaration set answered: the primary one under 5 and 6, the `types@>=7` one under 7.
       const trace = run(
         "node",

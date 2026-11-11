@@ -9,7 +9,7 @@ inputs:
     required: false
     default: "."
   version:
-    description: "data-cap version to fetch via npx when it is not a local devDependency. Required in that case: the action fails rather than run an unpinned `latest`. Ignored when the project has data-cap installed."
+    description: "data-cap version to fetch via npx when it is not a local devDependency. Required in that case: the action fails rather than guess a version (pin one rather than `latest`). Ignored when the project has data-cap installed."
     required: false
     default: ""
   comment:

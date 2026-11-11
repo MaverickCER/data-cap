@@ -37,7 +37,8 @@ major version bump (once the package reaches 1.0 — see
   does not ship, so it uses the consumer's `typescript` when that has the API and otherwise the bundled
   `@typescript/typescript6` (inside the package, build entry only) -- no configuration, and `tsc` stays TypeScript 7
   ([ADR 0069](specs/decisions/0069-typescript-7-scanner-uses-a-bundled-typescript-6.md)). Every
-  entry point type-checks with full library checking under TypeScript 5, 6 and 7: a 7 root is served
+  entry point but `./eslint-plugin` (typed through its `@typescript-eslint/utils` peer) type-checks with
+  full library checking under TypeScript 5, 6 and 7: a 7 root is served
   declarations (`types@>=7` export conditions) whose compiler-API types come from the bundled TypeScript 6,
   since TypeScript 7's package ships none; 5 and 6 are served declarations typed from the project's own
   `typescript`; and `moduleResolution` `node16`/`nodenext`/`bundler` (not the legacy `node10`).
