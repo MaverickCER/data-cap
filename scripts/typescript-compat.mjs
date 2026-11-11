@@ -27,7 +27,9 @@ const PACKAGE = "data-cap"
 const repoRoot = path.resolve(import.meta.dirname, "..")
 
 function run(command, args, cwd, { allowFailure = false } = {}) {
-  const result = spawnSync(command, args, { cwd, encoding: "utf8" })
+  // `--traceResolution` under a TypeScript 7 root prints well past spawnSync's 1 MiB default, which
+  // would end the child with ENOBUFS and a null status; the budget is generous on purpose.
+  const result = spawnSync(command, args, { cwd, encoding: "utf8", maxBuffer: 256 * 1024 * 1024 })
   if (result.status !== 0 && !allowFailure) {
     process.stderr.write(result.stdout + result.stderr)
     console.error(`${command} ${args.join(" ")} failed (exit ${String(result.status)}) in ${cwd}`)

@@ -275,7 +275,11 @@ function renderMarkdown(report: DataHandlingRecord): string {
     lines.push(`## ${entry.capability}.${entry.field}`)
     lines.push("")
     // A declared value is author text: a pipe or line break in it must not become another cell or row.
-    const cell = (value: string): string => value.replace(/\|/g, "\\|").replace(/\r?\n/g, " ")
+    const cell = (value: string): string =>
+      value
+        .replace(/\\/g, "\\\\")
+        .replace(/\|/g, "\\|")
+        .replace(/\r?\n/g, " ")
     lines.push("| Declared fact | Value |")
     lines.push("| --- | --- |")
     lines.push(`| Owner | ${cell(entry.declared.owner ?? "_not declared_")} |`)
