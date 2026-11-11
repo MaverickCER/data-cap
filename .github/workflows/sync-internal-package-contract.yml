@@ -13,7 +13,7 @@ jobs:
       contents: write
       pull-requests: write
       actions: write
-    uses: MaverickCER/internal-package-contract/.github/workflows/dependency-pin-sync.yml@7a30931346dab8413c4ac4f89a606ebdf11be2ec # v0.16.0
+    uses: MaverickCER/internal-package-contract/.github/workflows/dependency-pin-sync.yml@6efb47b4bfbb277e63ec5f2fca4e195006a0d4e0 # v0.17.0
     with:
       dependency-name: internal-package-contract
     secrets:

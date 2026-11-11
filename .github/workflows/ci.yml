@@ -100,7 +100,7 @@ jobs:
     # The `suites`/`install-dirs` inputs below exist only in internal-package-contract commits that
     # include the generalized benchmark kit: bump this SHA to such a commit together with the
     # internal-package-contract devDependency pin, in the same pull request.
-    uses: MaverickCER/internal-package-contract/.github/workflows/benchmark-pr.yml@7a30931346dab8413c4ac4f89a606ebdf11be2ec # v0.16.0
+    uses: MaverickCER/internal-package-contract/.github/workflows/benchmark-pr.yml@6efb47b4bfbb277e63ec5f2fca4e195006a0d4e0 # v0.17.0
     with:
       suites: |
         Runtime|benchmarks/performance-runtime|benchmarks/history/runtime.json
