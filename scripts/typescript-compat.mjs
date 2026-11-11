@@ -19,7 +19,15 @@
 // Usage: node scripts/typescript-compat.mjs [version ...]   (default: 5 6 7)
 
 import { spawnSync } from "node:child_process"
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs"
+import {
+  cpSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs"
 import { tmpdir } from "node:os"
 import path from "node:path"
 
@@ -46,7 +54,8 @@ const tarball = path.join(
   readdirSync(packDir).find((f) => f.endsWith(".tgz")),
 )
 
-const scanScript = `import { createRequire } from "node:module"
+const scanScript = `import { writeFileSync } from "node:fs"
+import { createRequire } from "node:module"
 const require = createRequire(import.meta.url)
 const source = 'export const userCapability = createData({ fields: { id: "" } });'
 const esm = await import("${PACKAGE}/build")
@@ -58,6 +67,26 @@ for (const [label, build] of [["esm", esm], ["cjs", cjs]]) {
   }
 }
 console.log("scanner ok (esm + cjs)")
+
+// The real thing, not a one-line parse: the flow-explorer example's source is scanned with the
+// flow pass under this root, with a fixed instant and commit so the evidence is a pure function of
+// the source and the compiler. The runner compares the evidence across every root byte for byte.
+const { nodeBuildFileSystem } = await import("${PACKAGE}/node")
+const { result } = await esm.computeDataArtifacts({
+  fs: nodeBuildFileSystem,
+  root: process.cwd() + "/flow-fixture",
+  include: ["src/features/**", "src/app/**"],
+  tsconfig: false,
+  flowEvidence: true,
+  generatedAt: new Date("2026-01-01T00:00:00.000Z"),
+  commit: "0123456789abcdef0123456789abcdef01234567",
+})
+const evidence = result.evidence
+if (!evidence?.flow || evidence.flow.nodes.length === 0) {
+  throw new Error("flow scan produced no flow nodes; result keys: " + Object.keys(result).join(", "))
+}
+writeFileSync("flow-evidence.json", JSON.stringify(evidence))
+console.log("flow scan ok (" + evidence.flow.nodes.length + " nodes, " + evidence.flow.edges.length + " edges)")
 `
 
 // Every entry point, with the compiler-API-typed result read back so the build declarations are
@@ -93,6 +122,8 @@ function tsconfig(file) {
 }
 
 try {
+  /** The flow evidence each root produced for the same source, to be compared byte for byte. */
+  const flowEvidenceByRoot = new Map()
   for (const version of versions) {
     const dir = mkdtempSync(path.join(tmpdir(), `data-cap-tscompat-${version}-`))
     try {
@@ -133,6 +164,14 @@ try {
       writeFileSync(path.join(dir, "strict.ts"), strictConsumer)
       writeFileSync(path.join(dir, "tsconfig.strict.json"), tsconfig("strict.ts"))
       writeFileSync(path.join(dir, "scan.mjs"), scanScript)
+      // The flow-explorer example's source, copied in so the scan under this root is a real one.
+      cpSync(
+        path.join(repoRoot, "examples", "flow-explorer", "src"),
+        path.join(dir, "flow-fixture", "src"),
+        {
+          recursive: true,
+        },
+      )
 
       run("node", [tsc, "-p", "tsconfig.strict.json"], dir)
       console.log(
@@ -153,6 +192,7 @@ try {
       }
       console.log(`declarations served under the '${expected}' export condition`)
       console.log(run("node", ["scan.mjs"], dir).stdout.trim())
+      flowEvidenceByRoot.set(version, readFileSync(path.join(dir, "flow-evidence.json"), "utf8"))
 
       if (version === "7") {
         // Bundled inside the package (bundleDependencies), not hoisted into the consumer's node_modules.
@@ -182,6 +222,18 @@ try {
       rmSync(dir, { recursive: true, force: true })
     }
   }
+  // Every root must have produced the same evidence: under 7 the scanner runs on the bundled
+  // TypeScript 6, and this is the assertion that it sees the same program the consumer's 5 or 6 does.
+  const [first, ...rest] = [...flowEvidenceByRoot.entries()]
+  for (const [version, evidence] of rest) {
+    if (evidence !== first[1]) {
+      console.error(
+        `flow evidence under typescript@${version} differs from typescript@${first[0]} (${String(evidence.length)} vs ${String(first[1].length)} bytes)`,
+      )
+      process.exit(1)
+    }
+  }
+  console.log(`flow evidence identical across ${versions.length} TypeScript root(s)`)
   console.log(`\nTypeScript compat check passed for typescript ${versions.join(", ")}.`)
 } finally {
   rmSync(packDir, { recursive: true, force: true })

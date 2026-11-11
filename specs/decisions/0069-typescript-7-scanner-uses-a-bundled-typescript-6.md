@@ -62,8 +62,9 @@ TypeScript 6 (`typescript@^6`, installed under the alias `@typescript/old`) as a
   pinned by `^6.0.2`, is only reachable from the build entry, and exists to be removed once TypeScript 7.1's
   API replaces it. A new TypeScript 6 patch needs a release of this package to reach consumers.
 - On TypeScript 7, the scanner parses with TypeScript 6. TypeScript 7.0 is designed to match 6.0's
-  behavior, and `scripts/typescript-compat.mjs` (CI job `typescript-compat`) parses a capability file
-  under a 5, a 6 and a 7 root with identical results.
+  behavior, and `scripts/typescript-compat.mjs` (CI job `typescript-compat`) runs the flow pass over the
+  flow-explorer example's source under a 5, a 6 and a 7 root and requires byte-identical evidence
+  (amended 2026-11-12; before that it parsed a one-line capability file).
 - The `./build` and `./evidence` declarations name TypeScript AST types from `typescript`, and
   TypeScript 7's package exports none. Typing them from the bundled package for everyone would break
   TypeScript 5/6 consumers who pass their own nodes into these Stable primitives, because two copies
