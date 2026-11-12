@@ -255,7 +255,7 @@
         {
           "kind": "Interface",
           "canonicalReference": "data-cap!DataCache:interface",
-          "docComment": "",
+          "docComment": "/**\n * A bounded cache of complete `DataState` snapshots, keyed by a string the caller computes.\n * It evicts the least recently used entry first. It never builds keys and never fetches.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -283,7 +283,7 @@
             {
               "kind": "MethodSignature",
               "canonicalReference": "data-cap!DataCache#clear:member(1)",
-              "docComment": "",
+              "docComment": "/**\n * Removes every entry.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -311,7 +311,7 @@
             {
               "kind": "MethodSignature",
               "canonicalReference": "data-cap!DataCache#delete:member(1)",
-              "docComment": "",
+              "docComment": "/**\n * Removes the entry under `key`, if any.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -356,7 +356,7 @@
             {
               "kind": "MethodSignature",
               "canonicalReference": "data-cap!DataCache#get:member(1)",
-              "docComment": "",
+              "docComment": "/**\n * The snapshot stored under `key`, or `undefined`. A hit marks the entry as most recently used.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -406,7 +406,7 @@
             {
               "kind": "MethodSignature",
               "canonicalReference": "data-cap!DataCache#set:member(1)",
-              "docComment": "",
+              "docComment": "/**\n * Stores a complete snapshot, `fields` and `info` together, evicting the oldest entries past `maxEntries`.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -472,7 +472,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!DataCache#size:member",
-              "docComment": "",
+              "docComment": "/**\n * How many entries the cache holds now.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -502,7 +502,7 @@
         {
           "kind": "Interface",
           "canonicalReference": "data-cap!DataCacheOptions:interface",
-          "docComment": "",
+          "docComment": "/**\n * Options for `createDataCache`.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
