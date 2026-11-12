@@ -350,6 +350,10 @@ type SchemaOperationDocs<TSchema, TKey extends "getters" | "mutators" | "subscri
     ? CapabilityOperationDocs<TOperations>
     : Record<string, never>
 
+/**
+ * Governance metadata for one capability, passed to `documentData`. Its keys are checked against the schema.
+ * Every value here is declared by the author: the build pass checks that it is present, never that it is true.
+ */
 export interface CapabilityDocs<TSchema extends DataSchema<FieldsShape>> {
   /** Display name -- falls back to the export/binding name when omitted. */
   readonly name?: string

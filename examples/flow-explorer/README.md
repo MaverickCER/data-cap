@@ -1,10 +1,8 @@
-# flow-explorer -- Data flow explorer
+# flow-explorer: Data flow explorer
 
-**Tier 4: "For any one piece of data, can I see every function that touches it and
-everywhere it goes -- and does the page tell me when it could not tell?"**
+**Tier 4: "For any one piece of data, can I see every function that touches it and everywhere it goes? Does the page tell me when it could not tell?"**
 
-One file, `docs/data.evidence.json`, is the only input. Everything else in `docs/`
-is a pure projection of it, and none of it reads a source file.
+One file, `docs/data.evidence.json`, is the only input. Everything else in `docs/` is a projection of it, and none of it reads a source file.
 
 | File                     | What it is                                                                                                                                            |
 | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -28,61 +26,47 @@ is a pure projection of it, and none of it reads a source file.
 A profile service reading one capability, `userData.user` (a database row: `id`, `name`,
 `email`, `passwordHash`, `role`), with two rules declared next to the data:
 
-- `src/app/profile.ts` -- the intended path. `buildUserProfile` keeps three fields and
-  **discards** `passwordHash` and `role`; the analysis says so, field by field.
-- `src/app/export.ts` -- a debug endpoint left in by mistake. `res.json(user)` sends the whole
-  record, `passwordHash` included. No single line looks wrong; the rule
-  `no-password-to-client` catches it, as a blocking error.
-- `src/app/track.ts` -- an analytics call into a third-party SDK. The analysis cannot see
-  inside a package, so it records exactly that: **one unknown, at this line, and it only ever
-  received `email`**. The rule about `role` is still decided (and holds); a trace of `email` is
-  marked not complete.
+- `src/app/profile.ts` is the intended path. `buildUserProfile` keeps three fields and **discards** `passwordHash` and `role`. The analysis reports that, field by field.
+- `src/app/export.ts` is a debug endpoint left in by mistake. `res.json(user)` sends the whole record, `passwordHash` included. No single line looks wrong; the rule `no-password-to-client` reports it as a blocking error.
+- `src/app/track.ts` calls a third-party analytics SDK. The analysis cannot see inside a package, so it records **one unknown, at this line, that only ever received `email`**. The rule about `role` is still decided, and holds. A trace of `email` is marked not complete.
 
 ## Run it
 
-```sh
-npm install
-npm run docs    # regenerate everything under docs/ (needs the root package built: `npm run build` at the repo root)
-open docs/explorer.html
-```
+Build the package first: `npm run build` at the repository root. Then, in this directory, run `npm install` and:
 
-In the page: choose `userData.user`, type `passwordHash` as the path, and the one route it takes
-(to the debug endpoint, and out to the client) lights up in red while everything else dims. Press
-**T** on any node to trace from it. Tab moves between nodes; Enter inspects. The page opens
-already comparing with the revision before the debug endpoint existed (`docs/baseline.evidence.json`; load that or
-any other commit's `data.evidence.json` with the file input). The comparison lists Added edges, Removed edges, Changed
-policy results, and added, removed and changed nodes and unknowns as a plain list; every item is a button that opens its
-details and source location, and the same changes are outlined in the graph (green: new, amber: changed) and named in each
-node's accessible name. "Dim everything that did not change" leaves only the difference lit. The URL records the trace and
-the comparison (`compare=off`, `changes=1`, `change=...`), so a link shares them; a file you loaded cannot be put in a link.
+| Command         | Exit code | Look for                                                                                              |
+| --------------- | --------- | ----------------------------------------------------------------------------------------------------- |
+| `npm run docs`  | 0         | `Wrote ... files to docs/ (... error finding(s): the example's leak is meant to block a real build).` |
+| `npm start`     | 0         | `flow-explorer: all assertions passed`                                                                |
+| `npm run check` | 0         | `[flow-explorer check] all ... generated files are up to date.`                                       |
+| `npm test`      | 0         | the `node:test` summary with `fail 0`                                                                 |
 
-## What is tested
+Then open `docs/explorer.html`. A failed assertion or test exits 1, and `npm run check` exits 1 listing each stale file.
 
-```sh
-npm start         # the real assertions: the facts above, from the real source and real recorded observations
-npm run check     # every committed file under docs/ matches a fresh generation
-npm test          # the explorer in jsdom (keyboard, ARIA, live regions, filters, deep links, diff), axe-core,
-                  # WCAG contrast from the very palette the CSS is built from, and every export against
-                  # its standard's own tools: Graphviz lays out the DOT, the real Mermaid parser parses
-                  # the diagram, SARIF and OSCAL validate against the official JSON Schemas
-npm run typecheck
-```
+CI's `examples` job runs `npm run typecheck` here. It then runs `npm start`, `npm run check` and `npm test` through `test/examples/flow-explorer.test.ts`. That job does not block a merge.
+
+In the page, choose `userData.user` and type `passwordHash` as the path. Its one route, to the debug endpoint and out to the client, turns red while everything else dims. Press **T** on any node to trace from it. Tab moves between nodes; Enter inspects one.
+
+The page opens already comparing with the revision before the debug endpoint existed (`docs/baseline.evidence.json`). Load that, or any other commit's `data.evidence.json`, with the file input. The comparison lists added and removed edges, changed policy results, and added, removed and changed nodes and unknowns. Each item is a button that opens its details and source location.
+
+The graph outlines the same changes (green: new, amber: changed), and each node's accessible name states them. "Dim everything that did not change" leaves only the difference lit. The URL records the trace and the comparison (`compare=off`, `changes=1`, `change=...`), so a link shares them. A file you loaded cannot be put in a link.
+
+## What it checks
+
+- `npm start` asserts the facts above, from the example's source and its recorded observations.
+- `npm run check` compares every committed file under `docs/` with a fresh generation.
+- `npm test` runs the explorer in jsdom: keyboard, ARIA, live regions, filters, deep links and the diff. It runs axe-core, and checks WCAG contrast on the palette the CSS uses.
+- `npm test` also checks each export with its standard's own tools. Graphviz lays out the DOT, the Mermaid parser parses the diagram, and SARIF and OSCAL validate against the official schemas.
+- None of this runs in a real browser or with a screen reader.
 
 ## Why this is an example, not a package feature
 
-The package ships the evidence and pure functions of it. It deliberately contains no
-renderer: drawing a graph is a choice (layout engine, canvas or SVG, your design system), and a
-UI library does not belong in a package that runs in a build step. This example draws with
-`@viz-js/viz` (Graphviz as WebAssembly) and does its interaction with `traceFlow`, `diffFlow` and
-`renderFlowText` from `data-cap/evidence` itself -- the same functions the build uses, running in
-a browser. Take what you need from `scripts/`.
+The package ships the evidence and pure functions of it. It contains no renderer on purpose. Drawing a graph is a choice of layout engine, canvas or SVG, and design system. A UI library does not belong in a package that runs in a build step.
 
-## Honest limits
+This example draws with `@viz-js/viz` (Graphviz as WebAssembly). Its interaction calls `traceFlow`, `diffFlow` and `renderFlowText` from `data-cap/evidence`, the same functions the build uses, in a browser. Take what you need from `scripts/`.
 
-- The page's graph is static SVG, laid out once. It does not re-layout when you filter; it dims
-  and hides.
-- Observations here are recorded by a wrapper that is told which capability field a response
-  body was built from (`src/instrumentation.ts`). The static analysis needs no such help; the
-  runtime side always does.
-- The analysis is syntactic and follows your project's own functions. See the GUIDE's
-  [Data flow](https://github.com/MaverickCER/data-cap/blob/main/GUIDE.md#data-flow) chapter for exactly what it follows, and what it says when it cannot.
+## Limits
+
+- The graph is static SVG, laid out once. Filtering dims and hides; it does not re-layout.
+- A wrapper records the observations here, and it is told which capability field each response body came from (`src/instrumentation.ts`). The static analysis needs no such help; the runtime side always does.
+- The analysis is syntactic and follows your project's own functions. The Guide's [Data flow](https://github.com/MaverickCER/data-cap/blob/main/GUIDE.md#data-flow) chapter says what it follows, and what it says when it cannot.

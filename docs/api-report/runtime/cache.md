@@ -4,6 +4,9 @@
 
 ### DataCache
 
+A bounded cache of complete `DataState` snapshots, keyed by a string the caller computes.
+It evicts the least recently used entry first. It never builds keys and never fetches.
+
 #### Type Parameters
 
 | Type Parameter |
@@ -18,6 +21,8 @@
 readonly size: number;
 ```
 
+How many entries the cache holds now.
+
 #### Methods
 
 ##### clear()
@@ -25,6 +30,8 @@ readonly size: number;
 ```ts
 clear(): void;
 ```
+
+Removes every entry.
 
 ###### Returns
 
@@ -35,6 +42,8 @@ clear(): void;
 ```ts
 delete(key): void;
 ```
+
+Removes the entry under `key`, if any.
 
 ###### Parameters
 
@@ -52,6 +61,8 @@ delete(key): void;
 get(key): DataState<TFields> | undefined;
 ```
 
+The snapshot stored under `key`, or `undefined`. A hit marks the entry as most recently used.
+
 ###### Parameters
 
 | Parameter | Type |
@@ -68,6 +79,8 @@ get(key): DataState<TFields> | undefined;
 set(key, state): void;
 ```
 
+Stores a complete snapshot, `fields` and `info` together, evicting the oldest entries past `maxEntries`.
+
 ###### Parameters
 
 | Parameter | Type |
@@ -82,6 +95,8 @@ set(key, state): void;
 ***
 
 ### DataCacheOptions
+
+Options for `createDataCache`.
 
 #### Properties
 

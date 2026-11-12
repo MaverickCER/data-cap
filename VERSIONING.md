@@ -1,129 +1,83 @@
 # Versioning and API stability
 
-`data-cap` follows [Semantic Versioning](https://semver.org/). This document
-defines what that promise actually covers, since "semver" alone doesn't say
-which surface it applies to. Three tiers exist, following the same policy
-`@maverickcer/env-cap` established (`data-cap` itself is published unscoped):
+`data-cap` follows [Semantic Versioning](https://semver.org/). This page says which surface that covers, entry point by entry point, and which check notices a change. Read it before you pin a version or choose a changeset bump.
+
+## Entry points and their tiers
+
+Generated from `package.json` `exports` and `docs/surface.json`, so the table cannot omit an entry point:
+
+<!-- ipc:begin entry-points -->
+
+| Export                   | Source                 | Environment           | Tier         | Purpose                                                                                                                                                                                                                                                 |
+| ------------------------ | ---------------------- | --------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `data-cap`               | `src/core/`            | isomorphic, zero deps | Stable       | `buildData`, `documentData`, `fields.nullable` and `fields.optional`, the `DataState`, `DataInfo` and `FieldInfo` types, and the error classes.                                                                                                         |
+| `data-cap/runtime`       | `src/runtime/`         | isomorphic, zero deps | Stable       | `createData`, `createDataStore`, `defaultCoordinator` and `createCoordinator`, `composeSignals` and `rejectOnAbort`.                                                                                                                                    |
+| `data-cap/runtime/cache` | `src/runtime/cache.ts` | isomorphic            | Stable       | `createDataCache`. Optional, and a separate entry, and `test/runtime/tree-shaking.test.ts` checks that the built `./runtime` does not include it.                                                                                                       |
+| `data-cap/runtime/retry` | `src/runtime/retry.ts` | isomorphic            | Stable       | `withRetry` and `isStillDefault`. Optional, and a separate entry, and `test/runtime/tree-shaking.test.ts` checks that the built `./runtime` does not include it.                                                                                        |
+| `data-cap/helpers`       | `src/helpers/`         | isomorphic            | Stable       | The `processors`, `identity`, `canonicalize` and `shape` namespaces.                                                                                                                                                                                    |
+| `data-cap/build`         | `src/build/`           | Node-only             | Stable       | Discovery and linking, the inventory and the other fact models, the report generators, and `generateDataArtifacts` and `checkArtifacts`. The flow pass (`flowEvidence`, `flowSinks`, `flowSummaries`, `scanFlow`) and its projections are Experimental. |
+| `data-cap/node`          | `src/node/`            | Node-only, dev/CI     | Stable       | `nodeBuildFileSystem`: the `BuildFileSystem` a Node build script hands to `./build`.                                                                                                                                                                    |
+| `data-cap/evidence`      | `src/evidence/`        | isomorphic, zero deps | Stable       | `defineEvidenceProjection` (Stable), imported as a type-only reader of the Evidence Model. The flow queries, views, standards adapters and `evaluateEvidenceRules` are Experimental.                                                                    |
+| `data-cap/observe`       | `src/observe/`         | isomorphic, zero deps | Experimental | `observeBoundary`, `observeValue`, `observeSink`, `instrumentBoundary`, `observeResponse` and `createMemorySink`. They record field names, never values, into a sink you supply.                                                                        |
+| `data-cap/eslint-plugin` | `src/eslint-plugin/`   | Node-only (ESLint)    | Stable       | The `stable-operation-reference`, `no-raw-external-io`, `no-fields-escape` and `no-node-fs` rules.                                                                                                                                                      |
+| `data-cap/schema`        | `schemas/`             | static JSON           | Stable       | The JSON Schema for `data-cap --json` output, and the model schemas under `./schema/*`.                                                                                                                                                                 |
+
+<!-- ipc:end entry-points -->
 
 ## Stable
 
-Covered by semver. A breaking change to any of the following requires a
-major version bump (once the package reaches 1.0 — see
-[Pre-1.0 status](#pre-10-status) below):
+Covered by semver. From 1.0, a breaking change to any of these needs a major version (see [Pre-1.0 status](#pre-10-status)):
 
-- **Public core APIs** (`.`): `buildData`, `documentData`, `fields.nullable`,
-  `fields.optional`, and the exported error classes from the package root.
-- **The `DataState`/`DataInfo`/`FieldInfo`/`DataStatus`/`DataError`/
-  `SubscriptionInfo`/`DataStore` type shapes** and the invariants documented
-  for them in `specs/architecture.md` (mandatory `info`, atomic
-  `fields`+`info` commits, sparse-but-present metadata, identity-diffed array
-  reconciliation).
-- **`./runtime`**: `createDataStore` and its `DataStoreController` contract
-  (`getSnapshot`/`subscribe`/`commitAuthoritative`/`addPendingTransition`/
-  `removePendingTransition`/`getAuthoritativeState`); `defaultCoordinator`/
-  `createCoordinator()` and the `Coordinator` contract (`dedupe`/
-  `acquireSubscription`); `composeSignals`/`rejectOnAbort`.
-- **`./runtime/cache`**: `createDataCache` and the `DataCache` contract.
-- **`./runtime/retry`**: `withRetry`, `isStillDefault`.
-- **`./node`** (`nodeBuildFileSystem`): the only sanctioned way to give `./build` a filesystem, and
-  required by every generator script `init` scaffolds.
-- **`./evidence`** (`defineEvidenceProjection` and the `EvidenceModel` shape it projects over), and the
-  persisted evidence artifact.
-- **The composite GitHub Action** (`action.yml`): its input and output names and meanings, and the PR
-  comment's sections. The major tag it is used through (`uses: MaverickCER/data-cap@v0` while the
-  package is 0.x, `@v1` from 1.0.0) moves only within a major version.
-- **Supported toolchain**: Node.js `>=22`; the TypeScript versions named in the `typescript` peer range
-  (`^5 || ^6 || ^7`). The build-time scanner needs TypeScript's classic compiler API, which TypeScript 7
-  does not ship, so it uses the consumer's `typescript` when that has the API and otherwise the bundled
-  `@typescript/typescript6` (inside the package, build entry only) -- no configuration, and `tsc` stays TypeScript 7
-  ([ADR 0069](specs/decisions/0069-typescript-7-scanner-uses-a-bundled-typescript-6.md)). Every
-  entry point but `./eslint-plugin` (typed through its `@typescript-eslint/utils` peer) type-checks with
-  full library checking under TypeScript 5, 6 and 7: a 7 root is served
-  declarations (`types@>=7` export conditions) whose compiler-API types come from the bundled TypeScript 6,
-  since TypeScript 7's package ships none; 5 and 6 are served declarations typed from the project's own
-  `typescript`; and `moduleResolution` `node16`/`nodenext`/`bundler` (not the legacy `node10`).
-- **`./helpers`**: the `processors`/`identity`/`canonicalize`/`shape`
-  namespace shapes and every function they export.
-- **`./eslint-plugin`**: every rule's name and message IDs
-  (`stable-operation-reference`'s `inlineFunctionLiteral`/`recreatedPerCall`;
-  `no-fields-escape`'s message IDs) — removing a rule, or renaming a message
-  ID a consumer's own `eslint.config.js` might reference, is a breaking
-  change.
-- **`./build`** (`discoverCapabilityFiles`, `parseCapabilityFile`,
-  `linkCapabilityFiles`, `evaluateLiteral`, and everything under
-  `resolution/`, including the `--package`/`--tsconfig` CLI flags and
-  cross-package schema discovery (`packages` option)):
-  ported from `env-cap`'s equivalent surface
-  ([ADR 0032](specs/decisions/0032-tsconfig-path-alias-resolution-ported.md),
-  [ADR 0043](specs/decisions/0043-env-cap-resolver-relocated-and-duplicated.md)),
-  promoted to Stable per [ADR 0065](specs/decisions/0065-promote-build-createdata-and-cli-flags-to-stable.md)
-  after a full feedback cycle with no need to break it.
-- **`./runtime`'s `createData`** and its returned capability contract
-  (bound operation methods, `runGetters`, `getSnapshot`'s `operations`
-  namespace, `describe()`): a batteries-included operations layer composed
-  entirely from the `buildData`/`createDataStore`/`coordinator` primitives
-  above ([ADR 0048](specs/decisions/0048-builddata-createdata-split-and-optional-operations-layer.md)),
-  promoted to Stable per [ADR 0065](specs/decisions/0065-promote-build-createdata-and-cli-flags-to-stable.md)
-  after a full feedback cycle with no need to break it.
+- **`.` (core):** `buildData`, `documentData`, `fields.nullable`, `fields.optional`, and the exported error classes with their `code` values.
+- **The state types:** `DataState`, `DataInfo`, `FieldInfo`, `DataStatus`, `DataError`, `SubscriptionInfo` and `DataStore`. Their documented invariants are Stable too: `info` is mandatory, `fields` and `info` commit together, metadata is sparse but present, and arrays reconcile by identity.
+- **`./runtime`:** `createDataStore` and the `DataStoreController` contract (`getSnapshot`, `subscribe`, `commitAuthoritative`, `addPendingTransition`, `removePendingTransition`, `getAuthoritativeState`); `defaultCoordinator`, `createCoordinator()` and the `Coordinator` contract; `composeSignals` and `rejectOnAbort`. Also `createData` and its returned capability: the bound operation methods, `runGetters`, `getSnapshot().operations` and `describe()` ([ADR 0065](specs/decisions/0065-promote-build-createdata-and-cli-flags-to-stable.md)).
+- **`./runtime/cache`:** `createDataCache` and the `DataCache` contract.
+- **`./runtime/retry`:** `withRetry` and `isStillDefault`.
+- **`./helpers`:** the `processors`, `identity`, `canonicalize` and `shape` namespaces and every function in them.
+- **`./build`:** discovery and linking (`discoverCapabilityFiles`, `parseCapabilityFile`, `linkCapabilityFiles`, `evaluateLiteral`), path-alias and cross-package resolution, the fact models, the generators and the orchestrator. The data-flow options are Experimental (below).
+- **`./node`:** `nodeBuildFileSystem`, the sanctioned way to give `./build` a filesystem. Every generator `init` scaffolds uses it.
+- **`./evidence`:** `defineEvidenceProjection`, the `EvidenceModel` shape it reads, and the persisted evidence file's version 2 fields.
+- **The CLI:** every flag except the Experimental ones below, and the exit codes.
+- **`./eslint-plugin`:** every rule name and message id. Removing a rule or renaming a message id is breaking.
+- **The GitHub Action** (`action.yml`): input and output names and meanings, and the summary comment's sections. The major tag (`@v0` while the package is 0.x, `@v1` from 1.0.0) moves only within its major.
+
+**Supported toolchain:** Node.js 22 or later, and the TypeScript versions in the `typescript` peer range (`^5 || ^6 || ^7`).
+
+- The build-time scanner needs TypeScript's classic compiler API, which TypeScript 7 does not ship. It uses your `typescript` when that has the API, and otherwise the bundled `@typescript/typescript6` ([ADR 0069](specs/decisions/0069-typescript-7-scanner-uses-a-bundled-typescript-6.md)). Your `tsc` stays TypeScript 7.
+- Every entry point but `./eslint-plugin` type-checks with full library checking under TypeScript 5, 6 and 7. Under 7, the `types@>=7` export condition serves declarations whose compiler types come from the bundled TypeScript 6.
+- `moduleResolution` must be `node16`, `nodenext` or `bundler`; `node10` is not supported.
+- CI's `typescript-compat` job tests these under `nodenext`. It runs the flow scan under 5, 6 and 7 and requires identical evidence. It runs on the flow-explorer example's source, with the latest 5, 6 and 7 releases; the 5.0 floor is not tested. That job does not block a merge.
 
 ## Experimental
 
-Explicitly labeled as such, in the README, the relevant option's own JSDoc,
-and the ADR that introduces it. An Experimental surface may change shape —
-including in a breaking way — in a minor or patch release, without that
-being a semver violation. This is not a loophole for casual churn: a feature
-ships Experimental because it is genuinely new enough that real-world
-feedback is likely to reveal a better shape. Once a feature has been through
-at least one real feedback cycle without a need to break it, its ADR's Status
-moves from Proposed/Experimental to Accepted, and it becomes Stable.
+The data-flow surface. It may change shape, including in a breaking way, in a minor or patch release. It is labelled Experimental here, in the README and in the Guide; the TSDoc does not carry the label. A surface becomes Stable after a real feedback cycle without a breaking change; its ADR then moves to Accepted. The ADRs that introduced it are [0070](specs/decisions/0070-flow-evidence-is-part-of-the-single-evidence-model.md), [0071](specs/decisions/0071-epistemic-status-on-every-flow-fact.md), [0072](specs/decisions/0072-runtime-observation-is-a-separate-subpath.md), [0073](specs/decisions/0073-flow-views-standards-adapters-and-rules.md), [0074](specs/decisions/0074-flow-scan-non-goals-and-irreducible-limits.md) and [0075](specs/decisions/0075-redundant-transformations.md).
 
-The data-flow surface ships Experimental, because how people want to declare
-rules, read the evidence and enforce it in CI is exactly what real use will
-reshape ([ADR 0070](specs/decisions/0070-flow-evidence-is-part-of-the-single-evidence-model.md),
-[0071](specs/decisions/0071-epistemic-status-on-every-flow-fact.md),
-[0072](specs/decisions/0072-runtime-observation-is-a-separate-subpath.md),
-[0073](specs/decisions/0073-flow-views-standards-adapters-and-rules.md),
-[0074](specs/decisions/0074-flow-scan-non-goals-and-irreducible-limits.md),
-[0075](specs/decisions/0075-redundant-transformations.md)):
+- The `flow`, `policy`, `observation` and `claims` sub-models of the Evidence Model (schema version 3), and their JSON Schemas.
+- `flowPolicy` in `documentData()`.
+- The `--flow-evidence`, `--observations` and `--rules` flags, and the `flowEvidence`, `flowSinks`, `flowSummaries` and `observations` options, with `FlowSummary`.
+- All of `./observe`.
+- The flow queries, views and adapters in `./evidence`: `traceFlow`, `traceFlowBetween`, `filterFlow`, `diffFlow`, `observedFlow`, `flowNodeId`, `flowEdgeId`, `buildFlowGraphView`, `renderFlowText`, `renderFlowDot`, `renderFlowMermaid`, `buildProvDocument`, `buildOscalAssessmentResults`, `observationsToOtlp`, `observationsFromOtlp`, `buildCycloneDxBom`, `renderFlowCycloneDx`, `analyzeLeastData`, `leastDataFindings`, `analyzeRedundantTransforms` and `redundantTransformFindings`. In short: every export of `./evidence` except `defineEvidenceProjection`, its own types and the `EvidenceModel` types.
+- `evaluateEvidenceRules`, `parseEvidenceRules` and every rule they accept, and the optional `edgeTags` of the Flow Model.
+- `ReportFinding.evidence`, `buildSarifLog`'s `flow` option, and the finding codes `FLOW_POLICY_VIOLATED`, `FLOW_POLICY_INDETERMINATE`, `FLOW_ANALYSIS_INCOMPLETE` and `LEAST_DATA_*`.
 
-- the `flow`, `policy`, `observation` and `claims` sub-models of the Evidence Model (schema version 3), and their JSON Schemas;
-- `flowPolicy` in `documentData()`, and the `--flow-evidence`, `--observations` and `--rules` flags with the `flowEvidence`, `flowSinks`, `flowSummaries` and `observations` options (and `FlowSummary`);
-- `./observe` (`observeBoundary`, `observeValue`, `observeSink`, `instrumentBoundary`, `observeResponse`, `createMemorySink`);
-- the isomorphic queries, views and adapters in `./evidence` (`traceFlow`, `filterFlow`, `diffFlow`, `buildFlowGraphView`, `renderFlowText`, `renderFlowDot`, `renderFlowMermaid`, `buildProvDocument`, `buildOscalAssessmentResults`, `observationsToOtlp`/`observationsFromOtlp`, `buildCycloneDxBom`/`renderFlowCycloneDx`, `analyzeLeastData`, `analyzeRedundantTransforms`/`redundantTransformFindings`) and `evaluateEvidenceRules`/`parseEvidenceRules` with its rules (including `maxRedundantTransforms` and `maxObservationAgeDays`); the optional `edgeTags` of the Flow Model;
-- `ReportFinding.evidence`, `buildSarifLog`'s `flow` option, and the finding codes `FLOW_POLICY_VIOLATED`, `FLOW_POLICY_INDETERMINATE`, `FLOW_ANALYSIS_INCOMPLETE` and `LEAST_DATA_*` (including `LEAST_DATA_REDUNDANT_TRANSFORM`).
-
-The rest of the Evidence Model (schema version 2's fields) stays Stable: the
-new sub-models are additive and optional, and a reader that knew version 2
-reads version 3 unchanged. The flow pass's results are only as complete as its
-analysis, and it says so; what it can and cannot follow is documented in the
-[GUIDE](GUIDE.md#what-it-follows-and-what-it-says-when-it-cannot).
+The rest of the Evidence Model stays Stable. The new sub-models are optional, so a reader of version 2 reads version 3 unchanged. What the flow pass can and cannot follow is in the [Guide](GUIDE.md#what-it-follows-and-what-it-says-when-it-cannot).
 
 ## Private
 
-Never covered by semver, may change at any time without notice:
+Never covered by semver; may change in any release:
 
-- Internal modules and functions not re-exported from a documented entry
-  point.
-- The coordinator's internal registry structure, canonicalization's exact
-  key format, and array-identity's exact separator/escaping scheme — the
-  _behavioral guarantees_ around these (e.g. "non-canonicalizable input never
-  throws," "identity collisions never silently merge distinct items") are
-  Stable once documented; their literal implementation is not.
-- Any behavior not documented in the README, a JSDoc comment on a public
-  export, or an ADR.
+- Modules and functions not re-exported from an entry point.
+- The coordinator's internal registry, canonicalization's exact key format, and array identity's separator and escaping. The documented behaviour around them is Stable; for example, non-canonicalizable input never throws.
+- Behaviour not documented in the README, a TSDoc comment on a public export, or an ADR.
+
+## How a change is checked
+
+- **`ApiContract`** (in the `contract` job) diffs each entry point's declarations against a committed baseline. A breaking diff without a changeset of the right bump fails. It compares declarations, not behaviour.
+- **`SurfaceContract`** does the same for the CLI help and the Action's inputs and outputs.
+- **Behaviour** is held by the tests, and by review against this page.
 
 ## Pre-1.0 status
 
-`data-cap` has not yet reached a `1.0` release; published `0.x` versions are
-available on npm. Per [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)/
-semver convention, **minor versions may include breaking changes to the
-Stable tier before 1.0** — this document defines _scope_ (what would
-eventually be covered), not a promise that it is already fully locked in at
-`0.x`.
+`data-cap` is below 1.0. **Before 1.0, a minor release may include a breaking change to the Stable tier.** This page defines the scope semver will cover; it does not say the scope is frozen at `0.x`.
 
-How a `0.x` bump is chosen: the shared release tooling from `internal-package-contract` deflates one
-level below 1.0.0 -- a breaking change releases a minor, a feature a patch, and the API-contract gate
-requires only a minor for a breaking API diff -- so **nothing automated can publish `1.0.0`**. Crossing
-to 1.0.0 takes a human-authored `major` changeset, and that release pull request is not auto-merged.
-The Experimental and Private tiers behave the same before and after 1.0: Experimental surfaces may
-change at any version; Private internals always may.
+How a `0.x` bump is chosen: changesets generated from commits are deflated one level below 1.0: a breaking commit releases a minor, a feature a patch. A hand-written `major` changeset is not deflated and publishes 1.0.0. A person merges every version pull request ([RELEASING.md](RELEASING.md)). The Experimental and Private tiers behave the same before and after 1.0.

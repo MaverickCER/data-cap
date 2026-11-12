@@ -3672,6 +3672,8 @@ What the projection reads from the Evidence Model.
 type DiagramInput = Pick<EvidenceModel, "flow" | "policy">;
 ```
 
+The part of the Evidence Model a flow diagram reads: the flow and the policy results.
+
 ***
 
 ### EvidenceProjectionSchema

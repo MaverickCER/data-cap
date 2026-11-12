@@ -114,6 +114,20 @@ describe("generateDocumentation", () => {
     )
   })
 
+  it("counts 29 days out as expiring and 31 days out as not, under the default 30-day window", () => {
+    const render = (expiresAt: string) =>
+      generateDocumentation({
+        inventory: inventory([capability({ docs: { expiresAt } })]),
+        root: "/project",
+        location: "/project/docs/CAPABILITIES.md",
+        generatedAt: new Date("2026-01-01T00:00:00.000Z"),
+      }).content
+    expect(render("2026-01-30")).toContain("29d remaining")
+    expect(render("2026-02-01")).toContain(
+      "Nothing declares an `expiresAt` within the configured window",
+    )
+  })
+
   it("honors a caller-supplied expiringWithinDays, not silently falling back to the default", () => {
     // 20 days out: inside the 30-day default window, outside a 5-day one.
     const result = generateDocumentation({

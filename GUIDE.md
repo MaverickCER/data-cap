@@ -1,89 +1,100 @@
 # data-cap Guide
 
-The reference manual: the documented example, fields & info, optimistic mutations, array identity, subscriptions, the coordinator, cache & retry, helpers, TanStack Query/Socket.IO patterns, build tooling & the CLI, the ESLint plugin, the GitHub Action, architecture, migration, the security model, troubleshooting, and performance characteristics.
+One chapter per entry point, each written for the reader who imports it. Start with the chapter for your role.
 
-For the pitch, quick start, and adoption reasoning, see [README.md](README.md). For why the package is built the way it is, see [specs/architecture.md](specs/architecture.md) and the [ADRs](specs/decisions/).
+| Chapter                                                                                      | Entry points                                                                       | Written for                                                         |
+| -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| [Application data](#application-data)                                                        | `data-cap`, `data-cap/runtime`, `data-cap/runtime/cache`, `data-cap/runtime/retry` | Front-end and Node developers modelling data they do not own        |
+| [Helpers](#helpers)                                                                          | `data-cap/helpers`                                                                 | The same developers                                                 |
+| [Build tooling, the CLI and the GitHub Action](#build-tooling-the-cli-and-the-github-action) | `data-cap/build`, `data-cap/node`, the `data-cap` CLI, the Action                  | Platform engineers who own CI                                       |
+| [Data flow](#data-flow) (Experimental)                                                       | `data-cap/evidence`, `data-cap/observe`, the flow options of `data-cap/build`      | Security and privacy reviewers, and anyone asked where a field goes |
+| [ESLint plugin](#eslint-plugin)                                                              | `data-cap/eslint-plugin`                                                           | Lint owners                                                         |
 
-- [Documented example](#documented-example)
-- [Fields and info](#fields-and-info)
-- [Optimistic mutations](#optimistic-mutations)
-- [Array identity](#array-identity)
-- [Subscriptions](#subscriptions)
-- [Coordinator: dedup and isolation](#coordinator-dedup-and-isolation)
-- [Runtime support matrix](#runtime-support-matrix)
-- [The low-level path: full manual control](#the-low-level-path-full-manual-control)
-- [Cache and retry](#cache-and-retry)
-- [Helpers](#helpers)
-- [TanStack Query and Socket.IO](#tanstack-query-and-socketio)
-- [Build tooling, generated reports, and the CLI](#build-tooling-generated-reports-and-the-cli)
-- [ESLint plugin](#eslint-plugin)
-- [GitHub Action](#github-action)
-- [Architecture](#architecture)
-- [Migration](#migration)
-- [Security model](#security-model)
-- [Troubleshooting](#troubleshooting)
-- [Performance characteristics](#performance-characteristics)
-- [AI-Assisted Integration](#ai-assisted-integration)
+[Requirements](#requirements-and-runtimes), [Troubleshooting](#troubleshooting) and [Performance](#performance-characteristics) apply to all of them. For why the package is built this way, read [specs/architecture.md](specs/architecture.md) and the [ADRs](specs/decisions/).
 
-## Documented example
+## Requirements and runtimes
 
-`documentData` structurally mirrors the same schema shape both `buildData`
-and `createData` accept — documentation augments the same capability
-graph, never a loose bag:
+### Requirements
+
+- **Node.js 22 or later.** `package.json` `engines` says so, and CI runs the tests on Node 22 and 24.
+- **TypeScript is optional.** The runtime entries work in plain JavaScript.
+- **The generator** parses with your project's TypeScript when it is version 5 or 6. Otherwise, with TypeScript 7 or none installed, it uses the TypeScript 6 compiler bundled inside this package. Your `tsc` stays your own.
+- **TypeScript 5, 6 and 7** are tested in CI's `typescript-compat` job. The flow scan runs under each and must produce identical evidence. It runs on the flow-explorer example's source, with the latest 5, 6 and 7 releases; the 5.0 floor is not tested. That job does not block a merge.
+- **Type declarations** type-check with full library checking under TypeScript 5, 6 and 7 for every entry point but `./eslint-plugin`. That check runs in the same job, with `moduleResolution: nodenext` only.
+- **`moduleResolution`** must be `node16`, `nodenext` or `bundler`. The legacy `node10` resolver cannot see the subpath exports.
+- **`data-cap/eslint-plugin`** also needs `eslint` and `@typescript-eslint/utils`, both optional peers.
+
+### Runtime support matrix
+
+| Entry point                                       | Node                       | Browser         | Bun and Deno   | Edge runtimes |
+| ------------------------------------------------- | -------------------------- | --------------- | -------------- | ------------- |
+| `.` (core)                                        | Tested                     | Bundle tested ¹ | Smoke-tested ² | Not tested    |
+| `./runtime`, `./runtime/cache`, `./runtime/retry` | Tested                     | Bundle tested ¹ | Smoke-tested ² | Not tested    |
+| `./helpers`                                       | Tested                     | Bundle tested ¹ | Smoke-tested ² | Not tested    |
+| `./evidence`                                      | Tested                     | Bundle tested ¹ | Smoke-tested ² | Not tested    |
+| `./observe` (Experimental)                        | Tested                     | Bundle tested ¹ | Smoke-tested ² | Not tested    |
+| `./build`                                         | Node only                  | No              | Not tested     | No            |
+| `./node`, the CLI                                 | Node only (uses `node:fs`) | No              | Not tested     | No            |
+| `./eslint-plugin`                                 | Node only (inside ESLint)  | No              | No             | No            |
+
+1. `test/runtime/browser-bundle.test.ts` bundles the entry for the browser and runs it in a V8 context with Web globals only. No real browser runs it.
+2. `test/cross-runtime/` runs one smoke test per entry under Bun and Deno. The job uses the latest Bun and does not block a merge.
+
+### Package managers
+
+npm is the fully tested package manager: every other CI job installs with it. CI's `package-managers` job tests pnpm, Yarn 1 and Yarn Berry with the `node-modules` linker for one thing. The packed tarball installs, and every entry point imports as ESM and as CommonJS. That job does not block a merge. Yarn Plug'n'Play and pnpm's `pnp` linker are unsupported.
+
+## Application data
+
+For the front-end or Node developer who reads data an API, a database or a socket owns. You declare the fields once, with defaults, and every consumer reads the same frozen snapshot. Cache and retry are separate entries, so you import them only when you use them.
+
+### Your first capability
+
+`createData` is the shortest path. It owns request dedup, per-operation status, the optimistic mutation lifecycle and concurrent getters. This capability is copied from `examples/team-service/src/capabilities/member.capability.ts`, which CI's `examples` job runs:
 
 ```ts
-import { buildData, documentData } from "data-cap"
+import { createData } from "data-cap/runtime"
 
-const userFields = { name: "", email: "" }
-
-export const userCapability = buildData({ fields: userFields })
-
-documentData(
-  { fields: userFields },
-  {
-    owner: "identity-team",
-    purpose: "Core account identity used across the product.",
-    fields: {
-      name: { description: "The user's display name." },
-      email: {
-        description: "The user's primary email address.",
-        // A field's own `owner`/`sensitivity`/`purpose`/`retention` override
-        // the capability-level value of the same name for that field only --
-        // see `FieldDocs` in specs/architecture.md.
-        owner: "identity-team",
-        sensitivity: "restricted",
-        purpose: "Account recovery and transactional notifications.",
-        retention: "Deleted with the account.",
-      },
+const memberSchema = {
+  fields: {
+    members: [] as Member[],
+  },
+  getters: {
+    listMembers: {
+      params: {},
+      execute: (_params: object, signal: AbortSignal): Promise<Member[]> =>
+        listMembersThroughCache(signal),
+      processor: (result: Member[]): { members: Member[] } => ({ members: result }),
+      writes: { members: true },
     },
   },
-)
+}
+
+export const memberData = createData(memberSchema)
+
+// In examples/team-service/src/main.ts:
+await memberData.listMembers({})
 ```
 
-The full field-governance vocabulary (`description`/`owner`/`sensitivity`/`protections`/
-`retention`/`purpose`/`legalBasis`/`dataResidency`/`auditRequired`/`expiresAt`/`deprecated`/
-`metadata`) is documented on `FieldDocs` in the generated [API reference](https://maverickcer.github.io/data-cap/api/);
-the same names, minus per-field overrides, exist at the capability level on `CapabilityDocs`
-(`owner`, `purpose`, `legalBasis`, `dataResidency`, ... — see `examples/team-service/src/capabilities/member.capability.ts`
-for a capability-level `owner`/`purpose` declaration with a field-level `owner` override).
+Read a field with `memberData.getSnapshot().fields.members`.
 
-`documentData` is inert at runtime (`void config; void docs`) — its only
-consumer is `data-cap/build`'s static analysis, which
-correlates a `documentData` call with the `buildData`/`createData`
-capability it documents and reports every mismatch category explicitly
-(undocumented capability, orphaned documentation, duplicate documentation,
-a documented field that doesn't exist) — see
-[ADR 0040](specs/decisions/0040-build-tooling-detects-correlation-mismatches.md).
-For a `createData` capability, `documentData` also accepts `getters`/
-`mutators`/`subscriptions` sections — see `examples/application/`.
+What the tests in `test/runtime/capability.test.ts` hold it to:
 
-## Fields and info
+- Fields are readable synchronously, with their defaults, from the moment `createData()` returns. There is no throw-until-ready gate ([ADR 0004](specs/decisions/0004-fields-always-synchronously-readable.md)).
+- A newer getter call discards an older in-flight getter's commit. A mutator's commit is never discarded.
+- Operation methods reject like ordinary Promises. `runGetters` runs several getters at once and never rejects; it returns one outcome per operation.
+- `getSnapshot().operations` tracks each call by its canonicalized params, so two calls with different params stay separate.
+- `getSnapshot()` and `subscribe()` work with React's `useSyncExternalStore` without a hook. The Next.js example builds with this pattern in CI's `examples` job, which does not block a merge.
 
-Every `DataState` is `{ fields, info }` — both always present, always
-committed together as one atomic snapshot. `buildData`'s own return value
-is exactly this shape, directly and statically:
+[ADR 0048](specs/decisions/0048-builddata-createdata-split-and-optional-operations-layer.md) is the full behavioural contract. `examples/application/` uses every feature on one capability.
+
+### Fields and info
+
+Every `DataState` is `{ fields, info }`. Both are always present and are committed together as one snapshot (`test/core/patch.test.ts`, `test/runtime/store.test.ts`).
 
 ```ts
+import { buildData, fields } from "data-cap"
+
 const capability = buildData({
   fields: {
     user: { name: "", email: "" },
@@ -92,31 +103,20 @@ const capability = buildData({
   },
 })
 
-capability.fields.role // null    -- nullable() always resolves to null initially
-capability.fields.nickname // undefined -- optional() always resolves to undefined initially
-capability.info // {}      -- sparse; nothing has executed yet
+capability.fields.role // null: nullable() starts as null
+capability.fields.nickname // undefined: optional() starts as undefined
+capability.info // {}: sparse until something runs
 ```
 
-`fields` are exactly the shape you declared — ordinary JS values, no
-wrapper, no proxy, no dot-notation access. `info` mirrors that same
-structure, but only ever grows entries for fields something has actually
-executed against — `info.user.status`, `info.user.source`,
-`info.user.error`, `info.user.optimistic`. See
-[ADR 0007](specs/decisions/0007-datainfo-mandatory-not-optional.md) and
-[ADR 0008](specs/decisions/0008-fields-info-atomic-commit.md).
+`fields` has exactly the shape you declared: plain values, no wrapper, no proxy. `info` mirrors that shape but gains an entry only for a field something ran against: `status`, `source`, `error`, `optimistic`. `0`, `false`, `""`, `null` and `[]` are real values; presence is checked with `Object.hasOwn`, never truthiness. See [ADR 0007](specs/decisions/0007-datainfo-mandatory-not-optional.md) and [ADR 0008](specs/decisions/0008-fields-info-atomic-commit.md).
 
-`createData`'s own returned capability deliberately has no equivalent
-top-level `.fields`/`.info` shortcut — a same-named-but-frozen property
-would silently never update the way `buildData()`'s genuinely-static one
-does. Every live read goes through `getSnapshot().fields`/`.info`
-instead — one unambiguous spelling.
+`createData`'s capability has no top-level `.fields` shortcut. A frozen property there would never update, so every live read goes through `getSnapshot().fields`.
 
-## Optimistic mutations
+Every published snapshot is deep-frozen. `Object.freeze` does not stop `Map.prototype.set`, `Set.prototype.add` or `Date` setters, so never mutate a value you were handed ([SECURITY.md](SECURITY.md#runtime-security-model)).
 
-`createData`'s own `optimistic()` handles this for you. The same mechanism, by hand, via
-`addPendingTransition`/`removePendingTransition` — makes a mutation's
-not-yet-confirmed value visible immediately, with no automatic rollback and
-no invented conflict-resolution policy:
+### Optimistic mutations
+
+`createData`'s `optimistic()` makes a mutation's unconfirmed value visible at once. By hand, the same mechanism is a pending transition on the store:
 
 ```ts
 const optimisticEmail = "new@example.com"
@@ -125,7 +125,7 @@ const transitionId = store.addPendingTransition(
   { user: { optimistic: true, status: "loading" } },
 )
 
-store.getSnapshot().fields.user.email // "new@example.com" -- visible immediately
+store.getSnapshot().fields.user.email // "new@example.com", visible at once
 
 // On success:
 store.commitAuthoritative(
@@ -134,56 +134,16 @@ store.commitAuthoritative(
 )
 store.removePendingTransition(transitionId)
 
-// On failure: just remove the transition -- no separate "rollback" call.
-// The visible value automatically reverts, because project() no longer
-// folds a transition that no longer exists.
+// On failure: remove the transition. The visible value reverts because
+// project() no longer folds a transition that does not exist.
 store.removePendingTransition(transitionId)
 ```
 
-Every commit always folds onto whatever is _currently_ authoritative, never
-a snapshot captured when the mutation started — see
-`test/integration/runtime-core/optimistic-mutation-concurrency/` for the full concurrent-mutation
-scenario (A starts, B starts, B completes, A completes) worked end to end,
-and [ADR 0021](specs/decisions/0021-authoritative-pending-project-model.md)–[ADR 0023](specs/decisions/0023-no-automatic-rollback-or-conflict-resolution.md).
-`createData`'s own `optimistic()` callback receives current authoritative
-state specifically (never the visible/projected state), so a second
-concurrent optimistic transition never computes against a first
-transition's still-pending value.
+There is no rollback call and no conflict policy such as last-write-wins ([ADR 0023](specs/decisions/0023-no-automatic-rollback-or-conflict-resolution.md)). Each commit folds onto the current authoritative state, never a snapshot taken when the mutation started. `optimistic()` receives authoritative state, not the projected one, so a second optimistic update never builds on the first one's pending value. The fixture `test/integration/runtime-core/optimistic-mutation-concurrency/` runs two overlapping mutations end to end, in a job that does not block a merge.
 
-## Array identity
+### Subscriptions
 
-Arrays stay ordinary arrays in `fields`; `info` tracks each item by a
-declared identity, never by array index (which shifts under insertion/
-removal/reorder):
-
-```ts
-import { identity } from "data-cap/helpers"
-
-const { info, warnings } = identity.reconcileArrayInfo(
-  previousInfo,
-  nextComments,
-  ["id"],
-  new Set([touchedId]),
-  (item, key) => ({ status: "success", source: "listComments" }),
-)
-```
-
-An item's `FieldInfo` object reference is preserved exactly across a
-refetch that doesn't touch it — `next.info.comments["1"] ===
-previous.info.comments["1"]` — a reconciliation diff, never a full rebuild.
-See `test/integration/runtime-core/array-identity-reconciliation/` for the full malformed-input
-matrix (missing key, explicit `null`, duplicate identity) and
-[ADR 0009](specs/decisions/0009-fields-arrays-info-identity-keyed.md)–[ADR 0010](specs/decisions/0010-datainfo-array-reconciliation-identity-diffed.md).
-
-## Subscriptions
-
-`createData`'s own `subscriptions` section (see `examples/application/`)
-handles this for you, including committing its
-own `"disconnected"` status on release. The same mechanism, by hand, via
-`coordinator.acquireSubscription`, ref-counts a shared transport by
-`subscribe` function identity — the first acquirer opens it, later
-acquirers with the same identity reuse it, and it tears down only once
-every acquirer has released:
+`createData`'s `subscriptions` section opens and releases a transport for you. By hand, `coordinator.acquireSubscription` shares one transport per `subscribe` function identity. The first caller opens it, later callers reuse it, and it closes after the last one releases:
 
 ```ts
 import { defaultCoordinator } from "data-cap/runtime"
@@ -196,74 +156,25 @@ const release = defaultCoordinator.acquireSubscription(subscribeToFeed, {
 })
 ```
 
-A status transition alone (`connecting`/`connected`/`disconnected`) never
-touches `fields`, only `info.<field>.subscription` — a disconnect never
-discards the last known-good value. See `test/integration/subscriptions/subscription-lifecycle/`,
-`test/integration/subscriptions/subscription-with-recover/`, and
-`test/integration/subscriptions/multi-capability-shared-transport/` for the full lifecycle
-matrix, an optional `recover` resync pattern, and two capabilities sharing
-one transport while keeping fully independent state — and
-[ADR 0026](specs/decisions/0026-subscription-transport-sharing-independent.md)–[ADR 0030](specs/decisions/0030-recover-resync-runs-once-no-replay-guarantee.md).
+A status change (`connecting`, `connected`, `disconnected`) touches only `info.<field>.subscription`, never `fields`. A disconnect keeps the last good value. The fixtures under `test/integration/subscriptions/` cover the lifecycle, a `recover` resync and two capabilities sharing one transport. They run in CI's `integration-fixtures` job, which does not block a merge; the unit tests in `test/runtime/coordinator.test.ts` do.
 
-## Coordinator: dedup and isolation
+### Coordinator: dedup and isolation
 
-`coordinator.dedupe` shares one in-flight call across concurrent calls with
-the same function identity and canonically-equal params — non-
-canonicalizable params degrade to no-dedup rather than risk a false
-collision. `defaultCoordinator` is a module-level singleton;
-`createCoordinator()` gives an explicit, isolated domain (a multi-tenant
-server process, test isolation):
+`coordinator.dedupe` shares one in-flight call between concurrent calls with the same function and canonically equal params. Params that cannot be canonicalized are never deduplicated and never throw (`test/core/canonicalize.test.ts`). `defaultCoordinator` is one per module instance. `createCoordinator()` gives an isolated domain, for a multi-tenant server or a test:
 
 ```ts
 import { createCoordinator } from "data-cap/runtime"
 
-const tenantACoordinator = createCoordinator()
-const tenantBCoordinator = createCoordinator()
-// tenantACoordinator and tenantBCoordinator never share dedup/subscription
-// work, even for byte-identical calls.
+const tenantA = createCoordinator()
+const tenantB = createCoordinator()
+// tenantA and tenantB never share dedup or subscription work.
 ```
 
-`createData` accepts an explicit coordinator too (`createData(schema, {
-coordinator: tenantACoordinator })`) — it defaults to `defaultCoordinator`
-otherwise. See `test/integration/coordinator/coordinator-dedup/` and
-`test/integration/coordinator/coordinator-isolation/`, and
-[ADR 0027](specs/decisions/0027-default-coordinator-singleton-plus-factory.md)–[ADR 0028](specs/decisions/0028-coordinator-dedup-key-identity-plus-params.md).
+`createData(schema, { coordinator: tenantA })` uses an explicit coordinator; the default is `defaultCoordinator`. Sharing is by function identity: an inline arrow is a new function on every call, so it never dedupes. The [ESLint plugin](#eslint-plugin) flags that case. See [ADR 0027](specs/decisions/0027-default-coordinator-singleton-plus-factory.md) and [ADR 0028](specs/decisions/0028-coordinator-dedup-key-identity-plus-params.md).
 
-## Runtime support matrix
+### The low-level path: full manual control
 
-| Entry point                                       | Node                                                                                                                                                | Browser ² | Bun                                      | Deno                | Edge/serverless ² |
-| ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---------------------------------------- | ------------------- | ----------------- |
-| `.` (core)                                        | ✅                                                                                                                                                  | ✅        | ✅ (executed in CI)                      | ✅ (executed in CI) | ✅                |
-| `./runtime`, `./runtime/cache`, `./runtime/retry` | ✅                                                                                                                                                  | ✅        | ✅ (executed in CI)                      | ✅ (executed in CI) | ✅                |
-| `./helpers`                                       | ✅                                                                                                                                                  | ✅        | ✅ (executed in CI)                      | ✅ (executed in CI) | ✅                |
-| `./evidence`                                      | ✅                                                                                                                                                  | ✅        | ✅ (executed in CI)                      | ✅ (executed in CI) | ✅                |
-| `./observe` (Experimental)                        | ✅                                                                                                                                                  | ✅        | ✅ (executed in CI)                      | ✅ (executed in CI) | ✅                |
-| `./build`                                         | ✅ (Node-only — uses the TypeScript Compiler API; never `node:fs`, see [ADR 0058](specs/decisions/0058-library-surfaces-do-not-acquire-node-fs.md)) | ❌        | not tested                               | not tested          | ❌                |
-| `./node`, CLI                                     | ✅ (Node-only — reads the file system through `node:fs`, declared in `package.json` `ambientCapabilities`)                                          | ❌        | not tested                               | not tested          | ❌                |
-| `./eslint-plugin`                                 | ✅ (Node-only — runs inside ESLint)                                                                                                                 | ❌        | ❌ (ESLint itself doesn't run under Bun) | ❌                  | ❌                |
-
-Every isomorphic entry point (core, runtime, cache, retry, helpers, evidence, observe) is executed under real Bun and Deno engines in CI (`test/cross-runtime/`), not claimed by analogy to Node.
-
-² Bundled for the browser and then executed in a V8 context that has only Web globals (no `process`, `Buffer`, `require` or timers) in `test/runtime/browser-bundle.test.ts`; not run in a real browser or edge runtime in CI. See the further reading below for the full architectural model, and [the docs site's comparison and FAQ sections](https://maverickcer.github.io/data-cap/#comparison) for more on how this compares to conventional fetch-and-`useState`/global-store patterns.
-
-### Package managers
-
-npm is the supported and fully tested package manager: every CI job installs with it. pnpm, Yarn 1
-and Yarn Berry with the `node-modules` linker are tested for one thing, in CI's `package-managers`
-job (`scripts/package-managers-smoke.mjs`): the packed tarball installs and every entry point
-imports, as ESM and as CommonJS. Nothing wider is claimed for them. Yarn Plug'n'Play and pnpm
-with the `pnp` node linker are unsupported.
-
-### Requirements
-
-Node.js `>=22`. Your own TypeScript is optional and matters only for build-time manifest generation: the generator parses with it when it is version 5 or 6, and otherwise (TypeScript 7, or none installed) with the TypeScript 6 compiler that `data-cap` declares as its one npm dependency and bundles inside its tarball (`bundleDependencies`), so it arrives with the package rather than from the registry. Only the build entry uses that compiler, and it adds about 24 MB unpacked to the install. The runtime works in plain JavaScript. TypeScript consumers need `moduleResolution` set to `node16`, `nodenext` or `bundler` to resolve the subpath exports (`data-cap/build`, `data-cap/helpers`, ...); the legacy `node10` resolver is not supported. `data-cap/eslint-plugin` also needs `@typescript-eslint/utils` installed (an optional peer).
-
-## The low-level path: full manual control
-
-For applications that want to own execution, retry, and caching policy
-themselves instead of the batteries-included default, `buildData` +
-`createDataStore` + `coordinator` are the same Stable primitives
-`createData` is built from, usable directly:
+Use `buildData`, `createDataStore` and the coordinator directly when you want to own execution, retry and caching. They are the same Stable primitives `createData` is built from:
 
 ```ts
 import { buildData, fields } from "data-cap"
@@ -281,15 +192,8 @@ async function fetchUser(signal: AbortSignal) {
   return fetch("/api/user", { signal }).then((r) => r.json())
 }
 
-// A stable, MODULE-LEVEL reference -- not an inline arrow written directly
-// inside `dedupe(...)` below. `coordinator.dedupe` shares work by the
-// IDENTITY of the function passed to it, never by structural/behavioral
-// equality; a fresh closure created on every `loadUser()` call has a fresh
-// identity every time, so two "concurrent" `loadUser()` calls would never
-// actually share one in-flight `fetchUser()` despite looking deduped at a
-// glance. Same discipline `data-cap/eslint-plugin`'s
-// `stable-operation-reference` rule enforces for `createData()`'s own
-// execute/processor/subscribe/optimistic keys — applied here by hand.
+// A module-level function: dedupe shares work by function identity,
+// so an inline arrow here would never share a call.
 function executeFetchUser(_params: undefined, signal: AbortSignal) {
   return fetchUser(signal)
 }
@@ -308,33 +212,11 @@ async function loadUser(): Promise<void> {
 }
 ```
 
-This is the exact pattern `test/integration/runtime-core/basic-standalone/` demonstrates end to
-end, with real assertions (including a concurrent-call test proving the dedup actually happens,
-not just a single-call smoke test) — most other examples in `examples/` build on
-this same shape. Both paths compose the same underlying primitives; neither
-is "the" way — pick per capability based on how much control you need over
-that specific operation's execution.
+The fixture `test/integration/runtime-core/basic-standalone/` runs this pattern, including a concurrent call that checks the dedup, in a job that does not block a merge. Pick a path per capability, not per application.
 
-Fields are synchronously readable immediately — unlike `env-cap`,
-`data-cap` does not use a throw-until-ready gate for ordinary field access.
-`data.info` is always present too (never optional), just structurally
-sparse until something has actually executed; `getSnapshot().operations`
-additionally tracks each getter/mutator/subscription call by its own
-canonicalized params, so two differently-parameterized concurrent calls to
-the same operation stay independently observable. `getUser`/`updateUser`
-methods reject on failure like ordinary Promises (fire-and-forget is `void
-userData.getUser(...)`, not a different Promise contract); `runGetters`
-runs several getters concurrently and never rejects itself, returning a
-structured per-operation outcome instead. `getSnapshot()`/`subscribe()` are
-directly `useSyncExternalStore`-compatible, no data-cap-specific hook
-required. See `examples/application/` for this worked fully, and
-[ADR 0048](specs/decisions/0048-builddata-createdata-split-and-optional-operations-layer.md)
-for the complete behavioral contract.
+### Cache and retry
 
-## Cache and retry
-
-Two separately-tree-shaken optional entry points. `runtime/cache` persists
-complete `DataState` (`fields` + `info`) atomically, never raw responses:
+Both are separate entries. `test/runtime/tree-shaking.test.ts` checks that each tree-shakes on its own. `./runtime/cache` stores complete `DataState` snapshots, `fields` and `info` together, never raw responses:
 
 ```ts
 import { createDataCache } from "data-cap/runtime/cache"
@@ -343,10 +225,7 @@ const cache = createDataCache<UserFields>({ maxEntries: 100 })
 cache.set(cacheKey, capability) // a full DataState, not just fields
 ```
 
-`runtime/retry` is opt-in retry with abort-awareness and a documented
-"only retry a still-default field" policy — it composes directly with a
-`createData`-generated operation method too, since those are plain
-`(params?, signal?) => Promise<...>` functions:
+`./runtime/retry` is opt-in and abort-aware. It composes with a `createData` operation method, because those are plain `(params?, signal?) => Promise` functions:
 
 ```ts
 import { withRetry, isStillDefault } from "data-cap/runtime/retry"
@@ -357,16 +236,20 @@ await withRetry((signal) => userData.getUser({ id: "1" }, signal), controller.si
 })
 ```
 
-See `test/integration/runtime-modules/runtime-cache/`, `test/integration/runtime-modules/runtime-retry/`, and
-`examples/application/` (which composes `withRetry` with a
-`createData` mutator directly), and
-[ADR 0034](specs/decisions/0034-optional-runtime-features-separate-entries.md)–[ADR 0036](specs/decisions/0036-retry-opt-in-with-explicit-constraints.md).
+`examples/application/` composes `withRetry` with a mutator. See [ADR 0034](specs/decisions/0034-optional-runtime-features-separate-entries.md) to [ADR 0036](specs/decisions/0036-retry-opt-in-with-explicit-constraints.md).
+
+### TanStack Query and Socket.IO
+
+No adapter package ships, and no React package either ([ADR 0037](specs/decisions/0037-no-first-party-integration-packages.md)). Two fixtures show the patterns to copy. They run in a job that does not block a merge:
+
+- `test/integration/adoption-patterns/tanstack-query-integration/`: TanStack Query fetches and caches, and its results flow into a `data-cap` store.
+- `test/integration/subscriptions/socket-io-subscription/`: a local Socket.IO server and client wired into `coordinator.acquireSubscription`.
+
+A React hook is one line: `useSyncExternalStore(store.subscribe, store.getSnapshot)`.
 
 ## Helpers
 
-`data-cap/helpers` ships four separately tree-shakeable
-namespaces — entirely optional, neither `buildData` nor `createData` has
-any knowledge of this module:
+For the same developers. `data-cap/helpers` holds four namespaces, each tree-shaken on its own (`test/helpers/tree-shaking.test.ts`). It stays under a 3 KB gzip budget. Neither `buildData` nor `createData` depends on it.
 
 ```ts
 import { processors, identity, canonicalize, shape } from "data-cap/helpers"
@@ -374,54 +257,74 @@ import { processors, identity, canonicalize, shape } from "data-cap/helpers"
 processors.toNumber(raw.age) // coercion helpers for a processor
 identity.computeItemIdentity(item, ["id"], [], warnings)
 canonicalize({ id: 1, tags: ["a"] }) // deterministic, type-tagged string
-shape.isPlainObject(raw) // structural, never business-rule guards
+shape.isPlainObject(raw) // structural guards only
 ```
 
-No per-field validator vocabulary exists in `data-cap` — `shape`'s guards
-are structural only (`isPlainObject`, `isDate`, `isURL`, `isRegExp`,
-`isNullish`), deliberately not a validator system. See
-[ADR 0039](specs/decisions/0039-helpers-subpath-scope.md).
+- `canonicalize` and `identity` re-export core's own functions; they are not copies (`test/helpers/index.test.ts`).
+- `canonicalize` never throws, including on cycles.
+- `shape` has structural guards only (`isPlainObject`, `isDate`, `isURL`, `isRegExp`, `isNullish`). It is not a validator system ([ADR 0039](specs/decisions/0039-helpers-subpath-scope.md)).
 
-## TanStack Query and Socket.IO
+### Array identity
 
-No `./tanstack` or `./socket-io` adapter ships, and no React package ships
-either (`createData`'s `getSnapshot`/`subscribe` are already
-`useSyncExternalStore`-compatible) — see
-[ADR 0037](specs/decisions/0037-no-first-party-integration-packages.md).
-Full, real, end-to-end-tested reference patterns live in `test/integration/`
-instead:
+Arrays stay plain arrays in `fields`. `info` tracks each item by a declared identity, never by index, which shifts on insert and reorder:
 
-- `test/integration/adoption-patterns/tanstack-query-integration/` — TanStack Query drives fetching/
-  caching/dedup; its results flow into a `data-cap` `DataStore`.
-- `test/integration/subscriptions/socket-io-subscription/` — a real local Socket.IO server +
-  client pair wired into `coordinator.acquireSubscription`.
+```ts
+import { identity } from "data-cap/helpers"
 
-Copy the pattern directly; there is no package to import instead. A
-`useDataStore` React wrapper is a few lines against
-`useSyncExternalStore(store.subscribe, store.getSnapshot)` — see the
-`useSyncExternalStore` documentation for the hook's own contract; no
-first-party example currently demonstrates it end-to-end.
+const { info, warnings } = identity.reconcileArrayInfo(
+  previousInfo,
+  nextComments,
+  ["id"],
+  new Set([touchedId]),
+  (item, key) => ({ status: "success", source: "listComments" }),
+)
+```
 
-## Build tooling, generated reports, and the CLI
+An item a refetch did not touch keeps its exact `FieldInfo` object: `next.info.comments["1"] === previous.info.comments["1"]`. A missing key, an explicit `null` or a duplicate identity is reported in `warnings`. `createData` does not reconcile arrays this way; call this helper against a store, as `examples/team-service/` does. See [ADR 0009](specs/decisions/0009-fields-arrays-info-identity-keyed.md) and [ADR 0010](specs/decisions/0010-datainfo-array-reconciliation-identity-diffed.md).
 
-`data-cap` turns your application's data contracts into continuously
-generated, machine-readable data inventory, ownership, dependency, and
-data-flow **evidence** — evidence that supports a security, privacy, or
-platform review, never a claim that the review has already been done.
+## Build tooling, the CLI and the GitHub Action
+
+For the platform engineer who owns CI. The build pass reads your declarations and source, never runs them, and writes the reports. In CI, `--check` turns a stale report into a failed pull request. Every artifact is evidence that can support a review; none of it says a review was done.
+
+### Documenting a capability
+
+`documentData` takes the same schema `buildData` and `createData` take, plus governance metadata:
+
+```ts
+import { buildData, documentData } from "data-cap"
+
+const userFields = { name: "", email: "" }
+
+export const userCapability = buildData({ fields: userFields })
+
+documentData(
+  { fields: userFields },
+  {
+    owner: "identity-team",
+    purpose: "Core account identity used across the product.",
+    fields: {
+      name: { description: "The user's display name." },
+      email: {
+        description: "The user's primary email address.",
+        // A field's own owner, sensitivity, purpose and retention override
+        // the capability-level value for that field only.
+        owner: "identity-team",
+        sensitivity: "restricted",
+        purpose: "Account recovery and transactional notifications.",
+        retention: "Deleted with the account.",
+      },
+    },
+  },
+)
+```
+
+`documentData` does nothing at runtime. The build pass matches each call to the capability it documents. It reports an undocumented capability, orphaned documentation, duplicate documentation and a documented field that does not exist ([ADR 0040](specs/decisions/0040-build-tooling-detects-correlation-mismatches.md)). The full vocabulary is on `FieldDocs` and `CapabilityDocs` in the [API reference](https://maverickcer.github.io/data-cap/api/). For a `createData` capability it also accepts `getters`, `mutators` and `subscriptions` sections.
 
 ### Discovery and linking
 
-`data-cap/build` statically discovers and links
-`buildData`/`createData`/`documentData` calls across a project — using the
-TypeScript Compiler API to read each file's AST, never `import()`ing,
-`require()`ing, or `eval()`ing a discovered file
-([ADR 0002](specs/decisions/0002-build-tooling-static-analysis-only.md)).
-For a `createData` call specifically, it additionally extracts static
-getter/mutator/subscription **names** and literal `writes` shapes — never
-the operations' own `execute`/`processor`/`subscribe`/`optimistic` function
-bodies. `./build` never imports `node:fs` itself — every public options
-object requires a caller-supplied `fs: BuildFileSystem`, which the CLI
-supplies automatically:
+`data-cap/build` finds `buildData`, `createData` and `documentData` calls through the TypeScript Compiler API. It never imports, requires or evaluates a discovered file, including operation bodies ([ADR 0002](specs/decisions/0002-build-tooling-static-analysis-only.md)). From a `createData` call it reads operation names and literal `writes` shapes only.
+
+`./build` never imports `node:fs`. Every options object takes a filesystem you supply; `data-cap/node` exports the Node one ([ADR 0058](specs/decisions/0058-library-surfaces-do-not-acquire-node-fs.md)):
 
 ```ts
 import { discoverCapabilityFiles, linkCapabilityFiles } from "data-cap/build"
@@ -434,30 +337,11 @@ const { capabilities, warnings } = await linkCapabilityFiles(files, {
 })
 ```
 
-A `fields` reference is followed through relative imports, `tsconfig.json`
-path aliases, and — with an explicit `packages` allowlist — a bare import
-from a _different_, installed package that declares its own schema via
-`package.json#dataCap.schema`:
-
-```ts
-await linkCapabilityFiles(files, {
-  fs: nodeBuildFileSystem,
-  root: ".",
-  packages: ["shared-schema-package"],
-})
-```
-
-See `test/integration/build-tooling/tsconfig-aliases/` and `test/integration/build-tooling/tsconfig-aliases-consumer/`
-for both patterns fully worked, and
-[ADR 0032](specs/decisions/0032-tsconfig-path-alias-resolution-ported.md).
-For the filesystem-capability injection pattern itself, see
-[ADR 0058](specs/decisions/0058-library-surfaces-do-not-acquire-node-fs.md).
+A `fields` reference is followed through relative imports and `tsconfig.json` path aliases. With a `packages` allowlist, it also follows a bare import from an installed package that declares `package.json#dataCap.schema`. See [Reusable packages](#reusable-packages) and [ADR 0032](specs/decisions/0032-tsconfig-path-alias-resolution-ported.md).
 
 ### The capability inventory
 
-Every generator below reads from one shared model, `buildInventory`'s
-`CapabilityInventory` — so "what counts as a conflict" or "what's
-sensitive" is defined once, not re-derived per report:
+Every generator reads one model, `buildInventory`'s `CapabilityInventory`. What counts as a conflict, or as sensitive, is defined once:
 
 ```ts
 import { buildInventory } from "data-cap/build"
@@ -469,190 +353,208 @@ const inventory = buildInventory(
 
 ### Generated artifacts
 
-`generateDataArtifacts()` (directly, from application code -- see
-"Programmatic orchestration" below) can produce:
+`generateDataArtifacts()` and `checkArtifacts()` produce these from your own build script:
 
-| Artifact                                      | Option              | What it is                                                                                                                                                                    |
-| --------------------------------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Manifest                                      | `location: <path>`  | A deterministic `.ts` file re-exporting every active capability, with a "changes since last report" diff.                                                                     |
-| Documentation catalog                         | `docs: <path>`      | A Markdown catalog of every field/getter/mutator/subscription, including sensitivity and documented protections.                                                              |
-| Dependency & Ownership report                 | `ownership: <path>` | The owner → {capabilities, fields} matrix, plus a real, AST-proven consumer graph (never guessed at).                                                                         |
-| Data Flow Diagram + Security Data-Flow Review | `flow: <directory>` | A Mermaid diagram set using OWASP's data-flow-diagram vocabulary, plus a severity-grouped findings review headlined by any sensitive field that crosses an external boundary. |
+| Artifact                        | Option              | What it is                                                                                                                   |
+| ------------------------------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Manifest                        | `location: <path>`  | A deterministic `.ts` file re-exporting every active capability, with a "changes since last report" diff.                    |
+| Documentation catalog           | `docs: <path>`      | A Markdown catalog of every field and operation, with sensitivity and documented protections.                                |
+| Dependency and ownership report | `ownership: <path>` | The owner-to-capability matrix, and the consumer graph the scan proved from the AST.                                         |
+| Data-flow diagrams              | `flow: <directory>` | Mermaid diagrams in OWASP data-flow vocabulary, and a findings review led by sensitive fields crossing an external boundary. |
 
-None of the four above has a real _runtime_ consumer, so none is exposed as
-a CLI flag (ADR 0066) -- request them from application code via the options
-above, either through `generateDataArtifacts()`/`checkArtifacts()` or the
-individual `generateManifest`/`generateDocumentation`/`generateUsage`/
-`generateFlow` generators (see
-[`examples/nextjs-app/scripts/generate-docs`](https://github.com/MaverickCER/data-cap/tree/main/examples/nextjs-app/scripts/generate-docs)
-for a worked example). Every one of these draws a hard line between
-**declared** facts (author metadata — `owner`, `sensitivity`, `protections`,
-`endpoints` — presence is checked, correctness never is) and **proven**
-facts (AST-derived — `writes`, a `DependencyEdge`). See
-[`specs/generated-artifacts.md`](specs/generated-artifacts.md) for the full
-list of what's generated today, which industry model (OWASP, NIST Privacy
-Framework) each aligns with, and — just as importantly — what's explicitly
-deferred and why, so nothing here is assumed silently.
+None of these is a CLI flag ([ADR 0066](specs/decisions/0066-cli-restricted-to-runtime-and-evidence-output.md)). Call the orchestrator, or the single generators `generateManifest`, `generateDocumentation`, `generateUsage` and `generateFlow`. [`examples/application/scripts/generate-docs`](https://github.com/MaverickCER/data-cap/tree/main/examples/application/scripts/generate-docs) is a worked script.
+
+Every report separates two kinds of fact. **Declared** facts are what an author wrote (`owner`, `sensitivity`, `protections`, `endpoints`); their presence is checked, never their truth. **Proven** facts come from the AST (`writes`, a dependency edge). An ambiguous case becomes an `info` or `indeterminate` finding, never a guessed `error`. `test/build/negative-guarantees.test.ts` holds this, and checks that finding messages never claim adequacy or verification. [specs/generated-artifacts.md](specs/generated-artifacts.md) lists what is generated, and what is deliberately not.
+
+### Programmatic orchestration
+
+The CLI is a thin wrapper; `generateDataArtifacts` and `checkArtifacts` work on their own. Every artifact is computed, and every finding judged, before any file is written. A blocking finding throws `DataProjectGenerationError` and writes nothing (`test/build/generate-data-artifacts.test.ts`):
+
+```ts
+import { generateDataArtifacts } from "data-cap/build"
+import { nodeBuildFileSystem } from "data-cap/node"
+
+await generateDataArtifacts({
+  fs: nodeBuildFileSystem,
+  root: ".",
+  location: "src/generated/data.manifest.ts",
+  flow: "docs/flow",
+  strictFlow: true,
+})
+```
+
+Outside Node, pass your own `BuildFileSystem`; `data-cap/build` exports the type.
+
+### Reusable packages
+
+An installable package can ship its own capability declaration. Discovery is opt-in, by an explicit allowlist (`packages`, or `--package` on the CLI):
+
+```ts
+await generateDataArtifacts({
+  fs: nodeBuildFileSystem,
+  root: ".",
+  location: "src/generated/data.manifest.ts",
+  packages: ["@acme/payments-sdk"],
+})
+```
+
+The publishing package declares `"dataCap": { "schema": "./src/payments.capability.ts" }` in its `package.json`. It ships that `.ts` source next to its compiled `dist/`. Resolution reads one `package.json` per allow-listed package, then one declared file; it never walks `node_modules` (`test/build/resolution/resolve-package-schema.test.ts`). An allow-listed package's own directory is also scanned as consumer source.
 
 ### The CLI
 
-`--evidence` is the CLI's one output (ADR 0066) -- the one artifact with a real,
-versioned contract (the composed Evidence Model, ADR 0050). Three further
-flags change what goes _into_ that same file and how it is judged (ADR 0070);
-they never add a second output:
+The CLI writes one file, the Evidence Model, with `--evidence` ([ADR 0050](specs/decisions/0050-fact-model-architecture.md)). Other flags change what goes into that file and how it is judged:
 
 ```bash
 npx data-cap --evidence docs/data.evidence.json
-```
-
-```bash
 npx data-cap --help
 ```
 
-`--check` verifies the evidence artifact is up to date without writing
-anything (exit `1` if stale — a CI freshness gate); `--json` emits the full
-machine-readable `ReportResult` instead of formatted text;
-`--strict`/`--strict-docs`/`--strict-ownership` escalate that pass's
-`warning` findings to hard errors (never `info`); the static and usage
-passes they escalate always run alongside `--evidence`. `--strict-flow`
-escalates the flow pass's warnings (see [Data flow](#data-flow)): a sensitive
-field crossing a boundary, a policy rule that could not be decided, a field sent
-whole to a client, a sensitive path nothing uses.
-`--expiring-within-days <n>` sets how many days out counts as "expiring
-soon" in the Evidence Model's Lifecycle Model (default: 30).
+| Flag                         | Meaning                                                                                                                                            |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--evidence <path>`          | Required. Write the composed Evidence Model as JSON at this path.                                                                                  |
+| `--root <path>`              | Directory the globs resolve from. Default: the current directory.                                                                                  |
+| `--include <glob>`           | Discovery glob. Repeatable. Default: every `.ts` and `.tsx` file.                                                                                  |
+| `--exclude <glob>`           | Glob to exclude from discovery. Repeatable.                                                                                                        |
+| `--package <name>`           | Also discover a capability from an installed package's `dataCap.schema` field. Repeatable.                                                         |
+| `--tsconfig <path>`          | `tsconfig.json`, relative to the root, whose `paths` and `baseUrl` resolve aliased imports. Default: the one at the root.                          |
+| `--no-tsconfig`              | Turn path-alias resolution off.                                                                                                                    |
+| `--expiring-within-days <n>` | How many days out counts as "expiring soon" in the Lifecycle Model. Default: 30.                                                                   |
+| `--strict`                   | Treat every warning as an error. Info findings never escalate.                                                                                     |
+| `--strict-docs`              | Escalate static findings only: ownership, sensitivity, duplication.                                                                                |
+| `--strict-ownership`         | Escalate proven usage findings only: abandoned capabilities, unconsumed owned fields.                                                              |
+| `--strict-flow`              | Escalate data-flow warnings: a sensitive field crossing a boundary, an undecided policy, a field sent whole to a client, an unused sensitive path. |
+| `--flow-evidence`            | Trace each field through your functions, evaluate the `flowPolicy` rules, and add the result to the evidence. Experimental.                        |
+| `--observations <path>`      | Runtime observations from `data-cap/observe`, added to the evidence and compared with the static findings. Experimental.                           |
+| `--rules <path>`             | A JSON file of rules over the evidence. Exits 1 if one is violated. A rule whose analysis did not run counts as violated. Experimental.            |
+| `--json`                     | Print a machine-readable report instead of text.                                                                                                   |
+| `--check`                    | Write nothing. Exit 1 if the evidence file is stale or missing.                                                                                    |
+| `--help`, `-h`               | Show the help text.                                                                                                                                |
 
-| Flag                         | Meaning                                                                                                                                                                        |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `--evidence <path>`          | Required. Write the composed Evidence Model (ADR 0050) as JSON at this path.                                                                                                   |
-| `--root <path>`              | Directory that globs resolve from (default: the current directory).                                                                                                            |
-| `--include <glob>`           | Discovery glob. Repeatable. Default: every `.ts` and `.tsx` file.                                                                                                              |
-| `--exclude <glob>`           | Glob to exclude from discovery. Repeatable.                                                                                                                                    |
-| `--package <name>`           | Installed package to also discover a capability from, through its `dataCap.schema` `package.json` field. Repeatable.                                                           |
-| `--tsconfig <path>`          | `tsconfig.json` (relative to root) whose `paths` and `baseUrl` resolve aliased imports during static analysis. Default: the `tsconfig.json` found at the root.                 |
-| `--no-tsconfig`              | Turn path-alias resolution off entirely.                                                                                                                                       |
-| `--expiring-within-days <n>` | How many days out counts as "expiring soon" in the Lifecycle Model (default: 30).                                                                                              |
-| `--strict`                   | Escalate every warning-severity finding to a hard error. Info findings never escalate.                                                                                         |
-| `--strict-docs`              | Escalate only static findings (ownership, sensitivity, duplication).                                                                                                           |
-| `--strict-ownership`         | Escalate only proven usage findings (abandoned capabilities, unconsumed owned fields); unresolved-consumer and indeterminate findings never escalate.                          |
-| `--strict-flow`              | Escalate data-flow warnings: a sensitive field crossing a boundary, an undecided policy rule, a field sent whole to a client, an unused sensitive path.                        |
-| `--flow-evidence`            | Trace each capability field through your functions, evaluate the `flowPolicy` rules your capabilities declare, and add the result to the evidence.                             |
-| `--observations <path>`      | Runtime observations (from `data-cap/observe`): a JSON array of events, or `{ "events": [...], "skips": [...] }`. Added to the evidence and compared with the static findings. |
-| `--rules <path>`             | A JSON file of rules enforced over the evidence. Exits `1` if any is violated; a rule whose analysis did not run is a violation.                                               |
-| `--json`                     | Emit a machine-readable report instead of formatted text.                                                                                                                      |
-| `--check`                    | Verify the evidence artifact is up to date without writing anything. Exits `1` if it is stale or missing.                                                                      |
-| `--help`, `-h`               | Show the help text.                                                                                                                                                            |
+`test/docs-cli-flags.test.ts` fails when a flag in `src/cli/index.ts` is missing from this Guide. `--check` and the `--strict*` flags are covered by `test/cli/index.test.ts`.
 
-### Data flow
+`npx data-cap init` scaffolds `src/data.ts` and `scripts/generate-data.mjs`. It never overwrites a file and runs nothing (`test/cli/init.test.ts`).
 
-`--flow-evidence` (or `flowEvidence: true` to `generateDataArtifacts`) adds
-**field-level, interprocedural data flow** to the Evidence Model: where each
-field of each capability goes, function by function, and what each function
-does with it. Everything it finds goes into the one evidence file (`flow`,
-`policy`, `observation`, `claims`) -- there is no second artifact -- and
-everything else on this page (diagrams, exports, the explorer) is a pure
-projection of that file. [`examples/flow-explorer/`](https://github.com/MaverickCER/data-cap/tree/main/examples/flow-explorer)
-is a runnable project that does all of it.
+### Using the CLI in any CI system
+
+The GitHub Action wraps the CLI; every other CI system gets the same gate from the CLI alone.
+
+1. Install `data-cap` as a devDependency, then run it in the pipeline:
+
+   ```bash
+   npx data-cap --evidence docs/data.evidence.json --flow-evidence --rules data-cap.rules.json --check --json > data-cap.json
+   ```
+
+2. Fail the job on the exit code:
+
+   | Exit code | Meaning                                                                                                                                                                                                                        |
+   | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+   | `0`       | The evidence is current and no rule is violated.                                                                                                                                                                               |
+   | `1`       | The evidence is stale, a rule is violated, or the run failed. On a failed run the JSON report has an `error`. On stale evidence `checkResult.stale` lists the files, and on a violated rule `evidenceRules` holds the verdict. |
+   | `2`       | Only from the GitHub Action's wrapper: `data-cap` is not installed and no `version` was given, or `version` is not a plain version or dist-tag.                                                                                |
+
+3. Read `data-cap.json`. `checkResult.stale` names each stale artifact, and `evidenceRules` holds the rule verdict. On failed generation, `error.findings` lists each issue with its `severity`, `message`, `file` and `position`.
+
+The report validates against the published JSON Schema, `data-cap/schema` (`test/build/json-schema.test.ts`). An unreadable `--rules` or `--observations` file exits 1 with nothing on stdout, so treat an empty `data-cap.json` as a failure. For a SARIF upload, project the evidence with `buildSarifLog` from `data-cap/build`. The CLI reads no GitHub-specific environment variable today; no check enforces that.
+
+### GitHub Action
+
+The Action runs `data-cap --json` and turns the result into pull request annotations and one summary comment.
+
+```yaml
+# .github/workflows/data-cap.yml
+name: data-cap
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: npm ci # the action runs the data-cap your project installs
+
+      - uses: maverickcer/data-cap@v0
+        with:
+          args: "--evidence docs/data.evidence.json --strict-docs --strict-ownership"
+```
+
+| Input               | Default               | Purpose                                                                                                                                                 |
+| ------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `args`              | _(required)_          | Arguments for `data-cap --json`, such as `--evidence`, `--flow-evidence`, `--rules` and the `--strict*` flags.                                          |
+| `working-directory` | `.`                   | Directory to run `data-cap` from.                                                                                                                       |
+| `version`           | _(none)_              | Version to run through `npx` when `data-cap` is not installed locally. Pin an exact version: a dist-tag such as `latest` is accepted and runs unpinned. |
+| `comment`           | `true`                | Create or update one summary comment on the pull request.                                                                                               |
+| `annotations`       | `true`                | Emit workflow annotations for the findings.                                                                                                             |
+| `report-key`        | _(working-directory)_ | Names this report, so two runs on one pull request do not overwrite each other's comment.                                                               |
+| `github-token`      | `github.token`        | Token for the comment calls.                                                                                                                            |
+
+The Action has no policy of its own: the job passes or fails on the CLI's exit code. Without a local install and without `version`, it exits 2 rather than run an unpinned build. Inputs reach its script as environment variables, never interpolated (`test/scripts/github-action-run-cli.test.ts`). With `--flow-evidence`, the comment adds a data-flow section; with `--rules`, the rule verdict. The comment and annotation rendering is tested in `test/scripts/github-action-report.test.ts`; the call that posts the comment to GitHub is not.
+
+In a monorepo, give each run its own `report-key`.
+
+## Data flow
+
+Experimental. For the security or privacy reviewer, and for the engineer asked "where does this field go?". `--flow-evidence` (or `flowEvidence: true` on `generateDataArtifacts`) traces each field of each capability through your functions. The result goes into the one evidence file; every diagram and export below is a projection of that file. [`examples/flow-explorer/`](https://github.com/MaverickCER/data-cap/tree/main/examples/flow-explorer) runs all of it.
 
 ```bash
 npx data-cap --evidence docs/data.evidence.json --flow-evidence
 ```
 
-#### What it follows, and what it says when it cannot
+The pieces, in the order they run:
 
-The analysis reads your source (it never runs it) and follows a capability
-field through local variables, destructuring, spreads, object and array
-literals, parameters and return values, closures, callbacks, `await` and
-`.then`, JSX props, and calls to functions in your project -- including across
-files. Each function is evaluated for the shapes of data it actually
-receives, so a helper shared by two fields never makes one appear to reach
-the other's destinations. It records, per function: what it reads, what it
-returns or passes on, what it sends across a boundary, **what it receives and
-discards**, who calls it and whom it calls.
+1. The scan reads your source and records where each field goes, with a status on every fact.
+2. Your `flowPolicy` rules are evaluated per field.
+3. Optional runtime observations from `data-cap/observe` are joined to the static facts as claims.
+4. `--rules` turns the result into a CI verdict.
+5. `data-cap/evidence` projects the file into views and standards formats.
 
-Boundaries are declared endpoints from `documentData()` (`database`, `api`,
-...), plus code it recognises as leaving the program: `res.json`/`res.send`
-(a `client-response`), `console.*` and `logger.*` (a `log`). Add your own with
-the `flowSinks` option.
+### What it follows, and what it says when it cannot
 
-Every fact carries one of five statuses, never blended:
+The scan reads your source; it never runs it. It follows a field through variables, destructuring, spreads, literals, parameters, return values, closures, callbacks, `await`, `.then`, JSX props and calls into your project, across files. Each function is evaluated for the data it receives, so a helper shared by two fields does not mix them. Per function it records what it reads, returns, passes on, sends across a boundary, and receives and discards.
+
+Boundaries are the endpoints you declare in `documentData()`, plus code it recognises as leaving the program. `res.json` and `res.send` are a `client-response`; `console.*` and `logger.*` are a `log`. Add your own with the `flowSinks` option.
+
+Every fact has one of five statuses, never blended:
 
 | Status     | Meaning                                                                   |
 | ---------- | ------------------------------------------------------------------------- |
 | `declared` | An author asserted it in `documentData()`. Not checked against code.      |
 | `static`   | Established by the analyzed code.                                         |
-| `observed` | Witnessed in a specific execution or test.                                |
+| `observed` | Seen in a specific execution or test.                                     |
 | `inferred` | Plausible, not established: data assumed to pass through unfollowed code. |
-| `unknown`  | Not analyzable: dynamic behavior, missing source, incomplete coverage.    |
+| `unknown`  | Not analyzable: dynamic behaviour, missing source, a limit reached.       |
 
-What it **cannot** follow is recorded as data, not omitted: a call that
-receives tracked data but whose target is not a project file (a package, a
-method on an object it cannot resolve), a computed key (`obj[key]`) on tracked
-data, a call chain deeper than its limit. Each becomes an explicit `unknown`
-with a `file:line:column` citation **and the exact data that went in**, the
-data is assumed to pass through approximately (an `inferred` edge), and the
-trace through it is marked **not complete**. An opaque call that only ever
-received `email` makes questions about `email` incomplete, not questions
-about `passwordHash`. A missing flow is never proof of absence unless the
-picture says it is complete.
+What it cannot follow is recorded, not dropped. Examples are a call into a package, a computed key on tracked data, or a chain past its depth limit. Each becomes an `unknown` with a `file:line:column` and the exact data that went in. The data is assumed to pass through (an `inferred` edge), and the trace is marked not complete. An unknown that only received `email` makes questions about `email` incomplete, not questions about `passwordHash`. A missing flow in an incomplete trace means nothing. In a complete trace it means none of the forms the scan follows carried the data; the 343-form catalog checks those forms only.
 
-##### What the scan follows
+#### What the scan follows
 
-Beyond the plain cases above, the scan follows classes (`this`, fields,
-inheritance, `super`, instances made per call), default exports and imports,
-barrel `export *` re-exports, dynamic `import("literal")`, generators (`yield`
-and what `next(x)` sends), `Map`, `Set`, `Promise` (including `resolve`/`reject`
-called later), `Reflect`, `bind`, `Object.groupBy`/`Map.groupBy`, constructor
-functions with prototypes, CommonJS `require`/`module.exports`, decorators, and
-closures and classes made per evaluation. Aliasing is followed through
-allocation sites with shared cells: a store through one name into an object
-another name holds is seen by the other, so `{ list: a.list }`, a shallow copy
-and a shared prototype all see it. Where a model approximates, it
-over-approximates (an extra flow), never misses one; each approximation is
-stated in [ADR 0074](https://github.com/MaverickCER/data-cap/blob/main/specs/decisions/0074-flow-scan-non-goals-and-irreducible-limits.md).
-Standing rules: a whole capability value handed to a sink or to an unknown
-takes every field; a closure that nothing calls but that returns tracked data
-is an `unanalyzed-function` unknown; module-state chains are re-analyzed for at
-most 6 rounds, and a project still moving data at the cap gets an unknown that
-makes every trace incomplete. The post-scan analysis is linear in the size of
-the flow, and a project of 600 files and 3000 functions is analyzed well inside
-the 30-second budget `test/build/flow-scale.test.ts` enforces (about 7 seconds on a
-GitHub-hosted runner).
+Beyond the cases above, it follows classes (`this`, fields, inheritance, `super`), default and barrel re-exports, and `import("literal")`. It also follows generators, `Map`, `Set`, `Promise`, `Reflect`, `bind`, `Object.groupBy`, prototypes, CommonJS and decorators. Aliasing is followed through allocation sites, so a write through one name is seen through another. Where a model approximates, it adds a flow rather than drops one ([ADR 0074](https://github.com/MaverickCER/data-cap/blob/main/specs/decisions/0074-flow-scan-non-goals-and-irreducible-limits.md)).
 
-The headline guarantee is **never silently safe**: a leak the scan cannot
-follow surfaces as an incomplete trace, never as a complete trace with no flow.
-`test/flow/never-silently-safe.test.ts` pins it with a 343-row catalog of ways
-to leak one field of a record, plus a property test that swaps the field for
-its sibling. Every row must end in one of three outcomes: followed to the sink
-(with the sibling clean), an honest `unknown` that names the data, or the whole
-record sent. A complete trace that misses the leak fails the suite.
+`test/flow/never-silently-safe.test.ts` checks that promise on a catalog of 343 ways to leak one field of a record. A property test also swaps the field for its sibling. Each case must end followed to the sink, as an `unknown` that names the data, or as the whole record sent. A complete trace that misses the leak fails the suite. The check covers the catalogued forms.
 
-##### What it deliberately does not follow
+These rules always apply:
 
-The scan is a **data-flow** analysis, not an information-flow one. Branching
-on tracked data (`if`, a ternary condition, a loop bound) moves none of it, and
-a comparison, `!`, `typeof`, `instanceof`, `in` and `delete` produce a value
-that carries no data: `res.json(user.email === "a@b.c")` sends a boolean. The
-keys of a tracked object are field names, which are public in the report, and
-`Object.keys` and friends answer with names, not data. These are decisions, not
-gaps, and each is pinned by a test.
+- A whole capability value handed to a sink or an unknown takes every field.
+- A closure nothing calls, but that returns tracked data, is an `unanalyzed-function` unknown.
+- Module-state chains get at most 6 rounds (`test/build/flow-reach-limits.test.ts`). A project still moving data at the cap gets an unknown that makes every trace incomplete.
+- `test/build/flow-scale.test.ts` analyzes a 600-file, 3000-function project inside a 30-second budget. It also checks that a second run is byte-identical.
 
-Some forms cannot be followed by reading source: `eval`, `new Function`,
-`new Proxy`, `with`, `setTimeout(string)`, and `import()`/`require()` of a
-computed specifier. When tracked data reaches one the result is an explicit
-`unknown` and the trace is incomplete; when none does, the scan says nothing.
-Package calls without a summary (next section) are explicit unknowns too.
-Also by design: operation bodies inside `createData`/`buildData` stay opaque,
-and the analysis is syntactic with no type checker, so a call whose target
-depends on a value's type is unresolved. The remaining honest limits (context
-insensitivity inside one evaluation, identity by allocation site, order per
-round) are listed in ADR 0074.
+#### What it deliberately does not follow
 
-#### Declaring package behaviour
+The scan is a data-flow analysis, not an information-flow one. Branching on tracked data moves none of it. A comparison, `!`, `typeof`, `instanceof`, `in` or `delete` yields a value that carries no data: `res.json(user.email === "a@b.c")` sends a boolean. Object keys are field names, which the report already shows. Each of these decisions is pinned by a test.
 
-The scan reads project source only, so a call into a package that receives
-tracked data is an `unresolved-call` unknown. The only sound way past it is for
-you to say what the call does, with `flowSummaries` (`ScanFlowOptions.summaries`
-for `scanFlow`):
+Some forms cannot be followed by reading source: `eval`, `new Function`, `new Proxy`, `with`, `setTimeout(string)`, and `import()` or `require()` of a computed specifier. When tracked data reaches one, the result is an `unknown` and the trace is incomplete. Operation bodies inside `createData` and `buildData` stay opaque. There is no type checker, so a call whose target depends on a value's type is unresolved. ADR 0074 lists the remaining limits.
+
+### Declaring package behaviour
+
+The scan reads your project only, so a package call that receives tracked data is an `unresolved-call` unknown. `flowSummaries` is how you say what the call does:
 
 ```ts
 await generateDataArtifacts({
@@ -672,24 +574,19 @@ await generateDataArtifacts({
 })
 ```
 
-A `FlowSummary` is `{ module, export }` plus one effect: `pass-through` (the
-result holds everything the arguments hold), `returns-arg` with `arg` (the result
-holds what that argument holds), `sink` with a `boundary` and optional
-`handling` (the arguments leave through it), `sanitizes` (the result holds none
-of it) or `ignores` (the call neither carries nor sends data). `approximate: true`
-marks `pass-through` and `returns-arg` as an over-approximation. `export` is the
-imported name, `default`, or a dotted member such as `z.object`; the first
-matching summary wins, and a function your project defines is never replaced.
+| Effect         | Meaning                                                           |
+| -------------- | ----------------------------------------------------------------- |
+| `pass-through` | The result holds everything the arguments hold.                   |
+| `returns-arg`  | The result holds what argument `arg` holds.                       |
+| `sink`         | The arguments leave through `boundary`, with optional `handling`. |
+| `sanitizes`    | The result holds none of it.                                      |
+| `ignores`      | The call neither carries nor sends data.                          |
 
-Everything the scan learns from a summary has status `declared`, because it is
-your word about code the scan has not read, and it stays `declared` on every
-later hop. No summaries ship with the package: a wrong one makes the evidence
-wrong in the dangerous direction. The summaries are part of the evidence cache
-key, so changing one makes an existing evidence file stale. A summary describes
-a function, not an object it returns, so `createClient().send(user)` stays an
-unknown.
+`approximate: true` marks a `pass-through` or `returns-arg` as an over-approximation. `export` is the imported name, `default`, or a dotted member such as `z.object`. The first matching summary wins, and a function your project defines is never replaced (`test/build/flow-reach-summaries.test.ts`).
 
-#### Declaring where data must never go
+A fact learned from a summary is `declared` on every later hop, because it is your word about code the scan has not read. No summaries ship with the package, since a wrong one errs in the dangerous direction. Summaries are part of the evidence cache key, so changing one makes the evidence stale. A summary describes a function, not an object it returns, so `createClient().send(user)` stays unknown.
+
+### Declaring where data must never go
 
 ```ts
 documentData(schema, {
@@ -704,44 +601,29 @@ documentData(schema, {
 })
 ```
 
-`appliesTo` selects fields of this capability by `classification` (their
-resolved `sensitivity`) and/or `field`, optionally narrowed to a `path`. A rule
-constrains with `forbidDestinations`, an `allowedDestinations` allow-list, or
-`requireHandling` (every crossing must declare one of the given handlings);
-`allowedHandling` exempts a crossing that is, for instance, hashed. A malformed
-rule is dropped with a warning naming the problem -- a rule that silently stops
-constraining is the dangerous failure. Each rule is evaluated per field, and
-the result is one of:
+`appliesTo` selects fields by `classification` (their resolved `sensitivity`), by `field`, or both, optionally narrowed to a `path`. A rule constrains with `forbidDestinations`, an `allowedDestinations` list, or `requireHandling`. `allowedHandling` exempts a crossing that is, for example, hashed. A malformed rule is dropped with a warning that names it. Each rule is judged per field:
 
-- **violated** -- an `error` finding when established by `static`/`declared`
-  evidence (a `warning` when it rests on an inferred edge), so it blocks like any other error;
-- **satisfied** -- every path was followed and the rule holds;
-- **indeterminate** -- the analysis could not decide (a rule that matches no
-  field, a trace through an unknown, a crossing with no declared handling). It
-  is a `warning`, never a pass: `--strict-flow` makes "could not prove this rule"
-  fail the build.
+| Result          | Finding                                                                                                          |
+| --------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `violated`      | An `error` when `static` or `declared` evidence establishes it; a `warning` when it rests on an `inferred` edge. |
+| `satisfied`     | Every path was followed and the rule holds.                                                                      |
+| `indeterminate` | The analysis could not decide. A `warning`, never a pass; `--strict-flow` fails the build on it.                 |
 
-#### Least data
+### Least data
 
-The same evidence answers "what do we hold or fetch that nothing uses?":
-paths of a field's declared shape that no function reads, forwards or sends
-(`LEAST_DATA_UNUSED_PATH`, a warning when the field is sensitive, with the
-declared source named so a query projection can be tightened); a whole
-multi-key field sent to a client response (`LEAST_DATA_WHOLE_FIELD_TO_CLIENT`);
-and, per function, what it received and discarded. A path is "used" only by
-evidence specific to it, or by the whole value reaching a boundary -- handing
-the whole value to another function is not a use of every key. Each key is
-judged on its own, and one an unknown concerns is reported as not assessed.
+The same evidence answers "what do we hold that nothing uses?":
 
-#### Recording runtime observations
+- `LEAST_DATA_UNUSED_PATH`: a path of a field's declared shape that no function reads, forwards or sends. It is a warning when the field is sensitive.
+- `LEAST_DATA_WHOLE_FIELD_TO_CLIENT`: a whole multi-key field sent to a client response.
+- Per function, what it received and discarded.
 
-Static analysis says what the code can do; observation says what a real
-execution did. `data-cap/observe` records which **field names** crossed which
-boundary -- never values, never I/O of its own (it writes to a sink you
-supply), never throwing into the code it observes. The loop, end to end:
+A path counts as used only by evidence specific to it, or by the whole value reaching a boundary. A key an unknown concerns is reported as not assessed.
 
-1. **Record** in your tests. Wrap the call that crosses a boundary and give it
-   a scope (the test name) and a `clock`, so each event carries an `at` time:
+### Recording runtime observations
+
+Static analysis says what the code can do; observation says what one execution did. `data-cap/observe` records which field names crossed which boundary. It records names, never values, does no I/O of its own, and never throws into the code it observes (`test/observe/`).
+
+1. **Record** in your tests. Wrap the call that crosses a boundary, and give it a scope and a `clock`:
 
    ```ts
    // vitest.setup.ts
@@ -774,65 +656,38 @@ supply), never throwing into the code it observes. The loop, end to end:
    })
    ```
 
-   The same shape works in jest (`afterAll`) and `node:test` (`after`): collect
-   with `createMemorySink`, write one file at the end.
+   The same shape works in Jest (`afterAll`) and `node:test` (`after`).
 
-2. **Join** it: `data-cap --evidence docs/data.evidence.json --flow-evidence
---observations observations.json`. The file is either a JSON array of events
-   or an object `{ "events": [...], "skips": [...] }`; the object form carries
-   what the recorder knowingly left out (below).
+2. **Join** the file: `data-cap --evidence docs/data.evidence.json --flow-evidence --observations observations.json`. The file is a JSON array of events, or `{ "events": [...], "skips": [...] }` to include what the recorder left out.
 
-3. **Gate** it with the CI rules (`maxContradictedClaims`,
-   `requireVerified`, `maxObservationAgeDays`, ...).
+3. **Gate** on it with the [CI rules](#enforcing-it-in-ci).
 
-The recording functions, all names-only:
+| Function                                             | Records                                                                                                                                                         |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `observeBoundary(sink, input)`                       | The field paths you list, once each. The others call it.                                                                                                        |
+| `observeValue(sink, context, value, options?)`       | Every path in a JSON-like value. Returns `value`, so it wraps a call: `res.json(observeValue(sink, ctx, body))`.                                                |
+| `observeSink(sink, context)`                         | A one-argument pass-through that observes and returns its argument.                                                                                             |
+| `instrumentBoundary(target, method, context, sink)`  | Wraps `target[method]` and observes its argument, its result, or both. Returns a function that restores it. It throws at setup if the member is not a function. |
+| `observeResponse(sink, context, response, options?)` | The JSON body of a web `Response` or `Request`, read from a clone; the caller's body is not consumed.                                                           |
 
-| Function                                             | Records                                                                                                                                                               |
-| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `observeBoundary(sink, input)`                       | The field paths you list, once each. The primitive the others call.                                                                                                   |
-| `observeValue(sink, context, value, options?)`       | Walks a JSON-like value and records every path in it; returns `value`, so it wraps a call: `res.json(observeValue(sink, ctx, body))`.                                 |
-| `observeSink(sink, context)`                         | A one-argument pass-through that observes and returns its argument.                                                                                                   |
-| `instrumentBoundary(target, method, context, sink)`  | Wraps `target[method]` and observes its first argument, its result, or both (`context.observe`: `"args"`, `"result"`, `"both"`); returns a function that restores it. |
-| `observeResponse(sink, context, response, options?)` | The JSON body of a web `Response`/`Request`, read from a clone; never consumes the caller's body.                                                                     |
+The walker is bounded by `maxDepth` and `maxNodes`. It skips keys that are empty or contain a dot, cycles, and anything past its bounds. Each skip (`dotted-key`, `max-depth`, `max-nodes`, `cycle`) goes to `options.onSkip` and to `sink.skip`, never silently. A key that looks like a value is still recorded as a name. Time comes only from the `clock` you pass, so `ObservationEvent.at` exists only then.
 
-The walker is bounded (`maxDepth`, `maxNodes`) and skips keys that are empty or
-contain a dot, cycles, and anything past its bounds -- but never silently. Each
-skip (reason `dotted-key`, `max-depth`, `max-nodes` or `cycle`) goes to
-`options.onSkip(reason, path)` and to `sink.skip`, and the memory sink exposes
-them as `skips()`. Time is caller-supplied (`clock` on the context), so the
-recorder stays deterministic; `ObservationEvent.at` is present only when you
-gave one.
-
-The events are aggregated into the evidence's Observation Model (first and last
-seen per scope, and `truncations`/`truncatedScopes` from the skips) and joined
-to the static facts as **claims**, each with supporting and contradicting
-evidence, a scope, whether its trace was complete, and a verification status:
+The events are joined to the static facts as **claims**:
 
 | Verification    | Meaning                                                                            |
 | --------------- | ---------------------------------------------------------------------------------- |
-| `verified`      | A static, declared or inferred fact corroborated by an observation.                |
+| `verified`      | A static, declared or inferred fact that an observation corroborates.              |
 | `inferred`      | Rests on an inferred edge and was not observed.                                    |
-| `unobserved`    | Static or declared, and no observation covers it (or none were run).               |
+| `unobserved`    | Static or declared, and no observation covers it.                                  |
 | `contradicted`  | An observation conflicts with a complete static trace, or a policy is violated.    |
 | `observed-only` | Seen at runtime with no static counterpart, where the static trace was incomplete. |
 | `indeterminate` | A policy could not be decided, or the evidence near the field was truncated.       |
 
-A claim also lists `observedPaths` and a `pathCoverage` (`whole` when an
-observation covers the claim's whole path, `partial` when only narrower paths
-were seen) and `lastObservedAt`. Observing `email` neither verifies nor
-contradicts a claim scoped to `passwordHash`. A claim that would be `verified`
-becomes `indeterminate` when a contributing scope was truncated at or around its
-field (`scope.truncatedScopes` names them): absence of evidence in a cut-off
-value is not evidence.
+A claim also lists `observedPaths`, a `pathCoverage` (`whole` or `partial`) and `lastObservedAt`. Observing `email` says nothing about a claim scoped to `passwordHash`. A claim that would be `verified` becomes `indeterminate` when a contributing scope was truncated near its field. Observations cover the executions that ran; `unobserved` is the normal state for most of a real system.
 
-Observed behavior is evidence about the executions that ran. It does not prove
-that every static path is safe, and `unobserved` is the honest state for most
-of a real system.
+### Enforcing it in CI
 
-#### Enforcing it in CI
-
-`--rules rules.json` enforces deterministic rules over the evidence and exits
-`1` if any is violated:
+`--rules rules.json` checks the evidence against your rules and exits 1 if any is violated:
 
 ```json
 {
@@ -845,57 +700,50 @@ of a real system.
 }
 ```
 
-The rules, in the order they are evaluated:
+| Rule                      | Fails when                                                                                                      |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `noPolicyViolations`      | A declared policy rule is violated.                                                                             |
+| `noIndeterminatePolicies` | A declared policy rule could not be decided.                                                                    |
+| `maxContradictedClaims`   | More claims are contradicted than allowed.                                                                      |
+| `maxUnknowns`             | There are more unknowns than allowed.                                                                           |
+| `requireComplete`         | Anything was left unfollowed.                                                                                   |
+| `maxUnusedSensitivePaths` | More sensitive paths are unused than allowed.                                                                   |
+| `maxWholeFieldToClient`   | More multi-key fields are sent whole to a client than allowed.                                                  |
+| `requireObservations`     | No observations were ingested.                                                                                  |
+| `minVerifiedClaims`       | Fewer claims are verified than required.                                                                        |
+| `requireVerified`         | A named policy rule (`capability/rule`) has a claim that is not verified.                                       |
+| `maxRedundantTransforms`  | There are more [redundant transformations](#redundant-transformations) than allowed.                            |
+| `maxObservationAgeDays`   | A verified claim's `lastObservedAt` is older than this, counted back from `provenance.generatedAt`, or missing. |
 
-| Rule                      | Fails when                                                                                                     |
-| ------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `noPolicyViolations`      | A declared policy rule is violated.                                                                            |
-| `noIndeterminatePolicies` | A declared policy rule could not be decided.                                                                   |
-| `maxContradictedClaims`   | More claims are contradicted by an observation than allowed.                                                   |
-| `maxUnknowns`             | More unknowns than allowed.                                                                                    |
-| `requireComplete`         | The flow analysis is not complete (anything was left unfollowed).                                              |
-| `maxUnusedSensitivePaths` | More sensitive paths nothing uses than allowed.                                                                |
-| `maxWholeFieldToClient`   | More multi-key fields are sent whole to a client than allowed.                                                 |
-| `requireObservations`     | No observations were ingested.                                                                                 |
-| `minVerifiedClaims`       | Fewer claims are verified than required.                                                                       |
-| `requireVerified`         | A named policy rule (`capability/rule`) has a claim that is not verified.                                      |
-| `maxRedundantTransforms`  | More redundant transformations (below) than allowed.                                                           |
-| `maxObservationAgeDays`   | A verified claim's `lastObservedAt` is older than this many days before `provenance.generatedAt`, or has none. |
+The rules fail closed: a rule that needs an analysis that did not run is a violation that says so (`test/evidence/evidence-rules.test.ts`). A misspelled or mistyped rule, or a file with no rules, is rejected by name before anything runs. `maxObservationAgeDays` compares against the evidence's own generation time and never reads a clock. The evaluator is exported as `evaluateEvidenceRules`, so a dashboard can apply the same rules to a stored file.
 
-A gate fails closed: a rule that
-needs analysis which did not run is a violation that says so, never a pass.
-`maxObservationAgeDays` compares against the evidence's own generation time and
-never reads a clock; a verified claim with no observation time (the recorder
-had no `clock`) fails it. A misspelled or mistyped rule, and a rule file with no
-rules, is rejected by name before anything runs. The same evaluator is exported
-as `evaluateEvidenceRules` and runs anywhere (it is isomorphic), so a dashboard
-can apply the rules to a stored evidence file. The GitHub Action's pull request
-comment reports the coverage, policy, claims and rule verdict whenever they are
-present.
+### Your own projections (Stable)
 
-#### Standards exports and views, all projections of the evidence
+`defineEvidenceProjection` is the Stable part of `data-cap/evidence`. You give it one pure projector function per output key, and it returns a function from the Evidence Model to your output shape. `.project()` also returns which evidence paths fed each output key. Each projector reads the evidence through a read-only membrane, so a write, a delete or `defineProperty` throws a `TypeError` (`test/evidence/define-evidence-projection.test.ts`). The membrane cannot stop a projector doing I/O; keep projectors pure. `examples/enterprise-platform/reports/data-handling-record.ts` uses it.
 
-Everything below is a pure function of the evidence, exported from
-`data-cap/evidence` (isomorphic: a browser, an edge function and CI run the
-same code; also re-exported from `data-cap/build`). The package draws nothing
-interactively: a renderer is yours to choose.
+### Standards exports and views
 
-| Function                                                                  | Produces                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `traceFlow`, `traceFlowBetween`, `filterFlow`, `diffFlow`, `observedFlow` | Trace a field upstream or downstream (optionally one path, or only the routes to one boundary); filter; compare two revisions; the part of the flow an execution actually witnessed' evidence.                                                                                                                                                                                                                                                                                                                                              |
-| `buildFlowGraphView`                                                      | A stable, library-independent graph model: per-function inputs, reads, forwards, side effects, discards, callers, confidence.                                                                                                                                                                                                                                                                                                                                                                                                               |
-| `renderFlowText`                                                          | The textual equivalent of the graph, as Markdown a screen reader or a code review can read.                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `renderFlowDot`, `renderFlowMermaid`                                      | Graphviz DOT and Mermaid; status in text as well as colour, unknowns drawn as nodes, violated policies in red.                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| `buildProvDocument`                                                       | W3C PROV-JSON: lineage, with the path and status on every relation.                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| `buildSarifLog` (`data-cap/build`)                                        | SARIF 2.1.0 results anchored at the exact code, with a `codeFlow` for a policy violation.                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| `buildOscalAssessmentResults`                                             | NIST OSCAL assessment-results. Control ids are supplied by you, never inferred; an unmapped rule is listed, not dropped. A control id is targeted at its assessment objective (`ac-4_obj`), as NIST's catalog names it; pass `assessmentPlan` with your real plan's href (the default is a placeholder, named as one in `import-ap.remarks`) and `evidenceHref` with the evidence file's location, which turns every evidence reference into a back-matter resource the observations link to; `strict: true` refuses to build without both. |
-| `observationsToOtlp`/`observationsFromOtlp`                               | OpenTelemetry (OTLP/JSON) spans carrying `data_cap.*` attributes, and the reverse. Timed observations become timed spans (`data_cap.timed`); `scopeRoots` adds one root span per scope. `trustForeignTimes` lets `observationsFromOtlp` read times from spans not marked timed; unreadable times are counted in `ignoredTimes`. No OpenTelemetry dependency.                                                                                                                                                                                |
-| `buildCycloneDxBom`, `renderFlowCycloneDx`                                | CycloneDX 1.6: one `service` per boundary and per capability-owning file, `data[]` flows with classification, status in the description and as a property; unknowns, violated policies and unverified claims as annotations. Deterministic ids. `undefined` when no flow was computed.                                                                                                                                                                                                                                                      |
-| `analyzeRedundantTransforms`, `redundantTransformFindings`                | The redundant-transformation analysis below.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| `analyzeLeastData`                                                        | The unused-path and whole-field analysis above.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+Everything else in this section is Experimental.
 
-To embed the graph in generated documentation, write the text and a diagram into one Markdown file (GitHub,
-GitLab and most documentation sites render the `mermaid` fence):
+Each function here is a pure function of the evidence, exported from `data-cap/evidence`. That entry imports nothing, has a 32 KB gzip budget, and `./build` re-exports it. The package draws nothing interactive; you choose the renderer.
+
+| Function                                                                  | Produces                                                                                                                                |
+| ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `traceFlow`, `traceFlowBetween`, `filterFlow`, `diffFlow`, `observedFlow` | A field traced up or down, a filtered flow, two revisions compared, and the part an execution witnessed.                                |
+| `buildFlowGraphView`                                                      | A library-independent graph model: inputs, reads, forwards, side effects, discards and callers per function.                            |
+| `renderFlowText`                                                          | The graph as Markdown text, for a screen reader or a code review.                                                                       |
+| `renderFlowDot`, `renderFlowMermaid`                                      | Graphviz DOT and Mermaid. Status is in text as well as colour; unknowns are nodes.                                                      |
+| `buildProvDocument`                                                       | W3C PROV-JSON lineage, with the path and status on every relation.                                                                      |
+| `buildSarifLog` (`data-cap/build`)                                        | SARIF 2.1.0 results anchored at the code, with a `codeFlow` for a policy violation.                                                     |
+| `buildOscalAssessmentResults`                                             | NIST OSCAL assessment-results. You supply the control ids; `strict: true` refuses to build without `assessmentPlan` and `evidenceHref`. |
+| `observationsToOtlp`, `observationsFromOtlp`                              | OpenTelemetry OTLP/JSON spans with `data_cap.*` attributes, and back. No OpenTelemetry dependency.                                      |
+| `buildCycloneDxBom`, `renderFlowCycloneDx`                                | CycloneDX 1.6 with deterministic ids. `undefined` when no flow was computed.                                                            |
+| `analyzeLeastData`                                                        | The [least-data](#least-data) analysis.                                                                                                 |
+| `analyzeRedundantTransforms`, `redundantTransformFindings`                | The [redundant-transformation](#redundant-transformations) analysis.                                                                    |
+
+SARIF, OSCAL and CycloneDX output is validated against the official schemas in the tests that [specs/generated-artifacts.md](specs/generated-artifacts.md#data-flow-evidence-projections-experimental) names; PROV is checked for referential closure. A valid document is well formed; it does not mean the facts in it are complete. Each data-flow projection carries a disclaimer: it can support a review and does not establish compliance. `test/evidence/flow-disclaimer.test.ts` holds that text.
+
+To put the graph in generated documentation, write the text and a diagram into one Markdown file:
 
 ```ts
 import { renderFlowMermaid, renderFlowText } from "data-cap/build"
@@ -905,115 +753,25 @@ const diagram = renderFlowMermaid(evidence, { field: "userData.user" })
 await fs.writeFile("docs/FLOW.md", `${text}\n\`\`\`mermaid\n${diagram}\`\`\`\n`)
 ```
 
-Every finding carries `evidence` references (flow edges, a policy result, an
-unknown), so a reader can drill from a finding to the analysis behind it.
+Every finding carries `evidence` references, so a reader can go from a finding to the analysis behind it.
 
-#### Redundant transformations
+### Redundant transformations
 
-Separate from leaks and from unused data: data that is handled more than it
-needs to be. `analyzeRedundantTransforms(flow)` is a pure function of the Flow
-Model and reports three kinds (`RedundantTransformKind`):
+Data handled more than it needs to be. `analyzeRedundantTransforms(flow)` reports three kinds:
 
-- `round-trip`: `JSON.parse(JSON.stringify(x))`, `Object.fromEntries(Object.entries(x))`,
-  or a second copy of a value that is already a fresh copy. A single defensive
-  copy is not reported.
-- `forwarding-hop`: a chain of at least `MIN_FORWARDING_HOPS` (3) functions that
-  only receive a path and hand it to one callee.
-- `dead-derivation`: a value computed from a field and bound to a name nothing
-  reads.
+- `round-trip`: `JSON.parse(JSON.stringify(x))`, `Object.fromEntries(Object.entries(x))`, or a copy of a value that is already a fresh copy. One defensive copy is not reported.
+- `forwarding-hop`: a chain of at least `MIN_FORWARDING_HOPS` functions that only receive a path and hand it on.
+- `dead-derivation`: a value computed from a field and bound to a name nothing reads.
 
-`redundantTransformFindings(items, flow)` turns them into
-`LEAST_DATA_REDUNDANT_TRANSFORM` findings: family `flow`, severity `info`, never
-escalated by `--strict-flow`. A finding is withheld when an unknown concerns the
-same data, so its absence is not proof that nothing is redundant. The scanner
-records what the edges cannot say as the optional `edgeTags` list of the Flow
-Model (`FlowEdgeTag`, with `FlowVia`: `copy`, `serialize-roundtrip`, `derive`);
-edge kinds and ids are unchanged. Cap the count with `maxRedundantTransforms`.
-See [ADR 0075](https://github.com/MaverickCER/data-cap/blob/main/specs/decisions/0075-redundant-transformations.md).
+`redundantTransformFindings` turns them into `LEAST_DATA_REDUNDANT_TRANSFORM` findings. They are `info`, and `--strict-flow` never escalates them. A finding is withheld when an unknown concerns the same data, so silence does not prove nothing is redundant. See [ADR 0075](https://github.com/MaverickCER/data-cap/blob/main/specs/decisions/0075-redundant-transformations.md).
 
-#### The explorer
+### The explorer
 
-[`examples/flow-explorer/`](https://github.com/MaverickCER/data-cap/tree/main/examples/flow-explorer) turns one evidence file
-into an interactive page: pick a field, trace it up or downstream (or one path
-of it), filter by status, classification or policy violation, inspect any node
-or edge, compare with another revision, and read the same facts as text. It
-uses a devDependency (`@viz-js/viz`, Graphviz as WebAssembly) to draw the
-graph; the interactive layer calls `traceFlow`/`diffFlow`/`renderFlowText` from
-`data-cap/evidence` itself. It is a keyboard-operable, screen-reader-checked
-page with WCAG AA contrast, and it states on screen when the analysis is not
-complete. Given a baseline evidence file it compares revisions: added, removed and changed
-edges, nodes, unknowns and policy results as a list, each opening its details and source location,
-with the changes outlined in the graph. It also writes `flow.cdx.json` (CycloneDX) and
-`flow.diff.md`. The example is also this feature's end-to-end regression test, and
-`test/examples/flow-corpus.test.ts` runs the scan over all four consumer examples.
-
-### Programmatic orchestration
-
-The CLI is a thin wrapper — `generateDataArtifacts`/`checkArtifacts` are
-fully usable directly from an npm script, a bundler plugin, or a CI step
-without it. Every requested artifact is computed and every finding
-evaluated _before_ any file is written — a partially-written artifact set
-is treated as worse than none, so a blocking finding throws
-`DataProjectGenerationError` instead of writing partial output. As with
-every `./build` entry point, `fs` is required:
-
-```ts
-import { generateDataArtifacts } from "data-cap/build"
-import { nodeBuildFileSystem } from "data-cap/node"
-
-await generateDataArtifacts({
-  fs: nodeBuildFileSystem,
-  root: ".",
-  location: "src/generated/data.manifest.ts",
-  flow: "docs/flow",
-  strictFlow: true,
-})
-```
-
-A non-Node consumer supplies its own `BuildFileSystem` (`data-cap/build` exports the type) instead of importing `./node`.
-
-### Reusable packages
-
-A capability's own `documentData()` declaration can ship as part of an
-installable package instead of living only inside the consuming
-application's source tree — the same model
-[`@maverickcer/env-cap`'s "Reusable packages"](https://github.com/MaverickCER/env-cap/blob/main/GUIDE.md#reusable-packages)
-section describes for env vars, applied to data-ownership capabilities.
-
-This works for both a centralized application schema and a capability-owned
-contract shipped by an internal SDK package. Making a package-shipped
-capability discoverable is opt-in — pass `packages` (`--package` on the
-CLI) with an explicit allowlist, never an implicit scan:
-
-```ts
-// consuming app's build script
-await generateDataArtifacts({
-  fs: nodeBuildFileSystem,
-  root: ".",
-  location: "src/generated/data.manifest.ts",
-  packages: ["@acme/payments-sdk"], // explicit allowlist -- never implicit
-})
-```
-
-The publishing package declares `"dataCap": { "schema": "./src/payments.capability.ts" }`
-in its own `package.json`, pointing at its real, uncompiled `.ts` source
-(ship that file via `"files": ["dist", "src/payments.capability.ts"]`
-alongside the compiled `dist/` used at runtime). Resolution reads exactly
-one `package.json` per allow-listed package to find the declared field,
-then exactly one declared file — never an implicit `readdir` walk of
-`node_modules` beyond that (`src/build/resolution/resolve-package-schema.ts`).
-Once allow-listed, the package's own directory is also walked as potential
-_consumer_ source, so a capability the SDK itself consumes internally is
-proven, not just the schema declaration.
+[`examples/flow-explorer/`](https://github.com/MaverickCER/data-cap/tree/main/examples/flow-explorer) turns one evidence file into an interactive page. Pick a field, trace it, filter it, compare two revisions, and read the same facts as text. It draws with a devDependency (`@viz-js/viz`) and calls `traceFlow`, `diffFlow` and `renderFlowText` itself. Its tests run in jsdom with axe-core and a contrast check; no real browser or screen reader runs them. The page says on screen when the analysis is incomplete. CI's `examples` job runs those tests, plus a scan over all four consumer examples; that job does not block a merge.
 
 ## ESLint plugin
 
-`stable-operation-reference` flags an `execute`/`processor`/`subscribe`/
-`optimistic` value inside a `createData()` call that isn't a stable,
-module-level function reference — an inline arrow function, or a reference
-recreated on every call (via real scope analysis, not just syntax) — since
-the coordinator's identity-based sharing (dedup/subscription reuse)
-silently stops applying otherwise:
+For lint owners. The four rules catch mistakes specific to this package that general rules miss:
 
 ```js
 // eslint.config.js
@@ -1026,307 +784,75 @@ export default [
       "data-cap/stable-operation-reference": "warn",
       "data-cap/no-fields-escape": "warn",
       "data-cap/no-raw-external-io": "warn",
+      "data-cap/no-node-fs": "warn",
     },
   },
 ]
 ```
 
-See `test/integration/build-tooling/eslint-plugin-usage/` and
-[ADR 0038](specs/decisions/0038-eslint-plugin-single-rule.md) (superseded
-by [ADR 0063](specs/decisions/0063-eslint-plugin-multiple-rules-and-no-fields-spread.md),
-which covers the plugin's current multi-rule shape).
+| Rule                         | Flags                                                                                                                                                                                                          | Options                                                                               |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `stable-operation-reference` | An `execute`, `processor`, `subscribe` or `optimistic` inside `createData()` that is inline or re-created per call, found by scope analysis. Such a function silently defeats dedup.                           | none                                                                                  |
+| `no-raw-external-io`         | A direct global I/O call (`fetch` by default) outside an operation's `execute` or `subscribe`, where it has no owner and no declared endpoint.                                                                 | `functions` adds names such as `WebSocket`; `allow` (globs) exempts a transport layer |
+| `no-fields-escape`           | A whole `.fields` or `getSnapshot()` result escaping the file: spread or rest, a bare call argument, one named JSX prop, or an export. Each shape has its own message id. A plain local alias is out of scope. | `allow` (globs)                                                                       |
+| `no-node-fs`                 | An `import`, `require` or dynamic `import()` of `node:fs`, so a module takes its filesystem from its caller.                                                                                                   | none                                                                                  |
 
-The plugin ships three more rules, each independently justified against
-the same "a mistake class specific enough to this package's own
-architecture that a general-purpose rule doesn't already catch" bar:
-
-- **`no-node-fs`** — the filesystem analogue of `env-cap`'s rule of the
-  same name: flags any `import`, `require`, or dynamic `import()` of
-  `node:fs` so a module accepts a filesystem capability from its caller
-  instead of acquiring one implicitly, the discipline `data-cap`'s own
-  `./build` surface follows. See
-  [ADR 0058](specs/decisions/0058-library-surfaces-do-not-acquire-node-fs.md).
-- **`no-raw-external-io`** — flags a direct call to a global I/O function
-  (`fetch` by default; extend `options.functions` for `XMLHttpRequest`,
-  `WebSocket`, etc.) written anywhere other than inside a capability's own
-  `execute`/`subscribe`, so external data access always goes through a
-  declared, analyzable operation instead of being scattered through
-  application code where it has no owner, no sensitivity, and no declared
-  endpoint. `options.allow` (a glob array) exempts a project's own
-  transport layer or test harness.
-- **`no-fields-escape`** — flags a capability's whole `.fields` (or a bare
-  `getSnapshot()` result) escaping this file's provable, per-field
-  visibility, via any of four shapes, each its own message id:
-  - spread into JSX (`<Child {...userData.fields} />`) or an object
-    literal, or destructured with a rest element (`const { ...rest } =
-userData.fields`) — the exact escape
-    [ADR 0060](specs/decisions/0060-usage-scanner-escape-sites.md) documents
-    the build-time scanner widening to `indeterminate` rather than proven
-    safe;
-  - passed as a bare function-call argument (`doSomething(userData.fields)`);
-  - passed as a single, named JSX prop (`<Child data={userData.fields} />`);
-  - exported — directly (`export const leaked = userData.fields;`), later
-    by name (`export { leaked };`), or returned from a function that is
-    itself exported.
-
-  Each is catchable here before merge instead of discovered only by reading
-  a generated report. A plain, non-exported local alias (`const alias =
-userData.fields;`) stays out of scope on purpose — this rule follows a
-  value past its immediate expression only when `export` makes doing so
-  provable, not as general reassignment tracing. `options.allow` (a glob
-  array) exempts a project's own trusted internal plumbing. See
-  [ADR 0063](specs/decisions/0063-eslint-plugin-multiple-rules-and-no-fields-spread.md)
-  (the rule's original spread/rest-only shape, then named `no-fields-spread`)
-  and [ADR 0064](specs/decisions/0064-no-fields-escape-export-argument-and-prop.md)
-  (the rename and the three added escape kinds).
-
-## Using the CLI outside GitHub Actions
-
-The GitHub Action is a thin wrapper: it runs `data-cap --json` with the arguments you give it and
-turns the JSON report into annotations and a summary comment. Every other CI system gets the same
-gate from the CLI alone.
-
-1. Install the package as a devDependency and run the generator in your pipeline:
-
-   ```bash
-   npx data-cap --evidence docs/data.evidence.json --flow-evidence --rules data-cap.rules.json --check --json > data-cap.json
-   ```
-
-2. Fail the job on the exit code: `0` when the evidence is current and no rule is violated, `1`
-   when the evidence is stale, a rule is violated or the run failed (the JSON report then carries an
-   `error`), `2` only from the Action's wrapper when the CLI is not installed and no `version` was
-   given, or the `version` input is not a plain version or dist-tag.
-
-3. Read `data-cap.json` for what to show: `checkResult.stale` names each stale artifact,
-   `evidenceRules` holds the rules verdict, and when generation failed on findings `error.findings`
-   carries one entry per issue with its `severity`, `message` and, where known, the capability's
-   `file` and a `position`. The report validates against the published JSON Schema
-   (`data-cap/schema`), so a GitLab, Jenkins or Buildkite step can render it with any JSON Schema
-   aware tool. Two inputs are read before any report is written: a `--rules` or `--observations`
-   file that cannot be read or is not valid exits `1` with the reason on stderr and nothing on
-   stdout, so treat an empty `data-cap.json` as a failure too. For a SARIF
-   upload, project the persisted evidence with `buildSarifLog` from `data-cap/build` (with its
-   `flow` option for data-flow findings); the output is validated against the official OASIS schema
-   in `test/build/sarif-flow.test.ts`. The other standards outputs (OSCAL, CycloneDX, PROV, OTLP) come
-   from `data-cap/evidence` the same way.
-
-Nothing in the CLI reads GitHub-specific environment variables; the Action's inputs are the CLI's
-flags.
-
-## GitHub Action
-
-The first-party GitHub Action runs `data-cap --json` and turns the result
-into pull request annotations and a summary comment.
-
-Example:
-
-```yaml
-# .github/workflows/data-cap.yml
-name: data-cap
-
-on:
-  pull_request:
-
-permissions:
-  contents: read
-  pull-requests: write
-
-jobs:
-  report:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - run: npm ci # the action runs the data-cap your project installs
-
-      - uses: maverickcer/data-cap@v0
-        with:
-          args: "--evidence docs/data.evidence.json --strict-docs --strict-ownership"
-```
-
-| Input               | Default                 | Purpose                                                                                                                                                   |
-| ------------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `args`              | _(required)_            | Arguments passed to `data-cap --json`, such as `--evidence`, `--flow-evidence`, `--rules` and `--strict*` flags                                           |
-| `working-directory` | `.`                     | Directory where `data-cap` executes                                                                                                                       |
-| `version`           | _(none; required then)_ | Version to execute through `npx` when `data-cap` is not a local devDependency; the action refuses to run without one (pin a version rather than `latest`) |
-| `comment`           | `true`                  | Creates or updates a sticky pull request summary comment                                                                                                  |
-| `annotations`       | `true`                  | Emits GitHub workflow annotations for detected findings                                                                                                   |
-| `report-key`        | _(working-directory)_   | Identifies this report when multiple workflows run against the same pull request                                                                          |
-
-The Action does not create its own policy layer. Pass/fail behavior always
-follows the CLI exit code and configured flags such as `--strict`,
-`--strict-docs`, `--strict-ownership` and `--rules`. With `--flow-evidence` the
-summary comment adds a data-flow section (coverage, policy outcomes,
-observations, claims), and with `--rules` the rule verdict.
-
-### Monorepos
-
-For monorepos running multiple `data-cap` checks in parallel, provide a
-unique `report-key` for each invocation. This prevents separate jobs from
-overwriting each other's pull request comments.
-
-## Architecture
-
-See [`specs/architecture.md`](specs/architecture.md) for the complete
-structural specification: what each of the six entry points
-(`core`/`runtime`/`helpers`/`build`/`evidence`/`eslint-plugin`) owns, the enforced
-dependency direction between them, and every cross-cutting guarantee
-(tree-shaking, gzip budgets, the dual-package-hazard risk class,
-cross-runtime conformance) checked in CI.
-
-The Architecture Decision Records in
-[`specs/decisions/`](specs/decisions/) document the reasoning — including
-rejected alternatives — behind every significant design choice, and
-[`specs/decisions/0047-negative-guarantees-checklist.md`](specs/decisions/0047-negative-guarantees-checklist.md)
-consolidates every hard "never" invariant this design makes into one
-traceable list. The [docs site's architecture section](https://maverickcer.github.io/data-cap/#architecture)
-covers the same model in a more visual, narrative form for a first read;
-this Guide and `specs/` stay the precise, versioned reference.
-
-## Migration
-
-`data-cap` supports incremental adoption — nothing requires replacing your
-fetching library, state manager, or transport in one pass. See
-[`specs/migrations/`](specs/migrations/) for guided paths:
-
-- [From manual fetch-and-state](specs/migrations/from-manual-fetch-state.md)
-- [From a global store](specs/migrations/from-a-global-store.md) (Redux, Zustand, ...)
-- [From TanStack Query alone](specs/migrations/from-tanstack-query-alone.md)
-
-## Security model
-
-`data-cap` defines data contracts; it does not automatically make an
-application secure. See [`SECURITY.md`](SECURITY.md) for the full policy,
-including the dual-package-hazard risk class
-([ADR 0041](specs/decisions/0041-dual-package-hazard-checked-documented.md))
-and the `Object.freeze`/`Map`/`Set` mutation caveat
-([ADR 0044](specs/decisions/0044-snapshots-deep-frozen-amortized.md)).
-Capabilities do not self-redact `fields`/`info` — this is ordinary
-application data, not secrets by default
-([ADR 0006](specs/decisions/0006-no-self-redaction.md)); an application
-storing genuinely sensitive data in a field is responsible for its own
-redaction at the point it logs.
+Each rule has its own test under `test/eslint-plugin/`. Rule names and message ids are Stable ([VERSIONING.md](VERSIONING.md#stable)). The unit tests run on ESLint 10. A fixture runs the plugin under ESLint 9 in a job that does not block a merge. ESLint 8.57 is in the peer range but untested. See [ADR 0063](specs/decisions/0063-eslint-plugin-multiple-rules-and-no-fields-spread.md) and [ADR 0064](specs/decisions/0064-no-fields-escape-export-argument-and-prop.md).
 
 ## Troubleshooting
 
 ### Error classes
 
-Every thrown error extends `DataCapError` (`data-cap`) and
-carries a stable, non-`instanceof`-dependent `code` — safe to switch on
-across bundling/module-federation boundaries where `instanceof` can fail.
+Every error the package throws extends `DataCapError` and carries a stable `code`. Switch on the `code`: `instanceof` can fail across bundle boundaries (`test/core/errors.test.ts`).
 
-| Error                                                               | Thrown by                                     | Common cause                                                                                                      | Fix                                                                                            |
-| ------------------------------------------------------------------- | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `InvalidFieldDefaultError` (`DATA_CAP_INVALID_FIELD_DEFAULT`)       | `buildData()` / `documentData()`              | A declared field default is a function, or contains a cyclic reference                                            | Declare a plain, non-function, non-cyclic default value for the field                          |
-| `UnknownGetterError` (`DATA_CAP_UNKNOWN_GETTER`)                    | `runGetters()` (`createData()`'s coordinator) | Requested a getter name that isn't declared on the capability — usually a typo, or the getter was renamed/removed | Check the getter name against the capability's own `getters` declaration and fix the call site |
-| `DataProjectGenerationError` (`DATA_CAP_PROJECT_GENERATION_FAILED`) | `data-cap/build`'s report/manifest generators | The static-analysis run found at least one blocking (`severity: "error"`) finding                                 | Read the listed findings (each names its own fix) and resolve them, then run again             |
+| Error                                                               | Thrown by                       | Common cause                                        | Fix                                                      |
+| ------------------------------------------------------------------- | ------------------------------- | --------------------------------------------------- | -------------------------------------------------------- |
+| `InvalidFieldDefaultError` (`DATA_CAP_INVALID_FIELD_DEFAULT`)       | `buildData()`, `documentData()` | A field default is a function or contains a cycle.  | Declare a plain, acyclic default value.                  |
+| `UnknownGetterError` (`DATA_CAP_UNKNOWN_GETTER`)                    | `runGetters()`                  | A getter name that the capability does not declare. | Fix the name at the call site.                           |
+| `DataProjectGenerationError` (`DATA_CAP_PROJECT_GENERATION_FAILED`) | `data-cap/build` generators     | The run found at least one `error` finding.         | Read the listed findings; each names its fix. Run again. |
 
-See [`specs/decisions/`](specs/decisions/) for the ADR behind each error
-class.
+### Reading a field does not wait for data
 
-### "Why doesn't reading a field throw until data is ready?"
+That is intentional ([ADR 0004](specs/decisions/0004-fields-always-synchronously-readable.md)). Every field has its declared default from the start. Build "is it ready?" logic from `info.<field>.status`.
 
-That behavior is intentional
-([ADR 0004](specs/decisions/0004-fields-always-synchronously-readable.md)).
-`data-cap` does not model ordinary field access as an initialization gate
-— every field has a real, declared default from the moment
-`buildData()`/`createData()` returns. Build "is this ready yet" logic from
-`info.<field>.status` instead.
+### My optimistic value does not roll back on failure
 
-### "Does `data-cap` ship a built-in getter/mutator execution loop?"
+Removing the pending transition is the whole mechanism. The visible value reverts because `project()` no longer folds that transition ([ADR 0023](specs/decisions/0023-no-automatic-rollback-or-conflict-resolution.md)). `createData`'s mutators do this in a `finally`.
 
-Optionally, yes — `createData` (`data-cap/runtime`) owns dedup,
-per-operation status, optimistic mutation
-lifecycle, and concurrent-getter execution, composed entirely from the
-Stable primitives (`createDataStore`, `coordinator.dedupe`/
-`acquireSubscription`). Different applications reasonably want different
-tradeoffs for how a getter/mutator actually runs (retry policy, caching,
-transport), so the primitives themselves stay directly usable too — a full
-worked pattern lives in `test/integration/runtime-core/basic-standalone/` to copy and adapt when
-you want that level of control instead. See
-[ADR 0048](specs/decisions/0048-builddata-createdata-split-and-optional-operations-layer.md).
+### Two capabilities do not share a subscription or a dedup
 
-### "Why no `./tanstack` or `./socket-io` package?"
+Sharing is by function identity. An inline arrow is a new function every time it is created. Run the `stable-operation-reference` rule. For `createData`, keep the schema's `execute` and `subscribe` at module level, not rebuilt inside a component or factory.
 
-See [ADR 0037](specs/decisions/0037-no-first-party-integration-packages.md)
-— test/integration/ contains full, tested reference patterns instead.
+### There is no `./tanstack` or `./socket-io` package
 
-### "My mutation's optimistic value doesn't automatically roll back on failure."
-
-That's intentional — see
-[ADR 0023](specs/decisions/0023-no-automatic-rollback-or-conflict-resolution.md).
-Removing the pending transition (`removePendingTransition`) is the entire
-mechanism; the visible value reverts automatically because `project()` no
-longer folds a transition that no longer exists. `createData`'s own
-mutators follow this exactly.
-
-### "Two capabilities aren't sharing a subscription/dedup I expected them to share."
-
-Sharing is scoped to function _identity_, not behavioral equality — an
-inline arrow function is a fresh identity every time it's created. Run
-`eslint-plugin`'s `stable-operation-reference` rule against your code, or
-see [ADR 0026](specs/decisions/0026-subscription-transport-sharing-independent.md)/[ADR 0028](specs/decisions/0028-coordinator-dedup-key-identity-plus-params.md).
-For `createData`, this means the schema-authored `execute`/`subscribe`
-reference itself needs to be stable (module-level, not recreated inside a
-factory/component) — `createData` already builds its own stable dispatch
-closure per operation internally, but that doesn't help if the schema
-object itself is rebuilt from scratch on every call.
+By design ([ADR 0037](specs/decisions/0037-no-first-party-integration-packages.md)). Copy the [tested patterns](#tanstack-query-and-socketio) instead.
 
 ## Performance characteristics
 
-`fields`/`info` updates use structural sharing — an update to one leaf
-field never re-allocates unrelated branches, and every published snapshot
-is deep-frozen at a cost proportional to what actually changed, not to
-total state size (see
-[ADR 0044](specs/decisions/0044-snapshots-deep-frozen-amortized.md)).
-Every entry point carries a gzip budget, enforced in CI
-(`ci/size-budgets.mjs`, run by the `verify` and `contract` jobs) — see
-[`PERFORMANCE.md`](PERFORMANCE.md) for current numbers and methodology. `benchmarks/performance-runtime` and
-`benchmarks/performance-buildtime` (run via `npm run benchmark`, and on
-every PR via `.github/workflows/ci.yml (benchmark-pr job)`) report raw times without
-judging them; a run fails only when a function's growth class or the package's relative
-overhead regresses (see [`PERFORMANCE.md`](PERFORMANCE.md)).
+Updates share structure. A commit reuses unchanged branches by reference and freezes only the new nodes. A commit that changes nothing returns the previous snapshot and notifies nobody (`test/core/patch.test.ts`). The tests assert these by reference, not by timing ([ADR 0044](specs/decisions/0044-snapshots-deep-frozen-amortized.md)).
 
-| Operation                                     | Cost                                                       | Contrast with a naive full-state-replace pattern                                                                                                                     |
-| --------------------------------------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `buildData()` init                            | O(fields)                                                  | Same order — both must walk the declared shape once                                                                                                                  |
-| `getSnapshot().fields.<path>` read            | O(1)                                                       | Same — a plain property read either way                                                                                                                              |
-| `commitAuthoritative`/optimistic patch commit | O(changed leaves + ancestor path), not O(total state size) | A naive `{ ...prev, ...patch }` spread at the root re-allocates every sibling branch too, and repeated shallow spreads at each nesting level are O(depth × siblings) |
-| `identity.reconcileArrayInfo`                 | O(items) per call, one pass                                | A full-rebuild pattern is also O(items), but discards every unchanged item's object identity — this preserves reference equality for untouched items                 |
-| `coordinator.dedupe` lookup                   | O(1) amortized (canonicalized-key map lookup)              | A naive in-flight-request check via array `.find()`/manual comparison is O(in-flight calls)                                                                          |
+The table states the cost each operation is designed to have:
 
-See [ADR 0044](specs/decisions/0044-snapshots-deep-frozen-amortized.md) for
-the structural-sharing mechanism these figures describe, and
-[`PERFORMANCE.md`](PERFORMANCE.md) for measured wall-clock numbers (these
-are asymptotic complexity, not benchmark results).
+| Operation                                     | Designed cost                     | Compared with a naive full-state replace                     |
+| --------------------------------------------- | --------------------------------- | ------------------------------------------------------------ |
+| `buildData()` init                            | O(fields)                         | Same order: both walk the declared shape once.               |
+| `getSnapshot().fields.<path>` read            | O(1)                              | Same: a plain property read.                                 |
+| `commitAuthoritative` or an optimistic commit | O(changed leaves + ancestor path) | A root spread re-allocates every sibling branch.             |
+| `identity.reconcileArrayInfo`                 | One pass over the items           | A full rebuild loses the object identity of unchanged items. |
+| `coordinator.dedupe` lookup                   | O(1) amortized, one map lookup    | A scan of in-flight requests is O(in-flight calls).          |
 
-## AI-Assisted Integration
+The benchmarks fit a growth class to each function. A run fails on a growth class two or more classes off, a class worse than at the last release without a recorded exception, or overhead growth ([PERFORMANCE.md](PERFORMANCE.md#what-fails-a-run)). A failed `benchmark-pr` skips `lint`, `verify` and `contract`, and GitHub counts a skipped required check as passing, so check it by hand. The release still needs a successful `contract` run. Every entry point also has a gzip budget, which `verify` and `contract` enforce.
 
-`data-cap` is designed to provide a clear architectural boundary that can also be understood and analyzed by AI coding assistants.
+## Further reading
 
-When integrating `data-cap` into an existing repository, the repository's existing architecture, persistence model, transport layer, and ownership boundaries should be analyzed before introducing contracts.
-
-For AI-agent-specific guidance, see:
-
-- [`AGENTS.md`](AGENTS.md)
-- [`skills/data-cap/SKILL.md`](skills/data-cap/SKILL.md)
-
-The canonical architectural specification remains [`specs/architecture.md`](specs/architecture.md); Architecture Decision Records remain authoritative for decisions that have been explicitly recorded in [`specs/decisions/`](specs/decisions/).
-
-## Documentation index
-
-| Doc                                                                                       | For                                                                                    |
-| ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| This Guide + the [docs site](https://maverickcer.github.io/data-cap/)                     | Using `data-cap` in an application                                                     |
-| [API reference](https://maverickcer.github.io/data-cap/api/)                              | Every exported symbol, generated from the types                                        |
-| [`specs/architecture.md`](specs/architecture.md) + [`specs/decisions/`](specs/decisions/) | Why the package is shaped the way it is (ADRs)                                         |
-| [`specs/migrations/`](specs/migrations/)                                                  | Adopting `data-cap` from Apollo / TanStack Query / a global store / manual fetch state |
-| [`ADOPTION.md`](ADOPTION.md)                                                              | Decision-maker summary: security, size, LTS                                            |
-| [`PERFORMANCE.md`](PERFORMANCE.md)                                                        | Bundle-size budgets, what's benchmarked and why                                        |
-| [`SECURITY.md`](SECURITY.md)                                                              | Full threat model, dual-package hazard, supply-chain posture                           |
-| [`VERSIONING.md`](VERSIONING.md)                                                          | What semver covers; Stable / Experimental / Private tiers                              |
-| [`CONTRIBUTING.md`](CONTRIBUTING.md)                                                      | Making a change                                                                        |
-| [`CODE_REVIEW.md`](CODE_REVIEW.md)                                                        | What a reviewer checks before merging                                                  |
-| [`RELEASING.md`](RELEASING.md)                                                            | Maintainer release process                                                             |
-| [`SUPPORT.md`](SUPPORT.md)                                                                | Where to ask questions and file bugs                                                   |
+| Document                                                                                    | For                                                                   |
+| ------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| [API reference](https://maverickcer.github.io/data-cap/api/)                                | Every exported symbol, generated from the source.                     |
+| [`specs/architecture.md`](specs/architecture.md) and [`specs/decisions/`](specs/decisions/) | Why the package is shaped this way.                                   |
+| [`specs/migrations/`](specs/migrations/)                                                    | Adopting from Apollo, TanStack Query, a global store or manual fetch. |
+| [`ADOPTION.md`](ADOPTION.md)                                                                | What adopting costs, needs and refuses to do.                         |
+| [`SECURITY.md`](SECURITY.md)                                                                | The threat model, and what each check covers.                         |
+| [`VERSIONING.md`](VERSIONING.md)                                                            | What semver covers, entry point by entry point.                       |
+| [`PERFORMANCE.md`](PERFORMANCE.md)                                                          | Size budgets and benchmark gates.                                     |
+| [`AGENTS.md`](AGENTS.md) and [`skills/data-cap/SKILL.md`](skills/data-cap/SKILL.md)         | Rules for coding agents.                                              |
+| [`CONTRIBUTING.md`](CONTRIBUTING.md) and [`CODE_REVIEW.md`](CODE_REVIEW.md)                 | Making and reviewing a change.                                        |

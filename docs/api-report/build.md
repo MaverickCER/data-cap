@@ -1845,6 +1845,8 @@ Resolved: the field's own declared sensitivity, else the capability's -- mirrors
 
 ### FieldNode
 
+One top-level field of a capability, resolved from the inventory's shared model.
+
 #### Properties
 
 ##### auditRequired
@@ -5334,6 +5336,8 @@ type DependencyRelationship =
   | "calls-mutator"
   | "calls-subscription";
 ```
+
+How a consuming file uses a capability: an import alone, a field read, or a call to a getter, mutator or subscription.
 
 ***
 

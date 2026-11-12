@@ -1,31 +1,31 @@
 name: "data-cap report"
-description: "Runs data-cap and turns the result into PR annotations and a summary comment."
+description: "Runs data-cap --json and turns the result into pull request annotations and one summary comment."
 inputs:
   args:
-    description: "Arguments passed to `data-cap --json`, e.g. '--evidence docs/data.evidence.json --strict-docs --strict-ownership' (the persisted evidence is always composed; --location/--docs/--ownership/--flow are no longer CLI flags, ADR 0066)"
+    description: "Arguments for `data-cap --json`, for example '--evidence docs/data.evidence.json --strict-docs --strict-ownership'. Split on whitespace. The manifest, catalog, ownership report and diagrams are not CLI flags; generate them from a build script."
     required: true
   working-directory:
     description: "Directory to run data-cap from."
     required: false
     default: "."
   version:
-    description: "data-cap version to fetch via npx when it is not a local devDependency. Required in that case: the action fails rather than guess a version (pin one rather than `latest`). Ignored when the project has data-cap installed."
+    description: "Version to run through npx when data-cap is not installed locally. Without a local install and without this input, the action exits 2. Must be a plain version or dist-tag; a malformed version exits 2. A dist-tag such as `latest` runs unpinned, so pin an exact version. Ignored when the project has data-cap installed."
     required: false
     default: ""
   comment:
-    description: "Upsert a sticky PR summary comment."
+    description: "Create or update one summary comment on the pull request."
     required: false
     default: "true"
   report-key:
-    description: "Identifies this invocation's sticky comment, so multiple calls against the same PR (e.g. one per package in a monorepo) don't overwrite each other. Empty defaults to working-directory (resolved in report.mjs, not here -- action.yml input defaults can't reliably reference another input)."
+    description: "Names this run's summary comment, so several runs on one pull request (one per package in a monorepo) do not overwrite each other. Empty means the working-directory."
     required: false
     default: ""
   annotations:
-    description: "Emit inline ::warning/::error PR annotations."
+    description: "Emit a workflow annotation (::warning or ::error) for each finding."
     required: false
     default: "true"
   github-token:
-    description: "Token used for `gh` PR-comment calls."
+    description: "Token the summary comment is posted with, through `gh`."
     required: false
     default: ${{ github.token }}
 runs:

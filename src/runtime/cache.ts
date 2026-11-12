@@ -18,16 +18,26 @@
 
 import type { DataState } from "../core/types.js"
 
+/** Options for `createDataCache`. */
 export interface DataCacheOptions {
   /** Maximum number of entries retained; least-recently-used entries are evicted first. Defaults to 100. */
   readonly maxEntries?: number
 }
 
+/**
+ * A bounded cache of complete `DataState` snapshots, keyed by a string the caller computes.
+ * It evicts the least recently used entry first. It never builds keys and never fetches.
+ */
 export interface DataCache<TFields> {
+  /** The snapshot stored under `key`, or `undefined`. A hit marks the entry as most recently used. */
   get(key: string): DataState<TFields> | undefined
+  /** Stores a complete snapshot, `fields` and `info` together, evicting the oldest entries past `maxEntries`. */
   set(key: string, state: DataState<TFields>): void
+  /** Removes the entry under `key`, if any. */
   delete(key: string): void
+  /** Removes every entry. */
   clear(): void
+  /** How many entries the cache holds now. */
   readonly size: number
 }
 

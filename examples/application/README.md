@@ -1,103 +1,63 @@
-# application -- Task Manager
+# application: Task Manager
 
-**Tier 1: "How do I define and consume application data safely?"** A single
-developer's task manager -- one capability, the batteries-included
-`createData` (`data-cap/runtime`), demonstrating the full
-individual-developer feature surface end to end: exact field types (an array
-field and a nullable field), loading/error/success status, optimistic
-mutation, `withRetry` composed directly onto a generated mutator method,
-`runtime/cache` fronting a getter, request dedup (the runtime's own, free),
-and abort/cancellation via an externally-supplied `AbortSignal`.
+**Tier 1: "How do I define and consume application data safely?"**
 
-Compare with `../../test/integration/runtime-core/basic-standalone/`, which
-wires the exact same kind of scenario by hand against `buildData` +
-`createDataStore` + `coordinator` directly -- both are valid, supported
-patterns. This one is the opt-in, Experimental-tier convenience layer (see
-[`specs/decisions/0048-builddata-createdata-split-and-optional-operations-layer.md`](../../specs/decisions/0048-builddata-createdata-split-and-optional-operations-layer.md)).
+One developer's task manager, built on one capability with `createData` (`data-cap/runtime`). It uses the whole single-developer feature set:
 
-## One schema, shared between `createData` and `documentData`
+- exact field types: an array field and a nullable field;
+- loading, error and success status;
+- an optimistic mutation;
+- `withRetry` composed onto a generated mutator method;
+- `runtime/cache` in front of a getter;
+- the runtime's own request dedup;
+- cancellation through an `AbortSignal` the caller supplies.
 
-`taskSchema` is declared once, as a plain `const`, and passed to *both*
-`createData(taskSchema)` and `documentData(taskSchema, docs)` -- not two
-separately-typed config objects. That's what makes `docs.getters`/
-`docs.mutators`/`docs.subscriptions` real, `keyof`-checked keys against the
-schema's own operation names: documenting a getter that doesn't exist, or
-misspelling one that does, is a compile error, not a silent gap that only
-shows up (if ever) as a build-tool warning.
-
-## Why `tasks` and `selectedTask` are different kinds of fields
-
-`tasks: Task[]` is an array field -- the whole list, loaded once, mutated in
-place by `createTask`/`toggleTask`/`deleteTask`. `selectedTask: Task | null`
-is a nullable field -- one task's own full detail, populated by `getTask`.
-This split isn't arbitrary: an array field's own `info` is a per-item-
-identity-keyed map, not a flat `FieldInfo`, so there's no meaningful
-`info.tasks.status`/`.subscription` to read at the top level (`info.tasks`
-would need `createData`'s per-item array-identity reconciliation, which it
-doesn't have -- see `../team-service/`'s own README for the same limitation
-proven independently). Status/fetch-timestamp/subscription-lifecycle checks
-below all target `selectedTask` instead, where they're real.
+`../../test/integration/runtime-core/basic-standalone/` wires the same kind of scenario by hand, with `buildData`, `createDataStore` and the coordinator. Both patterns are supported; this one uses the Stable `createData` layer ([ADR 0048](../../specs/decisions/0048-builddata-createdata-split-and-optional-operations-layer.md)).
 
 ## Run it
 
-```sh
-npm install
-npm start
-```
+Build the package first: `npm run build` at the repository root. Then, in this directory, run `npm install` and:
 
-`npm start` runs real `node:assert/strict` checks against the actual
-installed `data-cap` build -- a thrown assertion is a genuine
-regression signal, not just a diff.
+| Command         | Exit code | Look for                                                                                |
+| --------------- | --------- | --------------------------------------------------------------------------------------- |
+| `npm start`     | 0         | `application: all assertions passed.`                                                   |
+| `npm run docs`  | 0         | `0 error(s), 2 warning(s), 0 info finding(s):`                                          |
+| `npm run check` | 0         | `[generate-docs check] manifest/docs/ownership/flow/evidence artifacts are up to date.` |
 
-## What it proves
+`npm start` runs `node:assert/strict` checks against the installed `data-cap` build. A failed assertion exits 1 and names the check. `npm run check` exits 1 and lists each stale file when `docs/` no longer matches a fresh run.
 
-- A schema declaring `fields`/`getters`/`mutators`/`subscriptions` together,
-  shared with `documentData`, produces a fully working, fully documented
-  capability from one pair of calls.
-- Two concurrent `getTasks()` calls dedup to one real fetch -- the runtime's
-  own dedup, never hand-wired.
-- `runtime/cache` fronts the same getter: a later, non-concurrent "remount"
-  call hits the cache instead of fetching again.
-- An externally-supplied `AbortSignal` cancels an in-flight getter call, and
-  the rejection never overwrites the last known-good field value.
-- A generated mutator method composes directly with the real, shipped
-  `withRetry` (`data-cap/runtime/retry`), since it's a plain
-  `(params?, signal?) => Promise<...>` function -- the example's simulated
-  backend deliberately fails the first `createTask` attempt so the retry
-  path is exercised for real, not just asserted about.
-- `toggleTask`/`deleteTask`'s optimistic values are visible immediately,
-  before the request settles.
-- A subscription's status transitions (`connecting` -> `connected` ->
-  `disconnected`) never touch `fields`, only `info.selectedTask.subscription`
-  (ADR 0029).
+CI's `examples` job runs `npm run typecheck` here, then `npm start` and `npm run check` through `test/examples/application.test.ts`. It also runs `npm run docs` in a copy and compares the output with the root README's "See it run" block. That job does not block a merge.
+
+## One schema, shared between `createData` and `documentData`
+
+`taskSchema` is declared once, as a plain `const`. It is passed to both `createData(taskSchema)` and `documentData(taskSchema, docs)`. So `docs.getters`, `docs.mutators` and `docs.subscriptions` are checked against the schema's operation names. Documenting a getter that does not exist, or misspelling one, is a compile error.
+
+## Why `tasks` and `selectedTask` are different kinds of fields
+
+`tasks: Task[]` is an array field: the whole list, loaded once, changed by `createTask`, `toggleTask` and `deleteTask`. `selectedTask: Task | null` is a nullable field: one task's detail, filled by `getTask`.
+
+`createData` keeps no per-item status for an array field, so there is no useful `info.tasks.status` to read. The status, timestamp and subscription checks therefore target `selectedTask`. `../team-service/` meets the same limit.
+
+## What it checks
+
+`npm start` asserts each of these:
+
+- One schema with `fields`, `getters`, `mutators` and `subscriptions`, shared with `documentData`, gives a working, documented capability.
+- Two concurrent `getTasks()` calls make one fetch, through the runtime's own dedup.
+- `runtime/cache` serves a later, non-concurrent call without a second fetch.
+- An `AbortSignal` cancels an in-flight getter call, and the rejection keeps the last good field value.
+- A generated mutator composes with `withRetry` from `data-cap/runtime/retry`, because it is a plain `(params?, signal?) => Promise` function. The simulated backend fails the first `createTask` attempt, so the retry path runs.
+- `toggleTask` and `deleteTask` show their optimistic values before the request settles.
+- A subscription's status changes (`connecting`, `connected`, `disconnected`) touch only `info.selectedTask.subscription`, never `fields` (ADR 0029).
 
 ## Generated reports (`docs/`)
 
-`docs/` in this example is not hand-written -- it's the real output of
-running the `data-cap` CLI against `src/main.ts`:
+`docs/` is the output of `npm run docs`, not hand-written. Both fields are documented as `sensitivity: "internal"`. Every getter and mutator declares an `api` endpoint with a `url` and `handling: "plaintext"`.
 
-```sh
-npm run docs   # regenerate
-npm run check  # verify committed docs match a fresh generation (no write)
-```
-
-Both `tasks` and `selectedTask` are documented `sensitivity: "internal"`, and
-every getter/mutator declares an `api` endpoint with a real `url` and a
-declared `handling` state (`plaintext`) -- exactly the combination
-`docs/flow/overview.mmd`'s diagram renders as a real, per-operation chain:
-declared endpoint -> the specific getter/mutator that touches it -> the
-field -> every proven consumption site, at its exact `file:line:column`
-(see `docs/OWNERSHIP.md`'s own "Consumers per capability" table for the same
-positions in tabular form). See
-[`specs/generated-artifacts.md`](../../specs/generated-artifacts.md) for
-what every generated artifact does and doesn't claim.
+`docs/flow/overview.mmd` draws one chain per operation: the declared endpoint, the operation, the field, and each consuming site at its `file:line:column`. `docs/OWNERSHIP.md` lists the same sites in its "Consumers per capability" table. [`specs/generated-artifacts.md`](../../specs/generated-artifacts.md) says what each artifact does and does not claim.
 
 ## Where to go next
 
-- `../../test/integration/runtime-core/basic-standalone/` -- the same kind
-  of scenario, hand-wired instead of through `createData`.
-- `../team-service/` -- multiple capabilities, owned separately by a team,
-  composing with each other while staying independently analyzable.
-- `../../test/integration/runtime-modules/runtime-cache/` and
-  `runtime-modules/runtime-retry/` -- `runtime/cache`/`withRetry` on their
-  own, without a `createData` capability wrapping them.
+- `../../test/integration/runtime-core/basic-standalone/`: the same kind of scenario, wired by hand instead of through `createData`.
+- `../team-service/`: several capabilities, owned by a team, composing with each other and still analyzable.
+- `../../test/integration/runtime-modules/runtime-cache/` and `runtime-modules/runtime-retry/`: the cache and `withRetry` on their own.

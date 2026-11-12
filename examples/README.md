@@ -1,69 +1,37 @@
 # Examples
 
-Four real, standalone npm projects, each depending on the root package via
-`"data-cap": "file:../.."`. npm installs a `file:` dependency
-pointing at a local directory as a symlink back to that directory (not a
-filtered, packed copy), so each example always runs against whatever
-`npm run build` at the repo root most recently produced -- run `npm run
-build` again after a source change and every already-installed example
-picks it up without reinstalling. `npm ci` at the repo root does **not**
-install these; CI's `examples` job (`.github/workflows/ci.yml`) does, one at
-a time, after building the root package first.
+Five standalone npm projects, each depending on the root package through `"data-cap": "file:../.."`. npm installs a `file:` dependency as a symlink to the directory, not as a packed copy. So each example runs against whatever `npm run build` at the repository root last produced. After a source change, run `npm run build` again; installed examples pick it up without reinstalling.
+
+`npm ci` at the root does **not** install these. CI's `examples` job does, one at a time, after building the root package. That job does not block a merge.
 
 ## Three questions, three places to look
 
-This directory answers exactly one question: **"why would I use data-cap?"**
-Two other, genuinely different questions are answered elsewhere, on purpose
--- collapsing all three into one flat pile of demos is what this directory
-used to be, and why it no longer is:
+This directory answers one question: **why would I use `data-cap`?** Two other questions have their own places:
 
-- **`examples/`** (here) -- a human deciding whether/how to adopt data-cap.
-  Three examples telling one story that grows, rather than three unrelated
-  demos or a feature checklist -- and a fourth, of a different kind (below).
-- **[`test/integration/`](https://github.com/MaverickCER/data-cap/blob/main/test/integration/README.md)** -- "does data-cap
-  actually work?" The 16 focused regression fixtures that used to live here,
-  each proving one specific mechanism (dedup, cache, retry, subscription
-  sharing, path-alias resolution, and so on) against the real, built
-  package.
-- **`test/core/`, `test/build/`, `test/runtime/`** -- unit tests answering
-  "are the individual mechanisms correct?", independent of any end-to-end
-  story.
+- **`examples/`** (here): for a person deciding whether and how to adopt `data-cap`. Three examples tell one story that grows, and a fourth and fifth are of a different kind (below).
+- **[`test/integration/`](https://github.com/MaverickCER/data-cap/blob/main/test/integration/README.md)**: does `data-cap` work? Focused regression fixtures, each checking one mechanism (dedup, cache, retry, subscription sharing, path-alias resolution) against the built package.
+- **`test/core/`, `test/build/`, `test/runtime/`**: are the individual mechanisms correct? Unit tests, independent of any end-to-end story.
 
 ## One system, growing
 
-These three examples are not three unrelated demos at increasing difficulty.
-They're the same kind of work-management system, at three real scales, in
-the order an organization actually grows into them:
+The first three examples are the same kind of work-management system at three scales, in the order an organization grows into them:
 
 | Tier | Directory | Scale | The question it answers |
 | --- | --- | --- | --- |
-| 1 | [`application/`](https://github.com/MaverickCER/data-cap/tree/main/examples/application) -- Task Manager | One developer | Is *my* data access correct? Loading/error/success, optimistic updates, retry, dedup, caching -- the individual-developer feature surface, on one capability. |
-| 2 | [`team-service/`](https://github.com/MaverickCER/data-cap/tree/main/examples/team-service) -- Project Management Service | One team | Do *our* data capabilities compose without silently duplicating work? Capability-per-file ownership, real cross-capability composition that stays analyzable, a real duplicate-network-fetch finding. |
-| 3 | [`enterprise-platform/`](https://github.com/MaverickCER/data-cap/tree/main/examples/enterprise-platform) -- Atlas | An organization | Can we show someone who wasn't in the room what data exists, how it's handled, and where the governance gaps are, with every statement traced to a declaration or to the code? Three independently-owned capabilities, a real running service, and generated data-handling-record/audit-prep reports. |
-| 4 | [`flow-explorer/`](https://github.com/MaverickCER/data-cap/tree/main/examples/flow-explorer) -- Data flow explorer | Anyone who has to trust the picture | For any one field, can I see every function that touches it and everywhere it goes -- and does the page say when it could not tell? One evidence file in; an interactive, keyboard-operable, accessible explorer and every standards export (Mermaid, DOT, PROV, SARIF, OSCAL, OpenTelemetry, CycloneDX) out, plus a full comparison of two commits (added, removed and changed, with source drill-down), drawn with a devDependency, not part of the package. |
+| 1 | [`application/`](https://github.com/MaverickCER/data-cap/tree/main/examples/application): Task Manager | One developer | Is my data access correct? Status, optimistic updates, retry, dedup and caching on one capability. |
+| 2 | [`team-service/`](https://github.com/MaverickCER/data-cap/tree/main/examples/team-service): Project Management Service | One team | Do our capabilities compose without duplicating work? One file per capability, a cross-capability dependency the scan records, and a duplicate-fetch finding. |
+| 3 | [`enterprise-platform/`](https://github.com/MaverickCER/data-cap/tree/main/examples/enterprise-platform): Atlas | An organization | Can we show someone who wasn't in the room what data exists, how it is handled, and where the declarations have gaps? Three separately owned capabilities, a running service, and two generated reports. |
+| 4 | [`flow-explorer/`](https://github.com/MaverickCER/data-cap/tree/main/examples/flow-explorer): Data flow explorer | Anyone who has to trust the picture | For one field, can I see every function that touches it and where it goes? Does the page say when it could not tell? One evidence file in; a keyboard-operable explorer and every standards export out. |
 
-Tier 4 is not the next chapter of that story; it is a different kind of example. It takes
-the evidence file any of the others produces and shows what can be done with it **outside the
-package**: an interactive explorer built on a devDependency renderer, every standards export, and
-the end-to-end test of the data-flow analysis (see its README).
+Tier 2 is Tier 1 once a second developer and a second capability join. Tier 3 is Tier 2 once that team's service becomes one of several departments' services. `team-service`'s "project" concept is `enterprise-platform`'s `projectsData`, now one capability among several. Each tier keeps what the previous tier used and adds only what its scale needs.
 
-Tier 2 is what Tier 1 becomes once a second developer, and a second
-capability, join the picture. Tier 3 is what Tier 2 becomes once that one
-team's own service becomes one of several departments' services inside a
-real organization -- `examples/team-service/`'s own "project" concept is
-exactly `examples/enterprise-platform/`'s `projectsData`, just no longer
-the only capability in the room. Each tier keeps the mechanisms the
-previous tier earned and adds only what its own scale genuinely needs, not
-a checklist of remaining features.
+Tier 4 is not the next chapter of that story. It takes the evidence file any of the others produces and shows what can be built outside the package: an explorer drawn with a devDependency renderer, every standards export, and the end-to-end test of the data-flow analysis.
+
+The fifth project, [`nextjs-app/`](https://github.com/MaverickCER/data-cap/tree/main/examples/nextjs-app), is a framework integration, described [below](#framework-integration).
 
 ## Not an ORM
 
-Every one of these three examples talks to something real underneath it --
-a simulated fetch in Tiers 1-2, a real MongoDB/HTTP/SSE service in Tier 3.
-None of that is what data-cap *is*. data-cap has no query language, no
-schema migration story, and no opinion about your database -- it sits
-**above** whatever you already use to move data, describing the contract
-your application code actually depends on:
+Each example talks to something underneath: a simulated fetch in Tiers 1 and 2, a MongoDB, HTTP and SSE service in Tier 3. None of that is what `data-cap` is. `data-cap` has no query language, no schema migrations and no opinion about your database. It sits above whatever moves your data and describes the contract your code depends on:
 
 ```text
         ┌─────────────────────────────────────────┐
@@ -80,47 +48,31 @@ your application code actually depends on:
         └─────────────┘└─────────────┘└─────────────┘
 ```
 
-Swap Tier 3's MongoDB for Postgres, or its native SSE for Socket.IO (see
-[`test/integration/subscriptions/socket-io-subscription/`](https://github.com/MaverickCER/data-cap/tree/main/test/integration/subscriptions/socket-io-subscription)),
-and not one line of any `*.capability.ts` file changes -- every example's
-own `src/server/`/backend module is deliberately isolated for exactly this
-reason (see each example's own README). Reading these examples as "how do I
-fetch data" undersells them; the actual subject is the declared contract
-above the fetch, and what that contract makes provable.
+The same layers as a list, top to bottom:
 
-## Generated documentation, not synthetic goldens
+1. What `data-cap` is: fields, getters, mutators, subscriptions and `documentData()`, the declared contract and its governance.
+2. What sits underneath, and can be swapped: fetch or REST (Tiers 1 and 2), MongoDB with Mongoose (Tier 3), and SSE or Socket.IO for real-time updates (Tier 3).
 
-Every example commits real, `data-cap`-generated documentation --
-`docs/DATA.md`, `docs/OWNERSHIP.md`, `docs/flow/*.mmd`, `docs/data.evidence.json`
-(the composed `EvidenceModel`, ADR 0050/0054 -- the same one everything else
-is a projection of), and (Tier 3 only) `reports/data-handling-record.md`/
-`audit-prep.md`, which read that same evidence model directly rather than
-re-deriving it -- alongside its source. Two independent, complementary
-regression signals, per example:
+Swap Tier 3's MongoDB for Postgres, or its SSE for Socket.IO (see [`test/integration/subscriptions/socket-io-subscription/`](https://github.com/MaverickCER/data-cap/tree/main/test/integration/subscriptions/socket-io-subscription)). No `*.capability.ts` file changes. Each example keeps its backend in its own module for this reason. The subject of these examples is the declared contract above the fetch, and what it lets a tool check.
+
+## Generated documentation, committed next to the source
+
+Every example commits documentation `data-cap` generated: `docs/DATA.md`, `docs/OWNERSHIP.md`, `docs/flow/*.mmd` and `docs/data.evidence.json`. The evidence file is the composed `EvidenceModel` that everything else projects from ([ADR 0054](https://github.com/MaverickCER/data-cap/blob/main/specs/decisions/0054-evidence-model-as-orchestrator-backbone.md)). Tier 3 also commits `reports/data-handling-record.md` and `audit-prep.md`, which read that same model.
+
+Each example gives two separate regression signals:
 
 ```sh
-npm start   # real node:assert/strict checks against the actual built package
-npm run check  # verifies the committed docs/reports above match a fresh generation
+npm start      # node:assert/strict checks against the built package
+npm run check  # the committed docs and reports match a fresh generation
 ```
 
-`npm start`'s own assertions catch a behavioral regression that trips an
-`assert`; `npm run check` catches a *silent* change to what data-cap itself
-generates -- an endpoint's `handling` quietly dropped, a field's
-consumption status quietly flipping -- that wouldn't otherwise trip
-anything. When you intentionally change observed behavior, regenerate every
-installed example's committed output with:
+`npm start` catches a behaviour change that trips an assertion. `npm run check` catches a quiet change in what `data-cap` generates, such as a dropped `handling` or a field's consumption status flipping. When you change observed behaviour on purpose, regenerate every installed example's output:
 
 ```sh
 npm run examples:update-golden
 ```
 
-This is a human-invoked step, deliberately **not** part of `npm run
-verify`/CI -- review the diff before committing it. The same script also
-regenerates every `test/integration/` fixture's golden `output.json`
-(those 16 mechanism-level fixtures are a different, synthetic-summary
-convention on purpose -- see `test/integration/README.md` -- since they
-exist to prove one mechanism in isolation, not to model a realistic,
-reader-facing generated-docs workflow).
+A person runs this, and reviews the diff before committing. It is not part of `npm run verify` or CI. The same script regenerates each `test/integration/` fixture's `output.json`. Those fixtures use a synthetic summary on purpose ([`test/integration/README.md`](https://github.com/MaverickCER/data-cap/blob/main/test/integration/README.md)), because each checks one mechanism in isolation.
 
 ## Running one yourself
 
@@ -132,35 +84,26 @@ npm install
 npm start
 ```
 
+`npm start` exits 0 and its last line is `<name>: all assertions passed`; the Next.js example starts a server instead. `npm run check` exits 0 when the committed `docs/` matches a fresh run, and 1 with a list of stale files when it does not. Each example's README lists its own commands and the line to look for.
+
+CI's `examples` job runs `npm ci` and `npm run typecheck` in Tiers 1 to 4. `test/examples/` then runs `npm start` and `npm run check` in each, and also `npm test` in `flow-explorer`. In `nextjs-app` it runs `npm run build`. That job does not block a merge.
+
 ## Client vs. server
 
-data-cap is framework- and environment-independent -- the same `buildData`/
-`createDataStore` pair (or the batteries-included `createData`) runs
-identically in a browser tab talking to a REST API and in a Node server
-process talking to a database. `application/` and `team-service/` are
-**Client**-side (in-memory-simulated network); `enterprise-platform/` is a
-real, running **Server** with a real embedded MongoDB, because Tier 3's
-point is specifically to show data-cap operating inside a full service, not
-another simulated fetch.
+`data-cap` does not depend on a framework or environment. The same `buildData` and `createDataStore` pair, or `createData`, runs in a browser talking to a REST API and in a Node server talking to a database. `application/` and `team-service/` are client-side, with a simulated network. `enterprise-platform/` is a running server with an embedded MongoDB, because Tier 3 shows `data-cap` inside a full service.
 
 ## Index
 
 | Example | Side | Demonstrates |
 | --- | --- | --- |
-| [`application`](https://github.com/MaverickCER/data-cap/tree/main/examples/application) | Client | The batteries-included `createData` (`data-cap/runtime`) -- fields/getters/mutators/subscriptions declared together via a shared, type-checked schema; dedup, optimistic mutation + `withRetry`, request cancellation, caching |
-| [`team-service`](https://github.com/MaverickCER/data-cap/tree/main/examples/team-service) | Client | Capability-per-file ownership; `projectData` composing `memberData` directly for a real, proven cross-capability dependency; `assignmentsData` independently duplicating the same endpoint, caught by `DUPLICATE_ENDPOINT_ACROSS_CAPABILITIES`; identity-stable array reconciliation via `createDataStore` |
-| [`enterprise-platform`](https://github.com/MaverickCER/data-cap/tree/main/examples/enterprise-platform) | Server | Atlas -- a real TanStack Start + MongoDB/Mongoose service with three independently-owned capabilities (`identityData`/`projectsData`/`billingData`), declared per-endpoint `handling` (plaintext/masked/redacted/hashed/encrypted) feeding a real field-lifecycle table, and two generated reports (`data-handling-record`, `audit-prep`) plus a real `--strict-docs`/`--strict-flow` CI guard proven against a synthetic gap |
+| [`application`](https://github.com/MaverickCER/data-cap/tree/main/examples/application) | Client | `createData` with fields, getters, mutators and subscriptions in one type-checked schema shared with `documentData`; dedup, an optimistic mutation with `withRetry`, cancellation and caching. |
+| [`team-service`](https://github.com/MaverickCER/data-cap/tree/main/examples/team-service) | Client | One file per capability; `projectData` composing `memberData`, a dependency the scan records; `assignmentsData` duplicating the same endpoint, reported as `DUPLICATE_ENDPOINT_ACROSS_CAPABILITIES`; identity-stable array reconciliation with `createDataStore`. |
+| [`enterprise-platform`](https://github.com/MaverickCER/data-cap/tree/main/examples/enterprise-platform) | Server | Atlas: a TanStack Start and MongoDB service with three separately owned capabilities. Declared per-endpoint `handling` feeds a field-lifecycle table; two reports (`data-handling-record`, `audit-prep`); a `--strict-docs` and `--strict-flow` CI guard tested on a synthetic gap. |
+| [`flow-explorer`](https://github.com/MaverickCER/data-cap/tree/main/examples/flow-explorer) | Both | One evidence file projected into an interactive explorer and every standards export, with a comparison of two revisions. |
+| [`nextjs-app`](https://github.com/MaverickCER/data-cap/tree/main/examples/nextjs-app) | Both | `createData` on the client of a Next.js app, behind a server-side user and admin authorization boundary. |
 
-See [`test/integration/README.md`](https://github.com/MaverickCER/data-cap/blob/main/test/integration/README.md) for the
-16 mechanism-level fixtures, and each example's own README for its full
-walkthrough.
+[`test/integration/README.md`](https://github.com/MaverickCER/data-cap/blob/main/test/integration/README.md) describes the mechanism-level fixtures. Each example's own README has its full walkthrough.
 
 ## Framework integration
 
-[**nextjs-app**](https://github.com/MaverickCER/data-cap/tree/main/examples/nextjs-app) — a deliberately minimal Next.js todo app, not a fourth tier in the
-table above. Where the three tiers grow one work-management system from an individual developer's
-project to an organization's, this one proves `data-cap`'s client-side `createData()` capability
-works correctly inside a real Next.js app, wired to a real server-side user/admin authorization
-boundary — and documents two real bugs (both the same root cause: Turbopack code-splitting a module
-with module-level state into multiple independently-evaluated copies) found and fixed while
-building it. See its own README.
+[**nextjs-app**](https://github.com/MaverickCER/data-cap/tree/main/examples/nextjs-app) is a minimal Next.js todo app, not a tier in the story above. It runs `data-cap`'s client-side `createData()` inside a real Next.js app, wired to a server-side user and admin authorization boundary. It also documents two bugs found while building it. Both had one cause: Turbopack splits a module with module-level state into several independently evaluated copies. See its README.

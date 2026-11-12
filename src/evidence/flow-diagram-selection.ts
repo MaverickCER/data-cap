@@ -36,6 +36,7 @@ export interface DiagramSelection {
   readonly missingField?: string
 }
 
+/** The part of the Evidence Model a flow diagram reads: the flow and the policy results. */
 export type DiagramInput = Pick<EvidenceModel, "flow" | "policy">
 
 function byId(a: { readonly id: string }, b: { readonly id: string }): number {

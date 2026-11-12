@@ -1,102 +1,77 @@
 # Contributing to data-cap
 
+You want a change merged and released without surprises. This covers setup, the checks your change must pass, and how it reaches npm.
+
 ## Development setup
 
 ```bash
 git clone https://github.com/maverickcer/data-cap.git
 cd data-cap
-npm run setup   # install, build, regenerate the schema, and install the git hooks
+npm run setup   # install, build, regenerate the schemas, and install the git hooks
 ```
 
-`npm run setup` installs the shared git hooks (`internal-package-contract install-hooks`):
-pre-commit runs the contract for the checks a change can reach, pre-push runs it without the
-slow analyses, and commit-msg checks the Conventional Commit format. CI is still the gate;
-the hooks are the same gate, earlier.
+`npm run setup` installs the shared git hooks (`internal-package-contract install-hooks`). When installed, they run most of CI's checks earlier:
 
-There is one local pre-flight script that runs what CI's `verify` and `lint` jobs run (the
-`contract` job runs `npm run contract` on top of it):
+| Hook       | Runs                                              |
+| ---------- | ------------------------------------------------- |
+| pre-commit | The contract, for the checks the change can reach |
+| pre-push   | The contract without the slow analyses            |
+| commit-msg | The Conventional Commits format check             |
+
+The hooks are optional; CI is the gate. The branch ruleset requires the `contract` and `lint` checks.
+
+`npm run verify` runs locally what CI spreads over `lint` and `verify`, plus the README example check (skipped unless `examples/application` is installed):
 
 ```bash
-npm run verify   # typecheck, lint, format, build, schema, coverage, size, ambient and isolation checks
+npm run verify   # typecheck, lint, format, build, schemas, coverage, size, ambient and isolation checks, README example, API report
 ```
 
-Run it before opening a pull request. Individual steps are also available on
-their own: `npm run typecheck`, `npm run build`, `npm test` / `npm run
-test:watch`, `npm run test:coverage`, `npm run lint`, `npm run size`.
+Run it before you open a pull request. Single steps are `npm run typecheck`, `npm run build`, `npm test`, `npm run test:watch`, `npm run test:coverage`, `npm run lint` and `npm run size`. `npm run contract` runs the full `internal-package-contract` gate, mutation testing included.
 
-Each directory under `examples/` is its own, separately-installed npm
-project (`file:../..` against this repo's own build) — the root `npm run
-verify` does not install or run them. To work on one:
+Each directory under `examples/` is its own npm project, installed from `file:../..`. The root `npm run verify` does not install or run them. To work on one:
 
 ```bash
-npm run build   # from the repo root, first
+npm run build      # from the repository root, first
 cd examples/<name>
 npm install
-npm start        # runs its real assertions + writes output.json
+npm start          # runs the example's assertions
 npm run typecheck
 ```
 
-If you intentionally changed observed behavior, regenerate every installed
-example's golden from the repo root with `npm run examples:update-golden`
-and review the diff before committing it — see
-[`examples/README.md`](examples/README.md).
+If you changed observed behaviour on purpose, regenerate the examples' committed output from the root with `npm run examples:update-golden`. Review that diff before you commit it ([`examples/README.md`](examples/README.md)).
 
 ## Making a change
 
 1. Branch from `main`.
-2. Make your change. If it touches a documented, user-facing behavior
-   (anything covered by [`VERSIONING.md`](VERSIONING.md)'s "stable" tier),
-   check whether it's breaking, additive, or a fix — this determines the
-   changeset bump type in step 4.
-3. Add or update tests. `npm run test:coverage` must not drop coverage below
-   the thresholds in `vitest.config.ts`. They are fixed floors, raised in
-   review when coverage improves and never lowered to accommodate a drop;
-   nothing raises them automatically. New algorithmically dense pure functions (canonicalization,
-   structural patching/merging, field-ownership resolution) should ship with
-   property-based tests in addition to example-based ones — see
-   `specs/architecture.md`'s "Property-based test obligations" and "Negative
-   guarantees" sections for what's expected.
-4. Run `npx changeset` and describe your change from the consumer's
-   perspective (not "what I changed in the code", but "what changes for
-   someone who installs this package"). Pick `patch`/`minor`/`major`
-   according to [`VERSIONING.md`](VERSIONING.md)'s stable/experimental/private
-   split — a change to something documented as Experimental is never
-   `major`, even if it's breaking.
-5. Open a pull request. CI runs `npm run verify` plus coverage thresholds.
+2. Make the change. If it touches a Stable surface in [`VERSIONING.md`](VERSIONING.md), decide whether it is breaking, additive or a fix.
+3. Add or update tests. `npm run test:coverage` fails below the floors in `vitest.config.ts`. Floors are raised in review when coverage improves and never lowered to fit a drop. A new dense pure function (canonicalization, patching, ownership) also gets property-based tests.
+4. Add a changeset with `npx changeset`, written for someone who installs the package. Pick the bump from VERSIONING.md's tiers; a change to an Experimental surface is never `major`. Before 1.0, write `minor` for a breaking change; a `major` changeset publishes 1.0.0. Without one, a changeset is generated on `main` from your commit messages.
+5. Open a pull request. The `lint`, `verify` and `contract` jobs run the same steps as `npm run verify`, plus the contract and mutation testing. The other jobs (examples, integration fixtures, Bun and Deno, TypeScript and package-manager compatibility, benchmarks) also run but do not block a merge. A failed `benchmark-pr` skips `lint`, `verify` and `contract`, and GitHub counts a skipped required check as passing, so check it by hand. The release still needs a successful `contract` run.
+
+Commit messages follow Conventional Commits; the `Commits` check in `contract` fails otherwise.
 
 ## Adding an Architecture Decision Record (ADR)
 
-`specs/decisions/` records _why_ the project is shaped the way it is, not
-just what it does today — `specs/architecture.md` is the current-state
-summary; ADRs are the reasoning trail. Add one when a change:
+`specs/decisions/` records why the project is shaped the way it is. `specs/architecture.md` is the current-state summary; the ADRs are the reasoning. Add one when a change:
 
-- introduces a new constraint or guarantee an application could come to rely
-  on (e.g. "`DataInfo` is mandatory, never optional or tree-shakeable"),
-- closes off an alternative approach a future contributor might otherwise
-  reintroduce without knowing it was already considered and rejected (e.g.
-  "automatic rollback of failed optimistic mutations" or "array `DataInfo`
-  fully rebuilds on every replacement" — both deliberately rejected), or
-- changes the boundary of what the core/runtime/build/helpers packages are
-  responsible for.
+- adds a constraint an application could rely on, such as "`DataInfo` is mandatory";
+- rules out an approach a later contributor might reintroduce, such as automatic rollback; or
+- moves the boundary of what an entry point is responsible for.
 
-A one-line bug fix or an internal refactor with no observable behavior change
-does not need one.
+A bug fix or a refactor with no observable change does not need one.
 
-**Numbering**: take the next unused integer (check `specs/decisions/` for the
-current highest number — gaps are possible if a numbered decision was
-retroactively backfilled out of order; don't reuse a number even if a file
-for it doesn't exist yet).
+**Numbering:** take the next unused number in `specs/decisions/`. Never reuse a number, even one with no file.
 
-**Structure**:
+Use this structure:
 
 ```markdown
 # NNNN: <short, decision-stated-as-a-sentence title>
 
 ## Status
 
-Accepted. Implemented in `path/to/file.ts`.
-<!-- or: Proposed / Experimental, if the decision ships behind an explicit
-     Experimental label per VERSIONING.md -->
+Proposed.
+<!-- A new decision starts Proposed. Change it to "Accepted. Implemented in
+     `path/to/file.ts`." once the code that implements it is merged. -->
 
 ## Context
 
@@ -117,27 +92,17 @@ limitation.
 
 ## Alternatives considered
 
-Each rejected alternative, and the specific reason it was rejected — not just
+Each rejected alternative, and the specific reason it was rejected: not just
 "more complex," but what concrete problem the complexity would or wouldn't
 have solved.
 ```
 
-Cross-reference the new ADR from `specs/architecture.md`'s decision table if
-it documents a structural boundary, not just a narrower implementation
-choice.
+If the ADR records a structural boundary, link it from `specs/architecture.md`'s decision table.
 
 ## Release process (maintainers)
 
-Releases are fully automated (Changesets + npm OIDC trusted publishing). The
-whole process — the normal flow, first-time trusted-publisher setup, and
-how to recover a failed or wrong publish — lives in
-[`RELEASING.md`](RELEASING.md). Contributors don't run any of it; a change
-ships by merging a PR that carries a changeset.
+Releases use Changesets and npm trusted publishing. After a change merges, a version pull request opens; a person reviews and merges it, and only then does the release publish. [`RELEASING.md`](RELEASING.md) covers the flow, the one-time setup and recovery. Contributors run none of it.
 
 ## Versioning and stability
 
-See [`VERSIONING.md`](VERSIONING.md) for what's covered by semantic
-versioning, what's Experimental, and what's a private implementation detail
-that can change without notice. When in doubt about whether your change is
-breaking, ask in the pull request rather than guessing at the changeset bump
-type.
+[`VERSIONING.md`](VERSIONING.md) says what semver covers, what is Experimental, and what is private. If you are unsure whether a change is breaking, ask in the pull request.

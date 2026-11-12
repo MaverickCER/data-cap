@@ -8,6 +8,15 @@ import {
 } from "../../src/runtime/retry.js"
 
 describe("withRetry", () => {
+  it("makes four calls on a persistent failure when maxAttempts is not given: the first plus 3 retries", async () => {
+    const fn = vi.fn(async () => {
+      throw new Error("always")
+    })
+    const controller = new AbortController()
+    await expect(withRetry(fn, controller.signal, { delayMs: () => 0 })).rejects.toThrow("always")
+    expect(fn).toHaveBeenCalledTimes(4)
+  })
+
   it("returns the result immediately when the first attempt succeeds -- no retry", async () => {
     const fn = vi.fn(async () => "ok")
     const controller = new AbortController()
