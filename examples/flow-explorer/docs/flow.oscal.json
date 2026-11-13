@@ -4,7 +4,7 @@
     "metadata": {
       "title": "Profile service: data-flow assessment",
       "last-modified": "2026-01-01T00:00:00.000Z",
-      "version": "0.9.0",
+      "version": "0.10.0",
       "oscal-version": "1.1.2",
       "remarks": "Machine-generated engineering artifact assembled from statically-provable code facts and author-declared documentation. It can support a security, privacy, or compliance review. It does not itself establish compliance with any standard. Incomplete traces are recorded as unknown, never hidden; an absent flow is not evidence of no flow."
     },
