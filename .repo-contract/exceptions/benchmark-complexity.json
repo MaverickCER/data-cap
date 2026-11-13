@@ -1,0 +1,16 @@
+{
+  "exceptions": [
+    {
+      "id": "benchmark-complexity:performance-runtime:end-to-end:baseline:logarithmic",
+      "version": 2,
+      "justification": "The runtime suite's end-to-end baseline is a plain async function that returns a pre-built array and spreads it into an object, with no data-cap code. Its true cost is constant and sub-microsecond, so its fitted exponent (0.01 at the last release, 0.37 and 0.42 on two runs of this pull request) is timer noise on a different CPU model (EPYC 9V45 against the reference EPYC 7763), not a change in the package.",
+      "ruleBroken": "A benchmark group must not get worse at big-O than at the last release without a human accepting it.",
+      "attempted": "Re-ran the failed job once (exponent 0.42, same flip). Compared the baseline's code against the last release: no source in data-cap is on its path.",
+      "constraint": "The reference results were measured on another CPU model and the baseline is too fast for the growth fit to be stable; the measurement cannot be made stable from inside this repository.",
+      "whyPreferable": "Accepting a named, expiring record for one group that runs no package code is preferable to widening the gate for every group or turning off the complexity-gain check.",
+      "residualRisk": "A real regression in the baseline cannot exist because it runs no data-cap code. The with-package group, which does, stays judged on its own growth class and on the overhead ratio.",
+      "revisitWhen": "The next release records new reference results on the CI runner's CPU model, or internal-package-contract stops judging groups whose fit is not trusted.",
+      "expires": "2027-02-12"
+    }
+  ]
+}
