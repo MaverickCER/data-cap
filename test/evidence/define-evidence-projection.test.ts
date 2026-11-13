@@ -31,7 +31,7 @@ function inventory(capabilities: readonly CapabilityNode[] = []): CapabilityInve
   return { schemaVersion: CAPABILITY_MODEL_SCHEMA_VERSION, capabilities, warnings: [] }
 }
 
-/** Provenance is required (OUT-06) -- a fixed, deterministic stamp every test below shares. */
+/** Provenance is required (OUT-06): a fixed, deterministic stamp every test below shares. */
 function provenance(overrides: Partial<EvidenceProvenance> = {}): EvidenceProvenance {
   return {
     generatedAt: "2026-01-01T00:00:00.000Z",
@@ -129,7 +129,7 @@ describe("defineEvidenceProjection -- .project() provenance", () => {
   it("sorts each field's read paths even when the projector reads them out of order", () => {
     const projection = defineEvidenceProjection<{ mixed: string }>({
       mixed: (evidence) => {
-        // read `provenance` first, then `capability` -- insertion order is the
+        // read `provenance` first, then `capability`: insertion order is the
         // reverse of sorted order.
         const gen = evidence.provenance.generatedAt
         const count = evidence.capability.capabilities.length
@@ -234,7 +234,7 @@ describe("defineEvidenceProjection -- read-only membrane", () => {
 
   it("carries one exact, pinned message on every membrane TypeError", () => {
     expect(readOnlyMembraneError().message).toBe(
-      "EvidenceModel is read-only inside a projector -- a projection must be a pure function of its evidence argument.",
+      "EvidenceModel is read-only inside a projector: a projection must be a pure function of its evidence argument.",
     )
   })
 })

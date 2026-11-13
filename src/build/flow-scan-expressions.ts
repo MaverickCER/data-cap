@@ -189,7 +189,7 @@ export function methods() {
       return [...this.generators].filter(([id]) => ids.includes(id))
     },
 
-    /** `generator.next(x)` hands `x` to the `yield` the generator is stopped at -- any of them, as the scan does not count the calls. */
+    /** `generator.next(x)` hands `x` to the `yield` the generator is stopped at: any of them, as the scan does not count the calls. */
     send(
       this: FlowScan,
       frame: Frame,
@@ -232,7 +232,7 @@ export function methods() {
       return this.unresolved(frame, node, undefined, spans)
     },
 
-    /** The string an expression is for sure -- a literal, or a `const` initialized with one -- for `o[k]`. */
+    /** The string an expression is for sure (a literal, or a `const` initialized with one) for `o[k]`. */
     literalReader(this: FlowScan, frame: Frame): LiteralReader {
       return (expression) => {
         const target = unwrap(expression)
@@ -374,7 +374,7 @@ export function methods() {
     ): void {
       for (const atom of flattenAtoms(val)) {
         const edge = this.emitEntry(frame.fn, atom, node)
-        // Stryker disable next-line ConditionalExpression: equivalent -- `emitEntry` finds no edge only for an atom whose function key was never registered, and every atom's was when it was made.
+        // Stryker disable next-line ConditionalExpression: equivalent: `emitEntry` finds no edge only for an atom whose function key was never registered, and every atom's was when it was made.
         if (edge !== undefined)
           this.edgeTags.push({ via, edge, source: this.location(frame.fn, node), ...flags })
       }

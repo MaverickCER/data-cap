@@ -1,12 +1,12 @@
 /**
  * Evidence-contract tests for `examples/enterprise-platform`'s three
  * consumer-authored report scripts (`reports/evidence-cache.ts`,
- * `reports/data-handling-record.ts`, `reports/audit-prep.ts`) -- API-04.
+ * `reports/data-handling-record.ts`, `reports/audit-prep.ts`): API-04.
  *
  * Until now these had CLI wiring only: `npm run check` runs each script's own
  * `--check` mode and diffs its committed output byte-for-byte. That catches
  * *drift*, but it cannot distinguish "the report changed because the engine
- * improved" from "the report changed because it broke" -- regenerating the
+ * improved" from "the report changed because it broke": regenerating the
  * golden makes both look identical. These tests assert the facts each report
  * exists to establish, so a change that quietly inverts one (a sensitive
  * field dropping out of the data-handling record, a developer's dynamic-access
@@ -15,7 +15,7 @@
  *
  * Pure build-time analysis of this example's own real
  * `src/capabilities/*.capability.ts` declarations: no Mongo, no dev server,
- * no browser -- following env-cap's own
+ * no browser; following env-cap's own
  * `examples/enterprise-platform/evidence/configuration-governance.test.ts`
  * pattern. `main-headless.ts`'s separate assertions cover the running
  * application; these prove the *reports* are right independently of whether
@@ -25,14 +25,14 @@
  * Each report module is loaded through a **non-literal** dynamic import, on
  * purpose. A literal specifier would pull `examples/enterprise-platform`'s
  * sources into the root `tsc` program, and those import
- * `data-cap/build` -- which resolves to the *built* `dist/`.
+ * `data-cap/build`: which resolves to the *built* `dist/`.
  * `npm run verify` runs `typecheck` before `build`, so that would make the
  * root typecheck fail whenever `dist/` is absent or stale, and it would
  * contradict this repo's own stated convention that each example is
  * typechecked by its own `npm run typecheck` in CI, not by the root config
  * (see `tsconfig.json`'s `exclude` comments). The shapes each report is
- * expected to produce are therefore declared right here instead of imported
- * -- which is what a contract test should do anyway: state the contract, and
+ * expected to produce are therefore declared right here instead of imported:
+ * which is what a contract test should do anyway: state the contract, and
  * fail when reality stops matching it.
  */
 import { existsSync } from "node:fs"
@@ -50,7 +50,7 @@ const reportsDir = path.join(examplesRoot, "enterprise-platform/reports")
 // import. Skipping matches every other `test/examples/` file's posture.
 const runnable = isInstalled("enterprise-platform") && existsSync(path.join(repoRoot, "dist/build.js"))
 
-/** The subset of `EvidenceModel` these reports actually consume -- the contract this example depends on, not the full published type. */
+/** The subset of `EvidenceModel` these reports actually consume: the contract this example depends on, not the full published type. */
 interface ExpectedEvidence {
   readonly schemaVersion: number
   readonly provenance: {
@@ -85,7 +85,7 @@ interface ExpectedSourceLocation {
   readonly column: number
 }
 
-/** The eight declared governance properties every data-handling record row restates -- named, so a dropped one is a compile error here rather than a silently-missing table column. */
+/** The eight declared governance properties every data-handling record row restates: named, so a dropped one is a compile error here rather than a silently-missing table column. */
 interface ExpectedDeclaredGovernance {
   readonly owner: string | undefined
   readonly sensitivity: string | undefined
@@ -161,6 +161,7 @@ interface EvidenceCacheModule {
 
 interface DataHandlingRecordModule {
   readonly generateDataHandlingRecord: () => Promise<ExpectedDataHandlingRecord>
+  readonly renderMarkdown: (report: ExpectedDataHandlingRecord) => string
 }
 
 interface AuditModule {
@@ -172,13 +173,14 @@ async function loadReportModule<TModule>(fileName: string): Promise<TModule> {
 }
 
 // One full pipeline run feeds every assertion below. These three reports
-// share a single `EvidenceModel` by design -- that is precisely what
-// `evidence-cache.ts` exists for -- so re-running discovery per test would
+// share a single `EvidenceModel` by design (that is precisely what
+// `evidence-cache.ts` exists for) so re-running discovery per test would
 // be both slow and a weaker test of the sharing.
 let evidence: ExpectedEvidence
 let evidencePath: string
 let cacheEvidenceOption: string
 let record: ExpectedDataHandlingRecord
+let renderRecord: DataHandlingRecordModule["renderMarkdown"]
 let audit: ExpectedAuditReport
 
 describe.skipIf(!runnable)("example: enterprise-platform report scripts", () => {
@@ -191,6 +193,7 @@ describe.skipIf(!runnable)("example: enterprise-platform report scripts", () => 
     evidencePath = cache.EVIDENCE_PATH
     cacheEvidenceOption = cache.COMPUTE_OPTIONS.evidence
     record = await dataHandlingRecordModule.generateDataHandlingRecord()
+    renderRecord = dataHandlingRecordModule.renderMarkdown
     audit = await auditModule.generateAuditPrepReport()
   }, 180000)
 
@@ -248,7 +251,7 @@ describe.skipIf(!runnable)("example: enterprise-platform report scripts", () => 
       expect(evidence.provenance.generatedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/)
       expect(evidence.provenance.toolVersion.length).toBeGreaterThan(0)
       // `commit` is caller-supplied; this example supplies none, and a stated
-      // absence is the honest answer -- never a guessed SHA.
+      // absence is the honest answer: never a guessed SHA.
       expect(evidence.provenance.commit).toBeUndefined()
     })
   })
@@ -288,13 +291,34 @@ describe.skipIf(!runnable)("example: enterprise-platform report scripts", () => 
       expect(invoices?.dynamicAccessCitations[0]).toMatch(
         /^src\/server\/legacy-compliance-sync\.ts:\d+:\d+$/,
       )
-      // A citation is an assertion, never a verification -- nothing here may
+      // A citation is an assertion, never a verification: nothing here may
       // claim the access was proven.
       expect(invoices?.citationIntegrityFindings).toEqual([])
     })
 
+    it("captions a cited field as supported, and as STALE once its integrity check fails this run", () => {
+      expect(renderRecord(record)).toContain("currently supported by its own citation/integrity check")
+      const stale = {
+        ...record,
+        fields: record.fields.map((entry) =>
+          entry.field === "invoices"
+            ? {
+                ...entry,
+                citationIntegrityFindings: [
+                  { code: "STALE_DYNAMIC_ACCESS_CITATION", message: "The cited line moved." },
+                ],
+              }
+            : entry,
+        ),
+      } as ExpectedDataHandlingRecord
+      const markdown = renderRecord(stale)
+      expect(markdown).toContain("its citation/integrity check found it STALE this run")
+      expect(markdown).not.toContain("currently supported by its own citation/integrity check")
+      expect(markdown).toContain("- `STALE_DYNAMIC_ACCESS_CITATION`: The cited line moved.")
+    })
+
     it("resolves an UNcited dynamically-accessed field to indeterminate, disclosing the candidate sites", () => {
-      // `identityData.currentUser` is deliberately NOT cited -- a real,
+      // `identityData.currentUser` is deliberately NOT cited: a real,
       // undisclosed gap this report must surface rather than paper over.
       const currentUser = record.fields.find((f) => f.field === "currentUser")
       expect(currentUser?.consumptionStatus).toBe("indeterminate")
@@ -310,7 +334,7 @@ describe.skipIf(!runnable)("example: enterprise-platform report scripts", () => 
 
     it("resolves a field handed whole to a React component's props (prop-drilled, not a named .fields.<name> read) to indeterminate, never silently 'unconsumed' (ADR 0060)", () => {
       // `projectsData.fields` is passed whole to `ProjectsPanel.tsx` as a
-      // prop (`src/components/ProjectsPanel.tsx`) -- a real, provable
+      // prop (`src/components/ProjectsPanel.tsx`): a real, provable
       // reference this single-file scanner can't attribute to the `projects`
       // field by name, so it's `indeterminate`, not the false "no consumer
       // found" `unconsumed` claim this pass made before ADR 0060.
@@ -325,7 +349,7 @@ describe.skipIf(!runnable)("example: enterprise-platform report scripts", () => 
     it("reports each field's own declared-handling stages, per writing operation", () => {
       const invoices = record.fields.find((f) => f.field === "invoices")
       expect(invoices?.handlingByOperation.length).toBeGreaterThan(0)
-      // Every boundary `invoices` crosses declares encryption -- the fact a
+      // Every boundary `invoices` crosses declares encryption: the fact a
       // dispute reviewer is actually asking about.
       expect(invoices?.handlingByOperation.every((stage) => stage.handling === "encrypted")).toBe(
         true,
@@ -397,7 +421,7 @@ describe.skipIf(!runnable)("example: enterprise-platform report scripts", () => 
           expect(typeof flag).toBe("boolean")
         }
         // Every capability declares an owner; none declares a
-        // capability-level `sensitivity` (it is declared per-field here) --
+        // capability-level `sensitivity` (it is declared per-field here):
         // which proves the matrix reports real per-property presence rather
         // than a blanket `true`.
         expect(row.owner).toBe(true)
@@ -427,7 +451,7 @@ describe.skipIf(!runnable)("example: enterprise-platform report scripts", () => 
         expect(["none", "capability", "field", "operation", "consumer"]).toContain(
           finding.location.kind,
         )
-        // OUT-02: the flat locators are gone -- `location` is the one path a
+        // OUT-02: the flat locators are gone; `location` is the one path a
         // consumer reads, with nothing redundant beside it to drift.
         expect(Object.keys(finding).sort()).toEqual([
           "code",

@@ -1,13 +1,13 @@
 /**
- * OpenAPI-Compatible Schema Artifacts (ADR 0050) -- a reference projection
+ * OpenAPI-Compatible Schema Artifacts (ADR 0050): a reference projection
  * over Capability Model's fields/operations, rendered as OpenAPI 3.1
  * `components.schemas` (OpenAPI 3.1 schemas *are* JSON Schema, so this is
  * genuinely OpenAPI-compatible, not merely OpenAPI-flavored).
  *
- * Deliberately does not fabricate a `paths` section: `data-cap` operations
+ * Deliberately does not fabricate a `paths` section. `data-cap` operations
  * are not HTTP endpoints, and inventing verb/path pairs for them would
  * misrepresent a proven fact (a `writes` shape) as something it isn't (an
- * HTTP contract) -- the same declared-vs-proven discipline this whole
+ * HTTP contract). That is the same declared-vs-proven discipline this whole
  * codebase already applies everywhere else. Each capability's operations
  * are instead attached as an `x-data-cap-operations` vendor extension
  * (OpenAPI's own sanctioned `x-*` mechanism for exactly this situation),
@@ -16,7 +16,7 @@
 
 import type { CapabilityInventory, CapabilityNode, OperationNode } from "./inventory.js"
 
-/** A minimal JSON-Schema-ish type descriptor -- only what can be honestly inferred from a literal default value. `{}` (no `type`) means "unrepresentable/unknown," never a guess. */
+/** A minimal JSON-Schema-ish type descriptor: only what can be honestly inferred from a literal default value. `{}` (no `type`) means "unrepresentable/unknown," never a guess. */
 export type JsonSchemaLike = Record<string, unknown>
 
 function inferSchema(value: unknown): JsonSchemaLike {
@@ -30,7 +30,7 @@ function inferSchema(value: unknown): JsonSchemaLike {
     // falls through to the permissive `{}`, so no length branch is needed.
     return { type: "array", items: inferSchema(value[0]) }
   }
-  // A plain object literal only -- `typeof` alone can't distinguish one from
+  // A plain object literal only: `typeof` alone can't distinguish one from
   // a Map/Set/RegExp/other class instance, none of which are meaningfully
   // representable as a JSON Schema primitive; those fall through to the
   // permissive `{}` below, same as undefined/a function.
@@ -72,7 +72,7 @@ function capabilitySchema(capability: CapabilityNode): JsonSchemaLike {
   }
 }
 
-/** An OpenAPI 3.1 document's `components.schemas` shape -- see this module's own doc comment for what's deliberately not included. */
+/** An OpenAPI 3.1 document's `components.schemas` shape: see this module's own doc comment for what's deliberately not included. */
 export interface OpenApiSchemaArtifact {
   readonly openapi: "3.1.0"
   readonly info: { readonly title: string; readonly version: string }

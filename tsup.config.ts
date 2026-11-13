@@ -5,7 +5,7 @@ import { defineConfig, type Options } from "tsup"
 // Socket.dev supply-chain alert and internal-package-contract's NoMinify check fails the contract
 // on it. The built output ships exactly as esbuild prints it, comments included.
 
-// Read once, here, at build time -- NOT shipped in dist/. Substituted into
+// Read once, here, at build time: NOT shipped in dist/. Substituted into
 // `src/build/package-version.ts` and (transitively) `src/cli/json.ts` via
 // `define` below, so neither reads `package.json` from disk at runtime. See
 // ADR 0058.
@@ -22,15 +22,15 @@ const bundles: Options[] = [
     entry: { index: "src/core/index.ts" },
     format: ["esm", "cjs"],
     // Core has zero external runtime dependencies and never touches Node-only
-    // APIs -- "neutral" keeps it honest: a bundler targeting core for a
+    // APIs: "neutral" keeps it honest: a bundler targeting core for a
     // browser/edge/worker build gets exactly this platform-agnostic output.
     platform: "neutral",
-    // Matches tsconfig.json's target -- Object.hasOwn (ES2022) is load-bearing
+    // Matches tsconfig.json's target: Object.hasOwn (ES2022) is load-bearing
     // for the ownership algorithm and has shipped natively since Node 16.9, well below the >=22 floor.
     target: "es2022",
     dts: false,
     sourcemap: true,
-    // NOT `clean: true` here -- tsup's multi-entry-array execution order/
+    // NOT `clean: true` here: tsup's multi-entry-array execution order/
     // concurrency isn't a documented guarantee, and cleaning from inside one
     // of several entries risks a race against another entry's own writes.
     // `dist/` is cleaned once, deterministically, by `npm run clean` as an
@@ -48,7 +48,7 @@ const bundles: Options[] = [
     treeshake: true,
   },
   {
-    // Separate tsup entries (not just named exports) for cache/retry --
+    // Separate tsup entries (not just named exports) for cache/retry:
     // structural tree-shaking that doesn't depend on a consumer's bundler
     // being sophisticated enough to shake unused named exports (see ADR 29).
     name: "runtime-cache",
@@ -76,7 +76,7 @@ const bundles: Options[] = [
     format: ["esm", "cjs"],
     // helpers/processors.ts's `toBigInt`/`toURL`/`toRegExp` are the only
     // Node-adjacent-looking calls here, and all are real cross-platform
-    // globals (BigInt/URL/RegExp) -- this entry is exactly as isomorphic as
+    // globals (BigInt/URL/RegExp): this entry is exactly as isomorphic as
     // core, so it gets the same "neutral" platform treatment.
     platform: "neutral",
     target: "es2022",
@@ -88,7 +88,7 @@ const bundles: Options[] = [
     name: "build",
     entry: { build: "src/build/index.ts" },
     format: ["esm", "cjs"],
-    // Node-only, dev/CI-only -- uses node:path and the `typescript` compiler
+    // Node-only, dev/CI-only: uses node:path and the `typescript` compiler
     // API, unlike every other entry above. It does NOT import `node:fs`: since
     // ADR 0058 the caller supplies a `BuildFileSystem` capability.
     platform: "node",
@@ -103,7 +103,7 @@ const bundles: Options[] = [
   },
   {
     name: "node",
-    // The `data-cap/node` entry -- the Node-backed
+    // The `data-cap/node` entry: the Node-backed
     // `BuildFileSystem` adapter (`src/cli/filesystem.ts`, re-exported through
     // `src/node/index.ts`). An executable-context entry like `bin` /
     // `./eslint-plugin`: it legitimately bundles `node:fs/promises`, and
@@ -122,7 +122,7 @@ const bundles: Options[] = [
     format: ["esm", "cjs"],
     // Isomorphic by construction: `src/evidence/` imports `EvidenceModel`
     // with `import type` only (fully erased), so nothing from the Node-only
-    // `build` entry -- not `node:fs`, not the TypeScript compiler API --
+    // `build` entry (not `node:fs`, not the TypeScript compiler API)
     // reaches this bundle. "neutral" is what keeps that honest.
     platform: "neutral",
     target: "es2022",
@@ -161,7 +161,7 @@ const bundles: Options[] = [
   {
     name: "cli",
     entry: { "cli/index": "src/cli/index.ts" },
-    // ESM only -- package.json's "type": "module" plus a shebang banner
+    // ESM only: package.json's "type": "module" plus a shebang banner
     // makes this directly executable via npm's `bin` symlink; no CJS
     // consumer needs to `require()` a CLI entry point.
     format: ["esm"],

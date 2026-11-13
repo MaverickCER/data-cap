@@ -1,7 +1,7 @@
 /**
- * Syntactic helpers for the flow pass's redundant-transformation tags (ADR 0075): whether an initializer only
- * derives a value from what it reads (so that a name nothing reads is a derivation nobody uses, not a call whose effect
- * is the point), and how often each name is written in a function.
+ * Syntactic helpers for the flow pass's redundant-transformation tags (ADR 0075). One tells whether an
+ * initializer only derives a value from what it reads. That way, a name nothing reads is a derivation nobody
+ * uses, not a call whose effect is the point. Another counts how often each name is written in a function.
  *
  * No analysis here: they read the syntax tree and nothing else.
  */

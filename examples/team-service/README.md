@@ -16,7 +16,7 @@ Build the package first: `npm run build` at the repository root. Then, in this d
 
 A failed assertion in `npm start` exits 1. `npm run check` exits 1 and lists each stale file.
 
-CI's `examples` job runs `npm run typecheck` here, then `npm start` and `npm run check` through `test/examples/team-service.test.ts`. That job does not block a merge.
+CI's `examples` job runs `npm run typecheck` here, then `npm start` and `npm run check` through `test/examples/team-service.test.ts`. `required` waits for that job, so a failure blocks a merge.
 
 ## Composition that stays analyzable
 

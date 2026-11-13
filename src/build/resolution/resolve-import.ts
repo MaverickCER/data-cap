@@ -20,7 +20,7 @@ import {
  * Deliberately narrow: only handles a direct relative specifier resolving to
  * a real `.ts`/`.tsx` file on disk. Bare/package specifiers, namespace
  * imports, and anything requiring real module resolution (re-export chains,
- * `exports` map lookups, etc.) return `undefined` -- the caller treats that
+ * `exports` map lookups, etc.) return `undefined`: the caller treats that
  * as "couldn't statically link" and warns rather than guesses, the same
  * philosophy `evaluateLiteral` already uses for non-literal expressions.
  *
@@ -45,7 +45,7 @@ async function resolveRelativeImport(
     try {
       if ((await fs.stat(candidate)).isFile()) return candidate
     } catch {
-      // not present (or not readable) -- try the next candidate
+      // Not present (or not readable): try the next candidate.
     }
   }
   return undefined
@@ -53,17 +53,17 @@ async function resolveRelativeImport(
 
 /** Shared inputs threaded through every call to {@link resolveImportSpecifier} for one discovery/link run. */
 export interface ImportResolutionContext {
-  /** The filesystem capability -- `./build` never imports `node:fs` (ADR 0058). */
+  /** The filesystem capability: `./build` never imports `node:fs` (ADR 0058). */
   readonly fs: BuildFileSystem
   /** Absolute path of the project root, used to resolve package specifiers. */
   readonly root: string
-  /** Explicit allowlist -- see the cross-package schema discovery decision (ported from env-cap ADR 0014). Empty/omitted means package resolution never fires, identical to today's behavior. */
+  /** Explicit allowlist: see the cross-package schema discovery decision (ported from env-cap ADR 0014). Empty/omitted means package resolution never fires, identical to today's behavior. */
   readonly packages: readonly string[]
-  /** Memoizes package resolution per specifier across the whole run -- see `resolvePackageImport`'s own doc comment for why. */
+  /** Memoizes package resolution per specifier across the whole run: see `resolvePackageImport`'s own doc comment for why. */
   readonly cache: Map<string, Promise<PackageSchemaResolutionResult>>
-  /** Parsed `tsconfig.json` `paths`/`baseUrl`, or `undefined` when alias resolution found nothing to do or was disabled -- see the tsconfig path-alias decision (ported from env-cap ADR 0023). */
+  /** Parsed `tsconfig.json` `paths`/`baseUrl`, or `undefined` when alias resolution found nothing to do or was disabled: see the tsconfig path-alias decision (ported from env-cap ADR 0023). */
   readonly tsconfigPaths: TsconfigPathsResolution | undefined
-  /** Memoizes alias resolution across the whole run -- see `resolveAliasImport`'s own doc comment for why. Always allocated, even when `tsconfigPaths` is `undefined`, mirroring `cache` above. */
+  /** Memoizes alias resolution across the whole run: see `resolveAliasImport`'s own doc comment for why. Always allocated, even when `tsconfigPaths` is `undefined`, mirroring `cache` above. */
   readonly aliasCache: AliasResolutionCache
 }
 
@@ -74,10 +74,10 @@ export interface ImportResolutionContext {
  * chain at every call site.
  *
  * @remarks
- * Purely a composition point -- no new resolution logic lives here. Tries, in order: the
- * relative resolver (cheap, no `fs.stat` beyond the local filesystem check it already
- * does); tsconfig path-alias resolution (on by default, ported from env-cap ADR 0023) for a bare specifier
- * matching the project's own `tsconfig.json` `paths`/`baseUrl`; then package resolution
+ * Purely a composition point: no new resolution logic lives here. It tries the
+ * relative resolver first (cheap, no `fs.stat` beyond the local filesystem check it already
+ * does). Next comes tsconfig path-alias resolution (on by default, ported from env-cap ADR 0023) for a bare specifier
+ * matching the project's own `tsconfig.json` `paths`/`baseUrl`. Then comes package resolution
  * (ported from env-cap ADR 0014) for a bare specifier matching an allow-listed package name. Alias resolution
  * runs before package resolution because it resolves the consuming project's own local
  * source (already-trusted, no versioning boundary), the same precedence relative

@@ -1,7 +1,7 @@
 /**
- * CycloneDX 1.6 for the Evidence Model's flow (ADR 0070): the data flows a
- * system has, in the vocabulary software-supply-chain tooling already reads,
- * as a pure projection of the one evidence object.
+ * CycloneDX 1.6 for the Evidence Model's flow (ADR 0070). It states the data
+ * flows a system has, in the vocabulary software-supply-chain tooling already
+ * reads, as a pure projection of the one evidence object.
  *
  * CycloneDX has no node for "a function" and none for "a field". It does have
  * `services[].data[]`, which states that a service sends or receives data of a
@@ -12,23 +12,23 @@
  *   `service`;
  * - each **capability-owning component** (the file that declares fields) is a
  *   `service`;
- * - each flow of a field between the two is a `data` entry on both services,
- *   `outbound` where the evidence says the field reaches the boundary,
- *   `inbound` where it says the boundary is the field's source, and `unknown`
- *   where only a runtime observation exists (an observation says the field
- *   was seen at the boundary, not which way it went);
+ * - each flow of a field between the two is a `data` entry on both services.
+ *   It is `outbound` where the evidence says the field reaches the boundary,
+ *   and `inbound` where it says the boundary is the field's source. It is
+ *   `unknown` where only a runtime observation exists (an observation says the
+ *   field was seen at the boundary, not which way it went);
  * - the field's classification is the entry's `classification`, the declaring
  *   capability's owner its `governance`, and the services are linked by
  *   BOM-Link in `source`/`destination`.
  *
- * Status is never blended (ADR 0071). `data` entries have no `properties`, so
- * the status of every flow is stated in its `description` AND as a
- * `data-cap:data-flow` property of the service (JSON, machine-readable), and
- * every service carries `data-cap:status`. A declared, a static and an
+ * Status is never blended (ADR 0071). `data` entries have no `properties`.
+ * So the status of every flow is stated in its `description` AND as a
+ * `data-cap:data-flow` property of the service (JSON, machine-readable).
+ * Every service carries `data-cap:status`. A declared, a static and an
  * observed record of one crossing are three entries. Coverage, policy
- * counts and claim counts are metadata properties; every unknown, violated or
- * indeterminate policy result and every claim that is not simply verified is an
- * annotation, so a consumer that reads only this BOM cannot mistake a partial
+ * counts and claim counts are metadata properties. Every unknown, violated or
+ * indeterminate policy result and every claim whose status is not verified is an
+ * annotation. So a consumer that reads only this BOM cannot mistake a partial
  * analysis for a complete one.
  *
  * Deterministic: `bom-ref`s and the `serialNumber` are derived from the
@@ -198,7 +198,7 @@ function link(serial: string, ref: string): string {
 }
 
 function lookup<V>(map: ReadonlyMap<string, V>, key: string | undefined): V | undefined {
-  // Stryker disable next-line ConditionalExpression: equivalent -- Map.get(undefined) is undefined too; the guard only satisfies the type checker.
+  // Stryker disable next-line ConditionalExpression: equivalent: Map.get(undefined) is undefined too; the guard only satisfies the type checker.
   return key === undefined ? undefined : map.get(key)
 }
 
@@ -523,6 +523,7 @@ function unknownNotes(context: Context): Note[] {
         return field === undefined ? [] : [field.component.ref]
       }) ?? []
     const where = `${unknown.source.file}:${unknown.source.line}:${unknown.source.column}`
+    // A note's text seeds its annotation bom-ref, so this wording stays fixed across releases.
     const detail = unknown.detail === undefined ? "" : ` -- ${unknown.detail}`
     const data =
       unknown.data === undefined || unknown.data.length === 0

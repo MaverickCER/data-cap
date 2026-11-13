@@ -1,6 +1,6 @@
 // Cross-runtime conformance (see CI's `cross-runtime` job): the runtime's
-// core claim is isomorphism -- core/runtime are built with `platform:
-// "neutral"` and never touch Node-only APIs (see tsup.config.ts) -- but
+// core claim is isomorphism (core/runtime are built with `platform:
+// "neutral"` and never touch Node-only APIs (see tsup.config.ts)) but
 // until this file existed, only Node/vitest ever actually ran it.
 //
 // Deliberately imports the *built* dist/index.js and dist/runtime/index.js,
@@ -54,7 +54,7 @@ test("createDataStore commits atomically and suppresses no-op notifications, und
   expect(notifications).toBe(1)
   expect(store.getSnapshot().fields.name).toBe("changed")
 
-  // Same value again -- a true no-op must never notify (see negative-guarantee checklist item 10).
+  // Same value again: a true no-op must never notify (see negative-guarantee checklist item 10).
   store.commitAuthoritative({ name: "changed" }, undefined)
   expect(notifications).toBe(1)
 })

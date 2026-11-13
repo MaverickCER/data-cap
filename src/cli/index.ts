@@ -18,13 +18,13 @@ import { serializeFailure, serializeSuccess, writeJson } from "./json.js"
 
 /**
  * Thin, optional CLI wrapper around `generateDataArtifacts()`. Nothing here
- * is required for library usage -- `generateManifest`/`generateDocumentation`/
+ * is required for library usage: `generateManifest`/`generateDocumentation`/
  * `generateUsage`/`generateFlow`/`generateDataArtifacts` are fully usable as
  * plain imports from npm scripts, bundler plugins, or CI steps without this
  * file.
  */
 
-/** Parsed CLI flags -- see `helpText()` below for what each one means. */
+/** Parsed CLI flags: see `helpText()` below for what each one means. */
 export interface ParsedArgs {
   root?: string
   include: string[]
@@ -68,7 +68,7 @@ export function parseArgs(argv: string[]): ParsedArgs {
     help: false,
   }
 
-  // Flag dispatch tables -- kept inside `parseArgs` (not module-level `const`s)
+  // Flag dispatch tables: kept inside `parseArgs` (not module-level `const`s)
   // so each handler body is a normal, test-attributable value rather than a
   // load-time constant. One branch per *kind* of flag, not one per flag.
   const valueFlags: Readonly<Record<string, (args: ParsedArgs, value: string) => void>> = {
@@ -155,34 +155,35 @@ Commands:
 Where to look:
   --root <path>               Directory to resolve globs from (default: cwd)
   --include <glob>            Discovery glob (repeatable, default: every .ts/.tsx file)
-  --exclude <glob>            Glob to exclude (repeatable)
+  --exclude <glob>            Glob to exclude from discovery (repeatable)
   --package <name>            Also discover a capability from an installed package's "dataCap.schema" field (repeatable)
-  --tsconfig <path>           A tsconfig.json (relative to root) whose paths/baseUrl resolve aliased imports (default: tsconfig.json at root)
+  --tsconfig <path>           The tsconfig.json, relative to the root, whose paths and baseUrl resolve aliased imports
+                              (default: tsconfig.json at root)
   --no-tsconfig               Do not resolve aliased imports
 
 What to analyze:
-  --flow-evidence             Trace each capability field through your functions to where it goes, evaluate the flowPolicy
-                              rules your capabilities declare, and add the result to the Evidence Model
-  --observations <path>       Runtime observations (from data-cap/observe) to add to the Evidence Model and compare with the
-                              static findings: a JSON array of events, or { "events": [...], "skips": [...] } to also
-                              report what the recorder left out
+  --flow-evidence             Trace each field through your functions, evaluate the flowPolicy rules your capabilities
+                              declare, and add the result to the Evidence Model
+  --observations <path>       Runtime observations from data-cap/observe, added to the Evidence Model and compared with
+                              the static findings (a JSON array of events, or { "events": [...], "skips": [...] } to
+                              also report what the recorder left out)
 
 What to write:
   --evidence <path>           Write the Evidence Model as JSON at this path
-  --expiring-within-days <n>  How many days out counts as "expiring soon" (default: 30)
+  --expiring-within-days <n>  How many days out counts as "expiring soon" in the Lifecycle Model (default: 30)
   --json                      Print a machine-readable report instead of text
   --check                     Write nothing; exit 1 if the evidence is stale or missing
 
 What counts as an error:
   --strict                    Treat every warning as an error (info is never one)
-  --strict-docs               ... static findings: ownership, sensitivity, duplication
-  --strict-ownership          ... usage findings: abandoned capabilities, unconsumed owned fields
+  --strict-docs               Treat static warnings as errors: ownership, sensitivity, duplication
+  --strict-ownership          Treat proven usage warnings as errors: abandoned capabilities, unconsumed owned fields
   --rules <path>              A JSON file of rules enforced over the evidence (for example noPolicyViolations, maxUnknowns,
                               requireVerified); exit 1 if any is violated, and a rule whose analysis did not run is a violation
-  --strict-flow               ... data-flow findings: a sensitive field crossing a boundary, flow policies that could not be decided,
-                              fields sent to a client whole or never used (with --flow-evidence)
+  --strict-flow               Treat data-flow warnings as errors: a sensitive field crossing a boundary, flow policies that
+                              could not be decided, fields sent to a client whole or never used (with --flow-evidence)
 
-  --help                      Show this message
+  --help, -h                  Show the help text
 
 The manifest, documentation catalog, ownership report and data-flow diagram are not generated by this CLI. Call
 \`generateManifest\`, \`generateDocumentation\`, \`generateUsage\` and \`generateFlow\` (or \`generateDataArtifacts\`
@@ -222,12 +223,12 @@ export function writeFindings(findings: ReportResult["findings"]): void {
 // no longer ever produces a `location`/`docs`/`ownership`/`flow` value, so
 // `result.manifest`/`result.documentation`/`result.flow` are now
 // unconditionally `undefined` on every real CLI run, and `--ownership`'s own
-// dependency & ownership report is never written to disk by this CLI either
-// -- keeping any of that dead code (or its now-permanently-false `if`
+// dependency & ownership report is never written to disk by this CLI either.
+// Keeping any of that dead code (or its now-permanently-false `if`
 // branches) would be code no CLI-level test could ever legitimately cover.
 // See specs/decisions/0066-cli-restricted-to-runtime-and-evidence-output.md.
 // `generateManifest`/`generateDocumentation`/`generateUsage`/`generateFlow`
-// themselves are unaffected -- see `examples/nextjs-app/scripts/generate-docs`
+// themselves are unaffected: see `examples/nextjs-app/scripts/generate-docs`
 // for the same rendering, now invoked directly as application code instead
 // of through this CLI.
 
@@ -243,7 +244,7 @@ export function writeFlowSummary(evidence: ReportResult["evidence"] | undefined)
       parts.push(`${coverage.functionsUnanalyzed} not fully analyzed`)
     if (coverage.unknowns > 0) parts.push(`${coverage.unknowns} unknown(s)`)
     process.stdout.write(
-      `Flow analysis: ${parts.join(", ")} -- ${coverage.complete ? "complete" : "not complete"}.\n`,
+      `Flow analysis: ${parts.join(", ")}; ${coverage.complete ? "complete" : "not complete"}.\n`,
     )
   }
   if (policy !== undefined) {
@@ -287,7 +288,7 @@ export function writeGenerationSummary(
 ): void {
   if (result.warnings.length > 0) {
     process.stdout.write(
-      `⚠ ${result.warnings.length} unresolved/dropped-capability warning(s) found -- details below. Re-run with --json for a machine-readable report.\n\n`,
+      `⚠ ${result.warnings.length} unresolved/dropped-capability warning(s) found; details below. Re-run with --json for a machine-readable report.\n\n`,
     )
   }
 
@@ -337,10 +338,8 @@ export function writeCheckSummary(
       : `\n${checkResult.stale.length} artifact(s) are stale or missing. Run without --check to regenerate.\n`,
   )
 
-  // --check's own exit code reflects staleness only (see helpText()) -- these
-  // findings (including any --strict*-escalated errors) are surfaced here
-  // purely for visibility, the same way they'd read on a real run, without
-  // changing what --check itself considers a pass/fail.
+  // Printed for visibility only: --check fails on stale artifacts or a violated --rules
+  // verdict, never on these findings, even when --strict* escalates them.
   writeFindings(checkResult.result.findings)
 }
 
@@ -363,11 +362,11 @@ export function resolveOptions(args: ParsedArgs) {
 
   // exactOptionalPropertyTypes: GenerateDataArtifactsOptions declares every
   // one of these as optional-without-explicit-undefined (`include?: T`, not
-  // `include?: T | undefined`) -- omit each key entirely when there's no
+  // `include?: T | undefined`); omit each key entirely when there's no
   // value, rather than ever setting it to `undefined`.
   return {
     // The deliberate injection boundary (ADR 0058): `./build` never imports
-    // `node:fs` -- the CLI, an executable-context entry, constructs the
+    // `node:fs`; the CLI, an executable-context entry, constructs the
     // concrete `node:fs/promises` adapter and hands it in. Mirrors
     // repo-contract's `spawn: crossSpawn, env: process.env`.
     fs: nodeBuildFileSystem,
@@ -381,7 +380,7 @@ export function resolveOptions(args: ParsedArgs) {
     // argument (it's shared with call sites that do want that), which would
     // widen these conditionally-spread values right back to `| undefined`.
     // `location`/`docs`/`ownership`/`flow` are no longer parsed from argv at
-    // all (see ADR 0066) -- `GenerateDataArtifactsOptions` still declares
+    // all (see ADR 0066): `GenerateDataArtifactsOptions` still declares
     // them, for a direct library caller (e.g. `examples/*/scripts/
     // generate-docs/run.ts`), but this CLI itself can never produce a value
     // for any of them.
@@ -397,7 +396,7 @@ export function resolveOptions(args: ParsedArgs) {
 
 /**
  * Reads `--rules`: a JSON document of rules to enforce over the evidence. Every problem is reported at once, by
- * name, before anything is generated -- a misspelled rule must never be a rule that quietly does not run.
+ * name, before anything is generated: a misspelled rule must never be a rule that quietly does not run.
  */
 export async function readRulesFile(file: string): Promise<EvidenceRules> {
   let text: string
@@ -426,7 +425,7 @@ export interface ObservationsInput {
 /**
  * Reads `--observations`: a JSON array of events written from a `data-cap/observe` sink, or an object
  * `{ "events": [...], "skips": [...] }` that also carries `createMemorySink().skips()`. The file is read here, in
- * the CLI -- the build library never opens a file of its own (ADR 0058). Malformed individual events are not
+ * the CLI: the build library never opens a file of its own (ADR 0058). Malformed individual events are not
  * rejected here; the Observation Model counts them as skipped.
  */
 export async function readObservationsInput(file: string): Promise<ObservationsInput> {
@@ -446,7 +445,7 @@ export async function readObservationsInput(file: string): Promise<ObservationsI
     throw new Error(`--observations ${file} is not valid JSON.`)
   }
   if (Array.isArray(parsed)) return { events: parsed as ObservationEvent[], skips: [] }
-  // A JSON primitive has no `events` or `skips` either, so it reads as an object with neither; only `null` has no properties to read.
+  // A JSON primitive has no `events` or `skips` either. So it reads as an object with neither; only `null` has no properties to read.
   const body = parsed !== null ? (parsed as Record<string, unknown>) : {}
   const events = body["events"]
   if (!Array.isArray(events)) {
@@ -505,7 +504,7 @@ export async function runGenerate(args: ParsedArgs, options: CliOptions): Promis
   try {
     result = await generateDataArtifacts(options)
   } catch (error) {
-    if (!args.json) throw error // propagates to main().catch() exactly as before
+    if (!args.json) throw error // Propagates to main().catch() exactly as before.
     writeJson(serializeFailure(error))
     process.exitCode = 1
     return
@@ -530,7 +529,7 @@ export async function main(): Promise<void> {
   const argv = process.argv.slice(2)
 
   // Subcommand dispatch: `init` as the FIRST positional token routes to the
-  // scaffolder. Every existing flag-based invocation is untouched -- no flag
+  // scaffolder. Every existing flag-based invocation is untouched: no flag
   // is reinterpreted as a subcommand, `--help` alone still prints helpText().
   if (argv[0] === "init") {
     process.exitCode = runInitCommand(argv.slice(1))
@@ -574,14 +573,14 @@ export async function main(): Promise<void> {
 }
 
 // Only auto-run when this file is the process entry point, not when a test
-// imports `parseArgs`/`main` directly -- importing this module must never
+// imports `parseArgs`/`main` directly: importing this module must never
 // have the side effect of running the CLI.
 //
 // npm installs `bin` entries as symlinks (e.g. `node_modules/.bin/data-cap`
 // -> `../data-cap/dist/cli/index.js`). Node resolves
 // `import.meta.url` through that symlink to this file's real, on-disk path,
 // but leaves `process.argv[1]` as the symlink path it was actually invoked
-// with -- so comparing the two directly never matches for a real `npx`/`.bin`
+// with. So comparing the two directly never matches for a real `npx`/`.bin`
 // invocation, and the CLI would silently no-op. Resolving `argv[1]` through
 // `realpathSync` first makes the comparison symlink-aware; the try/catch
 // falls back to the unresolved path so this can't itself throw for an

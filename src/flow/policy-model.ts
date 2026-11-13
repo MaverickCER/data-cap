@@ -1,20 +1,20 @@
 /**
- * `data-cap`'s Policy Model (ADR 0070, ADR 0071) -- declared data-flow rules
+ * `data-cap`'s Policy Model (ADR 0070, ADR 0071): declared data-flow rules
  * and their evaluation against the Flow Model. A rule says which fields it
  * applies to (by classification or exact field) and what it requires of
  * every boundary those fields reach: kinds that are forbidden, an allow-list
  * of kinds, and/or a required handling at the crossing.
  *
  * Evaluation never over-claims. A rule that matches no field is reported
- * `indeterminate` (a typo'd rule must not pass silently); a trace that
+ * `indeterminate` (a typo'd rule must not pass silently). A trace that
  * crosses an `unknown` fact adds an `indeterminate` result alongside any
- * other outcome (the real flow may reach further than the graph shows); a
+ * other outcome (the real flow may reach further than the graph shows). A
  * crossing with no declared handling is `indeterminate` against a
  * required-handling rule, never `violated` or `satisfied`. Each result
  * records the weakest epistemic status along its path as its `basis`, so a
  * violation resting on an inferred edge says so.
  *
- * Pure -- no filesystem access. Generalizes `flow-graph.ts`'s single
+ * Pure: no filesystem access. Generalizes `flow-graph.ts`'s single
  * `SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY` check into declared rules.
  */
 
@@ -304,7 +304,7 @@ export function buildPolicyModel(flow: FlowModel, rules: readonly FlowPolicyRule
  * Gathers every active capability's declared `flowPolicy` (ADR 0070) into
  * rules for `buildPolicyModel`. Each rule is scoped to the capability that
  * declared it (`appliesTo.scope` is its file; `appliesTo.field` is qualified
- * with its export name) and its id is namespaced (`exportName/id`), so two
+ * with its export name). Its id is namespaced (`exportName/id`), so two
  * capabilities can reuse a name and a rule can never govern another
  * capability's fields.
  */

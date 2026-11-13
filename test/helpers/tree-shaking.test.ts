@@ -1,23 +1,23 @@
 /**
  * Verifies helpers/index.ts's four exported namespaces
  * (processors/identity/canonicalize/shape) tree-shake independently of one
- * another once bundled by a SECOND, downstream bundler -- the actual bug
+ * another once bundled by a SECOND, downstream bundler: the actual bug
  * class this guards against: tsup/esbuild lowering `export * as x from
  * "./mod.js"` into a namespace-construction call a downstream bundler can't
  * prove side-effect-free (see helpers/index.ts's own module doc comment for
  * why it's built from plain object literals instead). Bundles the BUILT
- * dist/helpers.js (never src/ -- this bug class only manifests post-build),
+ * dist/helpers.js (never src/: this bug class only manifests post-build),
  * skipping gracefully if dist/ hasn't been built yet.
  *
  * `identity` is the one namespace that legitimately depends on
  * `canonicalize` internally (computeItemIdentity calls canonicalize() to
- * encode each key component) -- so an identity-only bundle is expected to
+ * encode each key component): so an identity-only bundle is expected to
  * still include canonicalize's code; only processors/shape are asserted
  * absent there.
  *
  * Deliberately keeps identifiers unminified (`minifyIdentifiers: false`) so
  * each namespace's own top-level function names remain literal, reliable
- * presence/absence markers in the output -- unlike env-cap's equivalent test
+ * presence/absence markers in the output. Unlike env-cap's equivalent test
  * (which matches literal error-message strings, since its processors/
  * validators throw distinctive text on failure), most of data-cap's helpers
  * return `undefined` on unparseable input rather than throwing, so there's

@@ -2,7 +2,7 @@
  * Stable `n0`, `n1`, ... id allocation, keyed by an arbitrary string, for the
  * DOT/Mermaid graph renderers (`graph-export.ts`, `flow-diagram.ts`). The same
  * key always maps to the same id within one allocator; a fresh allocator starts
- * over. Internal -- not re-exported from `./index.js`.
+ * over. Internal: not re-exported from `./index.js`.
  */
 export class NodeIdAllocator {
   private readonly ids = new Map<string, string>()

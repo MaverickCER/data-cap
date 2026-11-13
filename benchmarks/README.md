@@ -1,10 +1,13 @@
 # Benchmarks
 
-This folder is the performance and cost record of the package: what adopting it costs in time and
-money, how each function scales, and where the cost comes from. It is built entirely by
-[`internal-package-contract`](https://github.com/MaverickCER/internal-package-contract): the package
-supplies **what to run** (an input), the contract **stresses it through ten sizes, measures it, checks
-the big-O and prices it**, and writes a **report** and a machine-readable **result** (the output).
+This folder is the performance and cost record of the package. It shows what adopting it costs in
+time and money, how each function scales, and where the cost comes from. It is built entirely by
+[`internal-package-contract`](https://github.com/MaverickCER/internal-package-contract):
+
+- the package supplies **what to run** (an input);
+- the contract **stresses it through ten sizes, measures it, checks the big-O and prices it**;
+- the contract writes a **report** and a machine-readable **result** (the output).
+
 Nothing in this folder implements timing, statistics or reporting.
 
 ## Read first
@@ -26,8 +29,10 @@ The history page on the project website and the pull-request summaries link back
 | [performance-runtime](performance-runtime/BENCHMARKS.md)     | What an application pays at runtime: cold start, `buildData`, the commit paths, getter dispatch, request keys, the coordinator, the cache and retry. | records, getters, calls or capabilities, per function |
 | [performance-buildtime](performance-buildtime/BENCHMARKS.md) | What a pipeline or developer pays to discover, link and generate artifacts for a project.                                                            | capability files                                      |
 
-Two ladders stop short of 10,240 and say why in their report: `withRetry` (it refuses more than 100
-attempts) and the build-time suite (every size writes and links a real project of TypeScript files).
+Two ladders stop short of 10,240 and say why in their report:
+
+- `withRetry`: it refuses more than 100 attempts.
+- The build-time suite: every size writes and links a real project of TypeScript files.
 
 ## Commands
 
@@ -96,8 +101,8 @@ export default defineSuite({
 | `inEndToEnd`                                                            | no       | How often one end-to-end operation calls the function, for the attribution section.           |
 
 `expectedComplexity` is one of `constant`, `logarithmic`, `linear`, `linearithmic`, `quadratic`,
-`exponential-or-worse`. Return a value that depends on the work (the contract keeps it alive so
-nothing is optimized away); return `timed(ms)` only when an operation is timed elsewhere, such as a
+`exponential-or-worse`. Return a value that depends on the work; the contract keeps it alive so
+nothing is optimized away. Return `timed(ms)` only when an operation is timed elsewhere, such as a
 child process.
 
 ## The output: `results.json`
@@ -121,6 +126,6 @@ analysis   complexity      measured class, exponent and notation per group, with
            cost            the typical and largest sizes used for the headline numbers
 ```
 
-Because results are not comparable between machines or runs, history and pull-request summaries look at
-**change over time on comparable hardware** and at **changes in growth class**, never at one absolute
-number. See [READING-BENCHMARKS.md](READING-BENCHMARKS.md).
+History and pull-request summaries look at **change over time on comparable hardware** and at
+**changes in growth class**, never at one absolute number. Results are not comparable between
+machines or runs. See [READING-BENCHMARKS.md](READING-BENCHMARKS.md).

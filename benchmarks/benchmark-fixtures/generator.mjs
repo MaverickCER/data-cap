@@ -1,4 +1,4 @@
-// Deterministic fixture generation -- a pure function of tier/index, zero
+// Deterministic fixture generation: a pure function of tier/index, zero
 // Math.random()/timestamps anywhere below. `FIXTURE_SEED:
 // "deterministic-index-v1"` names this strategy explicitly; `GENERATOR_VERSION`
 // bumps only when generation semantics intentionally change, so a
@@ -9,24 +9,24 @@
 // scale"):
 //
 // - Item-count fixtures (generateRecord/generateRecords/
-//   capabilitySchemaFields/realisticParams) -- in-memory only, consumed
+//   capabilitySchemaFields/realisticParams); in-memory only, consumed
 //   directly by performance-runtime's in-process benchmarks. Never written
 //   to disk.
-// - Runtime capability-count fixtures (generateRuntimeCapabilityFixtures)
-//   -- plain `.mjs`, trivial identity processors and no validators, written
+// - Runtime capability-count fixtures (generateRuntimeCapabilityFixtures):
+//   plain `.mjs`, trivial identity processors and no validators, written
 //   to disk for cold-start's child process to import. See
 //   ../performance-runtime/README.md's "Runtime fixture design" for why
 //   trivial, not realistic, execute functions: an application-supplied
 //   processor/execute's own cost belongs to the application, not to
 //   data-cap's architecture, and mixing it in would make a regression here
 //   ambiguous between "data-cap got slower" and "the fixture got slower."
-// - Build-time capability-count fixtures (generateBuildtimeFixtures) --
+// - Build-time capability-count fixtures (generateBuildtimeFixtures);
 //   realistic `.ts` source text (literal schemas, varied field/getter/
 //   mutator shapes, real `documentData()` calls), mirroring
 //   examples/enterprise-platform/src/capabilities/projects.capability.ts.
 //   AST-parsing cost genuinely depends on source-text volume and variety,
 //   and build tooling never executes a discovered file (never `import()`/
-//   `eval()` -- see src/build/parse.ts), so realism here costs nothing at
+//   `eval()`: see src/build/parse.ts), so realism here costs nothing at
 //   measurement time.
 
 import fs from "node:fs/promises"
@@ -60,7 +60,7 @@ function isoFromIndex(index) {
   return new Date(EPOCH_MS + index * 86_400_000).toISOString()
 }
 
-/** One realistic record -- ~12 fields including a nested `owner` sub-object and a `tags` array, closer to a real API resource (an order, a ticket, a contact) than a scalar env var. Pure function of `index`. */
+/** One realistic record: ~12 fields including a nested `owner` sub-object and a `tags` array, closer to a real API resource (an order, a ticket, a contact) than a scalar env var. Pure function of `index`. */
 export function generateRecord(index) {
   return {
     id: `rec-${String(index)}`,
@@ -86,12 +86,12 @@ export function generateRecord(index) {
   }
 }
 
-/** `count` fresh records -- a new array and new record objects every call, even for the same `count` (see ../README.md's "fresh references" note on why that matters for commit benchmarks). */
+/** `count` fresh records: a new array and new record objects every call, even for the same `count` (see ../README.md's "fresh references" note on why that matters for commit benchmarks). */
 export function generateRecords(count) {
   return Array.from({ length: count }, (_, index) => generateRecord(index))
 }
 
-/** A realistic capability's full field breadth -- one large collection field (`items`) alongside small metadata/filter/pagination/permission fields a real table-view capability actually declares. `itemCount: 0` is what a real app's cold-start `createData` call looks like -- the collection arrives later, via a getter. */
+/** A realistic capability's full field breadth: one large collection field (`items`) alongside small metadata/filter/pagination/permission fields a real table-view capability actually declares. `itemCount: 0` is what a real app's cold-start `createData` call looks like: the collection arrives later, via a getter. */
 export function capabilitySchemaFields(itemCount) {
   return {
     items: generateRecords(itemCount),
@@ -104,7 +104,7 @@ export function capabilitySchemaFields(itemCount) {
   }
 }
 
-/** A realistic, small getter/mutator `params` object -- what `canonicalize`/`coordinator.dedupe` actually key on in real usage, never a whole record or collection. */
+/** A realistic, small getter/mutator `params` object: what `canonicalize`/`coordinator.dedupe` actually key on in real usage, never a whole record or collection. */
 export function realisticParams(index = 0) {
   return {
     filter: {
@@ -146,10 +146,10 @@ function renderRuntimeCapability(index) {
 
 /**
  * Writes `<outputDir>/capability-<n>.mjs` (plain JS, trivial identity
- * processors, no validators -- see "Runtime fixture design" above) plus a
- * barrel `index.mjs` re-exporting every capability, so a single `import()`
+ * processors, no validators; see "Runtime fixture design" above) plus a
+ * barrel `index.mjs` re-exporting every capability. A single `import()`
  * of the barrel triggers every capability's `createData()` call as a
- * module-evaluation side effect -- mirroring a real app importing its whole
+ * module-evaluation side effect, mirroring a real app importing its whole
  * capability set at once.
  */
 export async function generateRuntimeCapabilityFixtures({ tierName, count, outputDir }) {
@@ -267,7 +267,7 @@ documentData(schema${n}, {
 
 /**
  * Writes `<outputDir>/capability-<n>/capability.ts` for `count` capability
- * files -- realistic literal schemas, varied by index (owner, department,
+ * files: realistic literal schemas, varied by index (owner, department,
  * residency, endpoint URL) so no two files are byte-identical, avoiding a
  * wall of spurious structural-duplication findings during `artifacts`.
  */

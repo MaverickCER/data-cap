@@ -1,9 +1,9 @@
 /**
  * Graphviz DOT for the data-flow graph (ADR 0070): a static, diffable,
  * renderer-independent picture of the one Evidence Model. Every status is
- * stated in the edge's text as well as drawn in colour and line style;
- * anything the analysis could not follow is a visible node, and a graph that
- * is not complete says so on its own title; an edge of a violated policy is
+ * stated in the edge's text as well as drawn in colour and line style.
+ * Anything the analysis could not follow is a visible node, and a graph that
+ * is not complete says so on its own title. An edge of a violated policy is
  * drawn thick and red.
  */
 
@@ -74,7 +74,7 @@ export function renderFlowDot(
     return `// ${flowEvidenceDisclaimer()}\ndigraph "data-flow" {\n  label="No field named ${escape(selection.missingField)} in this evidence";\n}\n`
   }
 
-  // Keyed by `string | undefined` so an unknown with no subject simply finds no node.
+  // Keyed by `string | undefined` so an unknown with no subject finds no node.
   const ids = new Map<string | undefined, string>()
   const assign = (key: string): string => {
     const existing = ids.get(key)
@@ -91,7 +91,7 @@ export function renderFlowDot(
     `  labelloc=t;`,
   ]
   lines.push(
-    `  label="Data flow -- ${selection.complete ? "complete" : "NOT complete: parts could not be followed, so a missing flow is not proof of absence"}";`,
+    `  label="Data flow: ${selection.complete ? "complete" : "NOT complete (parts could not be followed, so a missing flow is not proof of absence)"}";`,
   )
   lines.push("  node [fontname=Helvetica];", "  edge [fontname=Helvetica];")
 

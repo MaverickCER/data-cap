@@ -12,7 +12,7 @@ export interface User {
   role: "user" | "admin"
 }
 
-// Deliberately in-memory -- this example exists to prove the user/admin
+// Deliberately in-memory: this example exists to prove the user/admin
 // authorization model around Todo data, not to demonstrate a real
 // persistence layer.
 export const users: readonly User[] = [
@@ -48,7 +48,7 @@ export function findUser(id: string): User | undefined {
   return users.find((user) => user.id === id)
 }
 
-/** A user's own todos only -- the default, ownership-respecting view. */
+/** A user's own todos only: the default, ownership-respecting view. */
 export function listOwnTodos(userId: string): Todo[] {
   return [...todos.values()]
     .filter((todo) => todo.userId === userId)
@@ -56,7 +56,7 @@ export function listOwnTodos(userId: string): Todo[] {
 }
 
 /**
- * Every todo, regardless of owner -- callable only from the route handler's
+ * Every todo, regardless of owner: callable only from the route handler's
  * explicit-admin-authorization branch (see route.ts's `?all=true` handling).
  * Named separately from `listOwnTodos`, never a mode flag on one function, so
  * the privilege escalation is visible at every call site instead of hiding
@@ -78,7 +78,7 @@ export function addTodo(userId: string, title: string): Todo {
   return todo
 }
 
-/** Toggles a todo -- only if `actor` owns it, or `actor` is an admin. Returns undefined for "not found" or "not authorized" alike, never distinguishing the two to a non-owner (see route.ts). */
+/** Toggles a todo: only if `actor` owns it, or `actor` is an admin. Returns undefined for "not found" or "not authorized" alike, never distinguishing the two to a non-owner (see route.ts). */
 export function toggleTodo(actor: User, id: string): Todo | undefined {
   const todo = todos.get(id)
   if (!todo) return undefined
@@ -88,7 +88,7 @@ export function toggleTodo(actor: User, id: string): Todo | undefined {
   return updated
 }
 
-/** Deletes a todo -- only if `actor` owns it, or `actor` is an admin. */
+/** Deletes a todo: only if `actor` owns it, or `actor` is an admin. */
 export function deleteTodo(actor: User, id: string): boolean {
   const todo = todos.get(id)
   if (!todo) return false

@@ -4,7 +4,7 @@
 //
 //   1. The build-time scanner (`data-cap/build`) runs from BOTH its ESM and CJS entry
 //      points. TypeScript 7 ships no programmatic compiler API, so under a 7 root the scanner has to
-//      fall back to the bundled `@typescript/typescript6` (src/build/typescript.ts) -- the case no
+//      fall back to the bundled `@typescript/typescript6` (src/build/typescript.ts): the case no
 //      unit test can reach, because it needs a real TypeScript 7 root in `node_modules`.
 //   2. The shipped `.d.ts` files type-check in a consumer under `moduleResolution: nodenext`,
 //      `strict` and full library checking (no `skipLibCheck`), every entry point but `./eslint-plugin`

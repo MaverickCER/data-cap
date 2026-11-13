@@ -16,8 +16,8 @@ import { nodeBuildFs } from "../support/build-filesystem.js"
 /**
  * The flow pass at the size of a real application: ~600 modules, ~3000 functions, chains of wrapper functions, run
  * through the real pipeline (`computeDataArtifacts` with `flowEvidence`, which calls `scanFlow`, builds the Flow Model
- * and evaluates the declared policy). The budgets are generous on purpose -- this proves the cost is bounded and grows
- * linearly, not that this machine is fast -- and the limits the scanner has (call depth, step budget) are proven to
+ * and evaluates the declared policy). The budgets are generous on purpose (this proves the cost is bounded and grows
+ * linearly, not that this machine is fast) and the limits the scanner has (call depth, step budget) are proven to
  * surface as explicit unknowns rather than as a smaller graph that looks complete.
  */
 const roots: string[] = []

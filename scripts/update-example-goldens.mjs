@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 // Regenerates real, committed golden output from a fresh run. Deliberately
-// NOT part of `npm run verify`/CI -- for a real code change, this stays a
+// NOT part of `npm run verify`/CI: for a real code change, this stays a
 // human-invoked "I intentionally changed the observed behavior, here's the
 // new golden" step, so a regression can never get silently re-goldened. See
 // examples/README.md.
 //
 // It IS invoked automatically by `npm run version` (`changeset version &&
-// examples:update-golden`), immediately after Changesets bumps the version --
+// examples:update-golden`), immediately after Changesets bumps the version;
 // safe specifically because a version-bump commit is, by Changesets' own
 // contract, never bundled with unrelated source changes: the only content
 // that can differ is package.json/CHANGELOG.md plus whatever these goldens
@@ -17,7 +17,7 @@
 // FIXTURES are the 16 real-mechanism regression fixtures relocated into
 // `test/integration/` (see this session's three-tier restructuring). Same
 // `npm start` step either way (real `node:assert/strict` checks), but only
-// FIXTURES additionally golden-compare a synthetic `output.json` summary --
+// FIXTURES additionally golden-compare a synthetic `output.json` summary:
 // FLAGSHIPS instead golden-compare data-cap's own real, generated
 // documentation (REPORT_CONFIGS below), since a reader-facing example
 // showing a made-up JSON summary next to its own source is confusing and
@@ -56,10 +56,10 @@ const FIXTURES = [
 ]
 
 // Projects whose `docs/` subdirectory is a committed, real-generator-output
-// behavioral spec -- see specs/generated-artifacts.md and each project's own
+// behavioral spec: see specs/generated-artifacts.md and each project's own
 // README "Generated reports" section for what these actually demonstrate. A
 // project not listed here has no committed `docs/` output. Regenerated via
-// each project's own `npm run docs` script -- `data-cap --location`/`--docs`/
+// each project's own `npm run docs` script: `data-cap --location`/`--docs`/
 // `--ownership`/`--flow` are no longer CLI flags this script can pass
 // directly (see specs/decisions/0066-cli-restricted-to-runtime-and-evidence-output.md);
 // each listed project's own `docs` script now composes a real
@@ -76,13 +76,13 @@ const DOCS_PROJECTS = new Set([
 
 // `enterprise-platform` also has two hand-written report generators
 // (`reports/data-handling-record.ts`/`audit-prep.ts`) outside the CLI's own
-// docs/ownership/flow generation -- `npm run reports` regenerates both.
+// docs/ownership/flow generation: `npm run reports` regenerates both.
 const EXTRA_GOLDEN_SCRIPTS = {
   "enterprise-platform": ["reports"],
 }
 
 // A project whose dependencies are not installed cannot be regenerated, and skipping it would leave its
-// committed output at the previous version -- exactly what `npm run version` runs this to prevent (the
+// committed output at the previous version: exactly what `npm run version` runs this to prevent (the
 // release workflow installs only the root's dependencies, so every project reaches here uninstalled).
 // Install it instead, and let a failed install stop the run.
 function ensureInstalled(name, projectDir) {
@@ -116,9 +116,7 @@ function updateGolden(name, projectDir, { writesOutputJson }) {
 
   if (!DOCS_PROJECTS.has(name)) return
   if (!existsSync(cliDist)) {
-    console.log(
-      `[skip] ${name}: docs/ (dist/cli/index.js not built -- run \`npm run build\` first)`,
-    )
+    console.log(`[skip] ${name}: docs/ (dist/cli/index.js not built; run \`npm run build\` first)`)
     return
   }
 

@@ -186,7 +186,7 @@ describe("buildOscalAssessmentResults exact output", () => {
                     "target-id": "C-1_obj",
                     "type": "objective-id",
                   },
-                  "title": "contradicted -- C-1",
+                  "title": "contradicted: C-1",
                   "uuid": "2d8d73e7-e7af-5fed-ab01-3a46f729b531",
                 },
                 {
@@ -208,7 +208,7 @@ describe("buildOscalAssessmentResults exact output", () => {
                     "target-id": "C-4_obj",
                     "type": "objective-id",
                   },
-                  "title": "corroborated -- C-4",
+                  "title": "corroborated: C-4",
                   "uuid": "390e958e-91cf-50be-89cf-bbe773d46d21",
                 },
                 {
@@ -222,7 +222,7 @@ describe("buildOscalAssessmentResults exact output", () => {
                     "target-id": "C-4_obj",
                     "type": "objective-id",
                   },
-                  "title": "bare -- C-4",
+                  "title": "bare: C-4",
                   "uuid": "44532a5a-9a91-5357-af28-f71d6410af1d",
                 },
                 {
@@ -241,7 +241,7 @@ describe("buildOscalAssessmentResults exact output", () => {
                     "target-id": "C-1_obj",
                     "type": "objective-id",
                   },
-                  "title": "violated -- C-1",
+                  "title": "violated: C-1",
                   "uuid": "566009dd-026d-5fc6-b630-660afa52d04d",
                 },
                 {
@@ -260,7 +260,7 @@ describe("buildOscalAssessmentResults exact output", () => {
                     "target-id": "C-9_obj",
                     "type": "objective-id",
                   },
-                  "title": "contradicted -- C-9",
+                  "title": "contradicted: C-9",
                   "uuid": "5c6e8e64-33ff-5f11-838f-d8456a7db79b",
                 },
                 {
@@ -279,7 +279,7 @@ describe("buildOscalAssessmentResults exact output", () => {
                     "target-id": "C-2_obj",
                     "type": "objective-id",
                   },
-                  "title": "violated -- C-2",
+                  "title": "violated: C-2",
                   "uuid": "8dd076e7-a1f1-5990-8c9b-6874484d3974",
                 },
                 {
@@ -293,7 +293,7 @@ describe("buildOscalAssessmentResults exact output", () => {
                     "target-id": "C-5_obj",
                     "type": "objective-id",
                   },
-                  "title": "bare -- C-5",
+                  "title": "bare: C-5",
                   "uuid": "e7ea1bd7-a52a-5d03-a81e-95d88be526be",
                 },
                 {
@@ -307,7 +307,7 @@ describe("buildOscalAssessmentResults exact output", () => {
                     "target-id": "C-3_obj",
                     "type": "objective-id",
                   },
-                  "title": "undecided -- C-3",
+                  "title": "undecided: C-3",
                   "uuid": "ea6e96c9-86cf-5808-91ff-2bff4e9a5c44",
                 },
               ],

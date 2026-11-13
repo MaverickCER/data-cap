@@ -6,7 +6,7 @@
 
 # Data Flow Diagram & Security Data-Flow Review
 
-This report cannot trace data *through* a third-party system once it reaches an external-service/api endpoint -- what that system does with it afterward is unknowable to a static scan of one repository. It does not assign a regulatory classification, since that's jurisdiction-specific; record it in a capability's `metadata` instead (see `specs/decisions/0049-capability-metadata-vocabulary.md`).
+This report cannot trace data *through* a third-party system once it reaches an external-service/api endpoint. What that system does with it afterward is unknowable to a static scan of one repository. It does not assign a regulatory classification, since that's jurisdiction-specific; record it in a capability's `metadata` instead (see `specs/decisions/0049-capability-metadata-vocabulary.md`).
 
 ## Security Data-Flow Review
 
@@ -16,19 +16,19 @@ _None._
 
 ### Warnings
 
-- **SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY**: Field "myTasks" on "assignmentsData" is sensitivity "internal" and has a declared endpoint crossing an external-service/api/queue boundary -- verify this is intentional and adequately protected.
-- **SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY**: Field "members" on "memberData" is sensitivity "internal" and has a declared endpoint crossing an external-service/api/queue boundary -- verify this is intentional and adequately protected.
-- **SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY**: Field "project" on "projectData" is sensitivity "internal" and has a declared endpoint crossing an external-service/api/queue boundary -- verify this is intentional and adequately protected.
-- **SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY**: Field "tasks" on "projectData" is sensitivity "internal" and has a declared endpoint crossing an external-service/api/queue boundary -- verify this is intentional and adequately protected.
+- **SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY**: Field "myTasks" on "assignmentsData" is sensitivity "internal" and has a declared endpoint crossing an external-service/api/queue boundary. Verify this is intentional and adequately protected.
+- **SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY**: Field "members" on "memberData" is sensitivity "internal" and has a declared endpoint crossing an external-service/api/queue boundary. Verify this is intentional and adequately protected.
+- **SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY**: Field "project" on "projectData" is sensitivity "internal" and has a declared endpoint crossing an external-service/api/queue boundary. Verify this is intentional and adequately protected.
+- **SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY**: Field "tasks" on "projectData" is sensitivity "internal" and has a declared endpoint crossing an external-service/api/queue boundary. Verify this is intentional and adequately protected.
 
 ### Informational
 
-- **DUPLICATE_ENDPOINT_ACROSS_CAPABILITIES**: Endpoint "https://api.example.com/v1/members" is declared by both "assignmentsData"'s getter "getMyTasks" and "memberData"'s getter "listMembers" -- possibly a duplicate network fetch across independently-declared capabilities; worth a look if that wasn't intentional.
+- **DUPLICATE_ENDPOINT_ACROSS_CAPABILITIES**: Endpoint "https://api.example.com/v1/members" is declared by both "assignmentsData"'s getter "getMyTasks" and "memberData"'s getter "listMembers". It may be a duplicate network fetch across independently-declared capabilities; worth a look if that wasn't intentional.
 
 ## System overview diagram
 
 ```mermaid
-%% System overview -- declared endpoints and proven consumers per capability
+%% System overview: declared endpoints and proven consumers per capability
 flowchart TB
   subgraph boundary["Trust Boundary (proven, in-repo)"]
     n0(["assignmentsData"])

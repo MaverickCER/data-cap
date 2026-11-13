@@ -55,7 +55,7 @@ describe("patchInto", () => {
   })
 
   it("replaces a plain-object branch outright when the patch's value at that position is null / a primitive / an array", () => {
-    // These are the "patch shape doesn't match prev's" fallback -- without it,
+    // These are the "patch shape doesn't match prev's" fallback: without it,
     // the code would try to `Object.keys()` a null/primitive/array as a record.
     expect(patchInto({ nested: { a: 1 } }, { nested: null } as never).nested).toBeNull()
     expect(patchInto({ nested: { a: 1 } }, { nested: "flat" } as never).nested).toBe("flat")
@@ -130,7 +130,7 @@ describe("commitState", () => {
     const next = commitState(prev, { id: "z" }, { id: { status: "success" } })
     expect(next.fields.id).toBe("z")
     expect(next.info.id?.status).toBe("success")
-    // There is no intermediate state to observe -- a single commitState call
+    // There is no intermediate state to observe: a single commitState call
     // produces exactly one atomic result, never a fields-only or info-only step.
   })
 
@@ -156,7 +156,7 @@ describe("deepFreezeNewNodes", () => {
     const container = { reused: alreadyFrozen, fresh: { value: 2 } }
     deepFreezeNewNodes(container)
     expect(Object.isFrozen(container.fresh)).toBe(true)
-    // The pre-frozen branch is untouched (still the same object, still frozen) --
+    // The pre-frozen branch is untouched (still the same object, still frozen):
     // deepFreezeNewNodes returns immediately upon seeing an already-frozen node.
     expect(container.reused).toBe(alreadyFrozen)
   })
@@ -197,7 +197,7 @@ describe("project", () => {
     const withBoth = project(authoritative, [a, b])
     expect(withBoth.fields.count).toBe(2)
 
-    // Simulates operation "a" settling and being removed from pendingTransitions --
+    // Simulates operation "a" settling and being removed from pendingTransitions:
     // no special rollback code runs; the projection is simply recomputed.
     const withOnlyB = project(authoritative, [b])
     expect(withOnlyB.fields.count).toBe(2)
@@ -209,7 +209,7 @@ describe("project", () => {
   it("a later-committed transition's patch is applied on top of an already-projected state, exactly once each -- no invented merge/conflict policy beyond ordinary sequential application", () => {
     const authoritative = makeState()
     const result = project(authoritative, [transition("a", 5), transition("b", 10)])
-    // Last transition in the list wins for the same field -- plain sequential
+    // Last transition in the list wins for the same field: plain sequential
     // fold, nothing more elaborate invented at this layer.
     expect(result.fields.count).toBe(10)
   })

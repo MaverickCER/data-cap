@@ -2,32 +2,32 @@ import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "no
 import path from "node:path"
 
 /**
- * `data-cap init` -- scaffolds a minimal, working data-cap starting point
+ * `data-cap init`: scaffolds a minimal, working data-cap starting point
  * into the current project: one discoverable capability and one
  * artifact-generation script. Nothing more.
  *
  * Deliberately filesystem-only and non-executing, matching this package's
  * own static-analysis discipline (ADR 0002, ADR 0058) and repo-contract's
- * `init`: it reads the consumer's `package.json` (to confirm it's a project
+ * `init`. It reads the consumer's `package.json` (to confirm it's a project
  * and to decide `src/` vs. root placement) and writes new files with
- * exclusive-create -- it never runs a subprocess, never invokes a package
+ * exclusive-create. It never runs a subprocess, never invokes a package
  * manager, never mutates `package.json`, never regenerates an artifact, and
  * never reads the ambient environment. Anything the documented workflow
  * still needs afterwards is printed as a `Next:` step, not performed here.
  * See ADR 0059.
  *
- * `src/cli/**` is the sanctioned place for direct `node:fs` use (ADR 0058) --
- * this file is bundled into the `bin` target, exempt from the
- * the `AmbientCapabilities` check tarball guard exactly as `src/cli/index.ts` is.
+ * `src/cli/**` is the sanctioned place for direct `node:fs` use (ADR 0058):
+ * this file is bundled into the `bin` target. Like `src/cli/index.ts`, it is
+ * exempt from the tarball guard of the `AmbientCapabilities` check.
  */
 
 // The next three are functions, not module-level `const` string templates,
-// deliberately: Stryker's `perTest` coverage analysis can only attribute a
+// deliberately. Stryker's `perTest` coverage analysis can only attribute a
 // mutant to whichever test happens to run first when the module is
 // imported for a top-level constant (it's evaluated once, at module load,
-// not during any specific test) -- confirmed directly (all three survived
+// not during any specific test). Confirmed directly: all three survived
 // mutation testing despite real, passing exact-match tests covering their
-// content). A function's body only runs when called, which per-test
+// content. A function's body only runs when called, which per-test
 // coverage attributes correctly to whichever test actually calls it. Same
 // fix this codebase's own prior mutation-hardening work already applied
 // elsewhere for the identical reason.
@@ -37,25 +37,26 @@ function usage(): string {
 Scaffolds a minimal data-cap starting point into the current directory:
 
   <src>/data.ts            a starter capability (buildData + documentData)
-  scripts/generate-data.mjs a script that generates the manifest + docs artifacts
+  scripts/generate-data.mjs a script that generates the manifest + docs artifacts,
+                           or with --check fails when they are stale
 
 Never overwrites an existing file, never runs anything, never edits
-package.json. Everything else -- generating artifacts, adding getters/
-mutators, reading the snapshot -- is printed as a next step. Run generation
-afterwards with \`node scripts/generate-data.mjs\`.`
+package.json. Everything else (generating artifacts, adding getters/
+mutators, reading the snapshot) is printed as a next step. Run generation
+afterwards with \`node scripts/generate-data.mjs\`, and add \`--check\` in CI.`
 }
 
 function capabilityTemplate(): string {
-  return `// Starter data-cap capability -- expand it: add getters/mutators/subscriptions
+  return `// Starter data-cap capability. Expand it: add getters/mutators/subscriptions
 // (switch to createData from "data-cap/runtime" for the
 // batteries-included operations layer), split into per-capability files, or
 // keep everything here. data-cap discovers every .ts/.tsx file by default.
 //
-// buildData() is pure and synchronous -- fields are the real application data
+// buildData() is pure and synchronous: fields are the real application data
 // shape and are synchronously readable immediately (declared defaults).
 // documentData() is a build-time-only marker feeding the generated docs and
 // ownership/flow reports; it is inert at runtime. Keep both call arguments
-// static literals -- data-cap resolves them by static analysis and never
+// static literals: data-cap resolves them by static analysis and never
 // executes this file.
 import { buildData, documentData } from "data-cap"
 
@@ -82,27 +83,40 @@ documentData(schema, {
 }
 
 function generatorTemplate(): string {
-  return `// Build-time only. Run with \`node scripts/generate-data.mjs\`, or wire it
-// into a package.json script (e.g. "generate:data"). Never imported by app code.
-import { generateDataArtifacts } from "data-cap/build"
+  return `// Build-time only. \`node scripts/generate-data.mjs\` writes the manifest and
+// docs; \`node scripts/generate-data.mjs --check\` writes nothing and exits 1
+// when a committed file is stale, for CI. Never imported by app code.
+import { checkArtifacts, generateDataArtifacts } from "data-cap/build"
 import { nodeBuildFileSystem } from "data-cap/node"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
 
-const result = await generateDataArtifacts({
+const options = {
   fs: nodeBuildFileSystem,
   root,
   location: "src/generated/data.manifest.ts",
   docs: "docs/DATA.md",
   ownership: "docs/DATA-OWNERSHIP.md",
-})
+}
 
-const active = result.manifest?.snapshot.capabilities.length ?? 0
-console.log(\`Discovered \${active} active capability(ies).\`)
-if (result.manifest?.location) console.log(\`Wrote manifest: \${result.manifest.location}\`)
-if (result.documentation?.location) console.log(\`Wrote docs: \${result.documentation.location}\`)
+if (process.argv.includes("--check")) {
+  const { stale } = await checkArtifacts(options)
+  if (stale.length > 0) {
+    const files = stale.map((file) => \`  - \${path.relative(root, path.resolve(root, file))}\`)
+    console.error(\`Stale or missing; run node scripts/generate-data.mjs:\\n\${files.join("\\n")}\`)
+    process.exitCode = 1
+  } else {
+    console.log("The data docs are up to date.")
+  }
+} else {
+  const result = await generateDataArtifacts(options)
+  const active = result.manifest?.snapshot.capabilities.length ?? 0
+  console.log(\`Discovered \${active} active capability(ies).\`)
+  if (result.manifest?.location) console.log(\`Wrote manifest: \${result.manifest.location}\`)
+  if (result.documentation?.location) console.log(\`Wrote docs: \${result.documentation.location}\`)
+}
 `
 }
 
@@ -125,20 +139,20 @@ interface InitReport {
 
 /**
  * Confirms `cwd` is a project (`package.json` present and a JSON object).
- * Throws a message suitable for printing directly on any failure -- every
+ * Throws a message suitable for printing directly on any failure: every
  * such failure is a preflight failure and nothing is written.
  */
 function assertIsProject(cwd: string): void {
   const packageJsonPath = path.join(cwd, "package.json")
   if (!existsSync(packageJsonPath)) {
-    throw new Error(`no package.json found at ${packageJsonPath} -- run \`npm init\` first.`)
+    throw new Error(`no package.json found at ${packageJsonPath}. Run \`npm init\` first.`)
   }
   let parsed: unknown
   try {
     // `readFileSync(path, "")` (the mutant) falls back to returning a
-    // `Buffer` (an empty string isn't a recognized encoding), but
+    // `Buffer` (an empty string isn't a recognized encoding). But
     // `JSON.parse` calls `.toString()` on any non-string input, which
-    // defaults to utf8 for a `Buffer` -- so both encodings produce an
+    // defaults to utf8 for a `Buffer`. So both encodings produce an
     // identical `JSON.parse` result for any file content this function can
     // ever see. Confirmed directly: `JSON.parse(readFileSync(p, ""))` on a
     // real UTF-8 JSON file parses identically to `JSON.parse(readFileSync(p,
@@ -154,7 +168,7 @@ function assertIsProject(cwd: string): void {
   }
 }
 
-/** `src/` if it already exists as a directory, otherwise the project root -- where the starter capability goes. */
+/** `src/` if it already exists as a directory, otherwise the project root: where the starter capability goes. */
 function capabilityDirectory(cwd: string): string {
   const srcDir = path.join(cwd, "src")
   return existsSync(srcDir) && statSync(srcDir).isDirectory() ? srcDir : cwd
@@ -196,9 +210,9 @@ function planTargets(cwd: string): readonly [ScaffoldTarget, ScaffoldTarget] {
 /**
  * Writes `content` to `filePath` only if it doesn't already exist, creating
  * parent directories first. Exclusive-create (`"wx"`) rather than an
- * existsSync-then-write pair -- the two-step form races between the check
+ * existsSync-then-write pair: the two-step form races between the check
  * and the write; `"wx"` makes "don't overwrite" atomic. An existing file is
- * never touched -- the conflict is resolved by skipping, never overwriting.
+ * never touched: the conflict is resolved by skipping, never overwriting.
  */
 function writeIfAbsent(filePath: string, content: string): WriteOutcome {
   mkdirSync(path.dirname(filePath), { recursive: true })
@@ -211,7 +225,7 @@ function writeIfAbsent(filePath: string, content: string): WriteOutcome {
   }
 }
 
-/** Exported for direct unit testing of its exact boolean logic -- the real call site (`writeIfAbsent`) is exercised too, but only for the two outcomes ("skipped" vs. rethrow), not every individual clause of this predicate. */
+/** Exported for direct unit testing of its exact boolean logic: the real call site (`writeIfAbsent`) is exercised too, but only for the two outcomes ("skipped" vs. rethrow), not every individual clause of this predicate. */
 export function isFileExistsError(error: unknown): boolean {
   return (
     typeof error === "object" && error !== null && (error as { code?: unknown }).code === "EEXIST"
@@ -249,16 +263,18 @@ function renderReport(report: InitReport): string {
   lines.push(
     "Next:",
     "  1. Generate the manifest + docs:  node scripts/generate-data.mjs",
-    "  2. Add operations -- switch buildData to createData for the",
+    "  2. In CI, fail on stale docs:     node scripts/generate-data.mjs --check",
+    "  3. Add operations: switch buildData to createData for the",
     "     batteries-included getter/mutator/subscription layer:",
     "",
     '       import { createData } from "data-cap/runtime"',
     "",
-    "  3. Read fields directly (buildData returns a synchronous snapshot):",
-    "     exampleData.fields.example  -- or getSnapshot().fields once on createData",
+    "  4. Read fields directly (buildData returns a synchronous snapshot):",
+    "     exampleData.fields.example  (or getSnapshot().fields once on createData)",
     "",
-    "data-cap init edited no package.json script -- add one if you want, e.g.",
-    '  "generate:data": "node scripts/generate-data.mjs"',
+    "data-cap init edited no package.json script. Add them if you want, e.g.",
+    '  "generate:data": "node scripts/generate-data.mjs",',
+    '  "check:data": "node scripts/generate-data.mjs --check"',
   )
 
   return lines.join("\n")
@@ -268,11 +284,11 @@ function renderReport(report: InitReport): string {
  * `data-cap init` entry. Returns the process exit code; never calls
  * `process.exit`. `rest` is argv already sliced past the `init` token.
  * @param cwd - Where to scaffold into. Defaults to `process.cwd()` for real
- * CLI use; a caller (a test, in practice) can pass an explicit directory
- * instead of relying on `process.chdir()` -- which, unlike this parameter,
+ * CLI use. A caller (a test, in practice) can pass an explicit directory
+ * instead of relying on `process.chdir()`, which, unlike this parameter,
  * genuinely cannot be used from a `worker_threads`-pooled test runner (Node
- * itself throws `process.chdir() is not supported in workers`), the same
- * capability-injection reasoning ADR 0058 already applies to filesystem
+ * itself throws `process.chdir() is not supported in workers`). This is the
+ * same capability-injection reasoning ADR 0058 already applies to filesystem
  * access here.
  */
 export function runInitCommand(rest: readonly string[], cwd: string = process.cwd()): number {

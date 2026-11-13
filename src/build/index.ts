@@ -1,5 +1,13 @@
+/**
+ * `data-cap/build` (Node only): reads capability files without running them, and generates the
+ * manifest, documentation catalog, ownership report and Evidence Model. `generateDataArtifacts`
+ * writes them; `checkArtifacts` reports which are stale.
+ *
+ * @packageDocumentation
+ */
+
 // The filesystem capability every public options object below carries as a
-// required `fs` field -- `./build` never imports `node:fs` (ADR 0058). The
+// required `fs` field: `./build` never imports `node:fs` (ADR 0058). The
 // `data-cap` CLI supplies a concrete adapter over `node:fs/promises`; a
 // consumer running the generators from their own Node build script imports
 // that same adapter from `data-cap/node` (`{ nodeBuildFileSystem }`).
@@ -115,7 +123,7 @@ export type {
   EvidenceProvenance,
 } from "./evidence-model.js"
 // Re-exported from `src/evidence/` (the canonical, isomorphic source) so
-// every existing `data-cap/build` import keeps working -- see
+// every existing `data-cap/build` import keeps working: see
 // `src/evidence/index.ts`.
 export { defineEvidenceProjection } from "../evidence/index.js"
 export type {

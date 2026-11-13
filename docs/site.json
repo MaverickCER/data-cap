@@ -1,16 +1,16 @@
 {
   "siteUrl": "https://maverickcer.github.io/data-cap/",
   "repoUrl": "https://github.com/maverickcer/data-cap",
-  "title": "data-cap: capability-owned data contracts",
-  "description": "Your application's data should have an owner. data-cap declares each piece of application data once, as a capability-owned contract, whatever database, transport, framework or state library sits underneath. It works next to TanStack Query, Redux or plain fetch, not instead of them.",
+  "title": "data-cap: who owns your app's data, and how it may be handled",
+  "description": "Declare who owns your app's data and how it may be handled. Lint and build checks enforce those rules, and the data documentation regenerates from your code, so it never falls behind. data-cap works next to TanStack Query, Redux or plain fetch, not instead of them.",
   "ogImage": "assets/og-image.png",
   "maturity": "data-cap is pre-1.0. Per [VERSIONING.md](https://github.com/maverickcer/data-cap/blob/main/VERSIONING.md), a minor release may still change a Stable API before 1.0, so pin accordingly and read the changelog on every minor upgrade.",
   "hero": {
     "eyebrow": "Data, owned",
-    "heading": "Your application's data should have an owner.",
-    "lede": "Fetching libraries dedupe requests. State libraries give you a store. Neither says which part of your application owns a piece of data, or what its status means to every consumer.",
-    "support": "A capability declares a piece of data with the getters, mutators and subscriptions that touch it. Every consumer reads the same snapshot.",
-    "outcome": "Give every piece of application data one owner and one shared status vocabulary, without replacing your database, transport or state library."
+    "heading": "Declare who owns your app's data and how it may be handled.",
+    "lede": "You declare each piece of data once, in a capability: its fields, and the functions that load, change or watch them. `documentData()` adds its `owner` and each field's sensitivity, purpose, legal basis and retention.",
+    "support": "The ESLint plugin and a build pass check your code against those declarations. The same pass writes the field catalog and ownership report, and the `--check` mode of the script `data-cap init` scaffolds fails CI when a committed copy is stale.",
+    "outcome": "Lint and build checks enforce those rules, and the data documentation regenerates from your code, so it never falls behind."
   },
   "install": {
     "label": "Quick start",
@@ -30,40 +30,40 @@
   "problem": {
     "eyebrow": "Why it exists",
     "heading": "Fetching and state libraries answer different questions.",
-    "lede": "A fetching library dedupes requests, and a state library gives you a store. Neither says which part of the application owns a piece of data. Neither says whether an optimistic value will disagree with other components.",
-    "listLabel": "Where the agreement lives today",
+    "lede": "A fetching library dedupes requests, and a state library gives you a store. Neither says who owns a piece of data or how it may be handled. Neither keeps the page that documents it current.",
+    "listLabel": "Where the answers live today",
     "items": [
-      "each component's own idea of \"loading\"",
-      "each component's own idea of \"stale\"",
-      "each team's optimistic-update logic"
+      "a wiki page about who owns which data",
+      "each component's own idea of \"loading\" and \"stale\"",
+      "a review document that lists where sensitive fields go"
     ],
-    "conclusion": "no single source of truth for what the data's status means",
-    "closing": "data-cap makes the agreement itself the artifact. A capability declares its fields and operations, and every consumer reads the same synchronous snapshot."
+    "conclusion": "none of them is checked against the code",
+    "closing": "data-cap writes those answers down once, in the capability that owns the data. Lint and build checks compare them with the code, and the documentation is generated from it."
   },
   "model": {
     "eyebrow": "How it works",
     "heading": "Full manual control, or batteries included: same primitives.",
-    "lede": "`buildData`, `createDataStore` and `coordinator` are the same Stable primitives `createData` composes. Start wherever matches how much control the capability needs.",
+    "lede": "`buildData`, `createDataStore` and a coordinator from `createCoordinator` are the same Stable primitives `createData` composes. Start wherever matches how much control the capability needs.",
     "flow": [
       "Capability schema",
-      "→ Manual path (Stable): `buildData` · `createDataStore` · `coordinator`, with full control over execution, retry and caching",
+      "→ Manual path (Stable): `buildData` · `createDataStore` · `createCoordinator`, with full control over execution, retry and caching",
       "→ Batteries-included path (Stable): `createData`, with dedup, per-operation status and an optimistic mutation lifecycle",
       "→ A synchronously readable snapshot"
     ],
     "flowDescription": "The same Stable primitives can be composed manually for full control, or used through createData for a batteries-included dedup, status, and optimistic-mutation lifecycle.",
-    "note": "Neither path is the one way: pick per capability. Fields are readable from the moment `buildData()` or `createData()` returns. `info` is on every `DataState`, so consumers never check whether metadata exists."
+    "note": "Neither path is the one way: pick per capability. Fields are readable from the moment `buildData()` or `createData()` returns. `info` is on every `DataState`, so components never check whether metadata exists."
   },
   "demo": {
     "eyebrow": "See it",
     "heading": "Real output from this repository, not a mockup.",
     "intro": "Run against [examples/application](https://github.com/maverickcer/data-cap/tree/main/examples/application) in this repo:",
     "command": "npm run docs",
-    "output": "Wrote evidence model: docs/data.evidence.json\n[generate-docs] wrote src/generated/data.manifest.ts (1 active capability(ies)), docs/DATA.md, docs/OWNERSHIP.md, 4 flow file(s), and docs/data.evidence.json.",
+    "output": "Wrote evidence model: docs/data.evidence.json\n[generate-docs] wrote src/generated/data.manifest.ts (1 active capability(ies)), docs/DATA.md, docs/OWNERSHIP.md, 4 flow file(s), and docs/data.evidence.json.\n\n0 error(s), 2 warning(s), 0 info finding(s):\n  - [warning] [SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY] [taskData] Field \"tasks\" on \"taskData\" is sensitivity \"internal\" and has a declared endpoint crossing an external-service/api/queue boundary. Verify this is intentional and adequately protected.",
     "source": {
       "label": "examples/application",
       "url": "https://github.com/maverickcer/data-cap/tree/main/examples/application"
     },
-    "explanation": "A manifest of every active capability, a documentation catalog, and a dependency and ownership report, derived statically from the example's code. CI's examples job compares this output with a fresh run."
+    "explanation": "A manifest of every active capability, a field catalog, an ownership report and the evidence file, derived statically from the example's code. The warning shows a declared sensitivity and a declared endpoint that disagree; `strictFlow` turns it into an error. CI's examples job compares the README's copy of this output with a fresh run."
   },
   "guarantees": {
     "eyebrow": "What it holds to",
@@ -93,19 +93,19 @@
   "comparison": {
     "eyebrow": "Why not TanStack Query, Redux, or manual fetch-and-state?",
     "heading": "You keep all of them.",
-    "lede": "data-cap does not replace your transport or your store. It adds one capability-owned contract that every consumer reads. A static pass turns that contract into ownership and dependency evidence.",
+    "lede": "data-cap does not replace your transport or your store. It adds one capability per piece of data, naming its owner and how it may be handled, and every component reads it. Lint and build checks compare it with the code.",
     "caption": "Where common approaches stop and data-cap begins",
     "columns": ["Tool", "What it solves", "What it doesn't"],
     "rows": [
       [
         "Manual fetch + `useState`",
         "Gets data on screen",
-        "No shared status vocabulary, no dedup, no optimistic-update contract; every component re-derives its own version"
+        "No shared status values, no dedup, no shared optimistic-update rules; every component re-derives its own version"
       ],
       [
         "TanStack Query",
         "Fetching, caching, request dedup",
-        "Says nothing about mutation-driven data your app owns outside a query, or how two consumers agree on ownership"
+        "Says nothing about mutation-driven data your app owns outside a query, or how two components agree on ownership"
       ],
       [
         "Redux / Zustand / a global store",
@@ -117,7 +117,7 @@
   "adoption": {
     "eyebrow": "Adoption",
     "heading": "From manual control to batteries-included.",
-    "lede": "Most applications start with whichever primitive matches how much control a capability needs: full manual control (`buildData`, `createDataStore`, `coordinator`) or the batteries-included `createData`. Neither is the one way.",
+    "lede": "Most applications start with whichever primitive matches how much control a capability needs: full manual control (`buildData`, `createDataStore`, `createCoordinator`) or the batteries-included `createData`. Neither is the one way.",
     "calloutTitle": "One capability at a time",
     "steps": [
       "Pick the primitive that fits one capability.",
@@ -130,18 +130,19 @@
   },
   "brief": {
     "heading": "A one-page brief for your manager",
-    "oneLine": "data-cap gives every piece of application data one owner and one shared status. Every part of the application then agrees on what the data is doing.",
+    "oneLine": "data-cap records who owns each piece of application data and how it may be handled. Lint and build checks compare that record with the code, and the data documentation is generated from it.",
     "problem": "Different parts of an application each work out their own idea of whether data is loading, stale or changed. They disagree, and nobody owns the answer.",
-    "whatItDoes": "Each piece of data is declared once, with the fields and operations that touch it. Every consumer then reads the same up-to-date snapshot, whichever fetching or state library sits underneath.",
+    "whatItDoes": "Each piece of data is declared once, with its owner, its fields and how each field may be handled. Checks in the editor and in CI compare the declaration with the code, and the documentation is regenerated from it.",
     "whyItMatters": [
-      "Components stop disagreeing about what \"loading\" or \"stale\" means.",
-      "It works alongside the fetching and state libraries a team already uses.",
-      "A generated report shows who owns each piece of data and what depends on it."
+      "Who owns each piece of data, and how it may be handled, is written once and checked against the code.",
+      "The data documentation is regenerated from the code, and a CI check fails when the committed copy is stale.",
+      "It works alongside the fetching and state libraries a team already uses."
     ],
     "whatItCosts": "Adopting it means adding the package and declaring one piece of data at a time. It is free, open source software under the MIT licence, and it replaces no existing library.",
     "whatCouldGoWrong": [
       "Security fixes target the latest 0.x release only, and there is no long-term-support branch before 1.0.",
-      "Ownership is enforced by dropping the write and warning in development, not by throwing. A mistake is reported rather than prevented."
+      "Ownership is enforced by dropping the write and warning in development, not by throwing. A mistake is reported rather than prevented.",
+      "The checks record what the team declared. They do not decide whether a declared purpose or legal basis is lawful."
     ],
     "whatWeAsk": "Agree that one feature trials it for a few weeks, then judge from its ownership report whether to extend it."
   },

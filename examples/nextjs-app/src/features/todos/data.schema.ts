@@ -50,10 +50,10 @@ async function deleteTodoRemote(id: string, all: boolean, signal: AbortSignal): 
 }
 
 // One schema, passed to both createData (the client-side capability) and
-// documentData (its governance metadata) -- not two separately-typed config
+// documentData (its governance metadata): not two separately-typed config
 // objects, matching examples/application's own convention. `todos` is an
 // array field: the ownership/isolation enforcement below is entirely
-// server-side (see ../../app/api/todos/route.ts) -- this client capability
+// server-side (see ../../app/api/todos/route.ts); this client capability
 // only ever sees the slice of data the server already decided this session
 // is allowed to see.
 const todoSchema = {
@@ -62,7 +62,7 @@ const todoSchema = {
   },
   getters: {
     // `all` (default false): the regular own-todos-only view. An admin
-    // passes `{ all: true }` to explicitly request every user's todos --
+    // passes `{ all: true }` to explicitly request every user's todos:
     // see route.ts's identical reasoning for why this is a param, not a
     // silent default.
     getTodos: {
@@ -87,7 +87,7 @@ const todoSchema = {
         toggleTodoRemote(params.id, params.all, signal),
       processor: (result: Todo[]): { todos: Todo[] } => ({ todos: result }),
       writes: { todos: true },
-      // Cast inline (not annotated directly) -- same reason as
+      // Cast inline (not annotated directly): same reason as
       // examples/application's identical pattern: createData's own generic
       // inference would otherwise conflict with a narrower parameter
       // annotation in this contravariant position.

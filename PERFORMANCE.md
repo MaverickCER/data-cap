@@ -5,7 +5,7 @@ You need to know what `data-cap` adds to a bundle or a build. Here are the budge
 ## Two kinds of check
 
 - **Bundle size** is a hard budget per entry point. The `verify` and `contract` jobs fail when an entry is over it.
-- **Runtime and build-time speed** are measured, and raw times are shown but never gated between runs. A run fails only on growth class or on overhead relative to its own baseline. The benchmark job does not block a merge.
+- **Runtime and build-time speed** are measured, and raw times are shown but never gated between runs. A run fails only on growth class or on overhead relative to its own baseline. A benchmark failure fails `contract` and `required`, so it blocks a merge.
 
 ## Bundle size budgets
 
@@ -25,11 +25,11 @@ You need to know what `data-cap` adds to a bundle or a build. Here are the budge
 | `./eslint-plugin` | 999 KB        | Node only, inside ESLint; a ceiling, not a target                                          |
 | CLI (`bin`)       | 999 KB        | Node only; a ceiling, not a target                                                         |
 
-Run `npm run size` for the current sizes. A budget is raised in review, with the reason written next to it in `ci/size-budgets.mjs`.
+Run `npm run size` for the current sizes. A budget is raised in review, with the reason written next to it in `ci/size-budgets.mjs`. `test/docs-budgets.test.ts` fails when this table, or a budget quoted in another document, differs from that file.
 
 `./runtime` holds `createData` instead of a separate entry, because most consumers start with it. An application that uses only `createDataStore` and the coordinator still pays for `createData`'s code. That is a deliberate trade ([ADR 0048](specs/decisions/0048-builddata-createdata-split-and-optional-operations-layer.md)).
 
-The build entry, the ESLint plugin and the CLI are not meant for a browser. `compiler-isolation` fails if a runtime entry can reach the bundled compiler; nothing else checks that build, plugin or CLI code stays out of the runtime bundles.
+The build entry, the ESLint plugin and the CLI are not meant for a browser. `compiler-isolation` fails if a runtime entry can reach the bundled compiler. Nothing else checks that build, plugin or CLI code stays out of the runtime bundles.
 
 ## What the runtime is built to avoid
 
@@ -56,7 +56,7 @@ The `benchmark-pr` job runs both suites on each pull request that touches benchm
 2. its growth class is worse than at the last release, unless `.repo-contract/exceptions/benchmark-complexity.json` records a person's acceptance; or
 3. the package's overhead relative to its own baseline grows past internal-package-contract's default allowance (70% for sub-millisecond work, 50% otherwise), which [`benchmarks/budgets.mjs`](https://github.com/MaverickCER/data-cap/blob/main/benchmarks/budgets.mjs) can override (it overrides nothing today).
 
-A growth class one step off passes. A failed `benchmark-pr` skips `lint`, `verify` and `contract`, and GitHub counts a skipped required check as passing, so check it by hand. The release still needs a successful `contract` run. [READING-BENCHMARKS.md](benchmarks/READING-BENCHMARKS.md) describes the gates in full.
+A growth class one step off passes. A failed `benchmark-pr` skips `lint` and `verify`, and `contract` then fails in its first step, so the merge is blocked. The release still needs a successful `contract` run. [READING-BENCHMARKS.md](benchmarks/READING-BENCHMARKS.md) describes the gates in full.
 
 After a merge, a job measures the merge commit and records the results and a history entry through its own small pull request. Each entry names the commit, pull request and version. It keeps each size's standard deviation, p95 and iteration count, and the processor the run used. The history page at `docs/benchmarks/index.html` is rendered on each deploy and never committed.
 

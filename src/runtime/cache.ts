@@ -1,18 +1,25 @@
 /**
- * An optional, bounded default cache -- for prototyping, small applications,
+ * `data-cap/runtime/cache`: `createDataCache`, an optional bounded cache of whole `DataState`
+ * snapshots. `data-cap/runtime` does not include it.
+ *
+ * @packageDocumentation
+ */
+
+/**
+ * An optional, bounded default cache: for prototyping, small applications,
  * and simple standalone usage. Never required by core or by store.ts.
  *
  * Caches complete `DataState` (`fields` + `info`) as one atomic unit, never
- * `fields` alone and never a raw, unvalidated response -- rehydrating
+ * `fields` alone and never a raw, unvalidated response: rehydrating
  * `fields` without their corresponding `info` would let a consumer see real
  * values while incorrectly believing `status` is unknown/idle. Distinct
  * from execution dedup (`coordinator.ts`'s job: "a request is already in
  * progress"): a cache answers "validated state is already available",
- * dedup answers "don't start a second identical request" -- mechanically
+ * dedup answers "don't start a second identical request"; mechanically
  * separate concerns even when a caller uses both together.
  *
  * Ships as its own `./runtime/cache` entry point (see tsup.config.ts) so a
- * consumer who never imports it pays nothing for it, structurally -- not
+ * consumer who never imports it pays nothing for it, structurally: not
  * merely via named-export tree-shaking.
  */
 
@@ -47,8 +54,8 @@ const DEFAULT_MAX_ENTRIES = 100
  * Creates a bounded, least-recently-used-eviction cache of complete
  * `DataState` snapshots keyed by an opaque string the caller computes (e.g.
  * a canonicalized function-identity + params key, mirroring the
- * coordinator's own dedup key -- computing that key is an integration
- * concern outside this module, which is deliberately keying-scheme-agnostic).
+ * coordinator's own dedup key). Computing that key is an integration
+ * concern outside this module, which is deliberately keying-scheme-agnostic.
  */
 export function createDataCache<TFields>(options: DataCacheOptions = {}): DataCache<TFields> {
   const maxEntries = options.maxEntries ?? DEFAULT_MAX_ENTRIES

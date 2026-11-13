@@ -116,7 +116,7 @@ describe("scanFileForUsage -- field reads", () => {
   })
 
   it("reports a bare .fields reference with no further indexing as an indeterminate reads-field edge (ADR 0060)", () => {
-    // Previously produced zero edges at all -- `.fields` handed whole to
+    // Previously produced zero edges at all: `.fields` handed whole to
     // another binding, a spread, a JSX prop, etc. is a real, provable
     // reference this pass can't attribute to any specific field, not the
     // absence of one (see this module's own header comment).
@@ -167,7 +167,7 @@ describe("scanFileForUsage -- field reads", () => {
   })
 
   it("reports a non-string computed field access as an indeterminate reads-field edge, never silently dropped", () => {
-    // Previously produced zero edges at all -- a field this pass genuinely
+    // Previously produced zero edges at all: a field this pass genuinely
     // can't name is real, uncertain evidence, not the absence of evidence
     // (see this module's own header comment; fixed as part of Part 2A's
     // exact-position work).
@@ -216,7 +216,7 @@ describe("scanFileForUsage -- indeterminate dynamic access", () => {
 })
 
 describe("scanFileForUsage -- escape sites (ADR 0060)", () => {
-  // Before ADR 0060, every one of these produced zero edges -- a capability
+  // Before ADR 0060, every one of these produced zero edges: a capability
   // reference that flows out of this pass's local dataflow analysis is a
   // real, provable read this file cannot attribute to a specific field, not
   // an absence of usage. Reported as `indeterminate`, the same as a
@@ -287,7 +287,7 @@ describe("scanFileForUsage -- escape sites (ADR 0060)", () => {
 
   it("does not escalate a capability reference used only as another expression's element-access key", () => {
     // `userCapability`'s own identity is used as a lookup key here, never
-    // its data -- inert with respect to what this scan tracks.
+    // its data: inert with respect to what this scan tracks.
     const edges = scan(`const x = someArray[userCapability];`, [resolvedMatch("userCapability")])
     expect(edges).toEqual([])
   })
@@ -307,9 +307,9 @@ describe("scanFileForUsage -- escape sites (ADR 0060)", () => {
   })
 
   it("escapes a computed access on a `.getSnapshot()` result, distinct from the result being used as a key elsewhere", () => {
-    // Unlike the previous test (`registry[x.getSnapshot()]` -- the call
+    // Unlike the previous test (`registry[x.getSnapshot()]` (the call
     // result used AS a key, not a read at all), here the call result is the
-    // thing BEING indexed by a computed key -- a real, ambiguous access this
+    // thing BEING indexed by a computed key) a real, ambiguous access this
     // pass can't attribute to a field.
     const edges = scan(`userCapability.getSnapshot()[someKey];`, [resolvedMatch("userCapability")])
     expect(edges).toHaveLength(1)
@@ -334,7 +334,7 @@ describe("scanFileForUsage -- name-position collisions (ADR 0060)", () => {
   // This pass matches identifiers by text alone (ADR 0010): a local binding
   // name can coincidentally recur as some OTHER declaration's own label
   // elsewhere in the file. None of these is ever a reference to the tracked
-  // binding, escaped or otherwise -- see `isNamePosition`'s own doc comment.
+  // binding, escaped or otherwise: see `isNamePosition`'s own doc comment.
 
   it("ignores a same-named object-literal property key", () => {
     expect(scan(`const obj = { getUser: 1 };`, [resolvedMatch("getUser")])).toEqual([])
@@ -447,7 +447,7 @@ describe("scanFileForUsage -- structural edge cases", () => {
 
   it("reports the 1-based column of the access site, not just the line (ADR 0052)", () => {
     const edges = scan(`const x = userCapability.getUser();`, [resolvedMatch("userCapability")])
-    // "const x = " is 10 characters -- the identifier starts at the 11th.
+    // "const x = " is 10 characters: the identifier starts at the 11th.
     expect(edges[0]!.position).toEqual({ line: 1, column: 11 })
   })
 })

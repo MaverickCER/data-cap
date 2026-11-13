@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 import { buildInventory } from "../../src/build/inventory.js"
 import type { DiscoveredCapability, LinkResult } from "../../src/build/link.js"
 
-/** `root` is what `buildInventory` relativizes each capability's `file` against (OUT-01) -- every fixture below declares its files under `/project`. */
+/** `root` is what `buildInventory` relativizes each capability's `file` against (OUT-01): every fixture below declares its files under `/project`. */
 function linkResult(capabilities: readonly DiscoveredCapability[]): LinkResult {
   return { root: "/project", capabilities, warnings: [] }
 }
@@ -63,8 +63,8 @@ describe("buildInventory", () => {
     expect(node.getters).toEqual([])
     expect(node.mutators).toEqual([])
     expect(node.subscriptions).toEqual([])
-    // A fully-unresolved governance value is a real { value, declaredOn } object
-    // -- both keys present -- never a bare {}.
+    // A fully-unresolved governance value is a real { value, declaredOn } object:
+    // both keys present; never a bare {}.
     expect(Object.keys(node.fields[0]!.owner).sort()).toEqual(["declaredOn", "value"])
   })
 

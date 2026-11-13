@@ -1,24 +1,24 @@
 /**
- * Tier 2 -- "How do we make a service's data capabilities composable and
+ * Tier 2: "How do we make a service's data capabilities composable and
  * maintainable?" A small engineering team's project tracker, organized by
  * CAPABILITY, one file per concept (`capabilities/project.capability.ts`,
  * `member.capability.ts`, `assignments.capability.ts`), not one flat
- * `main.ts` -- the domain question shifts from "what mechanisms exist" (Tier
+ * `main.ts`: the domain question shifts from "what mechanisms exist" (Tier
  * 1) to "how do teams own data capabilities instead of scattering data-
  * access knowledge across features."
  *
  * `projectData` composes with `memberData` directly (an ordinary cross-file
- * call, no data-cap primitive involved) to resolve task assignee names --
+ * call, no data-cap primitive involved) to resolve task assignee names,
  * and stays fully analyzable doing it: this example's own generated
  * `docs/OWNERSHIP.md` shows the real, proven `projectData -> memberData`
  * dependency. `assignmentsData`, built by a different team, independently
- * re-declares the SAME `members-api` endpoint instead of composing --
+ * re-declares the SAME `members-api` endpoint instead of composing:
  * exactly what the generated report's `DUPLICATE_ENDPOINT_ACROSS_CAPABILITIES`
  * finding exists to surface for a human to decide about.
  *
  * `runtime/cache`, dedup, optimistic mutation, and `helpers.identity`
  * reconciliation all appear below because THIS app's own story needs them,
- * not as a feature checklist -- see each mechanism's own inline comment for
+ * not as a feature checklist: see each mechanism's own inline comment for
  * exactly what problem it solves here.
  */
 import assert from "node:assert/strict"
@@ -40,7 +40,7 @@ const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout
 // ---------------------------------------------------------------------------
 // The project's own visual task order: tracked directly against
 // createDataStore, reconciled by identity on reorder. `tasks` (on
-// projectData) is an array field -- createData's own per-field commit path
+// projectData) is an array field: createData's own per-field commit path
 // handles the array's VALUE, but never per-item reconciliation *within* it
 // (`info` for an array field is one flat FieldInfo for the whole field, not
 // a per-item map keyed by identity). So "an untouched task keeps its exact
@@ -72,8 +72,8 @@ function commitTaskOrder(nextOrder: readonly Task[], touched: ReadonlySet<string
 // optimistically, and the project's own visual task order gets rearranged.
 // =========================================================================
 
-// -- getProject composes memberData directly -- a real, proven -- //
-// -- cross-capability dependency, not a data-cap primitive. -- //
+// getProject composes memberData directly: a real, proven
+// cross-capability dependency, not a data-cap primitive.
 await projectData.getProject({ id: "project-1" })
 assert.equal(projectData.getSnapshot().fields.project?.name, "Q3 Platform Migration")
 assert.equal(projectData.getSnapshot().fields.tasks.length, 2)
@@ -84,9 +84,9 @@ assert.equal(
 )
 assert.equal(listMembersCallCount, 1, "memberData's own listMembers ran exactly once so far")
 
-// -- A different team's "my tasks" widget independently re-fetches the -- //
-// -- same conceptual member directory -- the duplicate this example's -- //
-// -- own generated report flags, not something main.ts works around. -- //
+// A different team's "my tasks" widget independently re-fetches the
+// same conceptual member directory: the duplicate this example's
+// own generated report flags, not something main.ts works around.
 await assignmentsData.getMyTasks({ memberId: "member-1" })
 assert.equal(assignmentsData.getSnapshot().fields.myTasks[0]?.memberName, "Ada Lovelace")
 assert.equal(
@@ -95,12 +95,12 @@ assert.equal(
   "assignmentsData made its OWN independent members fetch -- never routed through memberData's cache",
 )
 
-// -- memberData's own cache means a direct, later call still doesn't -- //
-// -- re-fetch -- unlike assignmentsData's separate, uncoordinated path. -- //
+// memberData's own cache means a direct, later call still doesn't
+// re-fetch, unlike assignmentsData's separate, uncoordinated path.
 await memberData.listMembers({})
 assert.equal(listMembersCallCount, 1, "a cache hit must never trigger a real fetch")
 
-// -- createTask, composed with the real, shipped withRetry. -- //
+// createTask, composed with the real, shipped withRetry.
 resetCreateTaskAttempts()
 const createController = new AbortController()
 await withRetry(
@@ -110,7 +110,7 @@ await withRetry(
 )
 assert.equal(projectData.getSnapshot().fields.tasks.length, 3)
 
-// -- toggleTask completes optimistically, before the request settles. -- //
+// toggleTask completes optimistically, before the request settles.
 const togglePromise = projectData.toggleTask({ projectId: "project-1", taskId: "task-1" })
 assert.equal(
   projectData.getSnapshot().fields.tasks.find((t) => t.id === "task-1")?.done,
@@ -120,25 +120,25 @@ assert.equal(
 await togglePromise
 assert.equal(projectData.getSnapshot().fields.tasks.find((t) => t.id === "task-1")?.done, true)
 
-// -- assignTask reassigns a task -- another real composition beneficiary: -- //
-// -- the new assignee's name is resolved the same way, through -- //
-// -- memberData, on the very next getProject/mutator response. -- //
+// assignTask reassigns a task (another real composition beneficiary):
+// the new assignee's name is resolved the same way, through
+// memberData, on the very next getProject/mutator response.
 await projectData.assignTask({ projectId: "project-1", taskId: "task-2", memberId: "member-1" })
 assert.equal(
   projectData.getSnapshot().fields.tasks.find((t) => t.id === "task-2")?.assigneeName,
   "Ada Lovelace",
 )
 
-// -- subscription lifecycle -- //
+// subscription lifecycle
 const unsubscribeProject = projectData.subscribeToProject({ id: "project-1" })
 await sleep(15)
 assert.equal(projectData.getSnapshot().info.project?.subscription?.status, "connected")
 unsubscribeProject()
 assert.equal(projectData.getSnapshot().info.project?.subscription?.status, "disconnected")
 
-// -- Reordering the project's own visual task list keeps untouched -- //
-// -- tasks' own info object reference-stable -- reconciled by identity, -- //
-// -- not recomputed from scratch. -- //
+// Reordering the project's own visual task list keeps untouched
+// tasks' own info object reference-stable: reconciled by identity,
+// not recomputed from scratch.
 const initialOrder = projectData.getSnapshot().fields.tasks
 commitTaskOrder(initialOrder, "all")
 const task3Key = identity.computeItemIdentity<Task>(

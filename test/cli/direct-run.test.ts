@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 
 /**
  * Exercises the module-level `if (isDirectRun) { main().catch(...) }` guard
- * at the bottom of src/cli/index.ts -- the only way to hit it from vitest is
+ * at the bottom of src/cli/index.ts: the only way to hit it from vitest is
  * to make a *fresh* import of the module see `process.argv[1]` equal to its
  * own real (symlink-free) on-disk path before the module's top level runs,
  * since `isDirectRun` is computed once, at import time. Isolated into its own
@@ -12,7 +12,7 @@ import { afterEach, describe, expect, it, vi } from "vitest"
  * static `import { main }` bindings the rest of the cli test suite relies on.
  *
  * An unknown flag makes `parseArgs()` throw synchronously inside `main()`,
- * so `main().catch()` fires almost immediately -- fast and deterministic,
+ * so `main().catch()` fires almost immediately: fast and deterministic,
  * no real generation work involved.
  */
 
@@ -71,7 +71,7 @@ describe("module auto-run guard (isDirectRun)", () => {
   })
 
   it("stringifies a non-Error rejection value via String(error), not error.message", async () => {
-    // Every real throw inside src/cli/index.ts is a genuine Error instance --
+    // Every real throw inside src/cli/index.ts is a genuine Error instance:
     // to reach the `String(error)` side of the catch handler's ternary at
     // all, generateDataArtifacts() itself has to be the one to reject with a
     // non-Error value, which only a mock can force.

@@ -221,7 +221,7 @@ describe("parseCapabilityFile -- declarationPosition/fieldPositions (ADR 0052)",
       "/project/user.ts",
       `const shared = { a: "" };\nexport const userCapability = createData({ fields: { ...shared, id } });`,
     )
-    // `id` here is shorthand (`{ id }`, sugar for `{ id: id }`) -- a real,
+    // `id` here is shorthand (`{ id }`, sugar for `{ id: id }`): a real,
     // statically-named field key, distinct from the spread it follows.
     expect(Object.keys(result.createDataCalls[0]!.fieldPositions ?? {})).toEqual(["id"])
   })
@@ -353,7 +353,7 @@ describe("parseCapabilityFile -- buildData()/createData() kind and operation nam
     const call = result.createDataCalls[0]!
     expect(call.kind).toBe("buildData")
     expect(call.fieldsRef.kind).toBe("literal")
-    // buildData never has an operations section -- never populated.
+    // buildData never has an operations section: never populated.
     expect(call.operationNames).toBeUndefined()
   })
 
@@ -419,7 +419,7 @@ describe("parseCapabilityFile -- buildData()/createData() kind and operation nam
       });
       `,
     )
-    // Parsing this file never throws or evaluates the arrow function body --
+    // Parsing this file never throws or evaluates the arrow function body:
     // only its enclosing key name ("getUser") is ever read.
     expect(result.createDataCalls[0]!.operationNames?.getters).toEqual(["getUser"])
   })
@@ -1303,7 +1303,7 @@ describe("extractCapabilityDocs", () => {
 
     it("warns and omits dynamicAccess when it's a resolvable literal that isn't an array (an object)", () => {
       // Distinct from the case above: `evaluateLiteral` succeeds here
-      // (`ok: true`), it just isn't an array -- this exercises the
+      // (`ok: true`), it just isn't an array; this exercises the
       // `Array.isArray` half of `!evaluated.ok || !Array.isArray(...)`
       // independently of the `!evaluated.ok` half.
       const warnings: ParseWarning[] = []
@@ -1528,7 +1528,7 @@ describe("readDataFlowEndpoint (direct)", () => {
       url: undefined,
       handling: undefined,
     })
-    // Exactly the url warning -- `handling` is absent, so it must NOT warn.
+    // Exactly the url warning: `handling` is absent, so it must NOT warn.
     expect(warnings).toHaveLength(1)
     expect(warnings[0]).toContain('non-string "url"')
   })
@@ -1662,7 +1662,7 @@ describe("extractFieldsRef (direct)", () => {
     expect(ref(`createData(schema)`, consts).kind).toBe("literal")
   })
   it("never resolves a non-identifier first argument via a coincidentally-matching localConsts key (e.g. a string literal happens to share .text with a real const name)", () => {
-    // A StringLiteral node also has a `.text` property -- this proves the
+    // A StringLiteral node also has a `.text` property: this proves the
     // identifier-indirection lookup is gated on the node actually BEING an
     // identifier, not merely on "does it have `.text`".
     const consts = new Map<string, ts.Expression>([["schema", exprNode(`{ fields: {} }`)]])
@@ -1815,8 +1815,8 @@ describe("readEndpointsProp / readDynamicAccessCitations (direct)", () => {
 
   it("readDynamicAccessCitations: drops a non-string entry even when it coerces to a citation-shaped string", () => {
     // A single-element array like `["a:1:1"]` stringifies (via
-    // `Array.prototype.toString`) to the citation-shaped string "a:1:1" --
-    // exercising the `typeof entry !== "string"` half of the guard
+    // `Array.prototype.toString`) to the citation-shaped string "a:1:1".
+    // This exercises the `typeof entry !== "string"` half of the guard
     // independently of `isDynamicAccessCitation`'s own regex result, which
     // would otherwise (mis)judge this non-string entry as well-formed.
     const w1: ParseWarning[] = []
@@ -1834,7 +1834,7 @@ describe("collectImportBindings (direct)", () => {
   function importDeclFrom(source: string): ts.ImportDeclaration {
     // Deliberately error-tolerant parsing (no bail on a malformed
     // specifier): the TS parser still produces an ImportDeclaration node
-    // even for `import foo from bar;` (no quotes) -- moduleSpecifier is
+    // even for `import foo from bar;` (no quotes); moduleSpecifier is
     // typed `Expression`, not `StringLiteral`, precisely for this case.
     const sourceFile = ts.createSourceFile(
       "x.ts",

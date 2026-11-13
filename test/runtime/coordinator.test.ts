@@ -60,7 +60,7 @@ describe("coordinator.dedupe", () => {
     const a1 = coordinator.dedupe(execute, { id: "1" }, controller.signal)
     const b = coordinator.dedupe(execute, { id: "2" }, controller.signal)
     // while BOTH are still in flight, a repeat of the first key must reuse a1's
-    // execution -- the second key must not have clobbered the first's entry
+    // execution: the second key must not have clobbered the first's entry
     const a2 = coordinator.dedupe(execute, { id: "1" }, controller.signal)
 
     releaseFirst()
@@ -139,7 +139,7 @@ describe("coordinator.dedupe", () => {
     controllerA.abort(new Error("A gave up"))
     await expect(resultA).rejects.toThrow("A gave up")
 
-    // B never aborted -- the shared execution continues, and B still gets the real result.
+    // B never aborted: the shared execution continues, and B still gets the real result.
     work.resolve("real-result")
     await expect(resultB).resolves.toBe("real-result")
     expect(execute).toHaveBeenCalledTimes(1)
@@ -376,7 +376,7 @@ describe("coordinator.acquireSubscription -- lifecycle matrix", () => {
       "connection failed",
     )
 
-    // No phantom entry was left behind -- a fresh attempt calls subscribeFn again.
+    // No phantom entry was left behind: a fresh attempt calls subscribeFn again.
     const workingSubscribeFn = vi.fn(() => vi.fn())
     coordinator.acquireSubscription(workingSubscribeFn, makeHandlers())
     expect(workingSubscribeFn).toHaveBeenCalledTimes(1)

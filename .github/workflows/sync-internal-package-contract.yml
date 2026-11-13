@@ -7,13 +7,16 @@ on:
     - cron: "43 6 * * *"
   workflow_dispatch:
 
+# Each job grants only what it needs; nothing is granted workflow-wide.
+permissions: {}
+
 jobs:
   sync:
     permissions:
       contents: write
       pull-requests: write
       actions: write
-    uses: MaverickCER/internal-package-contract/.github/workflows/dependency-pin-sync.yml@e5b8d9eeac7d951a5ea0c7c02c2f761087f8148b # v0.18.0
+    uses: MaverickCER/internal-package-contract/.github/workflows/dependency-pin-sync.yml@de11cec0f2cd93bbac00512ba706db3f4bbf5e09 # v0.19.0
     with:
       dependency-name: internal-package-contract
     secrets:

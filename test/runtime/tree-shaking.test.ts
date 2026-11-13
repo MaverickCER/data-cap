@@ -1,7 +1,7 @@
 /**
  * runtime/cache.ts and runtime/retry.ts are separate tsup entries (ADR:
  * "optional runtime features ship as separate tsup entries/exports
- * subpaths, not just named exports") -- structural tree-shaking that
+ * subpaths, not just named exports"); structural tree-shaking that
  * doesn't depend on a consumer's bundler being sophisticated enough to
  * shake unused named exports. Since they're genuinely separate build
  * outputs with no import between them, the guarantee is by construction;

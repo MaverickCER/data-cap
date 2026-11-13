@@ -247,7 +247,7 @@ export function methods() {
       const target = this.functionOf(receiver.callable)
       if (target === undefined) return undefined
       const [self, ...rest] = args
-      // Stryker disable next-line LogicalOperator: equivalent -- the token only has to be unique, and the count of instances at the time already makes it so; which of the two names precedes it changes nothing.
+      // Stryker disable next-line LogicalOperator: equivalent: the token only has to be unique, and the count of instances at the time already makes it so; which of the two names precedes it changes nothing.
       const token = `${target.instance ?? target.key}\u0000bind${this.instances.size}`
       this.instances.set(token, {
         ...target,
@@ -378,7 +378,7 @@ export function methods() {
       })
       if (callbacks.every((fn) => fn === undefined)) return promise
       // What the callbacks do not handle stays rejected.
-      // Stryker disable next-line ConditionalExpression: equivalent -- a rejection with no data adds an empty rejection to the result, which every reader of it treats as none.
+      // Stryker disable next-line ConditionalExpression: equivalent: a rejection with no data adds an empty rejection to the result, which every reader of it treats as none.
       if (name !== "then" || flattenAtoms(rejected).length === 0) return result
       return mergeVals(result, { ...EMPTY_VAL, props: new Map([[rejectedKey(), rejected]]) })
     },
@@ -421,7 +421,7 @@ export function methods() {
         : receiver
     },
 
-    /** Whether the first argument names something that could be a callback (not a literal, not a builtin like `Boolean`) -- and, being here, was not resolved. */
+    /** Whether the first argument names something that could be a callback (not a literal, not a builtin like `Boolean`): and, being here, was not resolved. */
     unresolvedCallback(this: FlowScan, list: readonly TS.Expression[]): boolean {
       const [first] = list
       if (first === undefined) return false
@@ -445,7 +445,7 @@ export function methods() {
       name: string,
     ): Val | undefined {
       const method = this.expr(frame, callee.expression)
-      // Stryker disable next-line ConditionalExpression,LogicalOperator: equivalent -- a call on a capability itself is answered before this point, so a capability here always has its method bound; the two tests only narrow the types.
+      // Stryker disable next-line ConditionalExpression,LogicalOperator: equivalent: a call on a capability itself is answered before this point, so a capability here always has its method bound; the two tests only narrow the types.
       if (method.capability !== undefined && method.boundMethod !== undefined)
         return this.capabilityCall(frame, node, method.capability, method.boundMethod)
       const target = this.resolveCallable(frame, callee.expression)
@@ -461,12 +461,12 @@ export function methods() {
       const site: CallSite = {
         caller: frame,
         site: node,
-        // Stryker disable next-line ConditionalExpression,ArrayDeclaration: equivalent -- the argument list of `apply` is one array that names no variable, so listing it as the arguments changes no write-back.
+        // Stryker disable next-line ConditionalExpression,ArrayDeclaration: equivalent: the argument list of `apply` is one array that names no variable, so listing it as the arguments changes no write-back.
         argExprs: name === "call" ? node.arguments.slice(1) : [],
-        // Stryker disable next-line ConditionalExpression: equivalent -- without a first argument there is nothing to run `this` on, and an undefined receiver reads the same as none.
+        // Stryker disable next-line ConditionalExpression: equivalent: without a first argument there is nothing to run `this` on, and an undefined receiver reads the same as none.
         ...(node.arguments[0] === undefined ? {} : { receiver: node.arguments[0] }),
       }
-      // Stryker disable next-line ConditionalExpression: equivalent -- an undefined `this` reads the same as none.
+      // Stryker disable next-line ConditionalExpression: equivalent: an undefined `this` reads the same as none.
       return this.analyze(site, target, args, self === undefined ? {} : { thisVal: self })
     },
   }

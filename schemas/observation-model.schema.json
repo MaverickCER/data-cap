@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://maverickcer.github.io/data-cap/schema/observation-model.schema.json",
   "title": "data-cap Observation Model",
-  "description": "Canonical, versioned runtime observations: which field names were seen at which boundaries in which scopes -- names and paths only, never values (see ADR 0070, ADR 0072). Generated from src/flow/observation-model.ts's ObservationModel type -- never hand-authored.",
+  "description": "Canonical, versioned runtime observations: which field names were seen at which boundaries in which scopes: names and paths only, never values (see ADR 0070, ADR 0072). Generated from src/flow/observation-model.ts's ObservationModel type. Never hand-authored.",
   "$ref": "#/definitions/ObservationModel",
   "definitions": {
     "ObservationModel": {
@@ -36,7 +36,7 @@
         },
         "skipped": {
           "type": "number",
-          "description": "Events (and skip reports) dropped as malformed -- stated, never silent."
+          "description": "Events (and skip reports) dropped as malformed: stated, never silent."
         },
         "truncations": {
           "type": "array",
@@ -50,7 +50,7 @@
           "items": {
             "type": "string"
           },
-          "description": "The scopes with a truncation, sorted -- a claim built on one cannot be called verified near the cut. Absent when none."
+          "description": "The scopes with a truncation, sorted: a claim built on one cannot be called verified near the cut. Absent when none."
         }
       },
       "required": [
@@ -90,7 +90,7 @@
         },
         "field": {
           "type": "string",
-          "description": "Capability-qualified dotted field path -- the Flow Model's field-node naming."
+          "description": "Capability-qualified dotted field path: the Flow Model's field-node naming."
         },
         "handling": {
           "$ref": "#/definitions/FlowHandling"
@@ -153,7 +153,7 @@
         "computed",
         "internal"
       ],
-      "description": "What kind of boundary a declared data-flow endpoint crosses -- a data store (`database`/`cache`/`storage`/`queue`), an external entity (`api`/`external-service`/`user-input`), or something internal to this codebase (`computed`/`internal`)."
+      "description": "What kind of boundary a declared data-flow endpoint crosses: a data store (`database`/`cache`/`storage`/`queue`), an external entity (`api`/`external-service`/`user-input`), or something internal to this codebase (`computed`/`internal`)."
     },
     "FlowHandling": {
       "type": "string",
@@ -164,7 +164,7 @@
         "hashed",
         "encrypted"
       ],
-      "description": "The declared data-safety state of a value at a boundary crossing -- the vocabulary of `DataFlowEndpoint.handling` and of flow policy rules."
+      "description": "The declared data-safety state of a value at a boundary crossing: the vocabulary of `DataFlowEndpoint.handling` and of flow policy rules."
     },
     "ObservationScopeTimes": {
       "type": "object",

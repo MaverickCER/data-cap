@@ -48,7 +48,7 @@ describe("InferFieldValue", () => {
   })
 
   it("negative: a function-valued field never resolves to a usable type", () => {
-    // Functions are never valid field values (spec: "Functions are never field data") --
+    // Functions are never valid field values (spec: "Functions are never field data");
     // the sound representation of that rejection is `never`, paired with build.ts's
     // runtime throw for the same case (see test/core/build.test.ts).
     expectTypeOf<InferFieldValue<() => void>>().toBeNever()
@@ -57,7 +57,7 @@ describe("InferFieldValue", () => {
 
 describe("InferFields", () => {
   it("infers a complete recursive shape from a fields literal's type, no manual interface required", () => {
-    // Stands in for `typeof someFieldsLiteral` -- exactly what `buildData`'s
+    // Stands in for `typeof someFieldsLiteral`: exactly what `buildData`'s
     // own generic inference sees from an object literal passed to it. A type
     // literal exercises the same recursive machinery without an unused
     // runtime binding this purely type-level test file never executes.

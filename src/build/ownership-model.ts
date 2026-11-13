@@ -1,10 +1,10 @@
 /**
- * `data-cap`'s Ownership Model (ADR 0050) -- the owner ->
+ * `data-cap`'s Ownership Model (ADR 0050): the owner ->
  * {capabilities, fields} matrix, plus the versioned envelope that publishes
  * it as JSON. Field-level `owner` is already resolved with capability-level
  * inheritance by `inventory.ts`, so this module only ever groups, never
- * re-derives ownership itself; and unlike env-cap's own Ownership Model
- * there was no unowned-count bug to fix -- `buildOwnershipMatrix` already
+ * re-derives ownership itself. Unlike env-cap's own Ownership Model, there
+ * was no unowned-count bug to fix: `buildOwnershipMatrix` already
  * itemizes unowned capabilities/fields as real entries.
  *
  * One file, not a `ownership.ts`(raw)/`ownership-model.ts`(versioned) split:
@@ -12,13 +12,13 @@
  * Change, Runtime Contract) each live in a single module that owns both its
  * shape and its schema version, and env-cap's own `ownership-model.ts`
  * follows the same convention. The former two-file split was the odd one
- * out and bought nothing -- `buildOwnershipMatrix` has no consumer that
+ * out and bought nothing: `buildOwnershipMatrix` has no consumer that
  * wants the matrix *without* this module.
  */
 
 import type { CapabilityInventory } from "./inventory.js"
 
-/** Bump only when a reader could misinterpret the shape -- same discipline every other model's schema-version constant already documents. Bumped 1 -> 2 by OUT-01: `OwnershipCapabilityRef.file` is now root-relative, not absolute. */
+/** Bump only when a reader could misinterpret the shape: same discipline every other model's schema-version constant already documents. Bumped 1 -> 2: `OwnershipCapabilityRef.file` is now root-relative, not absolute. */
 export const OWNERSHIP_MODEL_SCHEMA_VERSION = 2
 
 // A function so the label is read when buckets are built, not once at module load (where a change to
@@ -28,7 +28,7 @@ function unowned(): "(unowned)" {
 }
 
 /**
- * Sentinel bucket for a capability/field with no documented owner at any level --
+ * Sentinel bucket for a capability/field with no documented owner at any level:
  * surfaced explicitly rather than silently omitted, so "nobody owns this" is as
  * visible as any real owner.
  */
@@ -36,7 +36,7 @@ export const UNOWNED: "(unowned)" = unowned()
 
 /** Identifies one capability by where it's declared. */
 export interface OwnershipCapabilityRef {
-  /** Root-relative POSIX path of the file declaring this capability -- carried through verbatim from `CapabilityNode.file` (see `display-path.ts`). */
+  /** Root-relative POSIX path of the file declaring this capability: carried through verbatim from `CapabilityNode.file` (see `display-path.ts`). */
   readonly file: string
   /** The binding name the capability is exported as. */
   readonly exportName: string
@@ -50,7 +50,7 @@ export interface OwnershipFieldRef {
   readonly field: readonly string[]
 }
 
-/** One owner's row in the ownership matrix -- every capability and field they're accountable for. */
+/** One owner's row in the ownership matrix: every capability and field they're accountable for. */
 export interface OwnershipMatrixEntry {
   /** The owner's name, or `UNOWNED`. */
   readonly owner: string
@@ -64,7 +64,7 @@ export interface OwnershipMatrixEntry {
 export interface OwnershipModel {
   /** Always `OWNERSHIP_MODEL_SCHEMA_VERSION`. */
   readonly schemaVersion: typeof OWNERSHIP_MODEL_SCHEMA_VERSION
-  /** Every owner's row -- see `buildOwnershipMatrix`. */
+  /** Every owner's row: see `buildOwnershipMatrix`. */
   readonly entries: readonly OwnershipMatrixEntry[]
 }
 

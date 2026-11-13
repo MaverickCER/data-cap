@@ -1,5 +1,9 @@
 # core
 
+The `data-cap` entry: declare a capability's fields with `buildData`, and its documentation with
+`documentData`. It also exports the `DataState` types and the error classes. It imports nothing.
+Tests run it on Node 22 or later, as a bundle with Web globals only, and on Bun and Deno.
+
 ## Classes
 
 ### `abstract` DataCapError
@@ -9,7 +13,7 @@ over `instanceof` for programmatic handling across bundling boundaries
 (mirrors env-cap's own `EnvValidationError`/`EnvNotReadyError` convention).
 
 Invariant: no error here ever embeds a raw or processed field value in its
-message -- only field paths (key names), which are never sensitive.
+message; only field paths (key names), which are never sensitive.
 
 #### Extends
 
@@ -83,7 +87,7 @@ cause?: unknown;
 abstract readonly code: string;
 ```
 
-Stable, programmatic discriminant -- prefer this over `instanceof` across bundling boundaries.
+Stable, programmatic discriminant: prefer this over `instanceof` across bundling boundaries.
 
 ##### message
 
@@ -299,10 +303,9 @@ Infers the underlying type from `defaultInner`; the runtime default is always `u
 
 ### InvalidFieldDefaultError
 
-Thrown synchronously by `buildData()`/`documentData()` when a declared
-field default is structurally invalid: a function value (functions are
-never valid field data) or a cyclic reference (a value that contains
-itself, directly or transitively).
+Thrown synchronously by `buildData()`/`documentData()` when a declared field default is
+structurally invalid. That is a function value (functions are never valid field data), or a value
+that contains itself, directly or transitively.
 
 #### Extends
 
@@ -349,7 +352,7 @@ cause?: unknown;
 readonly code: "DATA_CAP_INVALID_FIELD_DEFAULT" = "DATA_CAP_INVALID_FIELD_DEFAULT";
 ```
 
-Stable, programmatic discriminant -- prefer this over `instanceof` across bundling boundaries.
+Stable, programmatic discriminant: prefer this over `instanceof` across bundling boundaries.
 
 ###### Overrides
 
@@ -571,7 +574,7 @@ for that field specifically.
 readonly category?: string;
 ```
 
-Free-form classification -- never validated.
+Free-form classification: never validated.
 
 ##### dataResidency?
 
@@ -579,10 +582,10 @@ Free-form classification -- never validated.
 readonly dataResidency?: string | readonly string[];
 ```
 
-The declared jurisdiction(s) this capability's data is permitted/
-expected to be *stored* in -- a policy constraint, not an observed
-fact, not a processing-location claim, not a data-subject-location
-claim. A field's own `dataResidency` overrides this for that field
+The declared jurisdiction(s) this capability's data is permitted or
+expected to be *stored* in. It is a policy constraint, not an observed
+fact, a processing-location claim or a data-subject-location claim.
+A field's own `dataResidency` overrides this for that field
 specifically.
 
 ##### deprecated?
@@ -617,7 +620,7 @@ readonly evidence?: {
 };
 ```
 
-Developer-supplied evidence assertions -- verified over time, unlike
+Developer-supplied evidence assertions: verified over time, unlike
 every other field above, which is declared-only. Kept structurally
 separate for exactly that reason (see `EvidenceFieldDocs`).
 
@@ -644,7 +647,7 @@ readonly expiresAt?: string;
 When this capability's data (or the credential/source behind it) is
 declared to stop being valid, as an ISO-8601 date. A field's own
 `expiresAt` (see `FieldDocs`) overrides this for that field
-specifically. Declared only -- nothing expires at runtime.
+specifically. Declared only: nothing expires at runtime.
 
 ##### fields?
 
@@ -668,7 +671,7 @@ Declared data-flow rules for this capability's fields, evaluated against the Flo
 readonly getters?: SchemaOperationDocs<TSchema, "getters">;
 ```
 
-Per-getter documentation. Keys are checked against the schema's real `getters` names -- a nonexistent or misspelled getter name is a compile error.
+Per-getter documentation. Keys are checked against the schema's real `getters` names: a nonexistent or misspelled getter name is a compile error.
 
 ##### legalBasis?
 
@@ -678,8 +681,8 @@ readonly legalBasis?: string;
 
 The declared legal basis asserted for processing this capability's data
 (e.g. `"consent"`, `"contract"`, `"legitimate interest"`). Records that
-a basis was declared -- never that data-cap has determined the basis is
-legally valid; data-cap records declared governance facts, it does not
+a basis was declared, never that data-cap has determined the basis is
+legally valid. It records declared governance facts; data-cap does not
 determine whether those facts satisfy a law. A field's own `legalBasis`
 overrides this for that field specifically.
 
@@ -690,12 +693,12 @@ readonly metadata?: Readonly<Record<string, unknown>>;
 ```
 
 Free-form extension bag for anything data-cap itself has no named
-concept for -- opaque, never inspected or validated by any code path in
-this package (e.g. jurisdiction-specific regulatory classification:
-`{ regulatory: "GDPR,PCI-DSS" }`). Once a concept matters enough for
-data-cap to reason about, it gets its own named field above (as
-`purpose`/`legalBasis`/`dataResidency`/`transferSafeguard`/`auditRequired`
-did); everything else stays here.
+concept for. It is opaque: no code path in this package inspects or
+validates it. An example is a jurisdiction-specific regulatory
+classification such as `{ regulatory: "GDPR,PCI-DSS" }`. Once a concept
+matters enough for data-cap to reason about, it gets its own named field
+above, as `purpose`, `legalBasis`, `dataResidency`, `transferSafeguard`
+and `auditRequired` did. Everything else stays here.
 
 ##### mutators?
 
@@ -711,7 +714,7 @@ Per-mutator documentation. Keys are checked against the schema's real `mutators`
 readonly name?: string;
 ```
 
-Display name -- falls back to the export/binding name when omitted.
+Display name: falls back to the export/binding name when omitted.
 
 ##### owner?
 
@@ -727,7 +730,7 @@ Who's accountable for this capability. A field's own `owner` (see `FieldDocs`) o
 readonly protections?: string;
 ```
 
-Documented safeguard -- presence only, never an adequacy claim.
+Documented safeguard: presence only, never an adequacy claim.
 
 ##### purpose?
 
@@ -735,8 +738,8 @@ Documented safeguard -- presence only, never an adequacy claim.
 readonly purpose?: string;
 ```
 
-The declared reason this capability's data is collected/retained.
-Declared only -- data-cap never verifies the stated purpose matches
+The declared reason this capability's data is collected or retained.
+Declared only: data-cap never verifies the stated purpose matches
 actual usage. A field's own `purpose` (see `FieldDocs`) overrides this
 for that field specifically.
 
@@ -746,7 +749,7 @@ for that field specifically.
 readonly retention?: string;
 ```
 
-Documented retention policy -- presence only, never an enforcement claim.
+Documented retention policy: presence only, never an enforcement claim.
 
 ##### sensitivity?
 
@@ -754,7 +757,7 @@ Documented retention policy -- presence only, never an enforcement claim.
 readonly sensitivity?: string;
 ```
 
-Data classification. Standard vocabulary: `"public"` / `"internal"` / `"confidential"` / `"restricted"` (ascending) -- custom values are allowed but flagged as non-standard, never blocking.
+Data classification. Standard vocabulary: `"public"` / `"internal"` / `"confidential"` / `"restricted"` (ascending); custom values are allowed but flagged as non-standard, never blocking.
 
 ##### subscriptions?
 
@@ -771,7 +774,7 @@ readonly transferSafeguard?: string;
 ```
 
 The declared safeguard relied on for any transfer of this capability's
-data out of `dataResidency`'s own jurisdiction(s) -- paired conceptually
+data out of `dataResidency`'s own jurisdiction(s): paired conceptually
 with `dataResidency`, same presence-only discipline. A field's own
 `transferSafeguard` (see `FieldDocs`) overrides this for that field
 specifically.
@@ -780,7 +783,7 @@ specifically.
 
 ### DataError
 
-The latest relevant error for a field/operation, never a history -- see FieldInfo.error.
+The latest relevant error for a field/operation, never a history: see FieldInfo.error.
 
 #### Properties
 
@@ -804,11 +807,10 @@ The getter/mutator/subscription operation key that produced this error.
 
 ### DataFlowEndpoint
 
-One declared data-flow boundary an operation crosses. A getter/
-subscription's endpoints are typically `"input"` (where `execute`/
-`subscribe` acquires data from); a mutator's are typically `"output"`
-(where it sends data to) -- nothing enforces the typical case, since this
-is documentation, not a runtime contract.
+One declared data-flow boundary an operation crosses. A getter's or subscription's endpoints are
+typically `"input"`: where `execute` or `subscribe` acquires data from. A mutator's are typically
+`"output"`: where it sends data to. Nothing enforces the typical case, since this is
+documentation, not a runtime contract.
 
 #### Properties
 
@@ -827,12 +829,10 @@ readonly handling?: FlowHandling;
 ```
 
 The declared data-safety state of this field's value AT this specific
-boundary crossing -- e.g. a field that arrives `"encrypted"` on an
-`"input"` endpoint and is sent back out `"redacted"` on an `"output"`
-endpoint. Declared only, same presence-only discipline as every other
-field in this vocabulary: this records what a developer states about
-handling at this crossing, never that data-cap has verified the field's
-actual runtime value matches the claim.
+boundary crossing. For example, a field can arrive `"encrypted"` on an
+`"input"` endpoint and leave `"redacted"` on an `"output"` endpoint.
+Declared only, like every other field in this vocabulary. It records what a developer
+states about handling at this crossing, never that data-cap verified the runtime value matches it.
 
 ##### kind
 
@@ -848,7 +848,7 @@ What kind of boundary this is.
 readonly name: string;
 ```
 
-Short identifier, e.g. "stripe-api", "postgres:users" -- a semantic label, not a sentence.
+Short identifier, e.g. "stripe-api", "postgres:users"; a semantic label, not a sentence.
 
 ##### url?
 
@@ -856,16 +856,18 @@ Short identifier, e.g. "stripe-api", "postgres:users" -- a semantic label, not a
 readonly url?: string;
 ```
 
-A literal, trackable location for this endpoint -- a URL, a route path, a `table:column` reference. Distinct from `name` (a short label): this is meant to be compared/matched across capabilities (e.g. flagging two capabilities that declare the same URL as likely-duplicate fetches), not just read by a person.
+A literal, trackable location for this endpoint: a URL, a route path, a `table:column` reference.
+Unlike `name` (a short label), it is compared and matched across capabilities, not only read by
+a person. For example, two capabilities that declare the same URL are flagged as likely
+duplicate fetches.
 
 ***
 
 ### DataSchema
 
-The full schema shape both `buildData` and the runtime's `createData`
-accept -- each reads only the part it needs (`buildData` only ever reads
-`fields`; a `getters`/`mutators`/`subscriptions` section on the same
-object is simply ignored by it). `documentData` accepts this same shape
+The full schema shape both `buildData` and the runtime's `createData` accept. Each reads only the
+part it needs: `buildData` reads `fields` and ignores any `getters`, `mutators` or
+`subscriptions` section. `documentData` accepts this same shape
 so one `documentData(schema, docs)` call documents whichever of the two
 a given schema is ultimately passed to.
 
@@ -922,7 +924,7 @@ Named subscription operations, keyed by the name they're called/documented under
 ### DataState
 
 `fields` and `info` are always present and always committed/published
-together as one atomic snapshot -- never independently. See
+together as one atomic snapshot: never independently. See
 specs/architecture.md.
 
 #### Extended by
@@ -951,13 +953,13 @@ The capability's current field values.
 readonly info: DataInfo<TFields>;
 ```
 
-Execution metadata mirroring `fields`' shape -- status/error/timestamps, never the values themselves.
+Execution metadata mirroring `fields`' shape: status/error/timestamps, never the values themselves.
 
 ***
 
 ### DataStore
 
-The store contract the standalone runtime implements --
+The store contract the standalone runtime implements:
 `useSyncExternalStore`-compatible without importing React.
 
 #### Extended by
@@ -1008,35 +1010,32 @@ Registers `listener` to be called after every committed state change; returns an
 
 Documentation metadata for one field.
 
-`owner`, `sensitivity`, `protections`, and `transferSafeguard` override the
-capability-level value of the same name for this field specifically -- not
-every field in a capability is equally sensitive, equally owned, or
-crosses the same transfer boundary. `protections` and `retention` are
-documentation-presence signals only: a generator may say a safeguard/
-policy is "documented" or "not documented," never that it is adequate,
-correct, or enforced. `purpose`/`legalBasis`/`dataResidency`/
-`transferSafeguard`/`auditRequired` carry the same presence-only
-discipline -- declared governance facts, never a claim that data-cap has
-determined they satisfy any law (see `specs/decisions/0051-documentdata-metadata-and-governance-fields.md`).
-`dataSubjectCategory`/`recipientCategories` are field-level only (no
-capability-level counterpart) -- see each property's own doc comment for
-why.
+`owner`, `sensitivity`, `protections`, and `transferSafeguard` override the capability-level
+value of the same name for this field. Fields in one capability can differ in sensitivity, owner
+and transfer boundary. `protections` and `retention` only signal that documentation is present.
+A generator may say a safeguard or policy is "documented" or "not documented", never that it is
+adequate, correct or enforced. `purpose`, `legalBasis`, `dataResidency`, `transferSafeguard` and
+`auditRequired` follow the same presence-only rule. They are declared governance facts, never a
+claim that data-cap has determined they satisfy any law
+(see `specs/decisions/0051-documentdata-metadata-and-governance-fields.md`).
+`dataSubjectCategory` and `recipientCategories` are field-level only, with no capability-level
+counterpart; each property's own doc comment says why.
 
 The boundary this interface draws is deliberate: a named property here is
 reserved for a concept data-cap itself understands, projects, or reports
-on. Anything else -- organization-specific detail with no data-cap-defined
-meaning -- belongs in `metadata`, never as an ad hoc extra property, so
-this vocabulary stays bounded instead of accreting one-off keys over time.
+on. Anything else (organization-specific detail with no data-cap-defined meaning) belongs in
+`metadata`, never in an ad hoc extra property. That keeps this vocabulary bounded instead of
+accreting one-off keys over time.
 
 Note what is deliberately absent: there is no per-field `validate`/
 `validator` property, and no `helpers.validators` combinator library
 backing one, unlike `@maverickcer/env-cap`'s `EnvVarDocs`. That is a
 design choice, not a gap. `env-cap` validates on a reject-and-throw
 pipeline, where a failing validator must carry a message explaining the
-rejection; `data-cap` has no reject path to write a message for --
-invalid processor/operation output resets the field to its declared
-default via `core/schema.ts`'s `checkValueAgainstSchema`, keeping fields
-synchronously readable (`AGENTS.md` invariant 2) and surfacing the
+rejection. `data-cap` has no reject path to write a message for.
+Invalid processor/operation output resets the field to its declared
+default via `core/schema.ts`'s `checkValueAgainstSchema`. That keeps fields
+synchronously readable (`AGENTS.md` invariant 2) and surfaces the
 mismatch through `DataInfo`. See `helpers/shape.ts`'s own module comment
 for the full reasoning.
 
@@ -1059,9 +1058,9 @@ field specifically.
 readonly dataResidency?: string | readonly string[];
 ```
 
-The declared jurisdiction(s) this field's data is permitted/expected to
-be *stored* in -- a policy constraint, not an observed fact, not a
-processing-location claim, not a data-subject-location claim. Overrides
+The declared jurisdiction(s) this field's data is permitted or expected to be *stored* in.
+It is a policy constraint, not an observed fact, a processing-location claim or a
+data-subject-location claim. Overrides
 the capability's own `dataResidency` for this field specifically.
 
 ##### dataSubjectCategory?
@@ -1071,12 +1070,10 @@ readonly dataSubjectCategory?: string;
 ```
 
 The declared category of data subject this field's data concerns (e.g.
-`"customers"`, `"employees"`, `"minors"`). Declared only -- data-cap
-never verifies who a field's actual data subjects are. Field-level only:
-unlike `owner`/`sensitivity`/`purpose`/etc., this has no capability-level
-counterpart to override -- which data subjects a field concerns is a
-fact about that field's own data, not something a whole capability can
-meaningfully state once for every field under it.
+`"customers"`, `"employees"`, `"minors"`). Declared only: data-cap
+never verifies who a field's actual data subjects are. Field-level only, with no
+capability-level counterpart to override. Which data subjects a field concerns is a fact about
+that field's own data, not one a capability can state for every field.
 
 ##### deprecated?
 
@@ -1084,7 +1081,7 @@ meaningfully state once for every field under it.
 readonly deprecated?: boolean;
 ```
 
-Whether this field is documented as deprecated. Presence-only, same discipline as every other declared fact here -- nothing warns at runtime.
+Whether this field is documented as deprecated. Presence-only, same discipline as every other declared fact here: nothing warns at runtime.
 
 ##### deprecatedReason?
 
@@ -1112,8 +1109,8 @@ When this field's data (or the credential/source behind it) is declared
 to stop being valid, as an ISO-8601 date (`"2026-12-31"`). Declared
 only: nothing expires anything at runtime, and `data-cap` never fetches
 a real expiry from a provider. Build tooling reads it to report what is
-expiring soon (see the Lifecycle Model) -- a date that has already
-passed is reported as expired, never acted on.
+expiring soon (see the Lifecycle Model). A date that has already passed
+is reported as expired, never acted on.
 
 ##### legalBasis?
 
@@ -1123,7 +1120,7 @@ readonly legalBasis?: string;
 
 The declared legal basis asserted for processing this field (e.g.
 `"consent"`, `"contract"`, `"legitimate interest"`). Records that a
-basis was declared -- never that data-cap has determined the basis is
+basis was declared: never that data-cap has determined the basis is
 legally valid. Overrides the capability's own `legalBasis` for this
 field specifically.
 
@@ -1134,7 +1131,7 @@ readonly metadata?: Readonly<Record<string, unknown>>;
 ```
 
 Free-form extension bag for anything data-cap itself has no named
-concept for -- opaque, never inspected or validated by any code path in
+concept for: opaque, never inspected or validated by any code path in
 this package. Once a concept matters enough for data-cap to reason
 about, it gets its own named field above; everything else stays here.
 
@@ -1161,7 +1158,7 @@ readonly purpose?: string;
 ```
 
 The declared reason this field's data is collected/retained. Declared
-only -- data-cap never verifies the stated purpose matches actual usage.
+only: data-cap never verifies the stated purpose matches actual usage.
 Overrides the capability's own `purpose` for this field specifically.
 
 ##### recipientCategories?
@@ -1172,12 +1169,11 @@ readonly recipientCategories?: readonly string[];
 
 The declared categories of recipient this field's data has been or will
 be disclosed to (e.g. `"payment processor"`, `"tax authority"`,
-`"internal support staff"`). Always explicitly authored -- data-cap
-never infers a recipient category from its own dependency graph (a
-proven *consumer* relationship inside this codebase is a categorically
-different fact from a declared *external recipient*, and conflating the
-two would misrepresent both). Field-level only, for the same reason as
-`dataSubjectCategory`. See
+`"internal support staff"`). Always explicitly authored: data-cap never
+infers a recipient category from its own dependency graph.
+A proven *consumer* inside this codebase is a different fact from a
+declared *external recipient*, and conflating them would misrepresent both.
+Field-level only, for the same reason as `dataSubjectCategory`. See
 `specs/decisions/0067-ropa-fields-recipient-categories-never-inferred.md`
 for the full reasoning on why this is never derived.
 
@@ -1188,9 +1184,9 @@ readonly removeBy?: string;
 ```
 
 The date by which a deprecated field is intended to be removed, ISO-8601.
-Field-level only: a removal deadline is about one specific field's own
-migration, and a capability-wide `removeBy` would say nothing about
-which of its fields still need work.
+Field-level only: a removal deadline is about one field's own migration.
+A capability-wide `removeBy` would say nothing about which of its fields
+still need work.
 
 ##### renamedFrom?
 
@@ -1199,10 +1195,9 @@ readonly renamedFrom?: string;
 ```
 
 The previous name of this field, when it was renamed. Field-level only,
-for the same reason as `removeBy`. Build tooling uses this to correlate
-an added-field/removed-field pair across two runs into one rename rather
-than reporting an unrelated addition and deletion -- see `ChangeModel`'s
-`renamedFields`. Only ever populated from an *authored* value, never
+for the same reason as `removeBy`. Build tooling uses it to read an added
+field and a removed field across two runs as one rename. Without it they
+are an unrelated addition and deletion (see `ChangeModel`'s `renamedFields`). Only ever populated from an *authored* value, never
 guessed from name similarity.
 
 ##### retention?
@@ -1211,7 +1206,7 @@ guessed from name similarity.
 readonly retention?: string;
 ```
 
-Documented retention policy for this field -- presence only, never an enforcement claim.
+Documented retention policy for this field: presence only, never an enforcement claim.
 
 ##### sensitivity?
 
@@ -1227,13 +1222,11 @@ Overrides the capability's own `sensitivity` for this field specifically.
 readonly transferSafeguard?: string;
 ```
 
-The declared safeguard relied on for any transfer of this field's data
-out of `dataResidency`'s own jurisdiction(s) (e.g. `"EU Standard
-Contractual Clauses"`, `"adequacy decision"`) -- paired conceptually
-with `dataResidency` (which states where data is permitted to be
-*stored*; this states what protects a transfer *out of* that
-jurisdiction), same presence-only discipline as every other field here.
-Declared only -- data-cap never verifies a transfer actually occurred or
+The declared safeguard relied on for any transfer of this field's data out of `dataResidency`'s
+jurisdictions, such as `"EU Standard Contractual Clauses"` or `"adequacy decision"`.
+`dataResidency` states where data may be *stored*; this states what protects a transfer *out
+of* that jurisdiction.
+Declared only: data-cap never verifies a transfer actually occurred or
 that the named safeguard is legally adequate. Overrides the capability's
 own `transferSafeguard` for this field specifically. See
 `specs/decisions/0067-ropa-fields-recipient-categories-never-inferred.md`.
@@ -1242,10 +1235,10 @@ own `transferSafeguard` for this field specifically. See
 
 ### FieldInfo
 
-Current authoritative execution metadata for one field -- never an event
+Current authoritative execution metadata for one field: never an event
 history. `source` is the operation key that most recently established the
-field's current value; `error` clears on the next successful establishing
-operation unless a still-newer operation has since set a different one.
+field's current value. `error` clears on the next successful establishing
+operation, unless a still-newer operation has since set a different one.
 
 #### Properties
 
@@ -1350,10 +1343,10 @@ Narrows the rule to one path inside each governed field (for example `["password
 ### FlowPolicyDocs
 
 One declared data-flow rule: which of this capability's fields it governs,
-and what must hold wherever their data goes. Evaluated against the Flow
-Model at build time; a rule is a declaration, never a runtime check, and a
-result is only as complete as the analysis behind it (see the Policy
-Model's `indeterminate` outcome). At least one of `forbidDestinations`,
+and what must hold wherever their data goes. Evaluated against the Flow Model
+at build time. A rule is a declaration, never a runtime check. A result is
+only as complete as the analysis behind it (see the Policy Model's
+`indeterminate` outcome). At least one of `forbidDestinations`,
 `allowedDestinations` and `requireHandling` is required.
 
 #### Properties
@@ -1419,12 +1412,12 @@ If set, every crossing of the governed data must declare one of these handlings.
 ### GetterDefinition
 
 A getter operation: acquires data. `writes` is required and explicit
-(ADR 0011) -- a getter's ownership is typically narrow and specific, so
+(ADR 0011): a getter's ownership is typically narrow and specific, so
 an explicit declaration keeps that scope visible and enforced. `TParams`
 is inferred purely from `params`'s own literal value (or an explicit `{}
-as TParams` type-only anchor when there's no sensible runtime default) --
-never derived from this capability's `fields` nullability, so a
-`fields.nullable(...)` declaration elsewhere never leaks an `| null`/
+as TParams` type-only anchor when there's no sensible runtime default).
+It is never derived from this capability's `fields` nullability. So a
+`fields.nullable(...)` declaration elsewhere never leaks `| null` or
 `| undefined` into an operation's parameter type.
 
 #### Type Parameters
@@ -1471,7 +1464,7 @@ Default/example params, deep-merged with a caller's partial at call time. Omit a
 readonly processor?: (raw, params) => OwnedPatch<TFields, TWrites>;
 ```
 
-Defaults to identity when omitted -- `execute`'s raw result is then used directly as the patch, and must already be shaped like one.
+Defaults to identity when omitted: `execute`'s raw result is then used directly as the patch, and must already be shaped like one.
 
 ###### Parameters
 
@@ -1490,16 +1483,15 @@ Defaults to identity when omitted -- `execute`'s raw result is then used directl
 readonly writes: TWrites;
 ```
 
-Declares which fields this getter is permitted to write -- see `FieldOwnership`.
+Declares which fields this getter is permitted to write: see `FieldOwnership`.
 
 ***
 
 ### MutatorDefinition
 
-A mutator operation: performs a side effect. `writes` is optional --
-omitting it defaults to full-capability-tree ownership, bounded to the
-declared schema (ADR 0011) -- the common "this mutator can touch
-anything the schema allows" case doesn't pay a declaration tax.
+A mutator operation: performs a side effect. `writes` is optional. Without it the mutator owns
+the whole capability tree, bounded to the declared schema (ADR 0011), so the common case needs no
+declaration.
 
 #### Type Parameters
 
@@ -1539,9 +1531,9 @@ readonly optimistic?: (authoritativeState, params) =>
   | undefined;
 ```
 
-Computes an optimistic patch from CURRENT AUTHORITATIVE state (never the
-visible/projected state -- a second concurrent optimistic transition
-must never compute against a first transition's still-pending value).
+Computes an optimistic patch from CURRENT AUTHORITATIVE state, never the
+visible, projected state. A second concurrent optimistic transition must
+never compute against a first transition's still-pending value.
 Returning `undefined` means no optimistic transition for this call.
 
 ###### Parameters
@@ -1570,7 +1562,7 @@ Default/example params, deep-merged with a caller's partial at call time.
 readonly processor?: (raw, params) => OwnedPatch<TFields, TWrites extends undefined ? true : TWrites>;
 ```
 
-Defaults to identity when omitted -- `execute`'s raw result is then used directly as the patch.
+Defaults to identity when omitted: `execute`'s raw result is then used directly as the patch.
 
 ###### Parameters
 
@@ -1589,13 +1581,13 @@ Defaults to identity when omitted -- `execute`'s raw result is then used directl
 readonly writes?: TWrites;
 ```
 
-Declares which fields this mutator may write -- omitting it defaults to the full capability tree.
+Declares which fields this mutator may write: omitting it defaults to the full capability tree.
 
 ***
 
 ### NullableMarker
 
-Produced by `fields.nullable(...)` -- recognized only during `buildData`'s schema-authoring walk; the resolved runtime default is always `null`.
+Produced by `fields.nullable(...)`: recognized only during `buildData`'s schema-authoring walk; the resolved runtime default is always `null`.
 
 #### Type Parameters
 
@@ -1611,7 +1603,7 @@ Produced by `fields.nullable(...)` -- recognized only during `buildData`'s schem
 readonly [FIELD_MARKER]: "nullable";
 ```
 
-Internal marker discriminant -- see the module doc comment.
+Internal marker discriminant: see the module doc comment.
 
 ##### inner
 
@@ -1619,7 +1611,7 @@ Internal marker discriminant -- see the module doc comment.
 readonly inner: T;
 ```
 
-The declared inner default, kept only so the underlying type can be inferred -- never the resolved runtime value.
+The declared inner default, kept only so the underlying type can be inferred: never the resolved runtime value.
 
 ***
 
@@ -1627,11 +1619,11 @@ The declared inner default, kept only so the underlying type can be inferred -- 
 
 Documentation metadata for one getter/mutator/subscription. Reserved keys
 are explicitly typed (mirroring the vocabulary real capabilities tend to
-document -- what it does, where it talks to, what it costs to call) while
-still accepting arbitrary extra keys for anything project-specific, so
+document: what it does, where it talks to, what it costs to call). The type
+still accepts arbitrary extra keys for anything project-specific, so
 documenting never fights the type checker.
 
-`credentials` is descriptive only -- documenting `credentials: "user
+`credentials` is descriptive only: documenting `credentials: "user
 session"` is never proof that authorization is actually enforced.
 `endpoints` is likewise author-declared, never verified.
 
@@ -1649,7 +1641,7 @@ session"` is never proof that authorization is actually enforced.
 readonly credentials?: string;
 ```
 
-What's required to call this operation -- descriptive only, never an authorization/enforcement claim.
+What's required to call this operation: descriptive only, never an authorization/enforcement claim.
 
 ##### description?
 
@@ -1665,7 +1657,7 @@ What this operation does.
 readonly endpoints?: readonly DataFlowEndpoint[];
 ```
 
-Declared data-flow boundaries this operation crosses -- see `DataFlowEndpoint`.
+Declared data-flow boundaries this operation crosses: see `DataFlowEndpoint`.
 
 ##### metadata?
 
@@ -1674,10 +1666,10 @@ readonly metadata?: Readonly<Record<string, unknown>>;
 ```
 
 Free-form extension bag for anything data-cap itself has no named
-concept for -- opaque, never inspected or validated by any code path in
-this package. The index signature below remains for the same reason it
-always has (documenting never fights the type checker); `metadata` is
-the recommended place for new extension data going forward.
+concept for: opaque, never inspected or validated by any code path in
+this package. The index signature below stays so documenting never
+fights the type checker. `metadata` is the recommended place for new
+extension data.
 
 ##### response?
 
@@ -1699,7 +1691,7 @@ Short identifier for where this operation acquires/sends data (e.g. `"stripe-api
 
 ### OptionalMarker
 
-Produced by `fields.optional(...)` -- recognized only during `buildData`'s schema-authoring walk; the resolved runtime default is always `undefined`.
+Produced by `fields.optional(...)`: recognized only during `buildData`'s schema-authoring walk; the resolved runtime default is always `undefined`.
 
 #### Type Parameters
 
@@ -1715,7 +1707,7 @@ Produced by `fields.optional(...)` -- recognized only during `buildData`'s schem
 readonly [FIELD_MARKER]: "optional";
 ```
 
-Internal marker discriminant -- see the module doc comment.
+Internal marker discriminant: see the module doc comment.
 
 ##### inner
 
@@ -1723,7 +1715,7 @@ Internal marker discriminant -- see the module doc comment.
 readonly inner: T;
 ```
 
-The declared inner default, kept only so the underlying type can be inferred -- never the resolved runtime value.
+The declared inner default, kept only so the underlying type can be inferred: never the resolved runtime value.
 
 ***
 
@@ -1732,11 +1724,11 @@ The declared inner default, kept only so the underlying type can be inferred -- 
 A subscription operation: continuously observes data. `writes` is
 required and explicit, same rationale as a getter's. `onEvent`/
 `onStatusChange` map to `writes`-bounded `fields` commits and
-`info.<field>.subscription` commits respectively -- a status transition
+`info.<field>.subscription` commits respectively: a status transition
 alone never touches `fields` (ADR 0029). `subscribe`'s own shape matches
-`coordinator.acquireSubscription`'s `SubscribeFn` exactly (params bound in
-by the runtime, handlers, a teardown function returned directly) -- no
-separate `AbortSignal`, since the returned teardown function is already
+`coordinator.acquireSubscription`'s `SubscribeFn` exactly: params bound in by
+the runtime, handlers, and a returned teardown function. There is no separate
+`AbortSignal`, since the returned teardown function is already
 the sanctioned way to stop a subscription.
 
 #### Type Parameters
@@ -1764,7 +1756,7 @@ Default/example params, deep-merged with a caller's partial at call time.
 readonly processor?: (event, params) => OwnedPatch<TFields, TWrites>;
 ```
 
-Defaults to identity when omitted -- the raw event is used directly as the patch.
+Defaults to identity when omitted: the raw event is used directly as the patch.
 
 ###### Parameters
 
@@ -1802,13 +1794,13 @@ Opens the connection and drives `handlers`; the returned function tears the subs
 readonly writes: TWrites;
 ```
 
-Declares which fields this subscription is permitted to write -- see `FieldOwnership`.
+Declares which fields this subscription is permitted to write: see `FieldOwnership`.
 
 ***
 
 ### SubscriptionEventHandlers
 
-Handlers a subscription's `subscribe` implementation drives -- the same shape `coordinator.acquireSubscription` already uses.
+Handlers a subscription's `subscribe` implementation drives: the same shape `coordinator.acquireSubscription` already uses.
 
 #### Type Parameters
 
@@ -1928,11 +1920,9 @@ The subscription's current connection status.
 type BuiltData<TFields> = DataState<InferFields<TFields>>;
 ```
 
-The synchronous `{fields, info}` state `buildData` returns -- structurally
-just `DataState<InferFields<TFields>>`, not a distinct shape. This alias
-exists so `buildData`'s own signature reads as "the shape `buildData`
-specifically returns," which is more informative at that one call site
-than a bare `DataState` would be; every other consumer should keep using
+The synchronous `{fields, info}` state `buildData` returns: structurally
+`DataState<InferFields<TFields>>`, not a distinct shape. This alias makes `buildData`'s own
+signature read as "the shape `buildData` returns". Every other consumer should keep using
 `DataState` directly.
 
 #### Type Parameters
@@ -1982,7 +1972,7 @@ type DataFlowDirection = "input" | "output";
 ```
 
 Which direction data moves across a declared boundary, and what kind of
-boundary it is. Author-declared documentation only -- never statically
+boundary it is. Author-declared documentation only: never statically
 verified against an operation's actual `execute`/`subscribe` body (those
 stay opaque per `AGENTS.md` invariant 6). A report may never present an
 endpoint as a proven fact; see `AGENTS.md`'s declared-vs-proven invariant.
@@ -2004,7 +1994,7 @@ type DataFlowEndpointKind =
   | "internal";
 ```
 
-What kind of boundary a declared data-flow endpoint crosses -- a data store (`database`/`cache`/`storage`/`queue`), an external entity (`api`/`external-service`/`user-input`), or something internal to this codebase (`computed`/`internal`).
+What kind of boundary a declared data-flow endpoint crosses: a data store (`database`/`cache`/`storage`/`queue`), an external entity (`api`/`external-service`/`user-input`), or something internal to this codebase (`computed`/`internal`).
 
 ***
 
@@ -2014,11 +2004,11 @@ What kind of boundary a declared data-flow endpoint crosses -- a data store (`da
 type DataInfo<T> = T extends readonly infer Item[] ? Partial<Record<string, DataInfo<Item> & FieldInfo>> : T extends Date | URL | RegExp ? FieldInfo : T extends object ? { [K in keyof T]?: DataInfo<T[K]> } & FieldInfo : FieldInfo;
 ```
 
-Mandatory, sparse metadata mirroring `fields`' logical structure -- never
-generated eagerly for an untouched field. `fields` stay ordinary arrays;
-only `info` represents array items as identity-keyed objects (a bare
-`string` key here, since the identity-joining scheme lives in
-`identity.ts`, added in a later phase).
+Mandatory, sparse metadata mirroring `fields`' logical structure: never
+generated eagerly for an untouched field. `fields` stay ordinary arrays.
+Only `info` represents array items as identity-keyed objects. The key is a
+bare `string` here, because the identity-joining scheme lives in
+`identity.ts`.
 
 #### Type Parameters
 
@@ -2047,11 +2037,10 @@ type FieldOwnership<T> =
 ```
 
 Declares which fields an operation may write. `true` claims a whole
-subtree (at any level, including the root -- a getter may legitimately
-declare `fields: true` to mean "the entire capability"); a nested object
-claims only the listed sub-keys. Arrays can only ever be owned wholesale
-(`true`) -- there is no per-item ownership concept, matching arrays being
-atomic, ordinary values.
+subtree at any level, including the root: a getter may declare
+`fields: true` to mean "the entire capability". A nested object claims only
+the listed sub-keys. Arrays can only be owned whole (`true`). There is no
+per-item ownership, because arrays are atomic, ordinary values.
 
 #### Type Parameters
 
@@ -2067,10 +2056,10 @@ atomic, ordinary values.
 type FieldsShape = Record<string, any>;
 ```
 
-The generic *bound* only, never surfaced to a consumer's inferred type --
-the same variance workaround env-cap's `EnvSchema` uses so `TFields extends
-FieldsShape` still infers a precise, per-key literal type from the actual
-object literal passed to `buildData`.
+The generic *bound* only, never surfaced to a consumer's inferred type. It is
+the variance workaround env-cap's `EnvSchema` uses. With it, `TFields extends
+FieldsShape` still infers a precise literal type per key from the object
+passed to `buildData`.
 
 ***
 
@@ -2093,7 +2082,7 @@ What a data-flow rule can name as a destination: the declared endpoint kinds, pl
 type FlowHandling = "plaintext" | "masked" | "redacted" | "hashed" | "encrypted";
 ```
 
-The declared data-safety state of a value at a boundary crossing -- the vocabulary of `DataFlowEndpoint.handling` and of flow policy rules.
+The declared data-safety state of a value at a boundary crossing: the vocabulary of `DataFlowEndpoint.handling` and of flow policy rules.
 
 ***
 
@@ -2120,7 +2109,7 @@ type InferFieldValue<F> = F extends NullableMarker<infer Inner> ? InferFieldValu
 ```
 
 Resolves the application-facing type for one declared field default.
-Functions are never valid field values -- a function-typed default
+Functions are never valid field values: a function-typed default
 resolves to `never` (see fields.ts's runtime counterpart, which throws).
 
 #### Type Parameters
@@ -2138,13 +2127,12 @@ type OwnedPatch<T, TOwnership> = TOwnership extends true ? DeepPartial<T> : T ex
 ```
 
 Narrows `DeepPartial<T>` down to exactly the keys `TOwnership` (a
-`FieldOwnership<T>` value) permits, mirroring its shape one-for-one. A
-`processor`/`optimistic` callback declared against `writes: {user:
-{email: true}}` cannot type-check while returning `{post: ...}`, or even
-`{user: {name: ...}}` -- a sibling field it doesn't own. This narrows the
-*legal* shape at compile time only; `resolveOperationPatch` still enforces
-the same boundary at runtime regardless, since a processor's actual
-return value is never statically provable to match its declared type.
+`FieldOwnership<T>` value) permits, mirroring its shape one-for-one.
+Take a `processor` or `optimistic` callback declared against
+`writes: {user: {email: true}}`. It cannot type-check while returning
+`{post: ...}`, or even `{user: {name: ...}}`, a sibling field it doesn't own. This narrows the *legal* shape at compile
+time only. `resolveOperationPatch` still enforces the same boundary at runtime, since no type
+proves what a processor actually returns.
 
 #### Type Parameters
 
@@ -2161,17 +2149,16 @@ return value is never statically provable to match its declared type.
 function buildData<TFields>(config): BuiltData<TFields>;
 ```
 
-Declares a schema's field contract. `data.fields` is synchronously readable
-the instant this returns -- populated with declared defaults -- there is no
-throw-until-ready gate (a deliberate divergence from `@maverickcer/env-cap`'s
-`createEnv`; see specs/architecture.md).
+Declares a schema's fields and returns their state. `data.fields` is readable
+synchronously the instant this returns, holding the declared defaults. There is
+no throw-until-ready gate, unlike `@maverickcer/env-cap`'s `createEnv` (see
+specs/architecture.md).
 
-`buildData` is the low-level, pure/synchronous primitive: `config` only ever
-reads `fields` (a `getters`/`mutators`/`subscriptions` section on the same
-object, if present, is simply ignored here -- that's what the batteries-
-included `createData` from `data-cap/runtime` is for). `data.
-info` is present (mandatory, never optional) but starts empty: nothing has
-executed yet, so there is nothing to report metadata for.
+`buildData` is the low-level, pure and synchronous primitive: it reads only
+`config.fields`. It ignores a `getters`, `mutators` or `subscriptions` section
+on the same object; `createData` from `data-cap/runtime` runs those.
+`data.info` is always present but starts empty. Nothing has
+executed yet, so there is no metadata to report.
 
 #### Type Parameters
 
@@ -2191,10 +2178,9 @@ executed yet, so there is nothing to report metadata for.
 
 #### Remarks
 
-Throws synchronously, at call time, for a structurally invalid field
-default (a function value, or a cyclic reference) -- this is a
-schema-authoring mistake the developer must fix, not a runtime condition
-to warn-and-continue past.
+Throws synchronously, at call time, for a structurally invalid field default: a function value,
+or a cyclic reference. That is a schema-authoring mistake to fix, not a runtime condition to warn
+past.
 
 ***
 
@@ -2208,13 +2194,12 @@ Adds documentation/operational metadata to the same capability graph a
 `buildData`/`createData` call describes, without introducing runtime
 behavior.
 
-`config` should be the exact same schema object passed to `createData`/
-`buildData` (typically a separately-declared `const` reused by both
-calls, the same way a `fields` identifier is already shared) -- passing
-the same object is what lets `docs`' `getters`/`mutators`/`subscriptions`
-keys be checked against the schema's real operation names, not just its
-`fields`. A `{fields}`-only config (no operations) still works for a
-capability with none to document.
+`config` should be the exact same schema object passed to `createData` or
+`buildData`, typically a separately declared `const` that both calls reuse.
+Passing the same object lets the `getters`, `mutators` and `subscriptions`
+keys of `docs` be checked against the schema's real operation names, not
+only its `fields`. A `{fields}`-only config still works for a capability
+with no operations to document.
 
 #### Type Parameters
 
@@ -2235,10 +2220,9 @@ capability with none to document.
 
 #### Remarks
 
-Intentionally inert: everything here happens at build time, in build
-tooling that statically discovers this call -- never at runtime, in every
-process that imports the capability file, which is exactly what this
-split (mirroring env-cap's `documentEnv`) exists to avoid. Never throws,
-regardless of malformed input, and a `documentData` call is never itself
-evidence that an executable capability exists -- static analysis (`build`)
-inspects only real `buildData`/`createData` calls.
+Intentionally inert: build tooling discovers this call statically and does
+all the work at build time. Nothing runs in a process that imports the
+capability file. That is why this split exists, as it does for env-cap's
+`documentEnv`. Never throws, whatever the input. A `documentData` call alone is
+never evidence that a capability exists: static analysis (`build`) inspects
+only real `buildData` and `createData` calls.

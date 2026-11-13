@@ -1,12 +1,12 @@
 # data-cap: performance and cost report
 
-What does adopting this package add to latency, CPU, memory and compute spend -- and how does that grow with workload? Three views, from the whole to the part: **(1)** the end-to-end total, **(2)** every function on its own, **(3)** which functions make up the total. New to benchmarks? Read [READING-BENCHMARKS.md](../READING-BENCHMARKS.md) first.
+What does adopting this package add to latency, CPU, memory and compute spend, and how does that grow with workload? Three views, from the whole to the part: **(1)** the end-to-end total, **(2)** every function on its own, **(3)** which functions make up the total. New to benchmarks? Read [READING-BENCHMARKS.md](../READING-BENCHMARKS.md) first.
 
 ## What adopting this package costs
 
 For a typical workload of **640 records** per operation, routing the work through `data-cap` adds **666 µs** per operation compared with a bare-minimum baseline (**1,889× the baseline**). Overall, it grows O(n) with workload size (measured exponent 0.86). At list prices that is on the order of **~$0.001 – $0.01 per million operations** of compute.
 
-> The relative figure and the growth class are the steadier ones: both come from the same run, so they depend far less on the machine than a time does, though runtime behaviour and contention on the runner still move them. The growth class is an empirical fit to the sizes tested, not a proof of asymptotic complexity. Dollar figures are **order-of-magnitude** estimates from published list prices on shared hardware (see _Cost model_ below) -- good for comparing one package with another, not for budgeting.
+> The relative figure and the growth class are the steadier ones. Both come from the same run, so they depend far less on the machine than a time does. Runtime behaviour and contention on the runner still move them. The growth class is an empirical fit to the sizes tested, not a proof of asymptotic complexity. Dollar figures are **order-of-magnitude** estimates from published list prices on shared hardware (see _Cost model_ below). They show scale, not a budget.
 
 | Cost | Typical (640 records) | Largest (10240 records) |
 | --- | --- | --- |
@@ -20,12 +20,12 @@ For a typical workload of **640 records** per operation, routing the work throug
 
 ## 1. End-to-end: the package's total impact
 
-Shows what an application pays per data fetch just for putting data-cap between its data source and its UI, compared with handling the same payload by hand. Both sides get the same pre-fetched records from a simulated instant source and both end with the records available to a reader; the only difference is data-cap's dispatch, deduplication, ownership checking, immutability and state bookkeeping. This is the floor: a real getter adds its own network or database time on top, which dwarfs this overhead in production but cannot be avoided by anything the application does.
+Shows what an application pays per data fetch for putting data-cap between its data source and its UI. It compares that with handling the same payload by hand. Both sides get the same pre-fetched records from a simulated instant source, and both end with the records available to a reader. The only difference is data-cap's dispatch, deduplication, ownership checking, immutability and state bookkeeping. This is the floor: a real getter adds its own network or database time on top. That time dwarfs this overhead in production, and nothing the application does can avoid it.
 
-- **Baseline (no package):** An async function returns n pre-generated records and the caller stores them in a plain object -- no data-cap.
-- **With the package:** The same n records arrive through a data-cap getter (`createData`) and the caller reads the resulting snapshot: coordinator dedup registry, simulated async execute, ownership-checked commit, structural sharing and deep freeze of the new nodes.
+- **Baseline (no package):** An async function returns n pre-generated records and the caller stores them in a plain object, with no data-cap.
+- **With the package:** The same n records arrive through a data-cap getter (`createData`), and the caller reads the resulting snapshot. The path covers the coordinator dedup registry, simulated async execute, ownership-checked commit, structural sharing and deep freeze of the new nodes.
 
-Both sides use empty or minimal functions on purpose, so the difference is the package's own cost -- not the cost of the work an application would plug into it. Real applications add their own work on top; this is the floor the package imposes.
+Both sides use empty or minimal functions on purpose. The difference is then the package's own cost, not the cost of the work an application would plug into it. Real applications add their own work on top; this is the floor the package imposes.
 
 **Variables that could change this result**
 
@@ -34,10 +34,10 @@ Both sides use empty or minimal functions on purpose, so the difference is the p
 | records per fetch | swept | The tier axis: how many records one getter call fetches and commits. |
 | record shape | fixed at "7-field task record (strings, dates, a tag array)" | Records come from the deterministic generator in benchmark-fixtures/generator.mjs; wider or deeper records would raise the per-record cost. |
 | runtime | fixed at "Node (V8)" | Measured on Node only. Bun, Deno, browsers and edge runtimes are not covered. |
-| data source latency | fixed at "0 ms (simulated, instant)" | A real network or database call is far slower than anything measured here; it is excluded on purpose so the report shows data-cap's cost, not the network's. |
+| data source latency | fixed at "0 ms (simulated, instant)" | A real network or database call is far slower than anything measured here. It is excluded on purpose, so the report shows data-cap's cost, not the network's. |
 | concurrent identical calls | fixed at 1 | One caller. Concurrency is measured separately in the dedupe-fan-in functions below. |
 
-The baseline is an empty or minimal function, so it costs almost nothing and the _relative_ overhead can look enormous (shown as a multiple of the baseline). Read the absolute columns -- time, CPU and dollars added -- they are what a bill and a latency budget are made of.
+The baseline is an empty or minimal function, so it costs almost nothing. The _relative_ overhead can then look enormous (shown as a multiple of the baseline). Read the absolute columns (time, CPU and dollars added): they are what a bill and a latency budget are made of.
 
 | records | Baseline | With package | Added | Added vs baseline | Added CPU | Est. $ / 1M ops |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -56,7 +56,7 @@ The baseline is an empty or minimal function, so it costs almost nothing and the
 
 ## 2. Function by function
 
-Every function the package exposes is measured on its own across the full size ladder, then its measured growth rate is compared with the big-O we documented for it. A function whose measured class **differs** from its documented one is the most useful thing in this report: either the documentation or the code is wrong.
+Every function the package exposes is measured on its own across the full size ladder. Its measured growth rate is then compared with the big-O we documented for it. A function whose measured class **differs** from its documented one is the most useful thing in this report. Either the documentation or the code is wrong.
 
 | Function | Varies | Documented | Measured | Agreement | At 640 | At 10240 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -75,6 +75,7 @@ Every function the package exposes is measured on its own across the full size l
 | `computeItemIdentity` | record | O(n) | n/a | ❔ not enough data | n/a | n/a |
 | `createData` | record | O(n) | n/a | ❔ not enough data | n/a | n/a |
 | `processors.toArray` | record | O(n) | n/a | ❔ not enough data | n/a | n/a |
+| `observeValue` | record | O(n) | n/a | ❔ not enough data | n/a | n/a |
 | `withRetry` | record | O(n) | O(n) | ✅ matches | 90.6 ms (at 80) | 90.6 ms (at 80) |
 
 > **Could not be determined.** The big-O of these could not be measured, so they are not checked against their documentation:
@@ -83,11 +84,11 @@ Every function the package exposes is measured on its own across the full size l
 
 ### `createData (cold start)`
 
-**Why we benchmark it.** Every process that imports capability modules pays this before serving its first request: a deploy, a serverless cold start, a CLI invocation or a test run. It is the cost of adopting data-cap at the moment it hurts most, and it recurs on every scale-up.
+**Why we benchmark it.** Every process that imports capability modules pays this before serving its first request. That includes a deploy, a serverless cold start, a CLI invocation and a test run. It is the cost of adopting data-cap at the moment it hurts most, and it recurs on every scale-up.
 
-**What poor performance would mean.** Slower deploys, longer first-request latency on every new instance, and (on serverless platforms) a cold-start penalty billed on every scale-from-zero event. A quadratic regression would make large applications visibly slow to boot.
+**What poor performance would mean.** Slower deploys and longer first-request latency on every new instance. On serverless platforms, a cold-start penalty is billed on every scale-from-zero event. A quadratic regression would make large applications visibly slow to boot.
 
-**Expected growth: O(n).** Each capability module evaluates one `createData` call, which builds its schema, registers its operations and allocates its store independently of every other capability, so total boot time is the process start-up floor plus a constant amount of work per capability.
+**Expected growth: O(n).** Each capability module evaluates one `createData` call. That call builds its schema, registers its operations and allocates its store independently of every other capability. Total boot time is the process start-up floor plus a constant amount of work per capability.
 
 **Variables that could change its cost**
 
@@ -100,8 +101,8 @@ Every function the package exposes is measured on its own across the full size l
 
 **Deliberately not covered**
 
-- **warm module cache** -- A cold process is the point of this benchmark; a warm cache cannot exist in a fresh process.
-- **bundled vs unbundled loading** -- Measured unbundled through Node's native ESM loader; bundlers change module-evaluation cost and are application-specific.
+- **warm module cache**: A cold process is the point of this benchmark; a warm cache cannot exist in a fresh process.
+- **bundled vs unbundled loading**: Measured unbundled through Node's native ESM loader; bundlers change module-evaluation cost and are application-specific.
 
 | records | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
@@ -118,9 +119,9 @@ Every function the package exposes is measured on its own across the full size l
 
 ### `buildData`
 
-**Why we benchmark it.** Builds the initial immutable state from a schema; every capability and every store creation calls it, so it sits inside cold start and inside every test that creates a store.
+**Why we benchmark it.** Builds the initial immutable state from a schema. Every capability and every store creation calls it, so it sits inside cold start and inside every test that creates a store.
 
-**What poor performance would mean.** Slower boot and slower tests; for an application that creates stores per request or per component, the cost lands on the hot path.
+**What poor performance would mean.** Slower boot and slower tests. For an application that creates stores per request or per component, the cost lands on the hot path.
 
 **Expected growth: O(n).** It walks the schema's initial field values once to freeze and index them, so its cost follows the number of initial records.
 
@@ -134,9 +135,9 @@ Every function the package exposes is measured on its own across the full size l
 
 **Deliberately not covered**
 
-- **schemas with validators** -- Validators are application code; their cost belongs to the application.
+- **schemas with validators**: Validators are application code; their cost belongs to the application.
 
-**Measured: O(n)** (exponent 1.02, 10 sizes) -- ✅ matches.
+**Measured: O(n)** (exponent 1.02, 10 sizes): ✅ matches.
 
 | records | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
@@ -155,9 +156,9 @@ Every function the package exposes is measured on its own across the full size l
 
 **Why we benchmark it.** Every successful getter ends here: the fetched collection is committed into state. It runs once per fetch for every capability in the application, so it is the dominant steady-state cost of reading data.
 
-**What poor performance would mean.** Every fetch gets slower in proportion to its size; at thousands of records a regression turns a page load into a visible stall and raises server CPU per request. A quadratic bug would make large lists unusable.
+**What poor performance would mean.** Every fetch gets slower in proportion to its size. At thousands of records, a regression turns a page load into a visible stall and raises server CPU per request. A quadratic bug would make large lists unusable.
 
-**Expected growth: O(n).** Committing a new array replaces the field and deep-freezes every newly arrived record exactly once (`deepFreezeNewNodes`), so the work is proportional to the number of new records.
+**Expected growth: O(n).** Committing a new array replaces the field and deep-freezes every newly arrived record exactly once (`deepFreezeNewNodes`). The work is proportional to the number of new records.
 
 **Variables that could change its cost**
 
@@ -165,16 +166,16 @@ Every function the package exposes is measured on its own across the full size l
 | --- | --- | --- |
 | records per fetch | swept | The tier axis: how many records one getter call fetches and commits. |
 | record shape | fixed at "7-field task record (strings, dates, a tag array)" | Records come from the deterministic generator in benchmark-fixtures/generator.mjs; wider or deeper records would raise the per-record cost. |
-| existing state size | fixed at "empty collection" | The store starts with an empty collection, so no reconciliation against old records is included; that is measured in reconcile-array-info. |
-| reference reuse | fixed at "always new references" | Each sample commits freshly built records; committing the same reference again is a free no-op by design and is not what this measures. |
+| existing state size | fixed at "empty collection" | The store starts with an empty collection, so no reconciliation against old records is included. That is measured in reconcile-array-info. |
+| reference reuse | fixed at "always new references" | Each sample commits freshly built records. Committing the same reference again is a free no-op by design and is not what this measures. |
 
 **Deliberately not covered**
 
-- **commits that fail ownership checks** -- A rejected commit stops early and is not a steady-state cost.
+- **commits that fail ownership checks**: A rejected commit stops early and is not a steady-state cost.
 
 **In the end-to-end run:** One commit per fetch.
 
-**Measured: O(n)** (exponent 0.87, 10 sizes) -- ✅ matches.
+**Measured: O(n)** (exponent 0.87, 10 sizes): ✅ matches.
 
 | records | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
@@ -191,11 +192,11 @@ Every function the package exposes is measured on its own across the full size l
 
 ### `commitAuthoritative (change one small field)`
 
-**Why we benchmark it.** Most state changes are tiny (a filter, a selection, a timestamp) but happen while a large collection sits in the same store. This proves the central design promise, structural sharing: a small change must not pay for the large data next to it.
+**Why we benchmark it.** Most state changes are tiny: a filter, a selection, a timestamp. They happen while a large collection sits in the same store. This proves the central design promise, structural sharing: a small change must not pay for the large data next to it.
 
-**What poor performance would mean.** If the cost grew with the collection, every keystroke or click would re-copy thousands of records, and the application would get slower as its data grew -- the exact failure structural sharing exists to prevent.
+**What poor performance would mean.** If the cost grew with the collection, every keystroke or click would re-copy thousands of records. The application would get slower as its data grew. Structural sharing exists to prevent exactly that failure.
 
-**Expected growth: O(1).** A leaf commit rebuilds only the path from the root to the changed field and reuses every other branch by reference, so the work does not depend on how many records the store holds.
+**Expected growth: O(1).** A leaf commit rebuilds only the path from the root to the changed field and reuses every other branch by reference. The work does not depend on how many records the store holds.
 
 **Variables that could change its cost**
 
@@ -207,9 +208,9 @@ Every function the package exposes is measured on its own across the full size l
 
 **Deliberately not covered**
 
-- **deeply nested change paths** -- Path length adds a small constant per level; the store's fields are shallow by design.
+- **deeply nested change paths**: Path length adds a small constant per level; the store's fields are shallow by design.
 
-**Measured: O(1)** (exponent 0.00, 10 sizes) -- ✅ matches.
+**Measured: O(1)** (exponent 0.00, 10 sizes): ✅ matches.
 
 | records | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
@@ -226,11 +227,11 @@ Every function the package exposes is measured on its own across the full size l
 
 ### `reconcileArrayInfo`
 
-**Why we benchmark it.** Builds the identity-keyed bookkeeping that lets lists update in place instead of being replaced; it runs on every collection commit that carries an identity key.
+**Why we benchmark it.** Builds the identity-keyed bookkeeping that lets lists update in place instead of being replaced. It runs on every collection commit that carries an identity key.
 
-**What poor performance would mean.** Collection commits slow down in proportion to their size, adding directly to every list fetch; a quadratic regression would appear first on large tables.
+**What poor performance would mean.** Collection commits slow down in proportion to their size, adding directly to every list fetch. A quadratic regression would appear first on large tables.
 
-**Expected growth: O(n).** It visits each incoming record once to compute its identity key and look it up in a hash map of known records, so the work is proportional to the number of records.
+**Expected growth: O(n).** It visits each incoming record once to compute its identity key and look it up in a hash map of known records. The work is proportional to the number of records.
 
 **Variables that could change its cost**
 
@@ -243,7 +244,7 @@ Every function the package exposes is measured on its own across the full size l
 
 **In the end-to-end run:** Once per collection commit.
 
-**Measured: O(n)** (exponent 1.05, 10 sizes) -- ✅ matches.
+**Measured: O(n)** (exponent 1.05, 10 sizes): ✅ matches.
 
 | records | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
@@ -262,15 +263,15 @@ Every function the package exposes is measured on its own across the full size l
 
 How many records the previous state already holds.
 
-**Expected: O(1).** The previous state is a hash map consulted once per incoming record, so how many records it holds changes neither the number of lookups nor the cost of each.
+**Expected: O(1).** The previous state is a hash map consulted once per incoming record. How many records it holds changes neither the number of lookups nor the cost of each.
 
 ### `getter dispatch (one full round trip)`
 
-**Why we benchmark it.** This is what an application actually calls: one getter through `createData` -- dedup registry, async execute, ownership-checked commit and the loading-then-success state transitions. It is the best single number for 'what does one fetch cost through data-cap'.
+**Why we benchmark it.** This is what an application actually calls: one getter through `createData`. That covers the dedup registry, async execute, ownership-checked commit and the loading-then-success state transitions. It is the best single number for 'what does one fetch cost through data-cap'.
 
-**What poor performance would mean.** Every read in the application is slower and burns more CPU, and the cost scales with traffic and with payload size.
+**What poor performance would mean.** Every read in the application is slower and burns more CPU. The cost scales with traffic and with payload size.
 
-**Expected growth: O(n).** Dispatch bookkeeping is constant per call, and the commit that follows touches every new record once, so the total is a small constant plus a term proportional to the records returned.
+**Expected growth: O(n).** Dispatch bookkeeping is constant per call, and the commit that follows touches every new record once. The total is a small constant plus a term proportional to the records returned.
 
 **Variables that could change its cost**
 
@@ -283,7 +284,7 @@ How many records the previous state already holds.
 
 **In the end-to-end run:** This is the end-to-end operation itself.
 
-**Measured: O(n)** (exponent 0.87, 10 sizes) -- ✅ matches.
+**Measured: O(n)** (exponent 0.87, 10 sizes): ✅ matches.
 
 | records | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
@@ -302,9 +303,9 @@ How many records the previous state already holds.
 
 **Why we benchmark it.** Turns a request's parameters into the string the coordinator uses to recognise identical in-flight requests. It runs on every getter and mutator call, so it sits on the hot path of everything the application does.
 
-**What poor performance would mean.** Every call pays a surcharge proportional to how complex its parameters are; large filter objects would make deduplication more expensive than the requests it saves.
+**What poor performance would mean.** Every call pays a surcharge proportional to how complex its parameters are. Large filter objects would make deduplication more expensive than the requests it saves.
 
-**Expected growth: O(n log n).** It walks every key of the parameters object (linear) and sorts the keys of each object so equal objects produce equal strings (n log n), so the sort dominates as objects grow.
+**Expected growth: O(n log n).** It walks every key of the parameters object (linear). It sorts the keys of each object so equal objects produce equal strings (n log n), so the sort dominates as objects grow.
 
 **Variables that could change its cost**
 
@@ -312,13 +313,13 @@ How many records the previous state already holds.
 | --- | --- | --- |
 | keys in the parameters object | swept | The tier axis: how many keys the parameter object has. |
 | value types | fixed at "short strings and numbers" | Dates, URLs, nested objects and arrays add proportional work per node and are not swept. |
-| typical real parameters | fixed at "3-6 keys in real use" | Real calls pass 3-6 keys; the ladder deliberately goes far beyond that to expose the growth rate. |
+| typical real parameters | fixed at "3-6 keys in real use" | Real calls pass 3-6 keys. The ladder deliberately goes far beyond that to expose the growth rate. |
 
 **Deliberately not covered**
 
-- **deeply nested parameters** -- Nesting is bounded by a hard depth limit and is not representative of real request parameters.
+- **deeply nested parameters**: Nesting is bounded by a hard depth limit and is not representative of real request parameters.
 
-**Measured: O(n)** (exponent 1.01, 10 sizes) -- 🟡 close (neighbouring class).
+**Measured: O(n)** (exponent 1.01, 10 sizes): 🟡 close (neighbouring class).
 
 | records | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
@@ -337,23 +338,23 @@ How many records the previous state already holds.
 
 **Why we benchmark it.** When many components ask for the same data at once, the coordinator should run the request once and share the result. This benchmark proves the saving is real and shows what the sharing itself costs.
 
-**What poor performance would mean.** Without effective deduplication every concurrent caller hits the data source, multiplying load and cost on the backend; if the sharing itself were slow, dedup would cost more than it saves.
+**What poor performance would mean.** Without effective deduplication, every concurrent caller hits the data source, multiplying load and cost on the backend. If the sharing itself were slow, dedup would cost more than it saves.
 
-**Expected growth: O(n).** Each of the n callers registers on the shared in-flight request and receives the one result, so the work is proportional to the number of callers while the underlying fetch runs only once.
+**Expected growth: O(n).** Each of the n callers registers on the shared in-flight request and receives the one result. The work is proportional to the number of callers, while the underlying fetch runs only once.
 
 **Variables that could change its cost**
 
 | Variable | How it is handled | What it is |
 | --- | --- | --- |
 | concurrent identical callers | swept | The tier axis: how many callers ask for the same data at the same moment. |
-| payload size | fixed at "200 records" | Held constant so only the caller count varies; payload scaling is measured in getter-dispatch-cold. |
+| payload size | fixed at "200 records" | Held constant so only the caller count varies. Payload scaling is measured in getter-dispatch-cold. |
 | request identity | variant | Identical requests (shared) versus independent requests (not shared), measured as the two variants below. |
 
 #### Variant `identical`
 
-Every caller asks for the same page; the coordinator runs one fetch and shares it.
+Every caller asks for the same page. The coordinator runs one fetch and shares it.
 
-**Measured: O(n)** (exponent 0.84, 10 sizes) -- ✅ matches.
+**Measured: O(n)** (exponent 0.84, 10 sizes): ✅ matches.
 
 | records | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
@@ -370,9 +371,9 @@ Every caller asks for the same page; the coordinator runs one fetch and shares i
 
 #### Variant `independent`
 
-Every caller asks for a different page; nothing can be shared, so this is the no-dedup comparison.
+Every caller asks for a different page. Nothing can be shared, so this is the no-dedup comparison.
 
-**Measured: O(n)** (exponent 0.84, 10 sizes) -- ✅ matches.
+**Measured: O(n)** (exponent 0.84, 10 sizes): ✅ matches.
 
 | records | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
@@ -391,20 +392,20 @@ Every caller asks for a different page; nothing can be shared, so this is the no
 
 **Why we benchmark it.** Screens usually need several datasets at once; `runGetters` starts them together. Its overhead is paid on every screen load.
 
-**What poor performance would mean.** Screen-load latency grows with the number of datasets a screen needs, and a super-linear regression would punish exactly the most data-rich screens.
+**What poor performance would mean.** Screen-load latency grows with the number of datasets a screen needs. A super-linear regression would punish exactly the most data-rich screens.
 
-**Expected growth: O(n²).** Dispatching and aggregating are linear in the getters, but each getter commits to its own field and every commit rebuilds the root fields object, whose size is the number of fields (confirmed separately: one commit costs roughly 0.1 ms at 500 fields and 1.3 ms at 8,000). Here every getter owns one field, so n getters make n commits of O(n) each. A real capability has a handful of fields, where this is effectively linear; the quadratic term only appears when fields and getters grow together, which is why it is measured this way.
+**Expected growth: O(n²).** Dispatching and aggregating are linear in the getters. But each getter commits to its own field, and every commit rebuilds the root fields object, whose size is the number of fields. A separate measurement confirmed this: one commit costs roughly 0.1 ms at 500 fields and 1.3 ms at 8,000. Here every getter owns one field, so n getters make n commits of O(n) each. A real capability has a handful of fields, where this is effectively linear. The quadratic term only appears when fields and getters grow together, which is why it is measured this way.
 
 **Variables that could change its cost**
 
 | Variable | How it is handled | What it is |
 | --- | --- | --- |
 | getters per call | swept | The tier axis: how many getters one `runGetters` call starts. |
-| fields per capability | swept | Swept together with getters on purpose (one field per getter): the cost of each commit depends on the field count, so the two cannot be separated in this benchmark. |
+| fields per capability | swept | Swept together with getters on purpose (one field per getter). The cost of each commit depends on the field count, so the two cannot be separated in this benchmark. |
 | payload per getter | fixed at "20 records" | Small and constant so the getter count, not payload size, drives the result. |
 | getter independence | fixed at "all independent, all succeed" | A failing getter takes the error path, which is cheaper and not representative. |
 
-**Measured: O(n²)** (exponent 2.29, 10 sizes) -- ✅ matches.
+**Measured: O(n²)** (exponent 2.29, 10 sizes): ✅ matches.
 
 | records | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
@@ -423,9 +424,9 @@ Every caller asks for a different page; nothing can be shared, so this is the no
 
 **Why we benchmark it.** The optional snapshot cache lets a screen restore instantly. It must never become a hidden per-item cost: it should hold snapshots by reference.
 
-**What poor performance would mean.** If the cache copied snapshots, every cache write would cost as much as re-fetching, and memory would multiply with the number of cached screens.
+**What poor performance would mean.** If the cache copied snapshots, every cache write would cost as much as re-fetching. Memory would multiply with the number of cached screens.
 
-**Expected growth: O(1).** Entries are stored by reference in a bounded map with least-recently-used eviction, so set, get and eviction are constant-time regardless of how many records a snapshot contains.
+**Expected growth: O(1).** Entries are stored by reference in a bounded map with least-recently-used eviction. Set, get and eviction are constant-time regardless of how many records a snapshot contains.
 
 **Variables that could change its cost**
 
@@ -433,9 +434,9 @@ Every caller asks for a different page; nothing can be shared, so this is the no
 | --- | --- | --- |
 | records inside the cached snapshot | swept | The tier axis: the size of the snapshot being cached. |
 | cache fullness | fixed at "full (50 entries), every set evicts" | The worst case: each set evicts the oldest entry. |
-| hit versus miss | fixed at "hit" | The get immediately follows the set, so it is always a hit; a miss is cheaper. |
+| hit versus miss | fixed at "hit" | The get immediately follows the set, so it is always a hit. A miss is cheaper. |
 
-**Measured: O(1)** (exponent 0.05, 10 sizes) -- ✅ matches.
+**Measured: O(1)** (exponent 0.05, 10 sizes): ✅ matches.
 
 | records | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
@@ -452,9 +453,9 @@ Every caller asks for a different page; nothing can be shared, so this is the no
 
 ### `computeItemIdentity`
 
-**Why we benchmark it.** It builds the identity key of every record in a collection commit, so it runs once per record on every list fetch.
+**Why we benchmark it.** It builds the identity key of every record in a collection commit. It runs once per record on every list fetch.
 
-**What poor performance would mean.** Collection commits slow down in proportion to the number of key fields, adding to every list fetch of every capability that uses a composite key.
+**What poor performance would mean.** Collection commits slow down in proportion to the number of key fields. That adds to every list fetch of every capability that uses a composite key.
 
 **Expected growth: O(n).** Each key field's value is read and joined once, so cost is proportional to the number of key fields.
 
@@ -469,11 +470,11 @@ Every caller asks for a different page; nothing can be shared, so this is the no
 
 ### `createData`
 
-**Why we benchmark it.** Every capability is declared by one `createData` call, so its cost is paid at module load by every process that imports a capability, not only by the first fetch.
+**Why we benchmark it.** Every capability is declared by one `createData` call. Every process that imports a capability pays this at module load, not only on the first fetch.
 
-**What poor performance would mean.** Slower start-up for every process in proportion to the initial state each capability declares, on top of the per-capability floor cold start measures.
+**What poor performance would mean.** Slower start-up for every process, in proportion to the initial state each capability declares. This adds to the per-capability floor that cold start measures.
 
-**Expected growth: O(n).** It builds the initial state once, which walks the schema's initial records to freeze and index them, so cost is proportional to the number of initial records.
+**Expected growth: O(n).** It builds the initial state once, walking the schema's initial records to freeze and index them. Cost is proportional to the number of initial records.
 
 **Variables that could change its cost**
 
@@ -487,7 +488,7 @@ Every caller asks for a different page; nothing can be shared, so this is the no
 
 ### `processors.toArray`
 
-**Why we benchmark it.** It splits a delimited value into a list, once for every variable that declares it, wherever a list is read from a single string.
+**Why we benchmark it.** It splits a delimited value into a list. It runs once for every variable that declares it, wherever a list is read from a single string.
 
 **What poor performance would mean.** Slower reads of every list value, in proportion to its length.
 
@@ -502,29 +503,49 @@ Every caller asks for a different page; nothing can be shared, so this is the no
 
 **In the end-to-end run:** Run when a list value is read; measured on its own.
 
+### `observeValue`
+
+**Why we benchmark it.** It is how `data-cap/observe` records which fields cross a boundary. Wrapped around `res.json`, a logger or a database call, it walks every value that passes, on every request of an instrumented process.
+
+**What poor performance would mean.** Instrumented requests get slower in proportion to the size of what they send. That is why the walk is bounded by `maxNodes` (1,000 values by default). It is also why recording is meant for tests and staging, not for every production request.
+
+**Expected growth: O(n).** It visits every value inside the payload once (array elements collapse into one path) and records each distinct path in a map. Then it records one event per distinct path, so the work is proportional to the values walked.
+
+**Variables that could change its cost**
+
+| Variable | How it is handled | What it is |
+| --- | --- | --- |
+| records in the payload | swept | The tier axis: how many records the observed value (a response body) holds. |
+| record shape | fixed at "7-field task record (strings, dates, a tag array)" | Records come from the deterministic generator in benchmark-fixtures/generator.mjs; wider or deeper records would raise the per-record cost. |
+| node bound | fixed at "unbounded" | Lifted so the walk reaches every record and the growth shows. The default of 1,000 values stops the walk after about 50 of these records, which caps the cost of a large payload at a constant. |
+| sink | fixed at "one that only counts" | The sink is the caller's (an array, a log line, a metrics client). Counting keeps its cost out of the result. |
+| runtime | fixed at "Node (V8)" | Measured on Node only. Bun, Deno, browsers and edge runtimes are not covered. |
+
+**In the end-to-end run:** Not part of a data fetch; it runs only where an application instruments a boundary. Measured on its own.
+
 ### `withRetry`
 
-**Why we benchmark it.** Opt-in retry wrapper used around flaky data sources. Its loop, timers and abort handling run only on failure, exactly when the system is already struggling, so its overhead must be small and predictable.
+**Why we benchmark it.** Opt-in retry wrapper used around flaky data sources. Its loop, timers and abort handling run only on failure, exactly when the system is already struggling. So its overhead must be small and predictable.
 
-**What poor performance would mean.** Retry storms amplify an outage: if each retry is expensive, a struggling dependency makes the retrying service slower and more resource-hungry still.
+**What poor performance would mean.** Retry storms amplify an outage. If each retry is expensive, a struggling dependency makes the retrying service slower and more resource-hungry still.
 
-**Expected growth: O(n).** Each failed attempt goes once around the loop (error handling, backoff computation, a timer and microtask hand-off), so total cost is proportional to the number of attempts.
+**Expected growth: O(n).** Each failed attempt goes once around the loop: error handling, backoff computation, a timer and a microtask hand-off. Total cost is proportional to the number of attempts.
 
-**Measured on a shorter ladder (10, 20, 40, 80).** withRetry refuses more than 100 attempts (a built-in loop guard that fails fast on a broken exit condition), so the ladder stops at 80; real retry policies use 3-10 attempts, so this still covers well beyond real use.
+**Measured on a shorter ladder (10, 20, 40, 80).** withRetry refuses more than 100 attempts, a built-in loop guard that fails fast on a broken exit condition. So the ladder stops at 80. Real retry policies use 3-10 attempts, so this still covers well beyond real use.
 
 **Variables that could change its cost**
 
 | Variable | How it is handled | What it is |
 | --- | --- | --- |
 | attempts before success | swept | The tier axis: how many calls fail before one succeeds. |
-| backoff delay | fixed at "0 ms" | Real backoff waits seconds and would measure the timer, not the loop; the real control flow still runs. |
+| backoff delay | fixed at "0 ms" | Real backoff waits seconds and would measure the timer, not the loop. The real control flow still runs. |
 | abort signal | fixed at "never aborted" | The abort path exits early and is cheaper. |
 
 **Deliberately not covered**
 
-- **real backoff delays** -- Waiting is not CPU or memory cost; it is latency the caller chose.
+- **real backoff delays**: Waiting is not CPU or memory cost. It is latency the caller chose.
 
-**Measured: O(n)** (exponent 1.05, 4 sizes) -- ✅ matches.
+**Measured: O(n)** (exponent 1.05, 4 sizes): ✅ matches.
 
 | records | Median | p95 | CPU (median) | Heap Δ | Ops/s |
 | --- | --- | --- | --- | --- | --- |
@@ -535,7 +556,7 @@ Every caller asks for a different page; nothing can be shared, so this is the no
 
 ## 3. What makes up one end-to-end operation
 
-Each function's measured cost is multiplied by how many times one end-to-end operation calls it. A function measured on its own includes everything it calls, so where one attributed function calls another, the nested time is subtracted from the caller (its _exclusive_ time): every moment of the operation belongs to at most one row. Shares are measured against the whole operation with the package, a figure measured directly -- not against the _added_ time, which is the small difference of two noisy medians. They are estimates (each function was measured separately); the remainder is shown as _unattributed_.
+Each function's measured cost is multiplied by how many times one end-to-end operation calls it. A function measured on its own includes everything it calls. So where one attributed function calls another, the nested time is subtracted from the caller (its _exclusive_ time). Every moment of the operation then belongs to at most one row. Shares are measured against the whole operation with the package, a figure measured directly. They are not measured against the _added_ time, which is the small difference of two noisy medians. They are estimates (each function was measured separately); the remainder is shown as _unattributed_.
 
 **At 640 records** (whole operation: 666 µs)
 
@@ -570,14 +591,14 @@ Each function's measured cost is multiplied by how many times one end-to-end ope
 
 ## Cost model
 
-Estimates use two bracketing price shapes: **low** = CPU-priced compute ($0.040 per vCPU-hour, billed on CPU time) and **high** = duration-and-memory-priced functions ($0.000017 per GB-second, billed on wall time, at least 128 MB reserved). Both are rounded list prices and change over time; override them in `benchmark.config.json` → `costRates` to match your platform and negotiated pricing.
+Estimates use two bracketing price shapes. **Low** is CPU-priced compute ($0.040 per vCPU-hour, billed on CPU time). **High** is duration-and-memory-priced functions ($0.000017 per GB-second, billed on wall time, at least 128 MB reserved). Both are rounded list prices and change over time; override them in `benchmark.config.json` → `costRates` to match your platform and negotiated pricing.
 
 ## Environment and method
 
 - Run: `2026-10-02T14:04:53.795Z` → `2026-10-02T14:24:43.608Z` (1190 s), ci
 - Machine: AMD EPYC 7763 64-Core Processor, 4 logical core(s) (2 physical), 15990 MB RAM, linux/x64, Node v22.23.3, GitHub Actions
 - Git: `c7233e83f8e7c7e16e01866bb364781cfa73bd35` on `fix/code-scanning-and-caches` (uncommitted changes)
-- Sizes: 20, 40, 80, 160, 320, 640, 1280, 2560, 5120, 10240 records -- One record in the collection a getter fetches and commits (a CRM contact, an order, a support ticket). 640 is a typical full page of a mid-sized table or a busy list endpoint.
+- Sizes: 20, 40, 80, 160, 320, 640, 1280, 2560, 5120, 10240 records: One record is one item a getter fetches and commits, such as a CRM contact, an order or a support ticket. A typical full page of a mid-sized table or a busy list endpoint holds 640.
 
-**Do not compare these numbers with another machine's, another day's, or another package's.** They exist to show how _this_ package's cost changes between runs on comparable hardware and how it scales with size. See [READING-BENCHMARKS.md](../READING-BENCHMARKS.md).
+**Do not compare these numbers with another machine's, another day's, or another package's.** They show how _this_ package's cost changes between runs on comparable hardware, and how it scales with size. See [READING-BENCHMARKS.md](../READING-BENCHMARKS.md).
 

@@ -79,7 +79,7 @@ describe("generateManifest", () => {
         family: "structural",
         severity: "error",
         message:
-          'Manifest export name "userCapability" is claimed by 2 different active capability files (/project/a.ts, /project/b.ts) -- the generated manifest cannot re-export both under the same identifier. Rename one, or mark one inactive.',
+          'Manifest export name "userCapability" is claimed by 2 different active capability files (/project/a.ts, /project/b.ts). The generated manifest cannot re-export both under the same identifier. Rename one, or mark one inactive.',
       },
     ])
   })

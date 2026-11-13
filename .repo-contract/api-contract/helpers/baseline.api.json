@@ -178,7 +178,7 @@
   },
   "kind": "Package",
   "canonicalReference": "data-cap!",
-  "docComment": "",
+  "docComment": "/**\n * `data-cap/helpers`: optional helpers for writing processors (`processors`), keying array items\n * (`identity`, `canonicalize`) and narrowing raw values (`shape`).\n *\n * @packageDocumentation\n */\n",
   "name": "data-cap",
   "preserveMemberOrder": false,
   "members": [
@@ -191,7 +191,7 @@
         {
           "kind": "Function",
           "canonicalReference": "data-cap!canonicalize:function(1)",
-          "docComment": "/**\n * Canonicalizes `value` into a deterministic string, or `undefined` if it\n * cannot be safely canonicalized (a function, a symbol, a cyclic reference,\n * an invalid `Date`, a class instance without `.toJSON()`, or any object\n * carrying `__proto__`/`constructor`/`prototype` as an own key). Never\n * throws. Equal inputs always produce equal output; distinct supported\n * values never collide (own-enumerable-key walk only, `Object.keys` --\n * never `for...in`).\n */\n",
+          "docComment": "/**\n * Canonicalizes `value` into a deterministic string, or returns `undefined`\n * when that is unsafe. Unsafe values are a function, a symbol, a cyclic\n * reference, an invalid `Date` and a class instance without `.toJSON()`.\n * So is an object with an own `__proto__`, `constructor` or `prototype` key. Never\n * throws. Equal inputs always produce equal output; distinct supported\n * values never collide (own-enumerable-key walk only: `Object.keys`,\n * never `for...in`).\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -236,7 +236,7 @@
         {
           "kind": "Variable",
           "canonicalReference": "data-cap!identity:var",
-          "docComment": "/**\n * Array-identity primitives -- the same ones the standalone runtime uses to reconcile `info` for an identity-configured array field.\n */\n",
+          "docComment": "/**\n * Array-identity primitives: the same ones the standalone runtime uses to reconcile `info` for an identity-configured array field.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -277,7 +277,7 @@
         {
           "kind": "TypeAlias",
           "canonicalReference": "data-cap!IdentityKeys:type",
-          "docComment": "/**\n * Declared identity field names for one array item shape -- e.g. `[\"id\"]`, or `[\"postId\", \"commentId\"]` for a composite key.\n */\n",
+          "docComment": "/**\n * Declared identity field names for one array item shape: e.g. `[\"id\"]`, or `[\"postId\", \"commentId\"]` for a composite key.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -316,7 +316,7 @@
         {
           "kind": "Interface",
           "canonicalReference": "data-cap!IdentityWarning:interface",
-          "docComment": "/**\n * One array item that couldn't be reconciled by identity -- surfaced, never silently dropped.\n */\n",
+          "docComment": "/**\n * One array item that couldn't be reconciled by identity: surfaced, never silently dropped.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -415,7 +415,7 @@
         {
           "kind": "Variable",
           "canonicalReference": "data-cap!processors:var",
-          "docComment": "/**\n * Convenience coercion helpers for a `processor(raw, ctx)` function (e.g. `processors.toNumber(raw.age)`). Never throw -- unparseable input resolves to `undefined`.\n */\n",
+          "docComment": "/**\n * Convenience coercion helpers for a `processor(raw, ctx)` function (e.g. `processors.toNumber(raw.age)`). Never throw: unparseable input resolves to `undefined`.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",

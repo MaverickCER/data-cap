@@ -10,10 +10,10 @@ import { PACKAGE_VERSION } from "../build/package-version.js"
 
 /** Bump only when a consumer written for the previous version could
  *  misinterpret the new payload (a field changes type/meaning, or is
- *  removed) -- NOT for every additive field. */
+ *  removed): NOT for every additive field. */
 export const JSON_SCHEMA_VERSION = 1
 
-// One version source, shared with the `./build` entry -- `PACKAGE_VERSION` is
+// One version source, shared with the `./build` entry: `PACKAGE_VERSION` is
 // `tsup`'s build-time constant (ADR 0058), so the CLI never reads its own
 // manifest at runtime.
 const TOOL_VERSION: string = PACKAGE_VERSION
@@ -85,7 +85,7 @@ export function serializeFailure(error: unknown): JsonErrorPayload {
     error: {
       name: error instanceof Error ? error.name : "Error",
       message: error instanceof Error ? error.message : String(error),
-      // exactOptionalPropertyTypes: omit the key rather than set it to
+      // `exactOptionalPropertyTypes`: omit the key rather than set it to
       // `undefined` when the thrown error carries no findings of its own.
       ...(hasFindings(error) ? { findings: error.findings } : {}),
     },
@@ -93,7 +93,7 @@ export function serializeFailure(error: unknown): JsonErrorPayload {
 }
 
 /**
- * The complete `--json` envelope shape, success or failure -- the target
+ * The complete `--json` envelope shape, success or failure: the target
  * type the published JSON Schema (`schemas/data-cap-report.schema.json`,
  * `npm run schema`) is generated from.
  */

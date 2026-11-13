@@ -107,7 +107,7 @@ describe("renderFlowDot (exact output)", () => {
       digraph "data-flow" {
         rankdir=LR;
         labelloc=t;
-        label="Data flow -- NOT complete: parts could not be followed, so a missing flow is not proof of absence";
+        label="Data flow: NOT complete (parts could not be followed, so a missing flow is not proof of absence)";
         node [fontname=Helvetica];
         edge [fontname=Helvetica];
         "n0" [id="n01", label="d.\\"f\\"\\\\x\\n(secret)", shape=parallelogram];
@@ -152,7 +152,7 @@ describe("renderFlowDot (exact output)", () => {
       digraph "data-flow" {
         rankdir=LR;
         labelloc=t;
-        label="Data flow -- NOT complete: parts could not be followed, so a missing flow is not proof of absence";
+        label="Data flow: NOT complete (parts could not be followed, so a missing flow is not proof of absence)";
         node [fontname=Helvetica];
         edge [fontname=Helvetica];
         "n0" [id="n01", label="d.\\"f\\"\\\\x\\n(secret)", shape=parallelogram];
@@ -196,7 +196,7 @@ describe("renderFlowDot (exact output)", () => {
   })
   it("renders a complete graph and a calls-free explicit option", () => {
     const text = renderFlowDot(maximal(true), { includeCalls: false }) ?? ""
-    expect(text).toContain('  label="Data flow -- complete";\n')
+    expect(text).toContain('  label="Data flow: complete";\n')
     expect(text).not.toContain("NOT complete")
     expect(text).not.toContain("gray50")
   })
@@ -232,7 +232,7 @@ describe("renderFlowDot (exact output)", () => {
       digraph "data-flow" {
         rankdir=LR;
         labelloc=t;
-        label="Data flow -- NOT complete: parts could not be followed, so a missing flow is not proof of absence";
+        label="Data flow: NOT complete (parts could not be followed, so a missing flow is not proof of absence)";
         node [fontname=Helvetica];
         edge [fontname=Helvetica];
         "n0" [id="fld", label="d.f", shape=parallelogram];
@@ -252,7 +252,7 @@ describe("renderFlowDot (exact output)", () => {
       digraph "data-flow" {
         rankdir=LR;
         labelloc=t;
-        label="Data flow -- NOT complete: parts could not be followed, so a missing flow is not proof of absence";
+        label="Data flow: NOT complete (parts could not be followed, so a missing flow is not proof of absence)";
         node [fontname=Helvetica];
         edge [fontname=Helvetica];
         "n0" [id="fld", label="d.f", shape=parallelogram];
@@ -274,7 +274,7 @@ describe("renderFlowDot (exact output)", () => {
         digraph "data-flow" {
           rankdir=LR;
           labelloc=t;
-          label="Data flow -- complete";
+          label="Data flow: complete";
           node [fontname=Helvetica];
           edge [fontname=Helvetica];
           "n0" [id="fld", label="d.f", shape=parallelogram];
@@ -291,8 +291,8 @@ describe("renderFlowMermaid (exact output)", () => {
     expect(renderFlowMermaid(maximal())).toMatchInlineSnapshot(`
       "%% Machine-generated engineering artifact assembled from statically-provable code facts and author-declared documentation. It can support a security, privacy, or compliance review. It does not itself establish compliance with any standard. Incomplete traces are recorded as unknown, never hidden; an absent flow is not evidence of no flow.
       flowchart LR
-        %% Data flow -- NOT complete: parts could not be followed
-        cov["Coverage: NOT complete -- a missing flow is not proof of absence"]
+        %% Data flow: NOT complete (parts could not be followed)
+        cov["Coverage: NOT complete (a missing flow is not proof of absence)"]
         n0[/"d.#quot;f#quot;\\x<br/>(secret)"/]
         n1(["fnA<br/>line"])
         n2(["fnB"])
@@ -341,8 +341,8 @@ describe("renderFlowMermaid (exact output)", () => {
     expect(renderFlowMermaid(maximal(), { includeCalls: true })).toMatchInlineSnapshot(`
       "%% Machine-generated engineering artifact assembled from statically-provable code facts and author-declared documentation. It can support a security, privacy, or compliance review. It does not itself establish compliance with any standard. Incomplete traces are recorded as unknown, never hidden; an absent flow is not evidence of no flow.
       flowchart LR
-        %% Data flow -- NOT complete: parts could not be followed
-        cov["Coverage: NOT complete -- a missing flow is not proof of absence"]
+        %% Data flow: NOT complete (parts could not be followed)
+        cov["Coverage: NOT complete (a missing flow is not proof of absence)"]
         n0[/"d.#quot;f#quot;\\x<br/>(secret)"/]
         n1(["fnA<br/>line"])
         n2(["fnB"])
@@ -398,7 +398,7 @@ describe("renderFlowMermaid (exact output)", () => {
     expect(text.split("\n").slice(0, 4)).toEqual([
       `%% ${flowEvidenceDisclaimer()}`,
       "flowchart LR",
-      "  %% Data flow -- complete",
+      "  %% Data flow: complete",
       '  cov["Coverage: complete"]',
     ])
     expect(text).not.toContain("NOT complete")
@@ -431,8 +431,8 @@ describe("renderFlowMermaid (exact output)", () => {
     expect(renderFlowMermaid(input(flow), { field: "d.f" })).toMatchInlineSnapshot(`
       "%% Machine-generated engineering artifact assembled from statically-provable code facts and author-declared documentation. It can support a security, privacy, or compliance review. It does not itself establish compliance with any standard. Incomplete traces are recorded as unknown, never hidden; an absent flow is not evidence of no flow.
       flowchart LR
-        %% Data flow -- NOT complete: parts could not be followed
-        cov["Coverage: NOT complete -- a missing flow is not proof of absence"]
+        %% Data flow: NOT complete (parts could not be followed)
+        cov["Coverage: NOT complete (a missing flow is not proof of absence)"]
         n0[/"d.f"/]
         n1(["go"])
         n2[("client-response: http")]

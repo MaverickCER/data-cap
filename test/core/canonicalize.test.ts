@@ -4,7 +4,7 @@ import { canonicalize } from "../../src/core/canonicalize.js"
 describe("canonicalize -- exact canonical encoding (the collision-freeness contract)", () => {
   // `atom(tag, payload)` == `${tag}${payload.length}:${payload}`. Pinning the
   // exact form is what actually proves the type tags and length prefixes carry
-  // their weight -- relational `not.toBe` checks pass no matter what the tag is.
+  // their weight: relational `not.toBe` checks pass no matter what the tag is.
   it.each<[string, unknown, string]>([
     ["undefined", undefined, "u0:"],
     ["null", null, "z0:"],
@@ -142,8 +142,8 @@ describe("canonicalize -- example-based", () => {
   it("never throws for an array that references itself directly, with no intermediate object", () => {
     // Distinct from the previous case: no nested object sits between the
     // array and its own cycle, so no OBJECT-side `nextSeen` tracking can
-    // ever catch this -- only the array's own `nextSeen` (or, failing that,
-    // MAX_DEPTH's independent backstop -- see the depth-boundary tests
+    // ever catch this (only the array's own `nextSeen` (or, failing that,
+    // MAX_DEPTH's independent backstop) see the depth-boundary tests
     // below) can.
     const cyclic: unknown[] = []
     cyclic.push(cyclic)
@@ -244,7 +244,7 @@ describe("canonicalize -- property-based obligations", () => {
     [2, 1],
     {},
     { a: 1 },
-    // { b: 2, a: 1 } deliberately omitted -- it's the same logical value as
+    // { b: 2, a: 1 } deliberately omitted; it's the same logical value as
     // { a: 1, b: 2 } (property-order independence is correct, verified
     // separately above), not a distinct sample for the injectivity check below.
     { a: 1, b: 2 },
@@ -297,7 +297,7 @@ describe("canonicalize -- property-based obligations", () => {
 // "determinism" test genuinely re-canonicalizes distinct object instances
 // rather than trivially re-canonicalizing the exact same reference twice
 // (Date/URL/RegExp don't support structuredClone identically across all
-// runtimes for this repo's purposes, so those are simply reused directly --
+// runtimes for this repo's purposes, so those are simply reused directly:
 // they're immutable-in-practice for this test's needs).
 function structuredCloneSafe<T>(value: T): T {
   if (value === null || typeof value !== "object") return value

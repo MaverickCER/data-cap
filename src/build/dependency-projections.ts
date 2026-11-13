@@ -1,15 +1,15 @@
 /**
  * Reference projections (ADR 0050, ADR 0056) over Dependency Model's own
- * `edges` -- plain, on-demand exported functions, matching
+ * `edges`: plain, on-demand exported functions, matching
  * `inventory-projections.ts`'s established pattern: one canonical fact
  * (`DependencyModel.edges`), several named views over it, none of them
  * stored redundantly inside the model itself. See ADR 0056 for why
  * `byCapability`/`consumers` moved here from `DependencyModel`'s own stored
  * shape, and why exactly these two (and no others) are the sanctioned
- * groupings: ADR 0050's own report-mapping table names both (row 15,
+ * groupings. ADR 0050's own report-mapping table names both (row 15,
  * Operation-to-Field Impact Report; row 16, Field-to-Operation Impact
- * Report) -- a grouping by `relationship`/`resolution`/`field`/`operation`
- * is easy to imagine and deliberately not built until something equally
+ * Report). A grouping by `relationship`/`resolution`/`field`/`operation`
+ * is an obvious next projection and deliberately not built until something equally
  * concrete justifies it.
  */
 
@@ -41,7 +41,7 @@ function capabilityKey(ref: { readonly file: string; readonly exportName: string
 }
 
 /**
- * Groups `edges` by the capability each targets -- every capability in
+ * Groups `edges` by the capability each targets: every capability in
  * `capabilities`, including one with zero edges (an `ABANDONED_CAPABILITY`
  * candidate, per `usage-report.ts`), sorted by file then exportName. Takes
  * `capabilities` as well as `edges`, unlike `groupEdgesByConsumer`: a
@@ -72,7 +72,7 @@ export function groupEdgesByCapability(
 }
 
 /**
- * Groups `edges` by the consuming file each originates from -- the inverse
+ * Groups `edges` by the consuming file each originates from: the inverse
  * of `groupEdgesByCapability`. Only files with at least one edge appear,
  * sorted by file. Takes `edges` alone: unlike a capability, a file is only
  * ever known to this projection because it produced at least one edge.

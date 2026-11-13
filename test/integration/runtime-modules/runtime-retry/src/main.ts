@@ -1,12 +1,12 @@
 /**
- * Client-side pattern: `runtime/retry` is optional, opt-in retry -- never
+ * Client-side pattern: `runtime/retry` is optional, opt-in retry; never
  * applied automatically to any failure. The caller's own `shouldRetry`
  * predicate decides what's worth retrying; `withRetry` itself has no
  * knowledge of data-cap's own operation-failure taxonomy. It never retries
  * after the signal aborts (including mid-delay) and never exceeds
  * `maxAttempts`. `isStillDefault` is one documented, ready-made policy:
  * retry a getter only when the target field currently holds nothing but its
- * declared schema default -- never risk overwriting already-real data with
+ * declared schema default; never risk overwriting already-real data with
  * an ambiguous retry.
  */
 import assert from "node:assert/strict"
@@ -14,7 +14,7 @@ import { writeFileSync } from "node:fs"
 import path from "node:path"
 import { withRetry, isStillDefault } from "data-cap/runtime/retry"
 
-// -- withRetry: succeeds after two transient failures --
+// (withRetry: succeeds after two transient failures)
 let attemptCount = 0
 async function flakyFetch(): Promise<string> {
   attemptCount += 1
@@ -30,7 +30,7 @@ const result = await withRetry(() => flakyFetch(), controller.signal, {
 assert.equal(result, "ok")
 assert.equal(attemptCount, 3, "the first two attempts failed, the third succeeded")
 
-// -- withRetry: gives up once shouldRetry says no --
+// (withRetry: gives up once shouldRetry says no)
 attemptCount = 0
 async function alwaysFails(): Promise<never> {
   attemptCount += 1
@@ -53,7 +53,7 @@ assert.equal(
   "shouldRetry() returning false on the first failure stops retrying immediately",
 )
 
-// -- withRetry: never retries after the signal aborts mid-delay --
+// (withRetry: never retries after the signal aborts mid-delay)
 attemptCount = 0
 const abortController = new AbortController()
 async function failsOnce(): Promise<never> {
@@ -75,7 +75,7 @@ try {
 assert.equal(abortedBeforeRetry, true)
 assert.equal(attemptCount, 1, "aborting mid-delay prevents the second attempt from ever firing")
 
-// -- isStillDefault: the documented "only retry a still-default field" policy --
+// (isStillDefault: the documented "only retry a still-default field" policy)
 const declaredDefault = { status: "idle" }
 assert.equal(
   isStillDefault(declaredDefault, declaredDefault),
@@ -93,7 +93,7 @@ assert.equal(
   "real data must never look like it's still the default",
 )
 // A non-canonicalizable value (e.g. containing a function) is conservatively
-// treated as "not the default" -- never retried, to avoid a false positive.
+// treated as "not the default": never retried, to avoid a false positive.
 assert.equal(isStillDefault({ handler: () => undefined }, declaredDefault), false)
 
 const summary = {

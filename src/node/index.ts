@@ -1,10 +1,17 @@
+/**
+ * `data-cap/node` (Node only): `nodeBuildFileSystem`, the `node:fs` adapter a build script passes
+ * to `data-cap/build` as its `fs` option.
+ *
+ * @packageDocumentation
+ */
+
 // The `data-cap/node` entry point: the concrete, Node-backed
 // `BuildFileSystem` adapter a caller of `data-cap/build` hands to
 // `generateDataArtifacts` / `checkArtifacts` (and the standalone generator
 // functions) as the required `fs` capability.
 //
 // This is an **executable-context** entry, exactly like `bin` and
-// `./eslint-plugin` -- it is the sanctioned place `node:fs/promises` is
+// `./eslint-plugin`. It is the sanctioned place `node:fs/promises` is
 // acquired. `./build` itself never imports `node:fs` (ADR 0058); a consumer
 // running the generators from their own build script imports the adapter from
 // here:

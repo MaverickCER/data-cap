@@ -1,11 +1,11 @@
-// Regenerates docs/DATA.md -- what `data-cap --docs docs/DATA.md` used to
+// Regenerates docs/DATA.md: what `data-cap --docs docs/DATA.md` used to
 // write for this fixture, before `--docs` was removed from the CLI surface
 // (see
 // ../../../../specs/decisions/0066-cli-restricted-to-runtime-and-evidence-output.md).
-// `docs/DATA.md` has no real *runtime* consumer -- nothing here reads it
-// programmatically -- so generating it is application-level code now, not a
+// `docs/DATA.md` has no real *runtime* consumer (nothing here reads it
+// programmatically) so generating it is application-level code now, not a
 // CLI concern. Calls `generateDataArtifacts()` directly from `data-cap/build`
-// (fully exported) -- the same orchestrator the removed `--docs` flag called
+// (fully exported): the same orchestrator the removed `--docs` flag called
 // internally.
 import path from "node:path"
 import { fileURLToPath } from "node:url"

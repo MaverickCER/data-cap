@@ -3,10 +3,10 @@
  * getter/mutator/subscription `processor(raw, ctx)` function.
  *
  * Deliberately not a business-rule validator system (no `shape.email()`,
- * no `shape.range()`) -- data-cap has no per-field validator vocabulary
+ * no `shape.range()`): data-cap has no per-field validator vocabulary
  * (unlike env-cap's `helpers.validators`); a processor's own logic is the
- * sole place business rules belong. These check only structural JS shape --
- * "is this a plain object" vs. "is this an array" vs. "is this a Date" --
+ * sole place business rules belong. These check only structural JS shape:
+ * "is this a plain object" vs. "is this an array" vs. "is this a Date":
  * the same category of check `core/schema.ts` already performs internally,
  * exposed here for application code writing its own processors.
  *
@@ -20,13 +20,13 @@
  *   fails its declared validator is an invalid environment, and
  *   `createEnv()` refuses to produce a contract at all. A validator there
  *   must therefore carry a human-readable *message* explaining what was
- *   rejected and why -- which is exactly what a combinator library like
+ *   rejected and why: which is exactly what a combinator library like
  *   `helpers.validators` exists to compose.
  * - `data-cap` has no reject path to write a message for. Fields are
- *   always synchronously readable (`AGENTS.md` invariant 2), so a
+ *   always synchronously readable (`AGENTS.md` invariant 2). So a
  *   processor/operation result that doesn't match a field's declared shape
  *   **resets that field to its declared default** via `core/schema.ts`'s
- *   `checkValueAgainstSchema` -- the state stays valid and readable, and
+ *   `checkValueAgainstSchema`. The state stays valid and readable, and
  *   the mismatch surfaces through `DataInfo`, never as a thrown validator
  *   error. A `validators.email()` here would have nowhere to put its
  *   message and no failure mode to attach it to; it would only re-describe
@@ -39,7 +39,7 @@
  */
 
 /**
- * True for a plain object literal (or `Object.create(null)`) -- false for
+ * True for a plain object literal (or `Object.create(null)`): false for
  * `null`, arrays, and any class instance (including `Date`/`URL`/`RegExp`),
  * matching the same "plain object" notion `core/canonicalize.ts` uses
  * internally.

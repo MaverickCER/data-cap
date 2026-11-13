@@ -17,7 +17,7 @@ export function TodoApp({ initialUser, users }: TodoAppProps) {
   // The idiomatic data-cap read: `todoData.getSnapshot().fields.todos` is a
   // real, statically-detectable field read (unlike destructuring a getter's
   // own return value, which `npm run docs`'s dependency scan does NOT credit
-  // as a read -- confirmed directly: without this, `docs/OWNERSHIP.md` flags
+  // as a read; confirmed directly: without this, `docs/OWNERSHIP.md` flags
   // a genuine UNCONSUMED_FIELD finding on `todos`). `subscribe`/`getSnapshot`
   // are exactly `useSyncExternalStore`'s shape, so this component re-renders
   // on every optimistic update and settled response without any manual
@@ -26,8 +26,8 @@ export function TodoApp({ initialUser, users }: TodoAppProps) {
   // component that's actually server-rendered (confirmed empirically:
   // omitting it throws "Missing getServerSnapshot" and silently falls back
   // to client-only rendering under `next start`). `todoData.getSnapshot`
-  // works identically server- or client-side -- it reads the capability's
-  // own in-memory state, never `window`/`document` -- so the same function
+  // works identically server- or client-side (it reads the capability's
+  // own in-memory state, never `window`/`document`) so the same function
   // is correct for both arguments, unlike a typical browser-API-backed store.
   const snapshot = useSyncExternalStore(
     todoData.subscribe,

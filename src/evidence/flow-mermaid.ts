@@ -1,9 +1,9 @@
 /**
- * Mermaid for the data-flow graph (ADR 0070): a diagram that embeds directly
- * in Markdown -- a README, a pull request, generated API documentation -- as
- * a projection of the one Evidence Model. Statuses are in the label text, not
- * only the colour; unknowns are visible nodes; an incomplete graph says so in
- * a legend node; an edge of a violated policy is thick and red.
+ * Mermaid for the data-flow graph (ADR 0070), as a projection of the one
+ * Evidence Model. The diagram embeds directly in Markdown: a README, a pull
+ * request, generated API documentation. Statuses are in the label text, not
+ * only the colour. Unknowns are visible nodes, and an incomplete graph says so
+ * in a legend node. An edge of a violated policy is thick and red.
  */
 
 import { flowEvidenceDisclaimer } from "./flow-disclaimer.js"
@@ -44,7 +44,7 @@ export function renderFlowMermaid(
     return `%% ${flowEvidenceDisclaimer()}\nflowchart LR\n  none[${quote(`No field named ${selection.missingField} in this evidence`)}]\n`
   }
 
-  // Keyed by `string | undefined` so an unknown with no subject simply finds no node.
+  // Keyed by `string | undefined` so an unknown with no subject finds no node.
   const ids = new Map<string | undefined, string>()
   const assign = (key: string): string => {
     const existing = ids.get(key)
@@ -56,10 +56,10 @@ export function renderFlowMermaid(
 
   const lines: string[] = [`%% ${flowEvidenceDisclaimer()}`, "flowchart LR"]
   lines.push(
-    `  %% Data flow -- ${selection.complete ? "complete" : "NOT complete: parts could not be followed"}`,
+    `  %% Data flow: ${selection.complete ? "complete" : "NOT complete (parts could not be followed)"}`,
   )
   lines.push(
-    `  cov[${quote(selection.complete ? "Coverage: complete" : "Coverage: NOT complete -- a missing flow is not proof of absence")}]`,
+    `  cov[${quote(selection.complete ? "Coverage: complete" : "Coverage: NOT complete (a missing flow is not proof of absence)")}]`,
   )
 
   for (const node of selection.nodes) {

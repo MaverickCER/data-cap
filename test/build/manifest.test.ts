@@ -122,7 +122,7 @@ describe("renderManifest", () => {
     // The regression this guards: computing the specifier straight from the
     // stored root-relative `file` would produce "../src/user.js" (relative to
     // the output dir interpreted as if it were root), not the correct
-    // "../src/user.js" from /project/generated -- and would be silently wrong
+    // "../src/user.js" from /project/generated; and would be silently wrong
     // for any output directory at a different depth.
     const content = renderManifest(
       inventory([capability({ file: "src/user.ts", exportName: "userCapability" })]),

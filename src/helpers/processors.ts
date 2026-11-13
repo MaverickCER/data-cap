@@ -1,15 +1,15 @@
 /**
  * Optional convenience coercion helpers for writing a getter/mutator/
- * subscription `processor(raw, ctx)` function. Entirely separate from core
- * -- neither `buildData` nor the runtime's `createData` import this module;
+ * subscription `processor(raw, ctx)` function. Entirely separate from core:
+ * neither `buildData` nor the runtime's `createData` import this module;
  * an application processor calls into it, never the other way around.
  *
  * Unlike env-cap's `helpers.processors` (a per-field pipeline slot that
  * throws a descriptive error on failure), a data-cap processor's returned
  * patch already runs through `core/ownership.ts`'s own shape check and
- * per-field reset-to-default on the way to a commit -- so these never
- * throw and never format an error message; on unparseable input, each
- * simply returns `undefined`, leaving the ownership/shape pipeline's own
+ * per-field reset-to-default on the way to a commit. So these never
+ * throw and never format an error message. On unparseable input, each
+ * returns `undefined`, leaving the ownership/shape pipeline's own
  * fallback to decide what happens next.
  */
 
@@ -31,7 +31,7 @@ export function toString(value: unknown): string | undefined {
 
 export function toNumber(value: unknown): number | undefined {
   if (typeof value === "number") return Number.isNaN(value) ? undefined : value
-  // `Number("")` is `0`, not `NaN` -- without this check a blank string
+  // `Number("")` is `0`, not `NaN`: without this check a blank string
   // would silently resolve to the number 0 instead of degrading to
   // `undefined` like every other unparseable case here.
   if (typeof value !== "string" || value.trim() === "") return undefined
@@ -104,10 +104,10 @@ export function toArray(value: unknown, separator: string | RegExp = ","): strin
 
 /**
  * Parses a JSON string; non-string input returns `undefined`. Returns
- * `unknown` rather than an assertable `<T>` -- its result flows into a
+ * `unknown` rather than an assertable `<T>`. Its result flows into a
  * processor's returned patch, which already runs through
- * `core/ownership.ts`'s own shape check on the way to a commit, so an
- * unchecked generic cast here would just hide that same unsafety behind a
+ * `core/ownership.ts`'s own shape check on the way to a commit. So an
+ * unchecked generic cast here would only hide that same unsafety behind a
  * type parameter instead of surfacing it at the call site.
  */
 export function parseJSON(value: unknown): unknown {

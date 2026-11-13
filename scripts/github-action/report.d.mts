@@ -4,8 +4,8 @@
 // instead of treating every import as `any`; it is not shipped (outside
 // `files` in package.json) and never affects the published package's types.
 //
-// Deliberately minimal, structural types -- just the fields each function
-// actually reads, not the full ReportFinding/ReportResult shapes -- since
+// Deliberately minimal, structural types (just the fields each function
+// actually reads, not the full ReportFinding/ReportResult shapes) since
 // that's report.mjs's real (duck-typed) contract and it's what test fixtures
 // naturally construct. report.mjs and the JSON contract are coupled by
 // convention, not a shared type; this file is the same kind of
@@ -70,7 +70,7 @@ interface ErrorSectionLike {
 }
 
 export interface ReportResult {
-  // Optional -- classifyFindings()/renderMarkdownSummary() only ever check
+  // Optional: classifyFindings()/renderMarkdownSummary() only ever check
   // `result?.ok === false`, which is safely false when absent.
   readonly ok?: boolean
   readonly findings?: readonly FindingLike[]

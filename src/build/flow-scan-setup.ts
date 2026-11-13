@@ -53,7 +53,7 @@ export function methods() {
 
     registerCapabilities(this: FlowScan, inventory: CapabilityInventory): void {
       for (const declared of inventory.capabilities) {
-        // An inventory may spell a path `./features/x.ts` or with backslashes; every id and scope uses the one normal form.
+        // An inventory may spell a path `./features/x.ts` or with backslashes. Every id and scope uses the one normal form.
         const file = absolutePathFrom(this.root, declared.file)
         const node: CapabilityNode = { ...declared, file: displayPath(this.root, file) }
         const key = `${file}#${node.exportName}`
@@ -168,7 +168,7 @@ export function methods() {
     /**
      * Names of the schema constants this file hands to `createData`/`buildData`/`documentData` (`createData(schema)`).
      * Their declarations hold the operation bodies (`execute`, `processor`, ...), which stay opaque however the schema
-     * is spelled -- inline in the call or declared first and passed by name (AGENTS.md invariant 6).
+     * is spelled: inline in the call or declared first and passed by name (AGENTS.md invariant 6).
      */
     schemaConstants(this: FlowScan, sourceFile: TS.SourceFile): ReadonlySet<string> {
       const names = new Set<string>()
@@ -214,19 +214,19 @@ export function methods() {
         packageImports: new Map(),
         topFunctions: new Map(),
         topClasses: new Map(),
-        // Stryker disable next-line ArrayDeclaration: equivalent -- a stand-in file names no module, so looking a name up in it finds nothing.
+        // Stryker disable next-line ArrayDeclaration: equivalent: a stand-in file names no module, so looking a name up in it finds nothing.
         stars: [],
         dynamicImports: new Map(),
         valueNames: new Set(),
         exports: new Map(),
         moduleStatements: [],
-        // Stryker disable next-line BooleanLiteral: equivalent -- writes to a module variable or to an undeclared global reach the functions that read them whether or not the module scope is a boundary; no read of module state differs by it.
+        // Stryker disable next-line BooleanLiteral: equivalent: writes to a module variable or to an undeclared global reach the functions that read them whether or not the module scope is a boundary; no read of module state differs by it.
         moduleEnv: new Env(this.globalEnv, true, true),
         moduleStarted: false,
       }
       // What a CommonJS module writes its exports to: `exports.a = ...`, `module.exports = ...`.
       info.moduleEnv.set("exports", EMPTY_VAL)
-      // Stryker disable next-line ArrayDeclaration,StringLiteral: equivalent -- `module.exports.x = ...` creates the entry on its first write, and before any write `module.exports` reads as the empty value it is initialised to.
+      // Stryker disable next-line ArrayDeclaration,StringLiteral: equivalent: `module.exports.x = ...` creates the entry on its first write, and before any write `module.exports` reads as the empty value it is initialised to.
       info.moduleEnv.set("module", { ...EMPTY_VAL, props: new Map([["exports", EMPTY_VAL]]) })
       const imports: readonly ImportBinding[] = collectFileImports(sourceFile)
       const matches = await matchFileImports(file, imports, targets, targetsByName, context)
@@ -246,7 +246,7 @@ export function methods() {
           name: binding.importedName,
         })
         const resolved = await resolveImportSpecifier(file, binding.moduleSpecifier, context)
-        // Stryker disable next-line ConditionalExpression: equivalent -- an unresolved import recorded with no file finds no exports later, the same as not recording it.
+        // Stryker disable next-line ConditionalExpression: equivalent: an unresolved import recorded with no file finds no exports later, the same as not recording it.
         if (resolved === undefined) continue
         if (binding.importedName === "*") info.namespaces.set(binding.localName, resolved)
         else
@@ -258,7 +258,7 @@ export function methods() {
       await this.indexDynamicImports(info, context)
       for (const statement of sourceFile.statements)
         await this.indexStatement(info, statement, context, schemas)
-      // Stryker disable next-line BlockStatement: equivalent -- the module's statements find an imported capability through its import, and the module's own definition is bound again by `ensureModule` after its statements run.
+      // Stryker disable next-line BlockStatement: equivalent: the module's statements find an imported capability through its import, and the module's own definition is bound again by `ensureModule` after its statements run.
       for (const [local, key] of info.capabilityBindings) {
         info.moduleEnv.set(local, { ...EMPTY_VAL, capability: key })
       }
@@ -280,7 +280,7 @@ export function methods() {
       visit(info.sourceFile)
       for (const specifier of specifiers) {
         const resolved = await resolveImportSpecifier(info.file, specifier, context)
-        // Stryker disable next-line ConditionalExpression: equivalent -- a specifier stored with no file is looked up as no file.
+        // Stryker disable next-line ConditionalExpression: equivalent: a specifier stored with no file is looked up as no file.
         if (resolved !== undefined) info.dynamicImports.set(specifier, resolved)
       }
     },
@@ -338,7 +338,7 @@ export function methods() {
     indexClassDeclaration(this: FlowScan, info: FileInfo, statement: TS.ClassDeclaration): void {
       // An ambient class (`declare class`) has no body here: whatever implements it is code the analysis cannot see.
       if (hasModifier(statement, ts.SyntaxKind.DeclareKeyword)) {
-        // Stryker disable next-line CallExpression: equivalent -- an ambient class has no body, so running it as a module statement defines nothing the scan reads.
+        // Stryker disable next-line CallExpression: equivalent: an ambient class has no body, so running it as a module statement defines nothing the scan reads.
         info.moduleStatements.push(statement)
         return
       }
@@ -399,10 +399,10 @@ export function methods() {
           : undefined
       const clause = statement.exportClause
       if (clause === undefined) {
-        // Stryker disable next-line ConditionalExpression: equivalent -- a star re-export of a module that cannot be resolved is looked up as no file, which finds nothing, as not recording it does.
+        // Stryker disable next-line ConditionalExpression: equivalent: a star re-export of a module that cannot be resolved is looked up as no file, which finds nothing, as not recording it does.
         if (from !== undefined) info.stars.push(from)
       } else if (ts.isNamespaceExport(clause)) {
-        // Stryker disable next-line ConditionalExpression: equivalent -- a namespace re-export of a module that cannot be resolved is looked up as no file, which finds nothing, as not recording it does.
+        // Stryker disable next-line ConditionalExpression: equivalent: a namespace re-export of a module that cannot be resolved is looked up as no file, which finds nothing, as not recording it does.
         if (from !== undefined)
           info.exports.set(clause.name.text, { owner: info, file: from, name: "*" })
       } else {
@@ -411,7 +411,7 @@ export function methods() {
           // A name re-exported from a module that cannot be resolved points at no file at all, never at a local of the same name.
           info.exports.set(element.name.text, {
             owner: info,
-            // Stryker disable next-line StringLiteral: equivalent -- any text that is no file path points at no file, as the empty one does.
+            // Stryker disable next-line StringLiteral: equivalent: any text that is no file path points at no file, as the empty one does.
             file: hasSource ? (from ?? "") : undefined,
             name: local,
           })
@@ -464,19 +464,19 @@ export function methods() {
         name,
         node,
         // A TypeScript `this` parameter only types the receiver: it takes no argument.
-        // Stryker disable next-line ArrayDeclaration: equivalent -- only the module function has no node, and it is never called with arguments, so its parameter list is never read.
+        // Stryker disable next-line ArrayDeclaration: equivalent: only the module function has no node, and it is never called with arguments, so its parameter list is never read.
         params: (node?.parameters ?? []).filter(
           (param) => !(ts.isIdentifier(param.name) && param.name.text === "this"),
         ),
         cls: owner?.cls,
-        // Stryker disable next-line StringLiteral: equivalent -- the code only asks whether a role is `static` or `constructor`, never whether it is `plain`.
+        // Stryker disable next-line StringLiteral: equivalent: the code only asks whether a role is `static` or `constructor`, never whether it is `plain`.
         role: owner?.role ?? "plain",
         closureEnv: undefined,
         instance: owner?.instance,
         bound: undefined,
       }
       this.functions.set(fn.key, fn)
-      // Stryker disable next-line ConditionalExpression: equivalent -- a closure is looked up by its token, which is never `undefined`.
+      // Stryker disable next-line ConditionalExpression: equivalent: a closure is looked up by its token, which is never `undefined`.
       if (fn.instance !== undefined) this.instances.set(fn.instance, fn)
       return fn
     },
@@ -491,7 +491,7 @@ export function methods() {
     },
 
     /**
-     * The class declared by `node` -- one per node, created the first time it is met. Its members are analyzed as roots
+     * The class declared by `node`: one per node, created the first time it is met. Its members are analyzed as roots
      * too. With `evaluation` set it is instead the class one particular evaluation of the code made (a class written inside
      * a function, which captures that call's variables): a new one each time.
      */
@@ -547,8 +547,8 @@ export function methods() {
         ...(cls.evaluation === undefined ? {} : { instance: `${cls.key}.${name}` }),
       })
       fn.closureEnv = cls.env
-      // A method of a class one call made is a closure of that call: if nothing calls it, what it returns is handed to code the scan cannot see.
-      // Stryker disable next-line ConditionalExpression: equivalent -- a key of `undefined` that is added is one no function is looked up by.
+      // A method of a class one call made is a closure of that call. If nothing calls it, what it returns is handed to code the scan cannot see.
+      // Stryker disable next-line ConditionalExpression: equivalent: a key of `undefined` that is added is one no function is looked up by.
       if (fn.instance !== undefined) this.closureKeys.add(fn.instance)
       this.queue.push(fn)
       return fn
@@ -556,13 +556,13 @@ export function methods() {
 
     /** The capability a key names; none when there is no key or no capability under it. */
     capFor(this: FlowScan, key: string | undefined): CapInfo | undefined {
-      // Stryker disable next-line ConditionalExpression: equivalent -- no capability is registered under `undefined`, so asking for it finds none, as the check does.
+      // Stryker disable next-line ConditionalExpression: equivalent: no capability is registered under `undefined`, so asking for it finds none, as the check does.
       return key === undefined ? undefined : this.caps.get(key)
     },
 
     /** The class a key names; none when there is no key or no class under it. */
     classFor(this: FlowScan, key: string | undefined): ClassInfo | undefined {
-      // Stryker disable next-line ConditionalExpression: equivalent -- no class is registered under `undefined`, so asking for it finds none, as the check does.
+      // Stryker disable next-line ConditionalExpression: equivalent: no class is registered under `undefined`, so asking for it finds none, as the check does.
       return key === undefined ? undefined : this.classes.get(key)
     },
 
@@ -580,7 +580,7 @@ export function methods() {
         this.queue.push(cls.ctor)
       }
       for (const member of cls.node.members) this.registerMember(cls, member)
-      // Stryker disable next-line ConditionalExpression,EqualityOperator: equivalent -- the root made for a class with no statics has nothing to run, so it adds no node and no edge.
+      // Stryker disable next-line ConditionalExpression,EqualityOperator: equivalent: the root made for a class with no statics has nothing to run, so it adds no node and no edge.
       if (cls.statics.length > 0) {
         cls.staticFn = this.makeFunction(cls.file, `${cls.name}.static`, undefined, {
           cls,
@@ -608,10 +608,10 @@ export function methods() {
           cls,
           `${kind === "method" ? "" : `${kind} `}${name ?? "<computed>"}`,
           member,
-          // Stryker disable next-line StringLiteral: equivalent -- the code only asks whether a role is `static` or `constructor`, never whether it is `method`.
+          // Stryker disable next-line StringLiteral: equivalent: the code only asks whether a role is `static` or `constructor`, never whether it is `method`.
           isStatic ? "static" : "method",
         )
-        // Stryker disable next-line ConditionalExpression: equivalent -- a member whose name is not known is stored under a key nothing looks up.
+        // Stryker disable next-line ConditionalExpression: equivalent: a member whose name is not known is stored under a key nothing looks up.
         if (name !== undefined) cls.members.set(memberKey(kind, isStatic, name), fn)
       } else if (ts.isPropertyDeclaration(member) && member.initializer !== undefined) {
         if (isStatic) cls.statics.push(member)
@@ -636,7 +636,7 @@ export function methods() {
       return `${fn.name}.${base}`
     },
 
-    /** The node of the `index`th argument position -- created on demand, since a call may pass more arguments than the callee declares parameters. */
+    /** The node of the `index`th argument position: created on demand, since a call may pass more arguments than the callee declares parameters. */
     paramNode(this: FlowScan, fn: FunctionInfo, index: number): string {
       return this.addNode(this.parameterNode(fn, index))
     },
@@ -691,7 +691,7 @@ export function methods() {
     ): void {
       const source = this.location(fn, node)
       const key = `${reason}|${source.file}|${source.line}|${source.column}`
-      // The same data can arrive under several entries (as a parameter and as a returned value): it is one piece of data.
+      // The same data can arrive under several entries (as a parameter and as a returned value). It is one piece of data.
       const data = [
         ...new Map(
           atoms.map((atom) => [

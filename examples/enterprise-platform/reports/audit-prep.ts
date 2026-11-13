@@ -1,9 +1,9 @@
 /**
- * The audit-prep report -- this tier's second generated governance report
+ * The audit-prep report: this tier's second generated governance report
  * (`reports/data-handling-record.ts` is the other). Where the data-handling
  * report is field-by-field ("what do we know about `invoices`"), this one
  * is capability-by-capability ("which of our capabilities are actually
- * audit-ready, and where are the real gaps") -- the rollup an auditor
+ * audit-ready, and where are the real gaps"): the rollup an auditor
  * reviews before a real audit starts, not during one.
  *
  * Builds on `projectAuditEvidence` (`data-cap/build`'s
@@ -11,9 +11,9 @@
  * rollups only. This report keeps that rollup and adds the completeness
  * matrix an auditor actually needs: for every capability and every
  * declared-sensitive field, which governance properties (owner, sensitivity,
- * purpose, legal basis, data residency, audit-required, and -- new this
- * session -- endpoint `handling`) are present versus silently absent.
- * **Presence only, never an adequacy or compliance claim** -- a checked box
+ * purpose, legal basis, data residency, audit-required, and (new this
+ * session) endpoint `handling`) are present versus silently absent.
+ * **Presence only, never an adequacy or compliance claim**: a checked box
  * means "declared," never "correct" or "sufficient." See
  * `data-handling-record.ts`'s own header comment for the same epistemic
  * discipline this file follows, and for the "both reports read one
@@ -50,7 +50,7 @@ interface SensitiveFieldCompleteness {
   readonly auditRequired: boolean
   readonly protections: boolean
   readonly retention: boolean
-  /** Every endpoint belonging to an operation that writes this field, and whether it declares `handling` -- e.g. "2/2" (every endpoint declared) or "1/2" (a real, visible gap). */
+  /** Every endpoint belonging to an operation that writes this field, and whether it declares `handling`: e.g. "2/2" (every endpoint declared) or "1/2" (a real, visible gap). */
   readonly handlingDeclared: string
 }
 
@@ -80,13 +80,13 @@ function handlingCompletenessFor(capability: CapabilityNode, fieldKey: string): 
 
 /**
  * The same shared, fingerprint-verified `EvidenceModel`
- * `data-handling-record.ts` reads (`getEvidence()`, `evidence-cache.ts`) --
+ * `data-handling-record.ts` reads (`getEvidence()`, `evidence-cache.ts`):
  * `evidence.finding` already carries every finding data-cap produces
- * (static, usage, AND flow --
+ * (static, usage, AND flow, with
  * SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY/SENSITIVE_FIELD_ENDPOINT_MISSING_HANDLING
  * included), since `evidence-cache.ts`'s own `COMPUTE_OPTIONS` requests
  * `location`/`docs`/`ownership`/`flow` together whenever a fresh compute
- * is actually needed -- never a hand-picked subset this report would
+ * is actually needed: never a hand-picked subset this report would
  * otherwise have to re-derive with its own second `buildFlowGraph` call.
  */
 async function buildReport(): Promise<AuditPrepReport> {
@@ -258,7 +258,7 @@ async function main(): Promise<void> {
   console.log(`Audit-prep report written for ${String(report.capabilityCount)} capability(ies).`)
 }
 
-/** Runs the full pipeline and returns the report -- exported so `main-headless.ts` can call it directly, in-process, with no second implementation. */
+/** Runs the full pipeline and returns the report: exported so `main-headless.ts` can call it directly, in-process, with no second implementation. */
 export async function generateAuditPrepReport(): Promise<AuditPrepReport> {
   return buildReport()
 }

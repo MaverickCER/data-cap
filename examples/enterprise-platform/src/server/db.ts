@@ -1,5 +1,5 @@
 /**
- * MongoDB connection (Mongoose) -- deliberately partitioned away from
+ * MongoDB connection (Mongoose): deliberately partitioned away from
  * `capabilities/matters.capability.ts` so it's obvious the database is an
  * implementation detail `execute` happens to call into, not the thing this
  * example is actually about. Swap this module for a Postgres pool or a

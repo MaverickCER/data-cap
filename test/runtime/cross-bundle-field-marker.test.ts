@@ -1,23 +1,23 @@
 /**
  * `core` and `runtime` are separate tsup entries, each independently
- * bundled -- a plain `Symbol()` for `FIELD_MARKER` (core/fields.ts) would
+ * bundled (a plain `Symbol()` for `FIELD_MARKER` (core/fields.ts) would
  * create a genuinely different symbol identity in each bundle's own
  * inlined copy of that module, silently breaking `isFieldMarker` the
  * moment the runtime's `createData` (runtime/capability.ts) resolves
  * ownership against a schema built with core's own `fields.nullable`/
- * `fields.optional` -- every marked field would be misclassified as an
+ * `fields.optional`) every marked field would be misclassified as an
  * ordinary nested object, and `resolveOperationPatch` would reject every
  * one of its own real keys as "not declared in the capability schema".
  * `FIELD_MARKER` uses `Symbol.for(...)` (the global symbol registry)
  * specifically to survive this. Source-level tests (test/core/fields.test.ts,
- * test/runtime/capability.test.ts) can't catch a regression here -- they
+ * test/runtime/capability.test.ts) can't catch a regression here: they
  * share one module graph, so a bare `Symbol()` would still work by
  * accident. Only loading the actual built, separately-bundled dist output
  * (like dual-package-hazard.test.ts already does for a different hazard)
  * exercises the real cross-bundle boundary.
  *
  * Requires `npm run build` to have already produced dist/index.js and
- * dist/runtime/index.js -- skips gracefully otherwise, matching the
+ * dist/runtime/index.js: skips gracefully otherwise, matching the
  * tree-shaking/dual-package-hazard tests' own convention.
  */
 import { existsSync } from "node:fs"

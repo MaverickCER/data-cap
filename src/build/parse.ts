@@ -1,17 +1,17 @@
 /**
  * Statically parses one TypeScript source file's AST to find `buildData()`,
- * `createData()`, and `documentData()` calls -- using the TypeScript
+ * `createData()`, and `documentData()` calls: using the TypeScript
  * compiler API to build an AST, never `import()`ing, `require()`ing, or
  * `eval()`ing the file itself. A spread, factory call, or re-export
  * resolves as "unknown" and surfaces as a warning, never a guess.
  *
  * Matches calls by property/identifier name alone (`buildData(...)`/
  * `createData(...)`, or `dataCap.buildData(...)`), not by tracing import
- * provenance -- the same pragmatic, documented convention env-cap's own
- * `parse.ts` uses. `buildData` (the low-level, fields-only primitive) and
- * `createData` (the batteries-included runtime, which also accepts
- * `getters`/`mutators`/`subscriptions`) are treated identically for
- * `fields`-extraction purposes -- both produce a `RawCreateDataCall` --
+ * provenance: the same pragmatic, documented convention env-cap's own
+ * `parse.ts` uses. `buildData` is the low-level, fields-only primitive.
+ * `createData` is the batteries-included runtime, which also accepts
+ * `getters`/`mutators`/`subscriptions`. The two are treated identically for
+ * `fields`-extraction purposes (both produce a `RawCreateDataCall`).
  * `createData` calls additionally get their operation names extracted (see
  * `extractOperationNames`), never their `execute`/`processor`/`subscribe`/
  * `optimistic` function bodies (ADR 0002's never-eval rule).
@@ -39,35 +39,35 @@ import type { SourcePosition } from "./source-position.js"
 /**
  * `CapabilityDocs` is parameterized by the real `documentData()` schema type
  * so authored calls get `keyof`-checked field/getter/mutator/subscription
- * names -- but this module (and `inventory.ts`/`link.ts`, which reuse this
- * exact type) deals only in already-parsed AST facts, with no compile-time
+ * names. This module (and `inventory.ts`/`link.ts`, which reuse this
+ * exact type) deals only in already-parsed AST facts. It has no compile-time
  * schema of its own to check against. `LooseCapabilityDocs` is the build-
  * tool-internal equivalent of "structurally shaped like docs, unconstrained"
- * the old bare `Record<string, unknown>` parameter gave: every OTHER
- * property comes from `CapabilityDocs` itself (via `Omit`), but
+ * that the old bare `Record<string, unknown>` parameter gave. Every OTHER
+ * property comes from `CapabilityDocs` itself (via `Omit`). But
  * `fields`/`getters`/`mutators`/`subscriptions` are redeclared as plain
  * `Record<string, X>` maps rather than routed through `CapabilityDocs`'
- * own `keyof`-checked generics -- `DataSchema`'s `getters`/etc. are
- * themselves optional properties, which resolve to "no keys allowed" (not
- * "any key allowed") once `CapabilityDocs` requires a concrete schema type,
- * exactly backwards from what an unconstrained AST-parsed fact needs here.
+ * own `keyof`-checked generics. `DataSchema`'s `getters`/etc. are
+ * themselves optional properties. Those resolve to "no keys allowed" (not
+ * "any key allowed") once `CapabilityDocs` requires a concrete schema type.
+ * That is exactly backwards from what an unconstrained AST-parsed fact needs here.
  */
 /**
- * Every property here is always assigned (never conditionally omitted --
+ * Every property here is always assigned (never conditionally omitted:
  * see extractCapabilityDocs()/extractOperationDocsMap()/
- * extractEvidenceFieldsMap() below), just sometimes with an `undefined`
+ * extractEvidenceFieldsMap() below). Some are assigned an `undefined`
  * value when the AST literal didn't declare it. exactOptionalPropertyTypes
- * distinguishes "key absent" from "key present holding undefined";
- * widening every property to explicitly include `| undefined` (rather than
+ * distinguishes "key absent" from "key present holding undefined". This type
+ * widens every property to explicitly include `| undefined` (rather than
  * routing every assignment through a conditional-spread "omit if absent"
- * instead) matches what this type actually represents: a raw,
+ * instead). That matches what this type actually represents: a raw,
  * unconstrained parse result, not a validated CapabilityDocs.
  */
 export type Loosen<T> = { readonly [K in keyof T]?: T[K] | undefined }
 
 /**
  * Converts a `Loosen<T>` value back into a real `T`, omitting every key
- * whose value is `undefined` -- the exactOptionalPropertyTypes-correct way
+ * whose value is `undefined`. This is the exactOptionalPropertyTypes-correct way
  * to cross the boundary from "raw parse result" (this module's own
  * internal representation, every key always assigned) to a validated
  * public model type (`FieldDocs`/`OperationDocs`, key absence is
@@ -95,7 +95,7 @@ export type LooseCapabilityDocs = Loosen<
   readonly getters?: Readonly<Partial<Record<string, Loosen<OperationDocs>>>> | undefined
   readonly mutators?: Readonly<Partial<Record<string, Loosen<OperationDocs>>>> | undefined
   readonly subscriptions?: Readonly<Partial<Record<string, Loosen<OperationDocs>>>> | undefined
-  // Loosen<> only widens top-level properties -- CapabilityDocs.evidence's
+  // Loosen<> only widens top-level properties: CapabilityDocs.evidence's
   // own nested `fields` needs the same treatment explicitly, same reasoning
   // as the four sibling overrides above.
   readonly evidence?:
@@ -103,7 +103,7 @@ export type LooseCapabilityDocs = Loosen<
     | undefined
 }
 
-/** A recoverable issue found while statically parsing or linking one capability file -- never fatal, always surfaced to the caller as data. */
+/** A recoverable issue found while statically parsing or linking one capability file: never fatal, always surfaced to the caller as data. */
 export interface ParseWarning {
   /** Absolute path (or synthetic label, e.g. `"(package) name"`) the warning applies to. */
   readonly file: string
@@ -114,7 +114,7 @@ export interface ParseWarning {
 /**
  * How a `buildData`/`createData`/`documentData` call's `fields` reference
  * resolves, before any cross-file linking is attempted (that's `link.ts`'s
- * job -- this module only ever looks at one file's own AST).
+ * job: this module only ever looks at one file's own AST).
  */
 export type SchemaRef =
   /** `fields` is an inline object literal in this same call. */
@@ -124,7 +124,7 @@ export type SchemaRef =
       /** The object literal AST node itself. */
       readonly node: TS.ObjectLiteralExpression
     }
-  /** `fields` is a bare identifier -- resolved against `ParseResult.localConsts`/cross-file imports by `link.ts`. */
+  /** `fields` is a bare identifier: resolved against `ParseResult.localConsts`/cross-file imports by `link.ts`. */
   | {
       /** Always `"identifier"` for this variant. */
       readonly kind: "identifier"
@@ -139,7 +139,7 @@ export type SchemaRef =
       readonly reason: string
     }
 
-/** Static operation names discovered on a `createData(...)` call's config object literal -- names (AST object keys) only, never the operations' own function bodies. `undefined` for a `buildData(...)` call, which never has these sections. */
+/** Static operation names discovered on a `createData(...)` call's config object literal: names (AST object keys) only, never the operations' own function bodies. `undefined` for a `buildData(...)` call, which never has these sections. */
 export interface OperationNames {
   /** Getter names. */
   readonly getters: readonly string[]
@@ -151,9 +151,9 @@ export interface OperationNames {
 
 /** One `buildData(...)`/`createData(...)` call found in a file's top-level statements. */
 export interface RawCreateDataCall {
-  /** The exported binding name (`export const X = buildData(...)`), or `undefined` if unexported -- see the accompanying warning in that case. */
+  /** The exported binding name (`export const X = buildData(...)`), or `undefined` if unexported: see the accompanying warning in that case. */
   readonly exportName: string | undefined
-  /** `"buildData"` or `"createData"` -- which call form this is. */
+  /** `"buildData"` or `"createData"`: which call form this is. */
   readonly kind: "buildData" | "createData"
   /** How this call's `fields` argument resolves within this one file. */
   readonly fieldsRef: SchemaRef
@@ -165,9 +165,13 @@ export interface RawCreateDataCall {
   readonly operationPresence: OperationPresenceByKind | undefined
   /** The full call expression AST node, for later structural inspection. */
   readonly node: TS.CallExpression
-  /** Position of this call's own declaration site -- always available, since `node` always resolves to a real AST location regardless of how `fields` itself resolves. */
+  /** Position of this call's own declaration site: always available, since `node` always resolves to a real AST location regardless of how `fields` itself resolves. */
   readonly declarationPosition: SourcePosition
-  /** Position of each top-level field's own key, keyed by field name -- only when `fieldsRef.kind === "literal"` (an identifier-resolved `fields` crosses a file boundary this pass doesn't retain AST access to; `undefined` there, never guessed at). */
+  /**
+   * Position of each top-level field's own key, keyed by field name. Present only when
+   * `fieldsRef.kind === "literal"`: an identifier-resolved `fields` lives in a file whose AST this
+   * pass does not keep, so it is `undefined`, never guessed.
+   */
   readonly fieldPositions: Readonly<Record<string, SourcePosition>> | undefined
 }
 
@@ -175,7 +179,7 @@ export interface RawCreateDataCall {
 export interface RawDocumentDataCall {
   /** How this call's first (`fields` reference) argument resolves within this one file. */
   readonly fieldsRef: SchemaRef
-  /** The second (`docs`) argument, for later structural inspection -- not evaluated here. */
+  /** The second (`docs`) argument, for later structural inspection: not evaluated here. */
   readonly docsNode: TS.Expression | undefined
   /** The full call expression AST node, for later structural inspection. */
   readonly node: TS.CallExpression
@@ -187,7 +191,7 @@ export interface ImportBinding {
   readonly localName: string
   /** The imported name, or the sentinel `"*"` (namespace import) / `"default"` (default import). */
   readonly importedName: string
-  /** The specifier exactly as written (`"..."` above) -- unresolved, relative or bare. */
+  /** The specifier exactly as written (`"..."` above): unresolved, relative or bare. */
   readonly moduleSpecifier: string
 }
 
@@ -199,11 +203,11 @@ export interface ParseResult {
   readonly createDataCalls: readonly RawCreateDataCall[]
   /** Every `documentData(...)` call found in this file. */
   readonly documentDataCalls: readonly RawDocumentDataCall[]
-  /** Top-level `const X = <expr>` bindings, keyed by name -- for resolving an `identifier`-kind `SchemaRef` within the same file. */
+  /** Top-level `const X = <expr>` bindings, keyed by name: for resolving an `identifier`-kind `SchemaRef` within the same file. */
   readonly localConsts: ReadonlyMap<string, TS.Expression>
   /** Every top-level import binding found in this file. */
   readonly imports: readonly ImportBinding[]
-  /** Extraction problems encountered while parsing this file -- never thrown, always collected. */
+  /** Extraction problems encountered while parsing this file: never thrown, always collected. */
   readonly warnings: readonly ParseWarning[]
 }
 
@@ -222,17 +226,17 @@ export function hasExportModifier(statement: TS.VariableStatement): boolean {
 
 /**
  * Resolves a `buildData`/`createData`/`documentData` call's own first
- * argument to an inline object literal -- either because it already is one
- * (`createData({fields: ..., getters: ...})`), or because it's a local
+ * argument to an inline object literal. Either it already is one
+ * (`createData({fields: ..., getters: ...})`), or it's a local
  * identifier this same file declares as one (`const schema = {fields:
- * ..., getters: ...}; createData(schema)`, the pattern `documentData`'s own
- * `keyof`-checked getter/mutator/subscription docs are designed around --
- * see `core/document.ts`'s own header comment: passing the SAME schema
+ * ..., getters: ...}; createData(schema)`). The latter is the pattern `documentData`'s own
+ * `keyof`-checked getter/mutator/subscription docs are designed around.
+ * See `core/document.ts`'s own header comment: passing the SAME schema
  * object to both `createData` and `documentData` is what makes that
- * checking real). One level of indirection only, matching every other
- * identifier-resolution this module does -- a factory call, a spread, or a
+ * checking real. One level of indirection only, matching every other
+ * identifier-resolution this module does. A factory call, a spread, or a
  * chain of re-assignments is not this module's concern, and is never
- * guessed at; it resolves to `undefined` instead.
+ * guessed at. It resolves to `undefined` instead.
  */
 function resolveConfigObjectLiteral(
   call: TS.CallExpression,
@@ -281,9 +285,9 @@ export function extractFieldsRef(
 
 /**
  * Position of each top-level field's own key, only when `fieldsRef` is an
- * inline object literal in this same file -- an identifier-resolved
+ * inline object literal in this same file. An identifier-resolved
  * `fields` (or one this pass otherwise couldn't pin to a literal) has no
- * AST access retained for its individual keys, so this returns `undefined`
+ * AST access retained for its individual keys. So this returns `undefined`
  * rather than guessing. Scoped honestly to top-level properties only,
  * matching `buildFieldNodes`' own one-level-deep granularity (`inventory.ts`).
  */
@@ -302,7 +306,7 @@ function extractFieldPositions(
   return positions
 }
 
-/** Property key names of an object-literal-valued section (`getters`/`mutators`/`subscriptions`) -- never the values themselves. `undefined` when the section is absent or not an inline object literal (a spread, a factory call, an identifier reference -- none of these are guessed at). */
+/** Property key names of an object-literal-valued section (`getters`/`mutators`/`subscriptions`): never the values themselves. `undefined` when the section is absent or not an inline object literal (a spread, a factory call, an identifier reference: none of these are guessed at). */
 /** @internal Exported for direct unit coverage (reached only through the recursive parse walk in production). */
 export function extractSectionNames(
   configArg: TS.ObjectLiteralExpression,
@@ -322,7 +326,7 @@ export function extractSectionNames(
   return names
 }
 
-/** Static operation names on a `createData(...)` call's config object -- names (AST object keys) only, never `execute`/`processor`/`subscribe`/`optimistic` function bodies (ADR 0002). `undefined` when the call has no inline object-literal first argument at all. */
+/** Static operation names on a `createData(...)` call's config object: names (AST object keys) only, never `execute`/`processor`/`subscribe`/`optimistic` function bodies (ADR 0002). `undefined` when the call has no inline object-literal first argument at all. */
 /** @internal Exported for direct unit coverage (reached only through the recursive parse walk in production). */
 export function extractOperationNames(
   call: TS.CallExpression,
@@ -337,7 +341,11 @@ export function extractOperationNames(
   }
 }
 
-/** One operation's statically-extracted `writes` field-ownership shape -- `true` (owns the whole capability), a nested plain object mirroring `FieldOwnership<T>` (untyped, since this is extracted data), or `undefined` when it couldn't be determined (never guessed at). */
+/**
+ * One operation's statically extracted `writes` shape. It is `true` (owns the whole capability), a
+ * nested plain object mirroring `FieldOwnership<T>` (untyped extracted data), or `undefined` when
+ * it could not be determined. It is never guessed.
+ */
 export interface RawOperationWrites {
   /** The operation's key name. */
   readonly name: string
@@ -358,7 +366,7 @@ export interface OperationWritesByKind {
 /** An operation entry's declared `writes`: `undefined` when it never declared one, otherwise the value it resolved to (itself `undefined` when it is not a static literal). */
 type WritesExtraction = { readonly value: unknown } | undefined
 
-/** Extracts one operation entry's `writes` property, distinguishing "never declared" (`undefined`) from "declared but not statically resolvable" (`{ value: undefined }`) -- callers must not conflate the two (ADR 0011's implicit-full-ownership default applies only to a genuinely absent `writes`, never to one that's merely unresolvable). */
+/** Extracts one operation entry's `writes` property, distinguishing "never declared" (`undefined`) from "declared but not statically resolvable" (`{ value: undefined }`): callers must not conflate the two (ADR 0011's implicit-full-ownership default applies only to a genuinely absent `writes`, never to one that's merely unresolvable). */
 function extractOperationWrites(
   operationEntry: TS.ObjectLiteralExpression,
   operationLabel: string,
@@ -388,8 +396,8 @@ function extractSectionWrites(
   for (const { name, prop } of namedSectionProps(configArg, sectionName)) {
     if (!ts.isObjectLiteralExpression(prop.initializer)) {
       // The operation's own definition isn't an inline object literal (a
-      // factory call, an identifier reference) -- its writes shape is
-      // simply unresolvable, same as any other non-literal value.
+      // factory call, an identifier reference): its writes shape is
+      // unresolvable, same as any other non-literal value.
       warnings.push({
         file,
         message: `"${sectionName}.${name}" is not an inline object literal; its "writes" shape is unresolvable.`,
@@ -406,9 +414,9 @@ function extractSectionWrites(
     const writes =
       extraction === undefined
         ? sectionName === "mutators"
-          ? true // ADR 0011: an absent `writes` on a mutator defaults to full-capability-tree ownership
-          : undefined // absent on a getter/subscription (writes is required there) -- never guessed
-        : extraction.value // `undefined` when it was declared but is not statically resolvable
+          ? true // ADR 0011: an absent `writes` on a mutator defaults to full-capability-tree ownership.
+          : undefined // Absent on a getter/subscription (writes is required there): never guessed.
+        : extraction.value // `undefined` when it was declared but is not statically resolvable.
     entries.push({ name, writes })
   }
   return entries
@@ -432,18 +440,18 @@ function extractOperationWritesByKind(
 
 /**
  * One operation's statically-detected presence of a `processor`/`optimistic`
- * key on its config object literal -- a structural AST-key-presence check,
- * the same technique `extractOperationWrites` already uses for `writes`,
- * never an evaluation of what the function actually does (ADR 0002 stays
+ * key on its config object literal. It is a structural AST-key-presence check,
+ * the same technique `extractOperationWrites` already uses for `writes`.
+ * It is never an evaluation of what the function actually does. ADR 0002 stays
  * fully honored: this can tell a `processor` key exists without knowing
- * anything about what it computes). See ADR 0050.
+ * anything about what it computes. See ADR 0050.
  */
 export interface RawOperationPresence {
   /** The operation's key name. */
   readonly name: string
   /** Whether this operation's config object literal has a `processor` key at all. */
   readonly hasProcessor: boolean
-  /** Whether this operation's config object literal has an `optimistic` key at all -- structurally always `false` for a getter/subscription, since `GetterDefinition`/`SubscriptionDefinition` never declare one. */
+  /** Whether this operation's config object literal has an `optimistic` key at all: structurally always `false` for a getter/subscription, since `GetterDefinition`/`SubscriptionDefinition` never declare one. */
   readonly hasOptimistic: boolean
 }
 
@@ -465,7 +473,7 @@ function extractSectionPresence(
   for (const { name, prop } of namedSectionProps(configArg, sectionName)) {
     if (!ts.isObjectLiteralExpression(prop.initializer)) {
       // Not an inline object literal (a factory call, an identifier
-      // reference) -- there's no `processor`/`optimistic` key to find in it
+      // reference): there's no `processor`/`optimistic` key to find in it
       // either way. extractSectionWrites already warns about this same
       // entry for `writes`; no need to warn a second time here.
       entries.push({ name, hasProcessor: false, hasOptimistic: false })
@@ -499,7 +507,7 @@ function extractOperationPresenceByKind(
 /* -------------------------------------------------------------------------- */
 /*
  * Statically extracts CapabilityDocs metadata from a documentData() call's
- * second argument -- mirrors env-cap's extractContractDocs/
+ * second argument: mirrors env-cap's extractContractDocs/
  * extractVariableDocsMap convention. Every value here is author-declared,
  * never statically verified (`AGENTS.md`'s declared-vs-proven invariant): a
  * non-literal value becomes a ParseWarning, never a thrown error or a
@@ -508,16 +516,16 @@ function extractOperationPresenceByKind(
 
 /**
  * @internal One of `documentData`'s recognized data-flow direction values.
- * Accepts `unknown` (not just `string`) and doubles as the type guard that
- * narrows a raw, unvalidated property value -- so a caller never needs its
- * own separate `typeof value === "string"` check first: a non-string is
- * simply never equal to either literal, safely and without throwing.
+ * Accepts `unknown` (not only `string`) and doubles as the type guard that
+ * narrows a raw, unvalidated property value. So a caller never needs its
+ * own separate `typeof value === "string"` check first. A non-string is
+ * never equal to either literal, safely and without throwing.
  */
 export function isDataFlowDirection(value: unknown): value is DataFlowDirection {
   return value === "input" || value === "output"
 }
 
-/** @internal One of `documentData`'s recognized data-flow endpoint kinds -- see {@link isDataFlowDirection} on why `unknown` needs no separate `typeof` guard. */
+/** @internal One of `documentData`'s recognized data-flow endpoint kinds: see {@link isDataFlowDirection} on why `unknown` needs no separate `typeof` guard. */
 export function isDataFlowEndpointKind(value: unknown): value is DataFlowEndpointKind {
   return (
     value === "database" ||
@@ -532,7 +540,7 @@ export function isDataFlowEndpointKind(value: unknown): value is DataFlowEndpoin
   )
 }
 
-/** @internal One of `documentData`'s recognized field-handling values -- see {@link isDataFlowDirection} on why `unknown` needs no separate `typeof` guard. */
+/** @internal One of `documentData`'s recognized field-handling values: see {@link isDataFlowDirection} on why `unknown` needs no separate `typeof` guard. */
 export function isDataFlowHandlingValue(
   value: unknown,
 ): value is NonNullable<DataFlowEndpoint["handling"]> {
@@ -551,7 +559,7 @@ function findProp(
 ): TS.PropertyAssignment | undefined {
   // A real type predicate on the `.find()` callback itself (rather than a
   // plain boolean-returning arrow) lets `.find()`'s own overload narrow the
-  // result to `PropertyAssignment | undefined` directly -- no redundant
+  // result to `PropertyAssignment | undefined` directly. No redundant
   // re-check of the same fact `.find()` already established is needed.
   return obj.properties.find(
     (p): p is TS.PropertyAssignment =>
@@ -563,7 +571,7 @@ function findProp(
  * Yields `{ name, prop }` for every statically-named property assignment of
  * `configArg`'s `sectionName` object-literal section (`getters`/`mutators`/
  * `subscriptions`). Yields nothing if the section is absent or not an inline
- * object literal -- the caller's own list stays empty, matching the previous
+ * object literal: the caller's own list stays empty, matching the previous
  * per-caller early return.
  */
 function* namedSectionProps(
@@ -787,7 +795,7 @@ function validateFlowPolicyRule(record: Record<string, unknown>): FlowPolicyDocs
 /**
  * Reads a capability's `flowPolicy` array (ADR 0070): each element must be a
  * statically-resolvable object literal naming a rule. A malformed rule is
- * dropped with a warning naming the problem -- never passed through half
+ * dropped with a warning naming the problem: never passed through half
  * understood, since a rule that silently stops constraining anything is the
  * dangerous failure.
  */
@@ -872,7 +880,7 @@ export function readDataResidencyProp(
 }
 
 /**
- * Reads a named property whose value must be an all-string array literal --
+ * Reads a named property whose value must be an all-string array literal:
  * unlike `readDataResidencyProp`, a lone string is never accepted here
  * (`recipientCategories` is always a list, even a single-element one; the
  * schema type itself is `readonly string[]`, not `string | readonly
@@ -904,8 +912,8 @@ export function readStringArrayProp(
   return undefined
 }
 
-/** Extracts a single `DataFlowEndpoint` array entry -- an entry that isn't a fully literal, well-formed endpoint is dropped with a warning, never guessed at (the rest of the array is still used). */
-/** @internal Exported for direct unit coverage -- in production it is only
+/** Extracts a single `DataFlowEndpoint` array entry: an entry that isn't a fully literal, well-formed endpoint is dropped with a warning, never guessed at (the rest of the array is still used). */
+/** @internal Exported for direct unit coverage: in production it is only
  *  reached through `readEndpointsProp` → `extractOperationDocsMap`. */
 export function readDataFlowEndpoint(
   node: TS.Expression,
@@ -1020,7 +1028,7 @@ function extractFieldDocsMap(
         file,
         warnings,
       ),
-      // Lifecycle vocabulary (EVD-05) -- extracted exactly like every other
+      // Lifecycle vocabulary: extracted exactly like every other
       // declared fact above: a literal string/boolean or nothing. `expiresAt`/
       // `removeBy` are never parsed as dates here; `lifecycle-model.ts` is the
       // one place a date is interpreted, and an unparseable one is skipped
@@ -1071,7 +1079,7 @@ export function isDynamicAccessCitation(value: string): boolean {
   return /^.+:\d+:\d+$/.test(value)
 }
 
-/** Extracts and format-validates one field's `dynamicAccess` citation list -- a malformed entry is dropped individually, with its own warning, never rejecting the rest of the array (same discipline `readEndpointsProp` already established for `endpoints`). */
+/** Extracts and format-validates one field's `dynamicAccess` citation list: a malformed entry is dropped individually, with its own warning, never rejecting the rest of the array (same discipline `readEndpointsProp` already established for `endpoints`). */
 /** @internal Exported for direct unit coverage (reached only through the recursive parse walk in production). */
 export function readDynamicAccessCitations(
   node: TS.Expression,
@@ -1131,7 +1139,7 @@ function extractEvidenceFieldsMap(
   )
 }
 
-/** Extracts `documentData()`'s `evidence.fields` section -- see `EvidenceFieldDocs`' own doc comment for why this lives structurally apart from the rest of `CapabilityDocs`. */
+/** Extracts `documentData()`'s `evidence.fields` section: see `EvidenceFieldDocs`' own doc comment for why this lives structurally apart from the rest of `CapabilityDocs`. */
 function extractEvidenceDocs(
   docsNode: TS.ObjectLiteralExpression,
   contextLabel: string,
@@ -1156,7 +1164,7 @@ function extractEvidenceDocs(
 
 /**
  * Statically extracts a `documentData()` call's second argument into
- * `CapabilityDocs` -- the same literal-only, warn-not-guess extraction
+ * `CapabilityDocs`: the same literal-only, warn-not-guess extraction
  * `extractOperationNames` applies to the schema's own `getters`/`mutators`/
  * `subscriptions` section names. Returns `undefined` when `docsNode` is
  * absent or not an inline object literal at all (nothing to extract).
@@ -1247,12 +1255,12 @@ export function collectImportBindings(node: TS.ImportDeclaration, imports: Impor
         moduleSpecifier,
       })
     } else {
-      // `NamedImportBindings` is exactly `NamespaceImport | NamedImports` --
-      // `ts.isNamespaceImport` above is a real type predicate, so TS already
+      // `NamedImportBindings` is exactly `NamespaceImport | NamedImports`:
+      // `ts.isNamespaceImport` above is a real type predicate. So TS already
       // narrows `clause.namedBindings` to `NamedImports` in this `else`
-      // branch on its own; a redundant `ts.isNamedImports` check here would
+      // branch on its own. A redundant `ts.isNamedImports` check here would
       // only ever be a no-op condition (there is no third member of the
-      // union for it to distinguish), so it's simply not written.
+      // union for it to distinguish), so it's not written.
       for (const element of clause.namedBindings.elements) {
         const importedName = (element.propertyName ?? element.name).text
         imports.push({ localName: element.name.text, importedName, moduleSpecifier })
@@ -1265,7 +1273,7 @@ export function collectImportBindings(node: TS.ImportDeclaration, imports: Impor
  * Parses one file's top-level statements only (matching `buildData`'s/
  * `createData`'s own intended usage: called once, at module scope, and
  * exported). Nested/conditional/dynamically-constructed calls are not this
- * module's concern -- they cannot be statically discovered and are simply
+ * module's concern: they cannot be statically discovered and are
  * never found, never guessed at.
  */
 export function parseCapabilityFile(filePath: string, sourceText: string): ParseResult {
@@ -1341,7 +1349,7 @@ export function parseCapabilityFile(filePath: string, sourceText: string): Parse
           if (!isExported) {
             warnings.push({
               file: filePath,
-              message: `${callKind}() assigned to "${name}" is not exported -- build tooling can only discover exported capabilities.`,
+              message: `${callKind}() assigned to "${name}" is not exported. Build tooling can only discover exported capabilities.`,
             })
           }
         } else if (isCallToName(initializer, "documentData")) {

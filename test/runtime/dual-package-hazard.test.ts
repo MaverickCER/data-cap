@@ -1,25 +1,25 @@
 /**
  * The dual-package hazard: if a consumer's dependency tree ends up resolving
  * `data-cap/runtime` through two different specifiers (one
- * import-er getting the ESM build, one require()-er getting the CJS build --
+ * import-er getting the ESM build, one require()-er getting the CJS build;
  * e.g. via a mixed ESM/CJS dependency graph, or a re-exporting intermediate
  * package), Node loads two entirely separate module instances. Since
  * `defaultCoordinator` (coordinator.ts) is a module-level singleton, each
- * instance gets its OWN coordinator -- two capabilities that should share
+ * instance gets its OWN coordinator: two capabilities that should share
  * dedup/subscription work (same `execute`/`subscribe` function identity)
  * silently stop sharing it, without any error.
  *
  * This package cannot prevent that (no npm package that ships both ESM and
- * CJS can -- it's a property of how Node's two module systems resolve
+ * CJS can: it's a property of how Node's two module systems resolve
  * independently), so this test exists to pin the ACTUAL, understood
  * consequence: graceful degradation (each instance stays internally
  * consistent; work just doesn't cross the boundary), not corruption or a
  * crash. This is decision/ADR "dual-package-hazard is a checked, documented
- * risk class" -- see SECURITY.md/ADOPTION.md for the consumer-facing
+ * risk class": see SECURITY.md/ADOPTION.md for the consumer-facing
  * writeup once written (Phase 9).
  *
- * Requires `npm run build` to have already produced dist/runtime/index.{js,cjs}
- * -- skips gracefully otherwise, matching the tree-shaking tests' convention.
+ * Requires `npm run build` to have already produced dist/runtime/index.{js,cjs}:
+ * skips gracefully otherwise, matching the tree-shaking tests' convention.
  */
 import { describe, expect, it } from "vitest"
 import { createRequire } from "node:module"
@@ -65,7 +65,7 @@ describe.skipIf(distMissing)("dual-package hazard -- defaultCoordinator", () => 
 
     let calls = 0
     const fn = async (_params: { id: string }, _signal: AbortSignal): Promise<number> => {
-      // Captured synchronously, before the await -- reading the shared
+      // Captured synchronously, before the await: reading the shared
       // `calls` counter AFTER the await would race against the other
       // invocation's own increment (both invocations' synchronous prefixes
       // run before either resumes), making the two results indistinguishable
@@ -84,7 +84,7 @@ describe.skipIf(distMissing)("dual-package hazard -- defaultCoordinator", () => 
 
     // Two calls through the SAME (ESM) instance, same params: deduped onto one underlying call.
     expect(fromEsmFirst).toBe(fromEsmSecond)
-    // The CJS instance never sees the ESM instance's in-flight entry -- its own, separate call.
+    // The CJS instance never sees the ESM instance's in-flight entry: its own, separate call.
     expect(fromCjs).not.toBe(fromEsmFirst)
     expect(calls).toBe(2)
   })

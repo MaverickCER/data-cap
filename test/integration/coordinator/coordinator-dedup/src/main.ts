@@ -2,10 +2,10 @@
  * Client-side pattern: several parts of an app independently requesting the
  * same data at once (e.g. two components both rendering the current user).
  * `coordinator.dedupe` shares one in-flight call across concurrent
- * requests with the SAME function identity and canonically-equal params --
+ * requests with the SAME function identity and canonically-equal params:
  * `fetchUserById("u1", ...)` called three times concurrently only actually
  * runs once. Non-canonicalizable params (a function, a symbol, ...) simply
- * never dedupe -- availability degrades gracefully rather than risking a
+ * never dedupe: availability degrades gracefully rather than risking a
  * false collision between two unrelated calls.
  */
 import assert from "node:assert/strict"
@@ -28,7 +28,7 @@ async function fetchUserById(id: string, signal: AbortSignal): Promise<User> {
   return { id, name: `User ${id}` }
 }
 
-// -- Scenario 1: identical params dedupe onto one underlying call --
+// (Scenario 1: identical params dedupe onto one underlying call)
 const controller = new AbortController()
 const [fromCallerA, fromCallerB, fromCallerC] = await Promise.all([
   defaultCoordinator.dedupe(fetchUserById, "u1", controller.signal),
@@ -49,7 +49,7 @@ assert.equal(
 assert.equal(fromCallerC.id, "u2")
 assert.notEqual(fromCallerC, fromCallerA)
 
-// -- Scenario 2: a non-canonicalizable param never dedupes --
+// (Scenario 2: a non-canonicalizable param never dedupes)
 fetchCallCount = 0
 async function fetchWithCallback(handler: () => void, signal: AbortSignal): Promise<number> {
   fetchCallCount += 1
@@ -69,7 +69,7 @@ assert.equal(
   "a function-valued param can't be canonicalized -- dedup never applies, even with the identical reference twice",
 )
 
-// -- Scenario 3: a per-caller abort never cancels the shared underlying work --
+// (Scenario 3: a per-caller abort never cancels the shared underlying work)
 fetchCallCount = 0
 const controllerD = new AbortController()
 const controllerE = new AbortController()

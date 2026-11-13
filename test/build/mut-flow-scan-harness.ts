@@ -92,7 +92,7 @@ export const USER = "userData.getSnapshot().fields.user"
 export const fieldId = (name: string): string => flowNodeId("field", CAP_FILE, `userData.${name}`)
 
 /** The exact content of a scan, one line per fact, in insertion order. */
-/** `!undef:<keys>` for every key an object carries with the value `undefined` -- a present-but-undefined key is a different fact from an absent one. */
+/** `!undef:<keys>` for every key an object carries with the value `undefined`: a present-but-undefined key is a different fact from an absent one. */
 function undefinedKeys(value: object): string {
   const keys = Object.entries(value)
     .filter(([, v]) => v === undefined)
@@ -221,7 +221,7 @@ export const handler = (body: string, extra = ""): Record<string, string> => ({
 const SINK_COUNT = 60
 
 /**
- * Rewrites every `res.json(` in `sources` to its own sink (`o0.emit(`, `o1.emit(`, ...) -- edges to one boundary from
+ * Rewrites every `res.json(` in `sources` to its own sink (`o0.emit(`, `o1.emit(`, ...): edges to one boundary from
  * one function with one path are merged, which would hide every probe after the first.
  */
 export function distinctSinks(sources: Record<string, string>): {

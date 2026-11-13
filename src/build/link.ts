@@ -1,17 +1,17 @@
 /**
- * Cross-file linking: resolves each `buildData()`/`createData()` call's
- * `fields` reference to an actual literal-evaluated shape (following at
- * most one level of cross-file identifier imports -- including a
- * `tsconfig.json` path alias, via `resolveImportSpecifier`), and correlates
- * `documentData()` calls with the `buildData()`/`createData()` capability
- * they document (decision 19 -- see specs/architecture.md's
- * "documentation-consistency" section).
+ * Cross-file linking. It resolves each `buildData()`/`createData()` call's
+ * `fields` reference to an actual literal-evaluated shape. It follows at
+ * most one level of cross-file identifier imports, including a
+ * `tsconfig.json` path alias, via `resolveImportSpecifier`. It also
+ * correlates `documentData()` calls with the `buildData()`/`createData()`
+ * capability they document (decision 19). See specs/architecture.md's
+ * "documentation-consistency" section.
  *
  * Correlation is same-file only, matching env-cap's own `link.ts`
- * convention: a `documentData()` call correlates with a `buildData()`/
+ * convention. A `documentData()` call correlates with a `buildData()`/
  * `createData()` call in the same file when either (a) both reference the
  * same local `fields` identifier, or (b) the file contains exactly one of
- * each (an unambiguous single pair). Anything else is not guessed at -- it
+ * each (an unambiguous single pair). Anything else is not guessed at: it
  * surfaces as a `ParseWarning` naming the specific mismatch category
  * instead.
  */
@@ -42,13 +42,13 @@ import type { BuildFileSystem } from "./types.js"
 
 /** Options for `linkCapabilityFiles`. */
 export interface LinkOptions {
-  /** The filesystem capability -- `./build` never imports `node:fs` (ADR 0058). */
+  /** The filesystem capability: `./build` never imports `node:fs` (ADR 0058). */
   readonly fs: BuildFileSystem
   /** Directory import specifiers/tsconfig auto-detection resolve against. */
   readonly root: string
   /** Explicit `tsconfig.json` path override, or `false` to disable alias resolution. Defaults to auto-detecting `root/tsconfig.json`. */
   readonly tsconfig?: string | false | undefined
-  /** Explicit cross-package schema discovery allowlist -- see `resolve-package-schema.ts`. */
+  /** Explicit cross-package schema discovery allowlist: see `resolve-package-schema.ts`. */
   readonly packages?: readonly string[] | undefined
 }
 
@@ -58,19 +58,19 @@ export interface DiscoveredCapability {
   readonly file: string
   /** The binding name the capability is exported as. */
   readonly exportName: string
-  /** `"buildData"` or `"createData"` -- which call form declared this capability. */
+  /** `"buildData"` or `"createData"`: which call form declared this capability. */
   readonly kind: "buildData" | "createData"
   /** The literal-evaluated `fields` shape, or `undefined` when it couldn't be statically resolved (see accompanying warnings). */
   readonly fieldsShape: Record<string, unknown> | undefined
-  /** Static getter/mutator/subscription names (never their function bodies) -- only ever populated for a `createData()` call; `undefined` for `buildData()`, which has no operations section. */
+  /** Static getter/mutator/subscription names (never their function bodies): only ever populated for a `createData()` call; `undefined` for `buildData()`, which has no operations section. */
   readonly operationNames: OperationNames | undefined
-  /** Static `writes` field-ownership shapes, keyed the same way as `operationNames` -- `undefined` under the same condition. */
+  /** Static `writes` field-ownership shapes, keyed the same way as `operationNames`: `undefined` under the same condition. */
   readonly operationWrites: OperationWritesByKind | undefined
-  /** Static `processor`/`optimistic` key-presence facts, keyed the same way as `operationNames` -- `undefined` under the same condition. */
+  /** Static `processor`/`optimistic` key-presence facts, keyed the same way as `operationNames`: `undefined` under the same condition. */
   readonly operationPresence: OperationPresenceByKind | undefined
-  /** Position of this capability's own `buildData`/`createData` call site -- always available. */
+  /** Position of this capability's own `buildData`/`createData` call site: always available. */
   readonly declarationPosition: SourcePosition
-  /** Position of each top-level field's own key, keyed by field name -- only when `fields` was an inline object literal in this file (see `parse.ts`'s `extractFieldPositions`); `undefined` when identifier-resolved across a file boundary. */
+  /** Position of each top-level field's own key, keyed by field name: only when `fields` was an inline object literal in this file (see `parse.ts`'s `extractFieldPositions`); `undefined` when identifier-resolved across a file boundary. */
   readonly fieldPositions: Readonly<Record<string, SourcePosition>> | undefined
   /** The `documentData()` call correlated with this capability, if any. */
   readonly documentedBy:
@@ -79,21 +79,20 @@ export interface DiscoveredCapability {
         readonly file: string
       }
     | undefined
-  /** Statically-extracted governance metadata from the correlated `documentData()` call, if any -- `undefined` when `documentedBy` is `undefined`, or when its `docs` argument wasn't an inline object literal. */
+  /** Statically-extracted governance metadata from the correlated `documentData()` call, if any: `undefined` when `documentedBy` is `undefined`, or when its `docs` argument wasn't an inline object literal. */
   readonly docs: LooseCapabilityDocs | undefined
 }
 
 /** Every capability discovered and linked across the project, plus every warning encountered along the way. */
 export interface LinkResult {
   /**
-   * The discovery root this result was produced against (`LinkOptions.root`),
-   * carried through so `buildInventory` can publish every `file` root-relative
-   * without a second, separately-supplied copy of the same fact that could
-   * disagree with the one linking actually used (OUT-01; see
+   * The discovery root this result was produced against (`LinkOptions.root`).
+   * `buildInventory` uses it to publish every `file` root-relative, so no second
+   * copy of the root can disagree with the one linking used (see
    * `display-path.ts`).
    */
   readonly root: string
-  /** Every discovered, linked capability -- each `file` still ABSOLUTE here, since linking itself does real filesystem work. Relativized once, at model construction, by `buildInventory`. */
+  /** Every discovered, linked capability: each `file` still ABSOLUTE here, since linking itself does real filesystem work. Relativized once, at model construction, by `buildInventory`. */
   readonly capabilities: readonly DiscoveredCapability[]
   /** Parse/link warnings, never blocking. */
   readonly warnings: readonly ParseWarning[]
@@ -101,10 +100,10 @@ export interface LinkResult {
 
 const MAX_IDENTIFIER_CHAIN_DEPTH = 5
 
-// A hard, generous fail-safe wholly independent of `depth`/`MAX_IDENTIFIER_CHAIN_DEPTH`
-// -- not a policy limit (a real chain never needs more than a handful of hops
-// to hit that depth cap) but a backstop against a broken depth-increment
-// itself: an ArithmeticOperator mutation flipping `depth + 1` to `depth - 1`
+// A hard, generous fail-safe wholly independent of `depth`/`MAX_IDENTIFIER_CHAIN_DEPTH`.
+// It is not a policy limit (a real chain never needs more than a handful of
+// hops to hit that depth cap) but a backstop against a broken depth-increment
+// itself. An ArithmeticOperator mutation flipping `depth + 1` to `depth - 1`
 // (in `resolveExpression` below) would otherwise let a genuine identifier
 // cycle recurse forever, since `depth` would never exceed the cap. Threaded
 // alongside `depth` via its own separate `+ 1` at every recursive call site,
@@ -113,11 +112,11 @@ const MAX_TOTAL_RESOLUTION_HOPS = 50
 
 /**
  * @internal Exported for direct unit coverage of `resolveFieldsShape`'s
- * `MAX_TOTAL_RESOLUTION_HOPS` fail-safe: a direct unit test can start
+ * `MAX_TOTAL_RESOLUTION_HOPS` fail-safe. A direct unit test can start
  * `totalHops` already past the ceiling against a trivially "unresolvable"
- * ref, organically exercising the fail-fast path no real (even maximally
+ * ref. That organically exercises the fail-fast path no real (even maximally
  * deep or cyclic) identifier chain reachable through the public
- * `linkCapabilityFiles` entry point can ever reach -- the ordinary
+ * `linkCapabilityFiles` entry point can ever reach. The ordinary
  * `depth`/`MAX_IDENTIFIER_CHAIN_DEPTH` check always resolves first.
  */
 export class LinkContext {
@@ -149,7 +148,7 @@ export class LinkContext {
   ): Promise<Record<string, unknown> | undefined> {
     if (totalHops > MAX_TOTAL_RESOLUTION_HOPS) {
       throw new Error(
-        `resolveFieldsShape: exceeded ${String(MAX_TOTAL_RESOLUTION_HOPS)} total resolution hops without ever honoring MAX_IDENTIFIER_CHAIN_DEPTH=${String(MAX_IDENTIFIER_CHAIN_DEPTH)} -- the depth-increment itself is broken.`,
+        `resolveFieldsShape: exceeded ${String(MAX_TOTAL_RESOLUTION_HOPS)} total resolution hops without ever honoring MAX_IDENTIFIER_CHAIN_DEPTH=${String(MAX_IDENTIFIER_CHAIN_DEPTH)}: the depth-increment itself is broken.`,
       )
     }
     if (ref.kind === "unresolvable") {
@@ -160,7 +159,7 @@ export class LinkContext {
     if (ref.kind === "literal") {
       // `ref.node` is always an object-literal expression here (per parse.ts),
       // and `evaluateLiteral` of one, when `ok`, is always a plain
-      // `Record<string, unknown>` -- never null, an array, or a primitive -- so
+      // `Record<string, unknown>` (never null, an array, or a primitive). So
       // `result.ok` is the only decision left to make.
       const result = evaluateLiteral(ref.node)
       if (result.ok) return result.value as Record<string, unknown>
@@ -189,14 +188,14 @@ export class LinkContext {
     if (importBinding === undefined) {
       this.warnings.push({
         file,
-        message: `Could not resolve "${ref.name}" -- it is neither a local const nor a recognized import.`,
+        message: `Could not resolve "${ref.name}": it is neither a local const nor a recognized import.`,
       })
       return undefined
     }
     if (importBinding.importedName === "*" || importBinding.importedName === "default") {
       this.warnings.push({
         file,
-        message: `"${ref.name}" is a namespace/default import -- "fields" must reference a named export to be statically resolved.`,
+        message: `"${ref.name}" is a namespace/default import. "fields" must reference a named export to be statically resolved.`,
       })
       return undefined
     }
@@ -224,7 +223,7 @@ export class LinkContext {
       return undefined
     }
     // The identifier branch of `resolveExpression` already charges one unit of
-    // depth per hop, which is what bounds a cross-file cycle -- no extra "+1"
+    // depth per hop, which is what bounds a cross-file cycle. No extra "+1"
     // for the file boundary itself is needed here.
     return this.resolveExpression(
       remoteInitializer,
@@ -261,7 +260,7 @@ export class LinkContext {
 /**
  * The `fields`-shape reference an already-resolved *expression* stands for:
  * an inline object literal, a bare identifier to follow, or (returned as
- * `undefined`) something -- a call, a member access -- this pass will not chase.
+ * `undefined`) something (a call, a member access) this pass will not chase.
  * Mirrors parse.ts's own `fields`-property classification, one level down.
  */
 export function schemaRefFromExpression(
@@ -273,7 +272,7 @@ export function schemaRefFromExpression(
 }
 
 /**
- * Whether two `fields` references are the *same* identifier reference -- the
+ * Whether two `fields` references are the *same* identifier reference: the
  * basis for unambiguous same-file `createData`/`documentData` correlation.
  * Non-identifier refs (inline literals, unresolvable) never correlate this way,
  * not even two structurally-identical literals: that is the positional
@@ -282,7 +281,7 @@ export function schemaRefFromExpression(
 export function sameIdentifierRef(a: SchemaRef, b: SchemaRef): boolean {
   // Key an identifier ref by its bound name; key every other ref by its own
   // object identity (so it equals nothing but itself). Two refs correlate iff
-  // their keys are `===` -- i.e. both are identifiers naming the same binding.
+  // their keys are `===`: i.e. both are identifiers naming the same binding.
   const key = (ref: SchemaRef): string | SchemaRef => (ref.kind === "identifier" ? ref.name : ref)
   return key(a) === key(b)
 }
@@ -304,7 +303,7 @@ function correlate(
         if (correlated.has(createCall)) {
           warnings.push({
             file,
-            message: `Multiple documentData() calls reference the same "fields" as one buildData()/createData() capability -- duplicate documentation.`,
+            message: `Multiple documentData() calls reference the same "fields" as one buildData()/createData() capability: duplicate documentation.`,
           })
           continue
         }
@@ -320,7 +319,7 @@ function correlate(
   )
   const unusedDocs = documentDataCalls.filter((d) => !documentedCalls.has(d))
   if (uncorrelatedCreates.length === 1 && unusedDocs.length === 1) {
-    // Both arrays hold exactly one element; iterating is just how we bind that
+    // Both arrays hold exactly one element; iterating is how we bind that
     // element without a redundant `!== undefined` narrowing step.
     for (const soleCreate of uncorrelatedCreates) {
       for (const soleDoc of unusedDocs) {
@@ -346,7 +345,7 @@ function correlate(
 /**
  * @internal Detects a documentData() call's `docs.fields` referencing a field
  * name absent from the capability's own resolved shape. Exported for direct
- * unit coverage -- in production it only ever runs after an `await` in
+ * unit coverage: in production it only ever runs after an `await` in
  * `linkCapabilityFiles`, which Stryker's perTest coverage cannot attribute.
  */
 export function checkDocFieldsAgainstShape(
@@ -383,9 +382,9 @@ export function checkDocFieldsAgainstShape(
 /**
  * Detects a documentData() call's `docs.getters`/`docs.mutators`/
  * `docs.subscriptions` referencing an operation name absent from the
- * capability's own declared operations -- the build-time (AST) counterpart
+ * capability's own declared operations. It is the build-time (AST) counterpart
  * to `CapabilityDocs`'s own compile-time `keyof` checking (see
- * `core/document.ts`): a project not authoring through TypeScript's type
+ * `core/document.ts`). A project not authoring through TypeScript's type
  * checker (or one that bypassed it) still gets this caught here. Mirrors
  * `checkDocFieldsAgainstShape` exactly, one operation-kind section at a
  * time.

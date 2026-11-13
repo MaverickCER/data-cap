@@ -6,7 +6,7 @@ describe("public barrel exports", () => {
     expect(dataCap.buildData).toBeTypeOf("function")
     expect(dataCap.documentData).toBeTypeOf("function")
     // Called directly (rather than referenced bare) so the method isn't
-    // detached from its object -- avoids `@typescript-eslint/unbound-method`
+    // detached from its object: avoids `@typescript-eslint/unbound-method`
     // while still proving both helpers are reachable through the barrel.
     expect(dataCap.fields.nullable("")).toMatchObject({ inner: "" })
     expect(dataCap.fields.optional("")).toMatchObject({ inner: "" })

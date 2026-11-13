@@ -51,7 +51,7 @@ export function methods() {
       node: { readonly arguments?: readonly TS.Expression[] },
       arity = 1,
     ): Val[] {
-      // Stryker disable next-line ArrayDeclaration: equivalent -- a call written without arguments (`new C`) has none to evaluate, and a stand-in list is read as one empty argument, which binds the same.
+      // Stryker disable next-line ArrayDeclaration: equivalent: a call written without arguments (`new C`) has none to evaluate, and a stand-in list is read as one empty argument, which binds the same.
       return (node.arguments ?? []).flatMap((argument, index) => {
         if (!ts.isSpreadElement(argument)) return [this.expr(frame, argument)]
         const element = this.iterate(frame, this.expr(frame, argument.expression), argument)
@@ -67,7 +67,7 @@ export function methods() {
       return ts.isIdentifier(root) ? root : undefined
     },
 
-    /** A sink is named by the root of the callee chain and its last member (`res.status(200).json` is `res.json`), or by the member just before the method (`this.logger.info` is `logger.info`). */
+    /** A sink is named by the root of the callee chain and its last member (`res.status(200).json` is `res.json`), or by the member immediately before the method (`this.logger.info` is `logger.info`). */
     matchSink(this: FlowScan, callee: TS.Expression): FlowSinkPattern | undefined {
       const target = unwrap(callee)
       if (!ts.isPropertyAccessExpression(target)) return undefined
@@ -89,7 +89,7 @@ export function methods() {
         this.callSuper(frame, node, this.evalArgs(frame, node), node.arguments)
         return EMPTY_VAL
       }
-      // Stryker disable next-line ConditionalExpression: equivalent -- only an identifier can name a reserved call (`require`, `createData`); any other callee has no text that does.
+      // Stryker disable next-line ConditionalExpression: equivalent: only an identifier can name a reserved call (`require`, `createData`); any other callee has no text that does.
       if (ts.isIdentifier(callee)) {
         const reserved = this.reservedCall(frame, node, callee)
         if (reserved !== undefined) return reserved
@@ -123,7 +123,7 @@ export function methods() {
         return this.copied(frame, node, mergeVals(...args), "copy", true)
       const computed = this.expr(frame, callee)
       if (
-        // Stryker disable next-line ConditionalExpression: equivalent -- a method bound to a capability always carries the capability, so this operand is implied by the next.
+        // Stryker disable next-line ConditionalExpression: equivalent: a method bound to a capability always carries the capability, so this operand is implied by the next.
         computed.capability !== undefined &&
         computed.boundMethod !== undefined
       )
@@ -159,7 +159,7 @@ export function methods() {
 
     /** What loading `specifier` gives: a project file's exports, or, for any other module, what its package exports. */
     loaded(this: FlowScan, specifier: string, file: string | undefined): Val {
-      // Stryker disable next-line ConditionalExpression,LogicalOperator: equivalent -- a module the scan skipped (a generated file) reads as an empty value, which is called as unresolved exactly as the package it stands in for is.
+      // Stryker disable next-line ConditionalExpression,LogicalOperator: equivalent: a module the scan skipped (a generated file) reads as an empty value, which is called as unresolved exactly as the package it stands in for is.
       return file !== undefined && this.files.has(file)
         ? this.moduleExports(file)
         : externalVal(specifier, "*")
@@ -168,7 +168,7 @@ export function methods() {
     /** What `require` hands back for a project file: its `export`s, and whatever it stored on `exports` and `module.exports`. */
     moduleExports(this: FlowScan, file: string): Val {
       const info = this.files.get(file)
-      // Stryker disable next-line ConditionalExpression: equivalent -- only a file the scan has is loaded, so its info is there; the check only satisfies the type checker.
+      // Stryker disable next-line ConditionalExpression: equivalent: only a file the scan has is loaded, so its info is there; the check only satisfies the type checker.
       if (info === undefined) return EMPTY_VAL
       this.ensureModule(info)
       const written = mergeVals(
@@ -201,7 +201,7 @@ export function methods() {
       const target = this.expr(frame, node.expression)
       const constructor = this.constructorOf(target)
       const args = this.evalArgs(frame, node, constructor?.params.length)
-      // Stryker disable next-line ArrayDeclaration: equivalent -- the expressions of the arguments are only where a callee's stores are written back to; with no arguments there is nothing to write back.
+      // Stryker disable next-line ArrayDeclaration: equivalent: the expressions of the arguments are only where a callee's stores are written back to; with no arguments there is nothing to write back.
       return this.construct(frame, node, target, args, node.arguments ?? [])
     },
 
@@ -247,7 +247,7 @@ export function methods() {
       const specifier = node.arguments[0] === undefined ? undefined : unwrap(node.arguments[0])
       if (specifier !== undefined && ts.isStringLiteralLike(specifier)) {
         const file = frame.fn.file.dynamicImports.get(specifier.text)
-        // Stryker disable next-line ConditionalExpression: equivalent -- a namespace of no file reads as an empty value.
+        // Stryker disable next-line ConditionalExpression: equivalent: a namespace of no file reads as an empty value.
         return file === undefined ? EMPTY_VAL : { ...EMPTY_VAL, namespace: file }
       }
       const atoms = this.atomsOf(frame, mergeVals(...args), node)
@@ -317,7 +317,7 @@ export function methods() {
         return this.analyze({ caller: frame, site: node, argExprs: node.arguments }, exported, args)
       const imported = frame.fn.file.packageImports.get(rootName)
       const external =
-        // Stryker disable next-line ConditionalExpression: equivalent -- a namespace the file imports was recorded as an import first, so `imported` is always there; the check only satisfies the type checker.
+        // Stryker disable next-line ConditionalExpression: equivalent: a namespace the file imports was recorded as an import first, so `imported` is always there; the check only satisfies the type checker.
         imported === undefined
           ? undefined
           : externalKey(externalMember(`${imported.module}\u0000${imported.name}`, name))
@@ -334,7 +334,7 @@ export function methods() {
       name: string,
     ): FunctionInfo | "opaque" | undefined {
       const exported =
-        // Stryker disable next-line ConditionalExpression: equivalent -- a value that is no namespace has no file whose exports could hold the name, so the lookup finds none, as the check does.
+        // Stryker disable next-line ConditionalExpression: equivalent: a value that is no namespace has no file whose exports could hold the name, so the lookup finds none, as the check does.
         receiver.namespace === undefined ? undefined : this.findExport(receiver.namespace, name)
       if (exported !== undefined) return exported
       const own = this.functionOf(receiver.props.get(name)?.callable)
@@ -360,7 +360,7 @@ export function methods() {
     mixedIn(this: FlowScan, cls: ClassInfo, name: string): Val | undefined {
       for (const owner of this.chain(cls)) {
         const className = owner.node.name?.text
-        // Stryker disable next-line ConditionalExpression: equivalent -- a class without a name is bound to no name, so looking one up finds nothing, as the check does.
+        // Stryker disable next-line ConditionalExpression: equivalent: a class without a name is bound to no name, so looking one up finds nothing, as the check does.
         const bound = className === undefined ? undefined : owner.env.get(className)
         const stored =
           bound?.classRef === owner.key ? bound.props.get("prototype")?.props.get(name) : undefined

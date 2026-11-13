@@ -1,3 +1,11 @@
+/**
+ * The `data-cap` entry: declare a capability's fields with `buildData`, and its documentation with
+ * `documentData`. It also exports the `DataState` types and the error classes. It imports nothing.
+ * Tests run it on Node 22 or later, as a bundle with Web globals only, and on Bun and Deno.
+ *
+ * @packageDocumentation
+ */
+
 export { buildData } from "./build.js"
 export type { BuiltData } from "./build.js"
 

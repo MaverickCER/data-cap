@@ -1,24 +1,31 @@
 /**
+ * `data-cap/evidence`: read a generated Evidence Model without Node. `defineEvidenceProjection`
+ * (Stable) builds your own view of it; the flow queries, views and standards adapters are
+ * Experimental.
+ *
+ * @packageDocumentation
+ */
+
+/**
  * `data-cap`'s Evidence Model entry point (`data-cap/evidence`).
  *
  * `defineEvidenceProjection()` is the extensibility mechanism the seven
  * canonical fact models (ADR 0050) exist to serve. A projection is a pure
- * transform from the `EvidenceModel` -- assembled at build time by
- * `generateDataArtifacts()`/`buildEvidenceModel()`
- * (`data-cap/build`, Node-only) -- to any consumer-defined
- * output shape, with read-only enforcement and per-field provenance.
+ * transform from the `EvidenceModel` to any consumer-defined output shape,
+ * with read-only enforcement and per-field provenance. The model is
+ * assembled at build time by `generateDataArtifacts()` or
+ * `buildEvidenceModel()` (`data-cap/build`, Node-only).
  *
  * This module is deliberately isomorphic: no `node:fs`, no `typescript`, no
- * knowledge of how an `EvidenceModel` gets built -- it only imports that
- * shape as a type (fully erased at compile time under
- * `verbatimModuleSyntax`, mirroring `helpers`' one sanctioned cross-folder
- * edge onto `runtime`). A dashboard backend, an edge function, or a CI step
- * can run a projection over a previously-generated, JSON-deserialized
- * `EvidenceModel` with zero Node dependency, and without pulling in the
- * TypeScript compiler API that `/build` necessarily carries.
+ * knowledge of how an `EvidenceModel` gets built. It imports that shape only
+ * as a type, fully erased at compile time under `verbatimModuleSyntax`. That
+ * mirrors `helpers`' one sanctioned cross-folder edge onto `runtime`. A
+ * dashboard backend, an edge function or a CI step can run a projection over
+ * a previously generated, JSON-deserialized `EvidenceModel`. It needs no Node
+ * dependency and no TypeScript compiler API, which `/build` carries.
  *
  * `data-cap/build` continues to re-export everything here, so
- * existing `/build` imports keep working unchanged -- this directory is the
+ * existing `/build` imports keep working unchanged: this directory is the
  * canonical source, `/build` is the compatibility surface.
  */
 export { defineEvidenceProjection } from "./define-evidence-projection.js"
@@ -79,7 +86,7 @@ export type { PolicyModel, PolicyOutcome, PolicyResult } from "../flow/policy-mo
 
 // Standards adapters and views over the one Evidence Model (ADR 0070): a graph view any renderer can read, its
 // textual equivalent, DOT and Mermaid, W3C PROV-JSON, NIST OSCAL assessment-results, and OpenTelemetry. All are pure
-// projections; the package renders nothing interactively -- a consumer draws the graph view however it likes.
+// projections; the package renders nothing interactively: a consumer draws the graph view however it likes.
 export { buildFlowGraphView, FLOW_GRAPH_VIEW_VERSION } from "./flow-graph-view.js"
 export type {
   FieldDestination,

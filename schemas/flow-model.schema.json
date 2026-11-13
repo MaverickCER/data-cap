@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://maverickcer.github.io/data-cap/schema/flow-model.schema.json",
   "title": "data-cap Flow Model",
-  "description": "Canonical, versioned function-level, field-sensitive data-flow facts (nodes, edges, explicit unknowns and a coverage summary), each with an epistemic status (see ADR 0070, ADR 0071). Generated from src/flow/flow-model.ts's FlowModel type -- never hand-authored.",
+  "description": "Canonical, versioned function-level, field-sensitive data-flow facts (nodes, edges, explicit unknowns and a coverage summary), each with an epistemic status (see ADR 0070, ADR 0071). Generated from src/flow/flow-model.ts's FlowModel type. Never hand-authored.",
   "$ref": "#/definitions/FlowModel",
   "definitions": {
     "FlowModel": {
@@ -79,7 +79,7 @@
         },
         "classification": {
           "type": "string",
-          "description": "Declared or inherited sensitivity classification, when known -- carried verbatim, never inferred here."
+          "description": "Declared or inherited sensitivity classification, when known: carried verbatim, never inferred here."
         },
         "boundaryKind": {
           "$ref": "#/definitions/FlowBoundaryKind",
@@ -168,7 +168,7 @@
         "computed",
         "internal"
       ],
-      "description": "What kind of boundary a declared data-flow endpoint crosses -- a data store (`database`/`cache`/`storage`/`queue`), an external entity (`api`/`external-service`/`user-input`), or something internal to this codebase (`computed`/`internal`)."
+      "description": "What kind of boundary a declared data-flow endpoint crosses: a data store (`database`/`cache`/`storage`/`queue`), an external entity (`api`/`external-service`/`user-input`), or something internal to this codebase (`computed`/`internal`)."
     },
     "FlowEdge": {
       "type": "object",
@@ -200,7 +200,7 @@
         },
         "handling": {
           "$ref": "#/definitions/FlowHandling",
-          "description": "The data-safety state of the value at this hop, when declared or established -- policy evaluation reads it at boundary crossings."
+          "description": "The data-safety state of the value at this hop, when declared or established: policy evaluation reads it at boundary crossings."
         },
         "origin": {
           "type": "string",
@@ -234,7 +234,7 @@
         "crosses-boundary",
         "side-effect"
       ],
-      "description": "What an edge means. Data moves `from` -> `to` along `reads`, `writes`, `transforms`, `passes`, `returns` and `crosses-boundary`; `calls` is control flow and `discards` records that a function received a field and deliberately did not forward it -- neither carries data, so tracing does not follow them. `side-effect` links a function to the boundary it acts on."
+      "description": "What an edge means. Data moves `from` -> `to` along `reads`, `writes`, `transforms`, `passes`, `returns` and `crosses-boundary`. `calls` is control flow, and `discards` records that a function received a field and did not forward it. Neither carries data, so tracing does not follow them. `side-effect` links a function to the boundary it acts on."
     },
     "SourceLocation": {
       "type": "object",
@@ -266,7 +266,7 @@
         "hashed",
         "encrypted"
       ],
-      "description": "The declared data-safety state of a value at a boundary crossing -- the vocabulary of `DataFlowEndpoint.handling` and of flow policy rules."
+      "description": "The declared data-safety state of a value at a boundary crossing: the vocabulary of `DataFlowEndpoint.handling` and of flow policy rules."
     },
     "FlowUnknown": {
       "type": "object",
@@ -310,7 +310,7 @@
             "additionalProperties": false,
             "description": "A piece of capability-field data an unknown concerns: the field node and the path inside it."
           },
-          "description": "The tracked data that entered the part of the program that could not be followed. Absent means \"unknown which data\" -- every trace that reaches the subject must treat itself as incomplete. Present, it lets a trace of a different field or an unrelated path stay complete: an opaque call that only ever saw `email` says nothing about where `passwordHash` went."
+          "description": "The tracked data that entered the part of the program that could not be followed. Absent means \"unknown which data\": every trace that reaches the subject must treat itself as incomplete. Present, it lets a trace of a different field or an unrelated path stay complete: an opaque call that only ever saw `email` says nothing about where `passwordHash` went."
         },
         "id": {
           "type": "string",
@@ -369,7 +369,7 @@
         "complete"
       ],
       "additionalProperties": false,
-      "description": "What was and was not analyzed -- a projection must not call a graph complete unless `complete`."
+      "description": "What was and was not analyzed: a projection must not call a graph complete unless `complete`."
     },
     "FlowEdgeTag": {
       "type": "object",

@@ -1,16 +1,16 @@
 /**
- * Pure data assembly for the Data Flow & Lineage report (C10) -- combines
+ * Pure data assembly for the Data Flow & Lineage report. It combines
  * declared endpoints (author-asserted, from `documentData()`'s `endpoints`)
  * with proven `reads-field` edges (from C6's usage scan) into one
- * per-field flow record, and derives the one finding this combination
+ * per-field flow record. It also derives the one finding this combination
  * makes possible: a sensitive field with a declared endpoint crossing an
  * external/api/queue boundary. No filesystem access.
  *
- * Every field on `FieldFlow` is clearly either declared or proven -- never
+ * Every field on `FieldFlow` is clearly either declared or proven: never
  * blended, per `AGENTS.md`'s declared-vs-proven invariant. This module
  * cannot trace *through* a third-party system (once data reaches an
  * `external-service`/`api` endpoint, what that system does next is
- * unknowable to a static scan of one repository), and does not assign a
+ * unknowable to a static scan of one repository). It does not assign a
  * regulatory classification (jurisdiction-specific; see ADR 0049's
  * `metadata` convention).
  */
@@ -20,12 +20,12 @@ import type { CapabilityInventory, CapabilityNode, FieldNode, OperationNode } fr
 import type { DependencyEdge } from "./dependency-types.js"
 import type { ReportFinding } from "./findings.js"
 
-/** Exported so `flow-diagram.ts` highlights exactly the edges that produce `SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY` -- one source of truth for which endpoint kinds count as a boundary crossing. */
+/** Exported so `flow-diagram.ts` highlights exactly the edges that produce `SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY`: one source of truth for which endpoint kinds count as a boundary crossing. */
 export function isBoundaryCrossingKind(kind: DataFlowEndpoint["kind"]): boolean {
   return kind === "external-service" || kind === "api" || kind === "queue"
 }
 
-/** Which operation declared one `FieldFlowEndpoint` -- kept alongside the endpoint itself (rather than flattened away) so a consumer like `flow-diagram.ts` can draw a real endpoint -> operation -> field chain, not just endpoint -> field. */
+/** Which operation declared one `FieldFlowEndpoint`: kept alongside the endpoint itself (rather than flattened away) so a consumer like `flow-diagram.ts` can draw a real endpoint -> operation -> field chain, not only endpoint -> field. */
 export interface FieldFlowEndpoint {
   /** The getter/mutator/subscription that declares this endpoint. */
   readonly operation: {
@@ -36,7 +36,7 @@ export interface FieldFlowEndpoint {
   readonly endpoint: DataFlowEndpoint
 }
 
-/** One field's declared origins/destinations and proven in-repo consumers -- the data-flow-diagram/security-review model's atomic unit. */
+/** One field's declared origins/destinations and proven in-repo consumers: the data-flow-diagram/security-review model's atomic unit. */
 export interface FieldFlow {
   /** Which capability owns this field. */
   readonly capability: {
@@ -47,7 +47,7 @@ export interface FieldFlow {
   }
   /** The field's path within its capability. */
   readonly field: readonly string[]
-  /** Resolved: the field's own declared sensitivity, else the capability's -- mirrors `owner`'s inheritance (ADR 0049). */
+  /** Resolved: the field's own declared sensitivity, else the capability's; mirrors `owner`'s inheritance (ADR 0049). */
   readonly sensitivity: string | undefined
   /** `direction: "input"` endpoints declared on the operation(s) that write this field, each tagged with its declaring operation. */
   readonly declaredOrigins: readonly FieldFlowEndpoint[]
@@ -112,17 +112,17 @@ function boundaryCrossingFinding(flow: FieldFlow): ReportFinding | undefined {
     code: "SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY",
     family: "flow",
     severity: "warning",
-    message: `Field "${flow.field.join(".")}" on "${flow.capability.exportName}" is sensitivity "${flow.sensitivity}" and has a declared endpoint crossing an external-service/api/queue boundary -- verify this is intentional and adequately protected.`,
+    message: `Field "${flow.field.join(".")}" on "${flow.capability.exportName}" is sensitivity "${flow.sensitivity}" and has a declared endpoint crossing an external-service/api/queue boundary. Verify this is intentional and adequately protected.`,
     capability: flow.capability,
     field: flow.field,
   }
 }
 
 /**
- * Presence-only, same discipline as every other governance finding: flags a
+ * Presence-only, same discipline as every other governance finding. It flags a
  * sensitive field with a declared boundary-crossing endpoint that doesn't
- * also declare `handling` (plaintext/masked/redacted/hashed/encrypted) --
- * never a claim that the field is actually mishandled, only that the
+ * also declare `handling` (plaintext/masked/redacted/hashed/encrypted).
+ * It is never a claim that the field is actually mishandled, only that the
  * declaration proving otherwise is missing where it would matter most.
  */
 function missingHandlingFinding(flow: FieldFlow): ReportFinding | undefined {
@@ -136,7 +136,7 @@ function missingHandlingFinding(flow: FieldFlow): ReportFinding | undefined {
     code: "SENSITIVE_FIELD_ENDPOINT_MISSING_HANDLING",
     family: "flow",
     severity: "warning",
-    message: `Field "${flow.field.join(".")}" on "${flow.capability.exportName}" is sensitivity "${flow.sensitivity}" and has ${String(undeclared.length)} declared boundary-crossing endpoint(s) with no declared "handling" -- state how this field's data is protected at each crossing (plaintext/masked/redacted/hashed/encrypted).`,
+    message: `Field "${flow.field.join(".")}" on "${flow.capability.exportName}" is sensitivity "${flow.sensitivity}" and has ${String(undeclared.length)} declared boundary-crossing endpoint(s) with no declared "handling". State how this field's data is protected at each crossing (plaintext/masked/redacted/hashed/encrypted).`,
     capability: flow.capability,
     field: flow.field,
   }
@@ -153,7 +153,7 @@ export function buildFlowGraph(
   // "Which edges target this capability" is indexed once (ADR 0056), so
   // buildFieldFlow filters one capability's own edges per field rather than the
   // full project-wide array. Only capabilities that something actually consumes
-  // become keys -- an unconsumed one is a `.get` miss, handled in buildFieldFlow.
+  // become keys: an unconsumed one is a `.get` miss, handled in buildFieldFlow.
   const edgesByCapability = new Map<string, DependencyEdge[]>()
   for (const edge of edges) {
     const key = `${edge.to.capability.file}#${edge.to.capability.exportName}`

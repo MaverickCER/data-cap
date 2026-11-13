@@ -4,7 +4,7 @@
  * A `Val` is a value, not a reference: copying it (`const b = a`, `{ list: a.list }`, an array element, a function's
  * result) copies what it holds at that moment. A store through one name would then be invisible through another name
  * for the same object. To stay sound without becoming a points-to analysis, every object a literal, a `new` or a
- * collection makes carries the id of its allocation site (`Val.alloc`), and a store into a container writes the stored
+ * collection makes carries the id of its allocation site (`Val.alloc`). A store into a container writes the stored
  * value into that site's shared cell. Reading a value that carries a site id adds the cell, so an alias made by any
  * route sees the store.
  *
@@ -14,7 +14,7 @@
  * stores back; every other evaluation sees all of them. That is what lets a reader analyzed before a writer see the
  * write after another round, without a store showing up before the line that made it.
  *
- * Pure -- no filesystem access, no AST.
+ * Pure: no filesystem access, no AST.
  */
 import { EMPTY_VAL, mergeVals, signatureOf, withoutAlloc } from "./flow-values.js"
 import type { Val } from "./flow-values.js"
@@ -83,7 +83,7 @@ export class HeapCells {
     for (const [key, child] of val.props) props.set(key, this.expandWith(child, open))
     let result: Val = val.props.size === 0 ? val : { ...val, props }
     const now = new Set(open)
-    // Stryker disable next-line ArrayDeclaration: equivalent -- a placeholder names no cell, so nothing is added for it.
+    // Stryker disable next-line ArrayDeclaration: equivalent: a placeholder names no cell, so nothing is added for it.
     for (const id of val.alloc ?? []) {
       const parts = this.partsOf(id)
       if (parts.length === 0 || now.has(id)) continue

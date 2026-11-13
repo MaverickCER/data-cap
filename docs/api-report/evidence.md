@@ -1,5 +1,9 @@
 # evidence
 
+`data-cap/evidence`: read a generated Evidence Model without Node. `defineEvidenceProjection`
+(Stable) builds your own view of it; the flow queries, views and standards adapters are
+Experimental.
+
 ## Interfaces
 
 ### Claim
@@ -506,10 +510,10 @@ Capability Model.
 readonly change: ChangeModel | undefined;
 ```
 
-Change Model, or `undefined` when no manifest diff was available -- see
-`computed.change` before reading absence as "nothing changed." Not a
+Change Model, or `undefined` when no manifest diff was available. See
+`computed.change` before reading absence as "nothing changed." It is not a
 diffable input across two `EvidenceModel`s the way the other five
-project-varying fields conceptually are -- it already IS a diff.
+project-varying fields conceptually are: it already IS a diff.
 
 ##### claims
 
@@ -518,7 +522,7 @@ readonly claims: ClaimsModel | undefined;
 ```
 
 Claims Model, derived by `buildEvidenceModel` from `flow` (plus `policy`
-and `observation` when present), never supplied by a caller -- one
+and `observation` when present), never supplied by a caller. There is one
 derivation path, so the claims can never disagree with the facts they
 cite. `undefined` exactly when `flow` is.
 
@@ -528,8 +532,8 @@ cite. `undefined` exactly when `flow` is.
 readonly computed: EvidenceComputedModels;
 ```
 
-Which of the four optional sub-models below this run actually computed
--- read this before concluding anything from an absent one (OUT-04).
+Which of the four optional sub-models below this run actually computed:
+read this before concluding anything from an absent one.
 
 ##### dependency
 
@@ -537,7 +541,7 @@ Which of the four optional sub-models below this run actually computed
 readonly dependency: DependencyModel | undefined;
 ```
 
-Dependency Model, or `undefined` when no usage scan was run -- see `computed.dependency` before reading absence as "no dependencies."
+Dependency Model, or `undefined` when no usage scan was run: see `computed.dependency` before reading absence as "no dependencies."
 
 ##### finding
 
@@ -545,7 +549,7 @@ Dependency Model, or `undefined` when no usage scan was run -- see `computed.dep
 readonly finding: FindingModel | undefined;
 ```
 
-Finding Model, or `undefined` when nothing was supplied -- see `computed.finding` before reading absence as "no findings."
+Finding Model, or `undefined` when nothing was supplied. See `computed.finding` before reading absence as "no findings."
 
 ##### flow
 
@@ -553,7 +557,7 @@ Finding Model, or `undefined` when nothing was supplied -- see `computed.finding
 readonly flow: FlowModel | undefined;
 ```
 
-Flow Model, or `undefined` when no flow pass ran -- see `computed.flow` before reading absence as "no flows."
+Flow Model, or `undefined` when no flow pass ran: see `computed.flow` before reading absence as "no flows."
 
 ##### lifecycle
 
@@ -561,7 +565,7 @@ Flow Model, or `undefined` when no flow pass ran -- see `computed.flow` before r
 readonly lifecycle: LifecycleModel;
 ```
 
-Lifecycle Model -- always populated, for the reason `EvidenceModelInputs.lifecycle` documents.
+Lifecycle Model: always populated, for the reason `EvidenceModelInputs.lifecycle` documents.
 
 ##### observation
 
@@ -569,7 +573,7 @@ Lifecycle Model -- always populated, for the reason `EvidenceModelInputs.lifecyc
 readonly observation: ObservationModel | undefined;
 ```
 
-Observation Model, or `undefined` when no observations were ingested -- see `computed.observation` before reading absence as "nothing was observed."
+Observation Model, or `undefined` when no observations were ingested. See `computed.observation` before reading absence as "nothing was observed."
 
 ##### ownership
 
@@ -577,7 +581,7 @@ Observation Model, or `undefined` when no observations were ingested -- see `com
 readonly ownership: OwnershipModel | undefined;
 ```
 
-Ownership Model, or `undefined` when none was supplied -- see `computed.ownership`.
+Ownership Model, or `undefined` when none was supplied: see `computed.ownership`.
 
 ##### policy
 
@@ -585,7 +589,7 @@ Ownership Model, or `undefined` when none was supplied -- see `computed.ownershi
 readonly policy: PolicyModel | undefined;
 ```
 
-Policy Model, or `undefined` when no rules were evaluated -- see `computed.policy`.
+Policy Model, or `undefined` when no rules were evaluated: see `computed.policy`.
 
 ##### provenance
 
@@ -593,7 +597,7 @@ Policy Model, or `undefined` when no rules were evaluated -- see `computed.polic
 readonly provenance: EvidenceProvenance;
 ```
 
-Who/when/what produced this instance -- always present (see `EvidenceProvenance`).
+Who/when/what produced this instance: always present (see `EvidenceProvenance`).
 
 ##### runtimeContract
 
@@ -601,7 +605,7 @@ Who/when/what produced this instance -- always present (see `EvidenceProvenance`
 readonly runtimeContract: RuntimeContractModel;
 ```
 
-Runtime Contract Model -- always populated, package-scoped rather than
+Runtime Contract Model: always populated, package-scoped rather than
 project-scoped (see this module's own doc comment). A static append,
 never itself a diffable "changed since last run" input.
 
@@ -653,10 +657,10 @@ same value alongside automatic, per-field provenance.
 readonly project: (evidence) => EvidenceProjectionResult<T>;
 ```
 
-Declared as a property holding a function, not as a method: what's
-actually attached is a closure (`Object.assign(invoke, {project})`) that
-never reads `this`, so a consumer is free to destructure or pass it
-around. A method signature would claim otherwise and make every such
+Declared as a property holding a function, not as a method. What is
+attached is a closure (`Object.assign(invoke, {project})`) that never reads
+`this`, so a consumer may destructure it or pass it around. A method
+signature would claim otherwise and make every such
 use look like an unbound-method bug.
 
 ###### Parameters
@@ -697,24 +701,24 @@ Per output key, every dotted `EvidenceModel` path that key's own projector actua
 readonly value: T;
 ```
 
-The projection's own output -- exactly what calling the projection directly returns.
+The projection's own output: exactly what calling the projection directly returns.
 
 ***
 
 ### EvidenceProvenance
 
-Who/when/what produced a given `EvidenceModel` instance -- matching
+Who/when/what produced a given `EvidenceModel` instance: matching
 env-cap's own `EvidenceProvenance` shape exactly, so a consumer reading
 both packages' evidence artifacts reads one vocabulary, not two.
 
 `generatedAt`/`toolVersion` are required: every real caller can supply
-both (the tool version is `data-cap`'s own installed version, read from
-its `package.json` -- see `package-version.ts`), and a provenance stamp
+both. (The tool version is `data-cap`'s own installed version, read from
+its `package.json`; see `package-version.ts`.) A provenance stamp
 that might be missing either one is a provenance stamp no consumer can
 rely on. `commit` stays caller-supplied and explicitly `string |
-undefined` (never omitted from the shape): `data-cap` never shells out to
-`git` itself, so an absent commit is a stated absence, never a guess --
-ADR 0050's "provenance is caller-supplied, never ambient-detected"
+undefined` (never omitted from the shape). `data-cap` never shells out to
+`git` itself, so an absent commit is a stated absence, never a guess.
+This is ADR 0050's "provenance is caller-supplied, never ambient-detected"
 convention, kept exactly where it still applies.
 
 #### Properties
@@ -869,7 +873,7 @@ Runtime observations were ingested and there is at least one.
 readonly requireVerified?: readonly string[];
 ```
 
-Each named policy rule (by id) has every one of its claims verified -- held statically and corroborated at runtime.
+Each named policy rule (by id) has every one of its claims verified: held statically and corroborated at runtime.
 
 ***
 
@@ -1094,7 +1098,7 @@ Declared sources of the field's data.
 
 ### FlowCoverage
 
-What was and was not analyzed -- a projection must not call a graph complete unless `complete`.
+What was and was not analyzed: a projection must not call a graph complete unless `complete`.
 
 #### Properties
 
@@ -1258,7 +1262,7 @@ Id of the source node.
 readonly handling?: FlowHandling;
 ```
 
-The data-safety state of the value at this hop, when declared or established -- policy evaluation reads it at boundary crossings.
+The data-safety state of the value at this hop, when declared or established: policy evaluation reads it at boundary crossings.
 
 ###### Inherited from
 
@@ -1426,7 +1430,7 @@ readonly via: FlowVia;
 
 ### FlowEdgeTagInput
 
-One tag as a producer supplies it -- the id is derived, never supplied.
+One tag as a producer supplies it: the id is derived, never supplied.
 
 #### Extended by
 
@@ -1674,7 +1678,7 @@ What kind of boundary this is; only meaningful (and required by policy evaluatio
 readonly classification?: string;
 ```
 
-Declared or inherited sensitivity classification, when known -- carried verbatim, never inferred here.
+Declared or inherited sensitivity classification, when known: carried verbatim, never inferred here.
 
 ###### Inherited from
 
@@ -1887,7 +1891,7 @@ readonly data?: readonly FlowUnknownData[];
 ```
 
 The tracked data that entered the part of the program that could not be
-followed. Absent means "unknown which data" -- every trace that reaches
+followed. Absent means "unknown which data": every trace that reaches
 the subject must treat itself as incomplete. Present, it lets a trace of
 a different field or an unrelated path stay complete: an opaque call that
 only ever saw `email` says nothing about where `passwordHash` went.
@@ -2438,7 +2442,7 @@ How many matching events were recorded.
 readonly field: string;
 ```
 
-Capability-qualified dotted field path -- the Flow Model's field-node naming.
+Capability-qualified dotted field path: the Flow Model's field-node naming.
 
 ##### firstSeen?
 
@@ -2530,7 +2534,7 @@ First/last seen per scope, ordered by scope; absent when no event carried a time
 readonly skipped: number;
 ```
 
-Events (and skip reports) dropped as malformed -- stated, never silent.
+Events (and skip reports) dropped as malformed: stated, never silent.
 
 ##### truncatedScopes?
 
@@ -2538,7 +2542,7 @@ Events (and skip reports) dropped as malformed -- stated, never silent.
 readonly truncatedScopes?: readonly string[];
 ```
 
-The scopes with a truncation, sorted -- a claim built on one cannot be called verified near the cut. Absent when none.
+The scopes with a truncation, sorted: a claim built on one cannot be called verified near the cut. Absent when none.
 
 ##### truncations?
 
@@ -2850,9 +2854,9 @@ Options for `buildOscalAssessmentResults`.
 readonly assessmentPlan?: string;
 ```
 
-`href` of the assessment plan this result imports. OSCAL requires one; without it the document
-carries the placeholder `#data-cap-assessment-plan` and says so in `import-ap.remarks`, which is
-enough for review and nothing an OSCAL tool-chain should resolve. See [strict](#strict).
+`href` of the assessment plan this result imports. OSCAL requires one. Without it the document
+carries the placeholder `#data-cap-assessment-plan` and says so in `import-ap.remarks`. That is
+enough for review, and nothing an OSCAL tool-chain should resolve. See [strict](#strict).
 
 ##### controls
 
@@ -2860,11 +2864,11 @@ enough for review and nothing an OSCAL tool-chain should resolve. See [strict](#
 readonly controls: Readonly<Record<string, readonly string[]>>;
 ```
 
-data-cap rule id (as in `evidence.policy.rules[].id`, for example `userData/no-pii-to-log`) to the
-control ids it is evidence for. Never inferred. A control id (`ac-4`) is targeted at its
-assessment objective (`ac-4_obj`), the part id NIST's SP 800-53 OSCAL catalog gives it; an id that
-already names a part (`ac-4_obj`, `ac-4_smt`, `ac-4_smt.a`) is targeted as given. Name each
-objective once: `ac-4` and `ac-4_obj` are the same target and would give two findings.
+data-cap rule id (as in `evidence.policy.rules[].id`, for example `userData/no-pii-to-log`) to
+the control ids it is evidence for. Never inferred. A control id (`ac-4`) is targeted at its
+assessment objective (`ac-4_obj`), the part id NIST's SP 800-53 OSCAL catalog gives it. An id
+that already names a part (`ac-4_obj`, `ac-4_smt`, `ac-4_smt.a`) is targeted as given. Name
+each objective once: `ac-4` and `ac-4_obj` are the same target and would give two findings.
 
 ##### evidenceHref?
 
@@ -2874,8 +2878,8 @@ readonly evidenceHref?: string;
 
 `href` the evidence file is reachable at from where the document will live (for example
 `docs/data.evidence.json`). With it, every evidence reference becomes a back-matter resource
-with an `rlink`, and each observation's `relevant-evidence` points at that resource, so a
-tool-chain can follow the trail; without it the references stay descriptive text.
+with an `rlink`, and each observation's `relevant-evidence` points at that resource. Without
+it the references stay descriptive text.
 
 ##### strict?
 
@@ -2929,9 +2933,9 @@ Options for `observationsToOtlp`.
 readonly scopeRoots?: boolean;
 ```
 
-Also emit one root span per scope (`data_cap.scope.root = "true"`, spanning the scope's first..last seen when the
-scope carried times) and point each observation span of that scope at it with `parentSpanId`. Off by default so
-the flat output stays byte-identical. The reader skips roots without counting them.
+Also emit one root span per scope (`data_cap.scope.root = "true"`), and point each observation span of that scope
+at it with `parentSpanId`. The root spans the scope's first to last sighting when the scope carried times. Off by
+default so the flat output stays byte-identical. The reader skips roots without counting them.
 
 ##### serviceName?
 
@@ -3379,7 +3383,7 @@ readonly capability: LeastDataCapability;
 readonly fetchedFrom: readonly string[];
 ```
 
-Names of the declared input endpoints of the operations that write this field -- where a tighter projection could be applied.
+Names of the declared input endpoints of the operations that write this field: where a tighter projection could be applied.
 
 ##### field
 
@@ -3699,10 +3703,10 @@ type EvidenceProjector<T> = (evidence) => T;
 ```
 
 A pure function from the full Evidence Model to one field of a
-projection's output shape. Must not mutate `evidence` -- the membrane
-`defineEvidenceProjection()` wraps it in enforces that at runtime, see
-`createTrackingProxy()` below -- and must not perform I/O; `data-cap` can
-enforce the read-only half of purity but not the "no side effects" half.
+projection's output shape. Must not mutate `evidence` or perform I/O. The
+membrane `defineEvidenceProjection()` wraps `evidence` in enforces the
+read-only half at runtime (see `createTrackingProxy()` below); nothing
+enforces the "no side effects" half.
 
 #### Type Parameters
 
@@ -3755,10 +3759,10 @@ type FlowEdgeKind =
 ```
 
 What an edge means. Data moves `from` -> `to` along `reads`, `writes`,
-`transforms`, `passes`, `returns` and `crosses-boundary`; `calls` is
-control flow and `discards` records that a function received a field and
-deliberately did not forward it -- neither carries data, so tracing does
-not follow them. `side-effect` links a function to the boundary it acts on.
+`transforms`, `passes`, `returns` and `crosses-boundary`. `calls` is control
+flow, and `discards` records that a function received a field and did not
+forward it. Neither carries data, so tracing does not follow them.
+`side-effect` links a function to the boundary it acts on.
 
 ***
 
@@ -4083,9 +4087,9 @@ Declares a projection: a pure transform from the `EvidenceModel` to any
 consumer-defined output shape, built entirely from `schema`'s independent
 per-field projector functions.
 
-`data-cap`'s own reference projections (`reference-projections.ts`'s
-Classification/Privacy/Retention/Compliance/Audit Evidence) are built
-through this exact function, with no privileged internal path -- a
+`data-cap`'s own reference projections in `reference-projections.ts` are
+built through this exact function: Classification, Privacy, Retention,
+Compliance and Audit Evidence. There is no privileged internal path, so a
 consumer's own projection is a first-class citizen, not a lesser one.
 
 #### Type Parameters
@@ -4107,19 +4111,18 @@ consumer's own projection is a first-class citizen, not a lesser one.
 #### Remarks
 
 A per-field schema, rather than one monolithic `(evidence) => T` function,
-is what makes automatic provenance possible at all: each projector runs
-against its own read-tracking membrane, so `.project()` can say which
+is what makes automatic provenance possible at all. Each projector runs
+against its own read-tracking membrane. So `.project()` can say which
 evidence a *specific output field* was derived from, not merely which
-evidence the whole report touched. That is the difference between "this
-report read the Capability Model" and "this row's `sensitivity` came from
-`capability.capabilities.0.docs.sensitivity`" -- the second is reviewable
-evidence, the first is trivia.
+evidence the whole report touched. Compare "this report read the
+Capability Model" with "this row's `sensitivity` came from
+`capability.capabilities.0.docs.sensitivity`". The second is reviewable
+evidence; the first is trivia.
 
 Superseded ADR 0050's earlier `(name, project)` signature, whose `name`
-existed only to label a thrown error. That named-wrapper design predates
-this mechanism and bought strictly less: the membrane below both enforces
-the purity the old wrapper only documented, and produces provenance the
-old wrapper had no way to compute.
+existed only to label a thrown error. The membrane below does more than that
+wrapper did. It enforces the purity the wrapper only documented, and it
+produces provenance the wrapper could not compute.
 
 ***
 

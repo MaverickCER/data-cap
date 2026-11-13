@@ -8,12 +8,12 @@ import { isFileExistsError, runInitCommand } from "../../src/cli/init.js"
 // A mutable, per-test flag rather than `vi.spyOn(fs, "writeFileSync")`:
 // Vitest/Node's ESM interop exposes "node:fs" as a non-configurable module
 // namespace object, so `vi.spyOn` throws "Cannot redefine property" for a
-// built-in module's own export (confirmed directly) -- `vi.mock`'s factory
+// built-in module's own export (confirmed directly); `vi.mock`'s factory
 // form is the real, supported way to substitute one named export while
 // keeping every other `node:fs` function genuine. Typed `unknown`, not
 // `Error`, because one test (see below) deliberately throws a non-Error
 // value to exercise `runInitCommand`'s own `error instanceof Error`
-// fallback -- an intentional, real test case, not a type-safety gap.
+// fallback: an intentional, real test case, not a type-safety gap.
 let simulatedWriteError: unknown
 vi.mock("node:fs", async (importOriginal) => {
   const actual = await importOriginal<typeof NodeFs>()
@@ -28,11 +28,11 @@ vi.mock("node:fs", async (importOriginal) => {
 })
 
 // `runInitCommand`'s optional second parameter targets each test's own
-// throwaway directory directly -- no `process.chdir()`. That isn't just
+// throwaway directory directly: no `process.chdir()`. That isn't just
 // tidier: `process.chdir()` genuinely cannot run under a `worker_threads`
 // -pooled test runner (Node itself throws "process.chdir() is not
 // supported in workers"), which is exactly the pool Stryker's own
-// coverageAnalysis dry run uses -- confirmed directly: with the previous
+// coverageAnalysis dry run uses; confirmed directly: with the previous
 // chdir-based version of this file, every mutant in src/cli/init.ts
 // reported NoCoverage under `npm run mutation`, despite this file's own
 // vitest run showing ~97% real statement coverage. Passing an explicit cwd
@@ -186,8 +186,8 @@ describe("runInitCommand", () => {
     const code = runInitCommand(["--location", "x"], tmp)
 
     expect(code).toBe(1)
-    // Exact substring, space included: pins `rest.join(" ")` (not `rest.join("")`)
-    // -- the args must be re-printed space-separated, not concatenated.
+    // Exact substring, space included: pins `rest.join(" ")` (not `rest.join("")`):
+    // the args must be re-printed space-separated, not concatenated.
     expect(err.join("")).toContain("takes no arguments (got: --location x)")
     expect(existsSync(path.join(tmp, "data.ts"))).toBe(false)
   })
@@ -204,7 +204,7 @@ describe("runInitCommand", () => {
 
   it("defaults to process.cwd() when no cwd argument is given", () => {
     // Mocks the `process.cwd` FUNCTION rather than calling the real
-    // `process.chdir()` -- the latter is what breaks under Stryker's
+    // `process.chdir()`: the latter is what breaks under Stryker's
     // worker-pooled dry run (see this file's own top-of-file comment);
     // mocking the function is ordinary object patching, unaffected by that
     // restriction, while still exercising the real default-parameter
@@ -243,16 +243,18 @@ describe("runInitCommand", () => {
         "",
         "Next:",
         "  1. Generate the manifest + docs:  node scripts/generate-data.mjs",
-        "  2. Add operations -- switch buildData to createData for the",
+        "  2. In CI, fail on stale docs:     node scripts/generate-data.mjs --check",
+        "  3. Add operations: switch buildData to createData for the",
         "     batteries-included getter/mutator/subscription layer:",
         "",
         '       import { createData } from "data-cap/runtime"',
         "",
-        "  3. Read fields directly (buildData returns a synchronous snapshot):",
-        "     exampleData.fields.example  -- or getSnapshot().fields once on createData",
+        "  4. Read fields directly (buildData returns a synchronous snapshot):",
+        "     exampleData.fields.example  (or getSnapshot().fields once on createData)",
         "",
-        "data-cap init edited no package.json script -- add one if you want, e.g.",
-        '  "generate:data": "node scripts/generate-data.mjs"',
+        "data-cap init edited no package.json script. Add them if you want, e.g.",
+        '  "generate:data": "node scripts/generate-data.mjs",',
+        '  "check:data": "node scripts/generate-data.mjs --check"',
         "",
       ].join("\n"),
     )
@@ -276,7 +278,14 @@ describe("runInitCommand", () => {
     runInitCommand([], tmp)
 
     const content = readFileSync(path.join(tmp, "scripts/generate-data.mjs"), "utf8")
-    expect(content).toContain('import { generateDataArtifacts } from "data-cap/build"')
+    expect(content).toContain(
+      'import { checkArtifacts, generateDataArtifacts } from "data-cap/build"',
+    )
+    expect(content).toContain('if (process.argv.includes("--check")) {')
+    expect(content).toContain("const { stale } = await checkArtifacts(options)")
+    expect(content).toContain("process.exitCode = 1")
+    expect(content).toContain('console.log("The data docs are up to date.")')
+    expect(content).toContain("const result = await generateDataArtifacts(options)")
     expect(content).toContain('import { nodeBuildFileSystem } from "data-cap/node"')
     expect(content).toContain('location: "src/generated/data.manifest.ts"')
     expect(content).toContain('docs: "docs/DATA.md"')
@@ -297,12 +306,13 @@ describe("runInitCommand", () => {
         "Scaffolds a minimal data-cap starting point into the current directory:",
         "",
         "  <src>/data.ts            a starter capability (buildData + documentData)",
-        "  scripts/generate-data.mjs a script that generates the manifest + docs artifacts",
+        "  scripts/generate-data.mjs a script that generates the manifest + docs artifacts,",
+        "                           or with --check fails when they are stale",
         "",
         "Never overwrites an existing file, never runs anything, never edits",
-        "package.json. Everything else -- generating artifacts, adding getters/",
-        "mutators, reading the snapshot -- is printed as a next step. Run generation",
-        "afterwards with `node scripts/generate-data.mjs`.",
+        "package.json. Everything else (generating artifacts, adding getters/",
+        "mutators, reading the snapshot) is printed as a next step. Run generation",
+        "afterwards with `node scripts/generate-data.mjs`, and add `--check` in CI.",
         "",
       ].join("\n"),
     )

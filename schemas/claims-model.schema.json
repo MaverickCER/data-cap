@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://maverickcer.github.io/data-cap/schema/claims-model.schema.json",
   "title": "data-cap Claims Model",
-  "description": "Canonical, versioned claims with supporting and contradicting evidence, scope and a derived verification status (see ADR 0070, ADR 0071). Generated from src/flow/claims-model.ts's ClaimsModel type -- never hand-authored.",
+  "description": "Canonical, versioned claims with supporting and contradicting evidence, scope and a derived verification status (see ADR 0070, ADR 0071). Generated from src/flow/claims-model.ts's ClaimsModel type. Never hand-authored.",
   "$ref": "#/definitions/ClaimsModel",
   "definitions": {
     "ClaimsModel": {

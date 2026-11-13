@@ -1,8 +1,8 @@
 /**
- * Tier 1 -- "How do I define and consume application data safely?" A single
+ * Tier 1 ("How do I define and consume application data safely?" A single
  * developer's task manager: one capability, the batteries-included
  * `createData` (`data-cap/runtime`), demonstrating the full
- * individual-developer feature surface end to end -- exact field types
+ * individual-developer feature surface end to end) exact field types
  * (an array field and a nullable field), loading/error/success status,
  * optimistic mutation, `withRetry` composed directly onto a generated
  * mutator method, `runtime/cache` fronting a getter, request dedup (the
@@ -12,11 +12,11 @@
  * Status/subscription checks below target `selectedTask` (nullable), never
  * `tasks` (array): an array field's own `info` is a per-item-identity-keyed
  * map, not a flat `FieldInfo`, so there's no meaningful top-level
- * `info.tasks.status`/`.subscription` to read -- the same reasoning
+ * `info.tasks.status`/`.subscription` to read; the same reasoning
  * `examples/team-service/`'s own `board`-vs-`tasks` split proves first.
  *
  * `taskSchema` is declared once and passed to BOTH `createData(taskSchema)`
- * and `documentData(taskSchema, docs)` below -- not two separately-typed
+ * and `documentData(taskSchema, docs)` below: not two separately-typed
  * config objects. That's what makes `docs.getters`/`docs.mutators`/
  * `docs.subscriptions` real, `keyof`-checked keys against the schema's own
  * operation names: documenting a getter that doesn't exist, or misspelling
@@ -35,7 +35,7 @@ export interface Task {
   readonly priority: "low" | "medium" | "high"
 }
 
-// Simulated backend state -- every "fetch"/"create"/"toggle"/"delete" below
+// Simulated backend state: every "fetch"/"create"/"toggle"/"delete" below
 // is an in-memory function returning a plain JSON object after a short
 // simulated delay, standing in for `fetch(...).then(r => r.json())`.
 const tasks: Task[] = [
@@ -69,7 +69,7 @@ async function createTaskRemote(
   createAttempts += 1
   await new Promise((resolve) => setTimeout(resolve, 5))
   if (signal.aborted) throw new Error("aborted")
-  // The first attempt always fails -- proves withRetry (optional, separately
+  // The first attempt always fails, which proves withRetry (optional, separately
   // tree-shaken, runtime/retry) composes directly with a generated mutator
   // method, since it's a plain `(params?, signal?) => Promise<...>` function.
   if (createAttempts === 1) throw new Error("simulated transient failure")
@@ -96,7 +96,7 @@ async function deleteTaskRemote(id: string, signal: AbortSignal): Promise<Task[]
 }
 
 // runtime/cache sits in front of the simulated network call, keyed by a
-// single constant key (there's only ever one list) -- a cache answers
+// single constant key (there's only ever one list): a cache answers
 // "validated state is already available"; the runtime's own dedup (below)
 // separately answers "don't start a second identical request". Both matter:
 // dedup alone can't make a THIRD, later "remount" call skip the network.
@@ -108,7 +108,7 @@ async function getTasksThroughCache(signal: AbortSignal): Promise<Task[]> {
   if (cached !== undefined) return cached.fields.tasks
   const fresh = await fetchTasksRemote(signal)
   // `buildData` computes a real, correctly-shaped `DataState` (its own
-  // `.fields`/`.info` defaults) rather than this hand-authoring one --
+  // `.fields`/`.info` defaults) rather than this hand-authoring one:
   // an array field's own `info` is a per-item-identity-keyed map, not a
   // flat `{status: ...}`, so constructing it by hand here would be wrong.
   taskListCache.set(TASK_LIST_CACHE_KEY, buildData({ fields: { tasks: fresh } }))
@@ -152,7 +152,7 @@ const taskSchema = {
         toggleTaskRemote(params.id, signal),
       processor: (result: Task[]): { tasks: Task[] } => ({ tasks: result }),
       writes: { tasks: true },
-      // Cast inline, not annotated directly -- createData's own generic
+      // Cast inline, not annotated directly: createData's own generic
       // inference widens an individual operation definition while checking
       // it against DataSchema's own bound, which would otherwise conflict
       // with a narrower parameter annotation here (a contravariant
@@ -186,7 +186,7 @@ const taskSchema = {
     },
   },
   subscriptions: {
-    // Deliberately targets `selectedTask` (nullable), not `tasks` (array) --
+    // Deliberately targets `selectedTask` (nullable), not `tasks` (array):
     // an array field's own `info` is a per-item-identity-keyed map, not a
     // flat `FieldInfo`, so `info.tasks?.subscription?.status` wouldn't be
     // the connection status at all (see `examples/team-service/`'s own
@@ -232,7 +232,7 @@ documentData(taskSchema, {
     },
     // A field's own `owner` overrides the capability's ("productivity-team",
     // above) for that field specifically (see `src/core/document.ts`'s
-    // `FieldDocs.owner`) -- this is that override, demonstrated for real:
+    // `FieldDocs.owner`). This is that override, demonstrated for real:
     // `selectedTask` is the single-record detail view (plus its live
     // subscription), a strictly larger exposure surface than the list, so
     // its own field-level access review is owned by security-team, distinct
@@ -322,36 +322,36 @@ documentData(taskSchema, {
 // =========================================================================
 // The story: load the task list (cached + deduped), load one task's own
 // detail (a nullable field), create/toggle/delete tasks (optimistic +
-// retry), cancel an in-flight request, and hold a live subscription --
-// exactly the individual-developer feature surface this tier exists to
+// retry), cancel an in-flight request, and hold a live subscription.
+// That is the individual-developer feature surface this tier exists to
 // prove, against the real, built, installed package.
 // =========================================================================
 
-// -- Concurrent getTasks calls dedup to one real fetch -- the runtime's -- //
-// -- own dedup, never application code hand-wiring it. `tasks` is an -- //
-// -- array field, so (like examples/team-service/'s own `tasks` field) -- //
-// -- its own `info` is a per-item-identity-keyed map, not a flat -- //
-// -- FieldInfo -- status/fetchedAt/optimistic are checked on -- //
-// -- `selectedTask` (nullable) below instead, where they're meaningful. -- //
+// Concurrent getTasks calls dedup to one real fetch: the runtime's
+// own dedup, never application code hand-wiring it. `tasks` is an
+// array field, so (like examples/team-service/'s own `tasks` field)
+// its own `info` is a per-item-identity-keyed map, not a flat
+// FieldInfo: status/fetchedAt/optimistic are checked on
+// `selectedTask` (nullable) below instead, where they're meaningful.
 const [firstLoad, secondLoad] = await Promise.all([taskData.getTasks({}), taskData.getTasks({})])
 assert.equal(fetchTasksCallCount, 1, "two concurrent getTasks calls must dedup to one real fetch")
 assert.equal(firstLoad.tasks?.length, 2)
 assert.equal(secondLoad.tasks?.length, 2)
 
-// -- A later, non-concurrent "remount" call hits the cache -- no new -- //
-// -- network call at all. -- //
+// A later, non-concurrent "remount" call hits the cache: no new
+// network call at all.
 await taskData.getTasks({})
 assert.equal(fetchTasksCallCount, 1, "a cache hit must never trigger a real fetch")
 
-// -- getTask populates the nullable selectedTask field -- loading/error/ -- //
-// -- success status and a fetch timestamp are both meaningful here. -- //
+// getTask populates the nullable selectedTask field: loading/error/
+// success status and a fetch timestamp are both meaningful here.
 assert.equal(taskData.getSnapshot().fields.selectedTask, null)
 await taskData.getTask({ id: "task-1" })
 assert.equal(taskData.getSnapshot().fields.selectedTask?.title, "Write the quarterly report")
 assert.equal(taskData.getSnapshot().info.selectedTask?.status, "success")
 
-// -- Abort/cancellation: an externally-supplied AbortSignal cancels an -- //
-// -- in-flight getter call, and the rejection carries no partial state. -- //
+// Abort/cancellation: an externally-supplied AbortSignal cancels an
+// in-flight getter call, and the rejection carries no partial state.
 const abortController = new AbortController()
 const abortedCall = taskData.getTask({ id: "task-2" }, abortController.signal)
 abortController.abort()
@@ -362,8 +362,8 @@ assert.equal(
   "an aborted call must never overwrite the last known-good value",
 )
 
-// -- createTask, composed with the real, shipped withRetry -- the first -- //
-// -- attempt fails, withRetry retries, the second attempt succeeds. -- //
+// createTask, composed with the real, shipped withRetry: the first
+// attempt fails, withRetry retries, the second attempt succeeds.
 const createController = new AbortController()
 await withRetry(
   (signal) => taskData.createTask({ title: "Ship the release notes", priority: "high" }, signal),
@@ -373,8 +373,8 @@ await withRetry(
 assert.equal(createAttempts, 2, "the first attempt failed; withRetry retried once and succeeded")
 assert.equal(taskData.getSnapshot().fields.tasks.length, 3)
 
-// -- toggleTask completes optimistically, before the request settles, -- //
-// -- then confirms against the real response. -- //
+// toggleTask completes optimistically, before the request settles,
+// then confirms against the real response.
 const togglePromise = taskData.toggleTask({ id: "task-1" })
 assert.equal(
   taskData.getSnapshot().fields.tasks.find((t) => t.id === "task-1")?.done,
@@ -384,11 +384,11 @@ assert.equal(
 await togglePromise
 assert.equal(taskData.getSnapshot().fields.tasks.find((t) => t.id === "task-1")?.done, true)
 
-// -- deleteTask removes a task optimistically too. -- //
+// deleteTask removes a task optimistically too.
 await taskData.deleteTask({ id: "task-2" })
 assert.equal(taskData.getSnapshot().fields.tasks.some((t) => t.id === "task-2"), false)
 
-// -- subscription lifecycle -- //
+// subscription lifecycle
 const unsubscribeTask = taskData.subscribeToTask({ id: "task-1" })
 await new Promise((resolve) => setTimeout(resolve, 15))
 assert.equal(taskData.getSnapshot().info.selectedTask?.subscription?.status, "connected")

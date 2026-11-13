@@ -1,11 +1,11 @@
 /**
  * Registration/login themselves are a raw `fetch`, not a `createData`
- * capability -- same choice `identity.capability.ts`'s own header comment
+ * capability: same choice `identity.capability.ts`'s own header comment
  * explains: establishing a session isn't "application data" any more than
  * it is in `examples/application/` or `examples/team-service/`. Once
  * `/api/register`/`/api/login` issues a session cookie, this component's
  * only remaining job is telling `identityData` to fetch the now-real
- * current user -- everything downstream of that is ordinary capability
+ * current user: everything downstream of that is ordinary capability
  * usage.
  */
 import { useState } from "react"

@@ -37,7 +37,7 @@ describe("evidence cache", () => {
    * Every output path is absolute on purpose. `generateDataArtifacts` uses
    * them verbatim (only the CLI resolves them against `--root`), so a
    * relative `location` here would write the manifest into the *repo's* own
-   * `docs/` rather than this test's temp root -- which is exactly the leak
+   * `docs/` rather than this test's temp root: which is exactly the leak
    * this comment exists to stop from coming back.
    */
   function optionsFor(): {
@@ -192,7 +192,7 @@ describe("evidence cache", () => {
       try {
         const unreadableFp = await computeSourceFingerprint({ fs: nodeBuildFs, root })
         expect(unreadableFp).toMatch(/^[0-9a-f]{64}$/)
-        // The "(unreadable)" marker is a real, distinct contribution -- not the
+        // The "(unreadable)" marker is a real, distinct contribution: not the
         // same as an empty file, and not a silent skip.
         expect(unreadableFp).not.toBe(emptyFp)
       } finally {

@@ -2,14 +2,14 @@
 // Writes thin re-export shims for the .d.ts/.d.cts files tsup no longer
 // generates for the bundled entry points. tsup's own dts pipeline
 // (rollup-plugin-dts) hardcodes declarationMap: false and can't produce
-// declaration maps -- see tsup.config.ts's `dts: false` comment and
+// declaration maps; see tsup.config.ts's `dts: false` comment and
 // tsconfig.build.json. Real per-file declarations (with working maps) are
 // emitted separately by `tsc -p tsconfig.build.json` into dist/.dts/,
 // mirroring src/'s structure; this script just points each package.json
 // #exports entry-point filename at the right file inside that tree.
 //
 // New entries (runtime, build, helpers, ...) get appended here as their
-// phases land -- see specs/architecture.md for the full planned surface.
+// phases land: see specs/architecture.md for the full planned surface.
 
 import { cpSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import path from "node:path"

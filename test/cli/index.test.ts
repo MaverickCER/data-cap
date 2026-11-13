@@ -153,7 +153,7 @@ describe("parseArgs", () => {
   })
 })
 
-// directRunUrl() is exported purely for this direct-unit-test path -- see the
+// directRunUrl() is exported purely for this direct-unit-test path: see the
 // comment above its definition in src/cli/index.ts for why it exists at all
 // (npm's `.bin` symlink indirection). module-level `isDirectRun`/auto-run
 // behavior itself is exercised separately in test/cli/direct-run.test.ts,
@@ -574,7 +574,7 @@ describe("writeGenerationSummary -- flow analysis (direct)", () => {
       writeGenerationSummary({}, flowResult)
     })
     expect(out).toContain(
-      "Flow analysis: 9 function(s) analyzed, 1 not fully analyzed, 2 unknown(s) -- not complete.",
+      "Flow analysis: 9 function(s) analyzed, 1 not fully analyzed, 2 unknown(s); not complete.",
     )
     expect(out).toContain("Policy: 3 satisfied, 1 violated, 2 indeterminate.")
     expect(out).toContain("Observations: 3 across 2 scope(s), 1 skipped as malformed.")
@@ -609,7 +609,7 @@ describe("writeGenerationSummary -- flow analysis (direct)", () => {
     const out = captureStdout(() => {
       writeGenerationSummary({}, complete)
     })
-    expect(out).toContain("Flow analysis: 3 function(s) analyzed -- complete.")
+    expect(out).toContain("Flow analysis: 3 function(s) analyzed; complete.")
     expect(out).toContain("Claims: 1 verified.")
     expect(out).not.toContain("Policy:")
     expect(out).not.toContain("Observations:")
@@ -652,7 +652,7 @@ describe("writeGenerationSummary (direct)", () => {
     expect(out).toContain("[warning] [CAPABILITY_MISSING_OWNER] [capW] no owner")
     expect(out).toContain("1 parse warning(s):")
     expect(out).toContain("  - x.ts: could not resolve")
-    // The CLI can no longer request manifest/docs/ownership/flow -- their
+    // The CLI can no longer request manifest/docs/ownership/flow: their
     // summary lines are gone entirely, not merely empty.
     expect(out).not.toContain("Wrote manifest")
     expect(out).not.toContain("Wrote docs")

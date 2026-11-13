@@ -52,12 +52,12 @@ export function methods() {
 
     /** The class `extends` names: a project class, "opaque" for anything else (a package, a call), "none" when there is no `extends`. */
     parentOf(this: FlowScan, cls: ClassInfo): ClassInfo | "opaque" | "none" {
-      // Stryker disable next-line ConditionalExpression: equivalent -- the answer is only kept so it is not worked out again; working it out again gives the same one.
+      // Stryker disable next-line ConditionalExpression: equivalent: the answer is only kept so it is not worked out again; working it out again gives the same one.
       if (cls.parent !== undefined) return cls.parent
       const clause = cls.node.heritageClauses?.find(
         (candidate) => candidate.token === ts.SyntaxKind.ExtendsKeyword,
       )
-      // Stryker disable next-line OptionalChaining: equivalent -- an `extends` clause names at least one type, so the first is always there.
+      // Stryker disable next-line OptionalChaining: equivalent: an `extends` clause names at least one type, so the first is always there.
       const base = clause?.types[0]?.expression
       cls.parent = base === undefined ? "none" : this.classNamed(cls, unwrap(base))
       return cls.parent
@@ -68,10 +68,10 @@ export function methods() {
         const named = cls.env.get(base.text) ?? this.importedVal(cls.file, base.text)
         return this.classFor(named.classRef) ?? "opaque"
       }
-      // Stryker disable next-line ConditionalExpression,LogicalOperator: equivalent -- any other shape of base (a call, a deeper member) names no file's export, and looking one up by its text finds nothing, so the class is `opaque` either way.
+      // Stryker disable next-line ConditionalExpression,LogicalOperator: equivalent: any other shape of base (a call, a deeper member) names no file's export, and looking one up by its text finds nothing, so the class is `opaque` either way.
       if (ts.isPropertyAccessExpression(base) && ts.isIdentifier(base.expression)) {
         const file = this.namespaceFile(cls.file, base.expression.text)
-        // Stryker disable next-line ConditionalExpression: equivalent -- a name that is no namespace has no file whose exports could hold the class, so the lookup finds none, as the check does.
+        // Stryker disable next-line ConditionalExpression: equivalent: a name that is no namespace has no file whose exports could hold the class, so the lookup finds none, as the check does.
         const target = file === undefined ? undefined : this.lookupExport(file, base.name.text)
         const found = target === undefined ? EMPTY_VAL : this.targetVal(target)
         return this.classFor(found.classRef) ?? "opaque"
@@ -179,8 +179,8 @@ export function methods() {
 
     /**
      * Stores one member on `this`. Data it holds is also stored in the shared contents of the object `this` is, as
-     * `this.name = value` does, so a method that nothing in the project calls on an instance still finds it; a function
-     * is not, since it would lose its callable when read back from there.
+     * `this.name = value` does. So a method that nothing in the project calls on an instance still finds it. A function
+     * is not stored there, since it would lose its callable when read back from there.
      */
     initMember(this: FlowScan, frame: Frame, site: TS.Node, name: string, value: Val): void {
       this.storeMember(frame, "this", [name], value)
@@ -235,8 +235,8 @@ export function methods() {
     },
 
     /**
-     * A closure value. The same code evaluated in two different scopes makes two different closures -- `mk(a)` and
-     * `mk(b)` do not share what they captured -- so each gets its own token, and the token its own scope.
+     * A closure value. The same code evaluated in two different scopes makes two different closures (`mk(a)` and
+     * `mk(b)` do not share what they captured), so each gets its own token, and the token its own scope.
      */
     closureToken(
       this: FlowScan,
@@ -284,7 +284,7 @@ export function methods() {
       }
       if (ts.isPropertyAccessExpression(target) && ts.isIdentifier(target.expression)) {
         const namespace = this.namespaceFile(frame.fn.file, target.expression.text)
-        // Stryker disable next-line ConditionalExpression: equivalent -- `findExport` of a missing file finds no exports, so skipping it and calling it with `undefined` give the same result.
+        // Stryker disable next-line ConditionalExpression: equivalent: `findExport` of a missing file finds no exports, so skipping it and calling it with `undefined` give the same result.
         if (namespace !== undefined) return this.findExport(namespace, target.name.text)
       }
       if (ts.isPropertyAccessExpression(target)) {

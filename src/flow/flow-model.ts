@@ -1,5 +1,5 @@
 /**
- * `data-cap`'s Flow Model (ADR 0070, ADR 0071) -- the function-level,
+ * `data-cap`'s Flow Model (ADR 0070, ADR 0071): the function-level,
  * field-sensitive data-flow facts of the Evidence Model: functions,
  * parameters, returns, fields and boundaries as nodes, and what moves
  * between them (reads, writes, transforms, discards, passes, returns, calls,
@@ -8,8 +8,8 @@
  * Every node and edge carries exactly one epistemic `status` (ADR 0071) and
  * is never blended with another: a fact asserted by an author and the same
  * fact proven by a scan are two edges. Incomplete analysis is recorded as
- * data -- `unknown` statuses and explicit `FlowUnknown` records, summarized
- * in `coverage` -- never silently omitted, so no projection can present a
+ * data (`unknown` statuses and explicit `FlowUnknown` records, summarized
+ * in `coverage`) never silently omitted, so no projection can present a
  * partial graph as a complete one.
  *
  * Pure: takes already-computed facts, assigns content-addressed ids, orders
@@ -22,7 +22,7 @@ import { DataCapError } from "../core/errors.js"
 import type { SourceLocation, SourcePosition } from "../build/source-position.js"
 
 /**
- * Bump only when a reader could misinterpret the shape -- same discipline
+ * Bump only when a reader could misinterpret the shape: same discipline
  * every other model's schema-version constant already documents.
  */
 export const FLOW_MODEL_SCHEMA_VERSION = 1
@@ -55,10 +55,10 @@ export type FlowNodeKind = "function" | "parameter" | "return" | "field" | "boun
 
 /**
  * What an edge means. Data moves `from` -> `to` along `reads`, `writes`,
- * `transforms`, `passes`, `returns` and `crosses-boundary`; `calls` is
- * control flow and `discards` records that a function received a field and
- * deliberately did not forward it -- neither carries data, so tracing does
- * not follow them. `side-effect` links a function to the boundary it acts on.
+ * `transforms`, `passes`, `returns` and `crosses-boundary`. `calls` is control
+ * flow, and `discards` records that a function received a field and did not
+ * forward it. Neither carries data, so tracing does not follow them.
+ * `side-effect` links a function to the boundary it acts on.
  */
 export type FlowEdgeKind =
   | "reads"
@@ -80,7 +80,7 @@ export type FlowUnknownReason =
   | "missing-source"
   | "unanalyzed-function"
 
-/** One node as a producer supplies it -- the id is derived, never supplied. */
+/** One node as a producer supplies it: the id is derived, never supplied. */
 export interface FlowNodeInput {
   readonly kind: FlowNodeKind
   /** Root-relative POSIX path of the file that declares this node, or a stable namespace for a node with no file (a boundary). */
@@ -90,7 +90,7 @@ export interface FlowNodeInput {
   readonly status: FlowStatus
   /** Declaration position within `scope`, when there is one. */
   readonly source?: SourcePosition
-  /** Declared or inherited sensitivity classification, when known -- carried verbatim, never inferred here. */
+  /** Declared or inherited sensitivity classification, when known: carried verbatim, never inferred here. */
   readonly classification?: string
   /** What kind of boundary this is; only meaningful (and required by policy evaluation) on a `boundary` node. */
   readonly boundaryKind?: FlowBoundaryKind
@@ -102,7 +102,7 @@ export interface FlowNode extends FlowNodeInput {
   readonly id: string
 }
 
-/** One edge as a producer supplies it -- the id is derived, never supplied. */
+/** One edge as a producer supplies it: the id is derived, never supplied. */
 export interface FlowEdgeInput {
   readonly kind: FlowEdgeKind
   /** Id of the source node. */
@@ -114,7 +114,7 @@ export interface FlowEdgeInput {
   readonly path?: readonly string[]
   /** Where in source this edge arises (a call site, a read), when known. */
   readonly source?: SourceLocation
-  /** The data-safety state of the value at this hop, when declared or established -- policy evaluation reads it at boundary crossings. */
+  /** The data-safety state of the value at this hop, when declared or established: policy evaluation reads it at boundary crossings. */
   readonly handling?: FlowHandling
   /**
    * Id of the `field` node whose data this edge carries. Present on every
@@ -151,7 +151,7 @@ export interface FlowUnknownInput {
   readonly detail?: string
   /**
    * The tracked data that entered the part of the program that could not be
-   * followed. Absent means "unknown which data" -- every trace that reaches
+   * followed. Absent means "unknown which data": every trace that reaches
    * the subject must treat itself as incomplete. Present, it lets a trace of
    * a different field or an unrelated path stay complete: an opaque call that
    * only ever saw `email` says nothing about where `passwordHash` went.
@@ -165,7 +165,7 @@ export interface FlowUnknown extends FlowUnknownInput {
   readonly id: string
 }
 
-/** What was and was not analyzed -- a projection must not call a graph complete unless `complete`. */
+/** What was and was not analyzed: a projection must not call a graph complete unless `complete`. */
 export interface FlowCoverage {
   /** Function nodes whose status is not `unknown`. */
   readonly functionsAnalyzed: number
@@ -192,7 +192,7 @@ export interface FlowCoverage {
  */
 export type FlowVia = "copy" | "serialize-roundtrip" | "forward" | "derive"
 
-/** One tag as a producer supplies it -- the id is derived, never supplied. */
+/** One tag as a producer supplies it: the id is derived, never supplied. */
 export interface FlowEdgeTagInput {
   readonly via: FlowVia
   /** Id of the existing edge that carries the data at this place (an edge id as `flowEdgeId` derives it). */

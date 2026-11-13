@@ -1,7 +1,7 @@
 /**
  * Contract tests for `examples/enterprise-platform`'s GDPR Art. 30(1) ROPA
- * generator (`scripts/ropa/{types,build-model,render,print-lines,run}.ts`)
- * -- same posture as `enterprise-platform-reports.test.ts` (API-04): state
+ * generator (`scripts/ropa/{types,build-model,render,print-lines,run}.ts`):
+ * same posture as `enterprise-platform-reports.test.ts` (API-04): state
  * the facts this generator exists to establish, so a change that quietly
  * breaks one (a field silently omitted instead of marked "Not documented",
  * an empty `recipientCategories` array rendered blank instead of flagged,
@@ -16,12 +16,12 @@
  *   present vs. missing.
  * - One real-evidence integration check, reusing this example's own shared
  *   `reports/evidence-cache.ts`, proving the generator produces a sane
- *   result against this example's actual, real capabilities -- not just
+ *   result against this example's actual, real capabilities: not just
  *   hand-built fixtures.
  *
  * @remarks
  * Each script module is loaded through a **non-literal** dynamic import, for
- * the same reason `enterprise-platform-reports.test.ts` does -- see that
+ * the same reason `enterprise-platform-reports.test.ts` does: see that
  * file's own header comment.
  */
 import { existsSync } from "node:fs"
@@ -43,7 +43,7 @@ interface ControllerIdentity {
   readonly dpoContact?: string
 }
 
-/** The minimal `EvidenceModel` shape `buildRopaModel()` actually reads -- a fixture contract, not the full published type (same convention `enterprise-platform-reports.test.ts` uses for its own `ExpectedEvidence`). */
+/** The minimal `EvidenceModel` shape `buildRopaModel()` actually reads: a fixture contract, not the full published type (same convention `enterprise-platform-reports.test.ts` uses for its own `ExpectedEvidence`). */
 interface FieldFixture {
   readonly path: readonly string[]
   readonly docs:
@@ -401,8 +401,8 @@ describe.skipIf(!runnable)("example: enterprise-platform ROPA generator", () => 
       expect([...byCapability.keys()].sort()).toEqual(["billingData", "identityData", "projectsData"])
 
       // billingData.invoices declares dataSubjectCategory/recipientCategories/
-      // transferSafeguard for real (see src/capabilities/billing.capability.ts)
-      // -- proves the new schema fields flow end to end from a real
+      // transferSafeguard for real (see src/capabilities/billing.capability.ts):
+      // proves the new schema fields flow end to end from a real
       // documentData() call through the Evidence Model into this generator.
       const billingInvoices = byCapability.get("billingData")?.fields.find((f) => f.field === "invoices")
       expect(billingInvoices?.dataSubjectCategory).toBe("clients")
@@ -410,14 +410,14 @@ describe.skipIf(!runnable)("example: enterprise-platform ROPA generator", () => 
       expect(billingInvoices?.transferSafeguard).toBe("EU Standard Contractual Clauses")
 
       // identityData.currentUser declares dataSubjectCategory but nothing
-      // else new -- the honest "documented some, not all" real-world case.
+      // else new: the honest "documented some, not all" real-world case.
       const identityCurrentUser = byCapability
         .get("identityData")
         ?.fields.find((f) => f.field === "currentUser")
       expect(identityCurrentUser?.dataSubjectCategory).toBe("staff members")
       expect(identityCurrentUser?.recipientCategories).toEqual(["Not documented"])
 
-      // projectsData declares none of the new fields at all -- the fully
+      // projectsData declares none of the new fields at all: the fully
       // undocumented real-world case.
       const projectsField = byCapability.get("projectsData")?.fields.find((f) => f.field === "projects")
       expect(projectsField?.dataSubjectCategory).toBe("Not documented")

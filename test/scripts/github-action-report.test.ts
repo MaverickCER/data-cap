@@ -3,7 +3,7 @@ import {
   classifyFindings,
   renderAnnotations,
   renderMarkdownSummary,
-  // report.mjs itself stays plain, dependency-free JS -- types come from the
+  // report.mjs itself stays plain, dependency-free JS: types come from the
   // hand-written sibling report.d.mts, checked here.
 } from "../../scripts/github-action/report.mjs"
 import type { ReportResult } from "../../scripts/github-action/report.d.mts"
@@ -189,7 +189,7 @@ describe("renderMarkdownSummary", () => {
     } as unknown as ReportResult)
     expect(markdown).toContain("## Data flow")
     expect(markdown).toContain(
-      "- Coverage: 9 function(s) analyzed, 1 not fully analyzed, 2 unknown(s) -- **not complete**; a flow missing from the evidence is not proof that it does not exist.",
+      "- Coverage: 9 function(s) analyzed, 1 not fully analyzed, 2 unknown(s); **not complete**. A flow missing from the evidence is not proof that it does not exist.",
     )
     expect(markdown).toContain("- Policy: 3 satisfied, 1 violated, 2 indeterminate.")
     expect(markdown).toContain("- Observations: 3 across 2 scope(s).")
@@ -215,7 +215,7 @@ describe("renderMarkdownSummary", () => {
         },
       },
     })
-    expect(markdown).toContain("- Coverage: 3 function(s) analyzed -- complete.")
+    expect(markdown).toContain("- Coverage: 3 function(s) analyzed; complete.")
     expect(markdown).not.toContain("- Policy:")
     expect(markdown).not.toContain("- Observations:")
     expect(markdown).not.toContain("- Claims:")

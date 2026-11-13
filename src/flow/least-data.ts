@@ -7,7 +7,7 @@
  * specific to it: an edge reading, passing, returning or sending that path,
  * or the whole value reaching a boundary (which sends every key). Handing
  * the whole value to another function is deliberately not a use of every
- * key -- whether any key is used is decided by what that function does with
+ * key. Whether any key is used is decided by what that function does with
  * it, and a function that drops a key is exactly what this analysis exists to
  * notice.
  *
@@ -42,7 +42,7 @@ export interface UnusedPath {
   readonly path: readonly string[]
   /** The field's resolved sensitivity, when declared. */
   readonly sensitivity: string | undefined
-  /** Names of the declared input endpoints of the operations that write this field -- where a tighter projection could be applied. */
+  /** Names of the declared input endpoints of the operations that write this field: where a tighter projection could be applied. */
   readonly fetchedFrom: readonly string[]
 }
 
@@ -77,7 +77,7 @@ export interface LeastDataReport {
   readonly indeterminate: readonly LeastDataIndeterminate[]
 }
 
-/** What `analyzeLeastData` reads -- the same fields of the Evidence Model a projection over it would. */
+/** What `analyzeLeastData` reads: the same fields of the Evidence Model a projection over it would. */
 export interface LeastDataInput {
   readonly capability: CapabilityInventory
   readonly flow: FlowModel
@@ -261,7 +261,7 @@ export function leastDataFindings(report: LeastDataReport): ReportFinding[] {
       code: "LEAST_DATA_WHOLE_FIELD_TO_CLIENT",
       family: "flow",
       severity: "warning",
-      message: `Field "${whole.field}" on "${whole.capability.exportName}" is sent whole to the client response "${whole.boundaryName}" (keys: ${whole.keys.join(", ")}) -- send only the keys the client needs.`,
+      message: `Field "${whole.field}" on "${whole.capability.exportName}" is sent whole to the client response "${whole.boundaryName}" (keys: ${whole.keys.join(", ")}). Send only the keys the client needs.`,
       capability: whole.capability,
       field: [whole.field],
       evidence: [

@@ -15,7 +15,7 @@ async function requireUser(): Promise<User | undefined> {
  * when they explicitly ask for it (`?all=true`), never by default. The query
  * param is what makes the admin's elevated view an explicit, visible action
  * at the call site rather than a silent default a future change could widen
- * by accident -- the same reasoning `listAllTodos` (see store.ts) is a
+ * by accident: the same reasoning `listAllTodos` (see store.ts) is a
  * separately named function rather than a boolean flag on `listOwnTodos`.
  */
 export async function GET(request: Request): Promise<NextResponse> {
@@ -42,7 +42,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   return NextResponse.json({ todo: addTodo(user.id, body.title.trim()) }, { status: 201 })
 }
 
-/** The owner, or an admin -- store.ts's own toggleTodo() enforces this, not this handler; a non-owner, non-admin gets 404, not 403, so a user can never learn a todo id exists just by trying to toggle it. */
+/** The owner, or an admin: store.ts's own toggleTodo() enforces this, not this handler; a non-owner, non-admin gets 404, not 403, so a user can never learn a todo id exists just by trying to toggle it. */
 export async function PATCH(request: Request): Promise<NextResponse> {
   const user = await requireUser()
   if (!user) return NextResponse.json({ error: "not signed in" }, { status: 401 })
@@ -56,7 +56,7 @@ export async function PATCH(request: Request): Promise<NextResponse> {
   return NextResponse.json({ todo })
 }
 
-/** The owner, or an admin -- same not-found-not-forbidden reasoning as PATCH above. */
+/** The owner, or an admin: same not-found-not-forbidden reasoning as PATCH above. */
 export async function DELETE(request: Request): Promise<NextResponse> {
   const user = await requireUser()
   if (!user) return NextResponse.json({ error: "not signed in" }, { status: 401 })

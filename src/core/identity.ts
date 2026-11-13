@@ -1,33 +1,31 @@
 /**
  * Array identity: computes a stable per-item key from developer-declared
- * identity field names, and reconciles an array's `DataInfo` map against a
- * new `fields` array using that key, preserving reference identity for
- * unaffected items (see specs/architecture.md's "DataInfo array
- * reconciliation").
+ * identity field names. It then reconciles an array's `DataInfo` map against
+ * a new `fields` array using that key. Unaffected items keep their reference
+ * identity (see specs/architecture.md's "DataInfo array reconciliation").
  *
- * Internal -- not re-exported from the public `.` barrel. Consumed by the
+ * Internal: not re-exported from the public `.` barrel. Consumed by the
  * (future) standalone runtime whenever it populates `info` for an
  * identity-configured array field.
  *
  * Identity is declared as an array of key names (`["id"]`, `["postId",
- * "commentId"]`) -- never a callback, never a dot-notation path, and never
- * React's "key" terminology (this is a data-oriented concept, not a
- * rendering one). Identity metadata exists only for `DataInfo`; it never
- * alters `fields` itself, and arrays without a declared identity get no
- * per-item `DataInfo` at all (never a numeric-index fallback -- that would
- * reintroduce exactly the array-index-as-key fragility this system exists
- * to avoid).
+ * "commentId"]`). It is never a callback or a dot-notation path. It never
+ * uses React's "key" terminology: this is a data concept, not a rendering
+ * one. Identity metadata exists only for `DataInfo` and never alters
+ * `fields` itself. Arrays without a declared identity get no per-item
+ * `DataInfo` at all. There is no numeric-index fallback: that would bring
+ * back the array-index-as-key fragility this system exists to avoid.
  */
 
 import { canonicalize } from "./canonicalize.js"
 
-/** Declared identity field names for one array item shape -- e.g. `["id"]`, or `["postId", "commentId"]` for a composite key. */
+/** Declared identity field names for one array item shape: e.g. `["id"]`, or `["postId", "commentId"]` for a composite key. */
 export type IdentityKeys<Item> = readonly (keyof Item & string)[]
 
 /** Why one array item couldn't be assigned a stable identity key. */
 export type IdentityWarningReason = "missing-key" | "malformed-item" | "duplicate-identity"
 
-/** One array item that couldn't be reconciled by identity -- surfaced, never silently dropped. */
+/** One array item that couldn't be reconciled by identity: surfaced, never silently dropped. */
 export interface IdentityWarning {
   /** Path to the array field, then the item's index within it. */
   readonly path: readonly string[]
@@ -40,7 +38,7 @@ export interface IdentityWarning {
 // itself a supported, always-defined canonicalizable case), so no per-call-site
 // fallback is needed. A plain function, never a module-top-level
 // `const x = canonicalize(undefined)`: that top-level call is one esbuild can't
-// prove side-effect-free, so it could never be tree-shaken -- forcing every
+// prove side-effect-free, so it could never be tree-shaken; forcing every
 // consumer of `data-cap/helpers` to pay for canonicalize.ts even
 // when they only import `processors`/`shape` (see test/helpers/tree-shaking.test.ts).
 function missingComponentToken(): string {
@@ -50,13 +48,13 @@ function missingComponentToken(): string {
 
 /**
  * Computes the joined identity key for one array item. Each declared key's
- * value is independently canonicalized (so `1` and `"1"`, or `NaN` and any
- * number, can never collide) and concatenated via `canonicalize`'s own
- * self-delimiting encoding -- no additional separator is needed. A missing
- * key, a `null`/`undefined` component, or a non-canonicalizable component
- * (a function, a symbol, ...) all degrade to the same fixed token rather
- * than throwing or silently colliding with unrelated data; each is recorded
- * as a warning against `path`.
+ * value is canonicalized on its own, so `1` and `"1"`, or `NaN` and any
+ * number, can never collide. The parts are concatenated through
+ * `canonicalize`'s self-delimiting encoding, so no extra separator is needed. A missing key, a
+ * `null` or `undefined` component, or one that cannot be canonicalized (a
+ * function, a symbol) becomes the same fixed token. Nothing throws or silently
+ * collides with unrelated data, and each case is recorded as a warning against
+ * `path`.
  */
 export function computeItemIdentity<Item>(
   item: Item,
@@ -92,18 +90,17 @@ export interface ReconcileArrayInfoResult<TInfo> {
 
 /**
  * Recomputes an array field's identity-keyed `DataInfo` map by diffing
- * against the previous map: an identity the current operation did not touch
+ * against the previous map. An identity the current operation did not touch
  * (per `touchedIdentities`), but that still exists in `nextItems`, keeps its
- * previous `TInfo` object reference exactly -- this is the release-blocking
+ * previous `TInfo` object reference exactly. This is the release-blocking
  * performance invariant `next.info.comments["1"] === previous.info.comments["1"]`
- * relies on. Identities no longer present in `nextItems` are dropped (no
- * orphans); this is always a full recompute of the key SET (never
- * incremental), even though individual entries are reference-preserved.
+ * relies on. Identities no longer present in `nextItems` are dropped, so no
+ * orphans remain. The key SET is always fully recomputed, never
+ * incrementally, even though individual entries keep their references.
  *
- * A duplicate identity across two items is not an error: both items remain
- * in `fields` untouched, but they share one `DataInfo` slot -- the
- * last-encountered item during the walk determines that slot's info
- * (recorded as a warning, never silently ignored).
+ * A duplicate identity across two items is not an error. Both items stay in
+ * `fields` untouched, but they share one `DataInfo` slot. The last item the
+ * walk meets sets that slot's info, and a warning records it.
  */
 export function reconcileArrayInfo<Item, TInfo>(
   prevInfo: Partial<Record<string, TInfo>> | undefined,

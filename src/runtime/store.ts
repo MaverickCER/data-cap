@@ -5,7 +5,7 @@
  * `useSyncExternalStore`-compatible without importing React).
  *
  * A completed/failed optimistic mutation is never "rolled back" by special
- * code -- `removePendingTransition` simply removes its entry, and the next
+ * code: `removePendingTransition` removes its entry, and the next
  * `project()` fold naturally omits it. No automatic rollback, no invented
  * conflict-resolution policy: `commitAuthoritative` always folds a patch
  * onto whatever is CURRENTLY authoritative, never a stale snapshot captured
@@ -42,7 +42,7 @@ export interface DataStoreController<TFields> extends DataStore<TFields> {
   getAuthoritativeState(): DataState<TFields>
 }
 
-/** Creates a standalone `DataStoreController`, seeded with `initialState` -- the manual-control building block `createData` composes over. */
+/** Creates a standalone `DataStoreController`, seeded with `initialState`: the manual-control building block `createData` composes over. */
 export function createDataStore<TFields>(
   initialState: DataState<TFields>,
 ): DataStoreController<TFields> {

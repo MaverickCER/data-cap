@@ -94,7 +94,7 @@
           "ruleId": "LEAST_DATA_WHOLE_FIELD_TO_CLIENT",
           "level": "warning",
           "message": {
-            "text": "Field \"user\" on \"userData\" is sent whole to the client response \"http-response\" (keys: id, name, email, passwordHash, role) -- send only the keys the client needs."
+            "text": "Field \"user\" on \"userData\" is sent whole to the client response \"http-response\" (keys: id, name, email, passwordHash, role). Send only the keys the client needs."
           },
           "locations": [
             {

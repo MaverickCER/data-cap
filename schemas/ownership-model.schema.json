@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://maverickcer.github.io/data-cap/schema/ownership-model.schema.json",
   "title": "data-cap Ownership Model",
-  "description": "Canonical, versioned owner -> {capabilities, fields} matrix (see ADR 0050). Generated from src/build/ownership-model.ts's OwnershipModel type -- never hand-authored.",
+  "description": "Canonical, versioned owner -> {capabilities, fields} matrix (see ADR 0050). Generated from src/build/ownership-model.ts's OwnershipModel type. Never hand-authored.",
   "$ref": "#/definitions/OwnershipModel",
   "definitions": {
     "OwnershipModel": {
@@ -18,7 +18,7 @@
           "items": {
             "$ref": "#/definitions/OwnershipMatrixEntry"
           },
-          "description": "Every owner's row -- see `buildOwnershipMatrix`."
+          "description": "Every owner's row: see `buildOwnershipMatrix`."
         }
       },
       "required": [
@@ -56,14 +56,14 @@
         "fields"
       ],
       "additionalProperties": false,
-      "description": "One owner's row in the ownership matrix -- every capability and field they're accountable for."
+      "description": "One owner's row in the ownership matrix: every capability and field they're accountable for."
     },
     "OwnershipCapabilityRef": {
       "type": "object",
       "properties": {
         "file": {
           "type": "string",
-          "description": "Root-relative POSIX path of the file declaring this capability -- carried through verbatim from `CapabilityNode.file` (see `display-path.ts`)."
+          "description": "Root-relative POSIX path of the file declaring this capability: carried through verbatim from `CapabilityNode.file` (see `display-path.ts`)."
         },
         "exportName": {
           "type": "string",

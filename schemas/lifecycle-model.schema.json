@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://maverickcer.github.io/data-cap/schema/lifecycle-model.schema.json",
   "title": "data-cap Lifecycle Model",
-  "description": "Canonical, versioned projection of every capability's and field's declared lifecycle data (expiry, deprecation, removal deadline, rename correlation), plus the expiring-soon view. Generated from src/build/lifecycle-model.ts's LifecycleModel type -- never hand-authored.",
+  "description": "Canonical, versioned projection of every capability's and field's declared lifecycle data (expiry, deprecation, removal deadline, rename correlation), plus the expiring-soon view. Generated from src/build/lifecycle-model.ts's LifecycleModel type. Never hand-authored.",
   "$ref": "#/definitions/LifecycleModel",
   "definitions": {
     "LifecycleModel": {
@@ -41,7 +41,7 @@
       "properties": {
         "file": {
           "type": "string",
-          "description": "Root-relative POSIX path -- carried through verbatim from `CapabilityNode.file`."
+          "description": "Root-relative POSIX path: carried through verbatim from `CapabilityNode.file`."
         },
         "exportName": {
           "type": "string",
@@ -68,7 +68,7 @@
           "items": {
             "$ref": "#/definitions/LifecycleModelField"
           },
-          "description": "Only fields with at least one lifecycle field set, sorted by path -- same \"only what's relevant\" scope the rendered report uses."
+          "description": "Only fields with at least one lifecycle field set, sorted by path: same \"only what's relevant\" scope the rendered report uses."
         }
       },
       "required": [
@@ -87,7 +87,7 @@
           "items": {
             "type": "string"
           },
-          "description": "The field's path within its capability -- `readonly string[]`, matching every other model's field addressing (never a flat key string)."
+          "description": "The field's path within its capability: `readonly string[]`, matching every other model's field addressing (never a flat key string)."
         },
         "expiresAt": {
           "type": "string",
@@ -103,15 +103,15 @@
         },
         "removeBy": {
           "type": "string",
-          "description": "Declared ISO-8601 removal deadline -- field-level only (see `core/document.ts`)."
+          "description": "Declared ISO-8601 removal deadline: field-level only (see `core/document.ts`)."
         },
         "renamedFrom": {
           "type": "string",
-          "description": "The field's previous name, when authored -- what `ChangeModel.renamedFields` correlates against."
+          "description": "The field's previous name, when authored: what `ChangeModel.renamedFields` correlates against."
         },
         "retention": {
           "type": "string",
-          "description": "Declared retention policy -- a policy statement, deliberately independent of `expiresAt`'s temporal constraint (a field can be retained long after its source credential expires, and vice versa)."
+          "description": "Declared retention policy: a policy statement, deliberately independent of `expiresAt`'s temporal constraint (a field can be retained long after its source credential expires, and vice versa)."
         }
       },
       "required": [

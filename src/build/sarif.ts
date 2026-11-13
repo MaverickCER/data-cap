@@ -1,13 +1,13 @@
 /**
- * SARIF Security Findings Report (ADR 0050) -- an adapter over Finding
+ * SARIF Security Findings Report (ADR 0050): an adapter over Finding
  * Model, not a new fact source. Produces a minimal, spec-conformant SARIF
  * 2.1.0 log (https://docs.oasis-open.org/sarif/sarif/v2.1.0/) so `data-cap`'s
  * findings can be consumed by any SARIF-aware tool (GitHub code scanning,
  * most CI security dashboards) without a bespoke integration.
  *
  * A finding that carries flow evidence (ADR 0070) is anchored at the code it is
- * about -- a precise region -- and, when the evidence is a path through the
- * program, gets a SARIF `codeFlow`: the steps from where the data starts to
+ * about (a precise region). When the evidence is a path through the program,
+ * the finding gets a SARIF `codeFlow`: the steps from where the data starts to
  * where it leaves. SARIF represents findings, not the complete data-flow
  * graph; the graph itself is the Evidence Model's `flow`.
  */
@@ -18,7 +18,7 @@ import { PACKAGE_VERSION } from "./package-version.js"
 import type { FindingModel, LocatedFinding } from "./finding-model.js"
 import type { ReportSeverity } from "./findings.js"
 
-/** SARIF's `level` enum -- see the SARIF 2.1.0 spec, section 3.27.10. */
+/** SARIF's `level` enum: see the SARIF 2.1.0 spec, section 3.27.10. */
 type SarifLevel = "none" | "note" | "warning" | "error"
 
 function sarifLevel(severity: ReportSeverity): SarifLevel {
@@ -57,7 +57,7 @@ interface SarifResult {
   readonly codeFlows?: readonly SarifCodeFlow[]
 }
 
-/** A minimal SARIF 2.1.0 log -- only the properties this adapter actually populates, not the full spec surface. */
+/** A minimal SARIF 2.1.0 log: only the properties this adapter actually populates, not the full spec surface. */
 export interface SarifLog {
   readonly $schema: string
   readonly version: "2.1.0"

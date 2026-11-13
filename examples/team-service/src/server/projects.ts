@@ -1,5 +1,5 @@
 /**
- * Simulated backend state for projects and their own case tasks -- shared,
+ * Simulated backend state for projects and their own case tasks: shared,
  * in-memory state standing in for a real database/API, imported by
  * `capabilities/project.capability.ts`.
  */
@@ -8,9 +8,9 @@ export interface Project {
   readonly name: string
 }
 
-/** The raw task shape this "backend" returns -- `assigneeId` only, never a
+/** The raw task shape this "backend" returns: `assigneeId` only, never a
  * name. Resolving `assigneeId` to a real name is `project.capability.ts`'s
- * own job, composing with `member.capability.ts` to do it -- never this
+ * own job, composing with `member.capability.ts` to do it: never this
  * simulated backend's concern (a real backend wouldn't join across service
  * boundaries either). */
 export interface RawTask {
@@ -55,7 +55,7 @@ export async function createTaskRemote(
   createTaskAttempts += 1
   await new Promise((resolve) => setTimeout(resolve, 5))
   if (signal.aborted) throw new Error("aborted")
-  // The first attempt always fails -- proves withRetry composes directly
+  // The first attempt always fails: proves withRetry composes directly
   // with a generated mutator method, same demonstration as examples/application/.
   if (createTaskAttempts === 1) throw new Error("simulated transient failure")
   const existing = tasksByProject[projectId] ?? []

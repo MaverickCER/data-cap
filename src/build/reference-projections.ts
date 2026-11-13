@@ -1,7 +1,7 @@
 /**
  * Evidence-family reference projections (ADR 0050): Data Classification/
  * Privacy/Retention/Audit/Compliance Evidence. Each composes sensitivity
- * (Capability Model) with ownership, findings, and provenance -- genuinely
+ * (Capability Model) with ownership, findings, and provenance: genuinely
  * cross-model, so each is an ordinary `defineEvidenceProjection()` call,
  * not a plain function (unlike the single-model filters in
  * `inventory-projections.ts`). Every projection carries the same
@@ -10,7 +10,7 @@
  * evidence for a review, never a compliance claim.
  *
  * Each is declared as a per-output-field projector schema, not one
- * monolithic function (NAM-07): `disclaimer` and `entries` are independent
+ * monolithic function. `disclaimer` and `entries` are independent
  * facts, and giving each its own projector is what lets `.project()` report
  * that `entries` was derived from `capability.capabilities.*` while
  * `disclaimer` was derived from nothing at all. A single combined function
@@ -48,7 +48,7 @@ export interface ClassificationEntry {
 /**
  * Every capability and field that declares a `sensitivity`, as a base
  * {@link ClassificationEntry} plus whether its `protections` are documented.
- * Shared by the Classification and Privacy projections -- both walk the exact
+ * Shared by the Classification and Privacy projections: both walk the exact
  * same capability/field set, they only differ in which of these two facts they
  * surface. Reads go through the projector's tracking proxy exactly as before.
  */
@@ -220,7 +220,7 @@ function complianceEntries(evidence: EvidenceModel): readonly ComplianceEntry[] 
   return entries
 }
 
-/** Data Compliance Evidence: every capability's declared `metadata` bag, unvalidated -- `data-cap` asserts no regime applies. */
+/** Data Compliance Evidence: every capability's declared `metadata` bag, unvalidated; `data-cap` asserts no regime applies. */
 export function projectComplianceEvidence(
   evidence: EvidenceModel,
 ): ProjectComplianceEvidenceOutput {
@@ -268,10 +268,9 @@ function auditFindingsBySeverity(evidence: EvidenceModel): Record<string, number
 }
 
 /**
- * Data Audit Evidence / Data Assurance Report / Data Governance Report
- * (reframed): a rollup of ownership and finding counts plus provenance --
- * never a governance verdict or a risk score, only the counted facts a
- * consumer's own policy can be evaluated against.
+ * Data Audit Evidence (also called a Data Assurance or Data Governance Report):
+ * a rollup of ownership and finding counts, plus provenance. It gives counted
+ * facts for a consumer's own policy, never a verdict or a risk score.
  *
  * The clearest case for the per-field schema: `ownedCapabilities` is derived
  * from Ownership Model alone, `findingsBySeverity` from Finding Model alone,

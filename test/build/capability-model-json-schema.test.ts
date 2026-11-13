@@ -12,7 +12,7 @@ const projectRoot = path.resolve(here, "../..")
 const schemaPath = path.resolve(projectRoot, "schemas/capability-model.schema.json")
 
 describe("published JSON Schema (Capability Model): freshness", () => {
-  // Same rationale as test/build/json-schema.test.ts's freshness test --
+  // Same rationale as test/build/json-schema.test.ts's freshness test:
   // ts-json-schema-generator runs a real TypeScript program/type-check,
   // slow enough under v8 coverage instrumentation to exceed vitest's
   // default 5000ms test timeout.

@@ -6,8 +6,7 @@ You are reviewing a pull request and must decide whether it is safe to merge. Th
 
 A change is ready to merge when all of these hold:
 
-- The required checks, `contract` and `lint`, are green.
-- The jobs that do not block a merge are green too, or the reviewer has read why not. They are `cross-runtime` (Bun and Deno), `examples`, `integration-fixtures`, `typescript-5`, `typescript-compat`, `package-managers` and `benchmark-pr`. A failed `benchmark-pr` skips the required jobs, so check it by hand.
+- The checks the ruleset requires, `contract`, `lint` and `required`, are green. `required` waits for `cross-runtime` (Bun and Deno), `examples`, `integration-fixtures`, `typescript-5`, `typescript-compat`, `package-managers` and `benchmark-pr`. A failed `benchmark-pr` also fails `contract` in its first step.
 - Every invariant in §2 that the change touches still holds, checked against the code, not the description.
 - Any public-surface change (§3) is intentional, explained in the pull request, and carries the right changeset bump.
 - Any generated file in the diff (§4) has been read as output.
@@ -27,7 +26,7 @@ When a change cannot meet this in one pull request, split it.
 - **`FIELD_MARKER` uses `Symbol.for`** ([ADR 0048](specs/decisions/0048-builddata-createdata-split-and-optional-operations-layer.md)). Core and runtime are bundled separately; `test/runtime/cross-bundle-field-marker.test.ts` pins it.
 - **Reports keep declared and proven facts apart** ([ADR 0049](specs/decisions/0049-capability-metadata-vocabulary.md)). An ambiguous case becomes `indeterminate`, never a guessed `error`. `test/build/negative-guarantees.test.ts` checks finding messages; nothing scans the rendered Markdown reports, so read new report wording.
 - **Every published path is root-relative** (`test/build/docs.test.ts`). A generated artifact never contains a machine-specific absolute path.
-- **No raw value in an error or warning.** Capabilities do not self-redact ([ADR 0006](specs/decisions/0006-no-self-redaction.md)), but messages still never carry a value (tested for one string value on the `createData` path).
+- **No raw value in an error or warning.** Capabilities do not self-redact ([ADR 0006](specs/decisions/0006-no-self-redaction.md)), but messages still never carry a value. A test checks this for one string value on the `createData` path.
 
 Moving one of these boundaries needs its own ADR first.
 
@@ -73,7 +72,7 @@ Same scrutiny as any change. The common failure modes are specific:
 ## 7. Verification a reviewer asks for
 
 - `npm run verify` green locally or in CI.
-- Coverage at or above the floors in `vitest.config.ts`. Floors are raised in review and never lowered to fit a drop.
+- Coverage at or above the floors in `vitest.config.ts`. Floors are raised in review; a diff that lowers one needs a reason in the pull request.
 - Mutation testing: `contract` fails unless every mutant is killed or recorded as equivalent. New logic needs tests that assert behaviour.
 - A public type change has a positive `expectTypeOf` test and, where an invalid construct exists, a `// @ts-expect-error` test ([ADR 0045](specs/decisions/0045-type-level-tests-pair-positive-negative.md)).
 - A change to `core/patch.ts` or `core/ownership.ts` keeps their property-based tests meaningful ([ADR 0046](specs/decisions/0046-property-based-tests-extend-to-patch-ownership.md)).
@@ -82,7 +81,7 @@ Same scrutiny as any change. The common failure modes are specific:
 
 ## 8. Approval checklist
 
-- [ ] `contract` and `lint` green; the non-blocking jobs green or explained
+- [ ] `contract`, `lint` and `required` green
 - [ ] Every touched invariant in §2 re-checked against the code
 - [ ] No raw value in any thrown error or warning
 - [ ] `info` still mandatory and atomic with `fields`; no truthiness for presence

@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 import { PACKAGE_VERSION } from "../../src/build/package-version.js"
 
 // Since ADR 0058, `PACKAGE_VERSION` is the build-time constant
-// `__PACKAGE_VERSION__` -- `tsup`/vitest substitute it from `package.json` at
+// `__PACKAGE_VERSION__`: `tsup`/vitest substitute it from `package.json` at
 // bundle/test time, so `./build` never reads its own manifest from disk.
 describe("PACKAGE_VERSION", () => {
   const declaredVersion: string = (

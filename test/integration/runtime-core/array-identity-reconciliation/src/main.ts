@@ -1,7 +1,7 @@
 /**
  * Client-side pattern: a list fetched from a REST API, kept in `fields` as
  * an ordinary array while `info` tracks each item by a declared identity
- * (never array index -- an index shifts under insertion/removal/reorder,
+ * (never array index; an index shifts under insertion/removal/reorder,
  * silently reattaching metadata to the wrong item). `helpers.identity`
  * exposes the same two primitives the standalone runtime would use
  * internally to do this: `computeItemIdentity` (one item -> a stable key)
@@ -51,7 +51,7 @@ async function fetchComments(): Promise<Comment[]> {
   ]
 }
 
-// -- Initial population: every item is "touched" (freshly fetched) --
+// (Initial population: every item is "touched" (freshly fetched))
 const firstBatch = await fetchComments()
 commitComments(firstBatch, "all", "listComments")
 
@@ -62,7 +62,7 @@ assert.ok(infoAfterFirstFetch)
 const comment2InfoBeforeUpdate = infoAfterFirstFetch[key2]
 assert.ok(comment2InfoBeforeUpdate)
 
-// -- Refetch: item "1" changed, item "2" is untouched, item "3" is new --
+// (Refetch: item "1" changed, item "2" is untouched, item "3" is new)
 const secondBatch: Comment[] = [
   { id: "1", body: "first (edited)" },
   { id: "2", body: "second" },
@@ -81,7 +81,7 @@ assert.equal(
 const key3 = identity.computeItemIdentity<Comment>({ id: "3", body: "" }, ["id"], [], [])
 assert.ok(infoAfterSecondFetch[key3], "a newly-appearing identity gets a fresh info entry")
 
-// -- Malformed-input matrix: missing key, explicit null, duplicate identity --
+// (Malformed-input matrix: missing key, explicit null, duplicate identity)
 interface MaybeComment {
   readonly id?: string | null
   readonly body: string
@@ -104,7 +104,7 @@ assert.equal(
 )
 assert.equal(malformedWarnings[0]?.reason, "missing-key")
 // An explicit `null` value is itself a real, canonicalizable identity
-// component (distinct from a missing key's fallback token) -- it does NOT
+// component (distinct from a missing key's fallback token): it does NOT
 // warn, and its key differs from the missing-key item's key.
 assert.notEqual(
   keys[1],
@@ -129,7 +129,7 @@ assert.equal(
   true,
   "a duplicate identity across two items is recorded as a warning, not an error",
 )
-// Both items sharing the duplicate identity remain in fields -- only their
+// Both items sharing the duplicate identity remain in fields: only their
 // shared info SLOT collapses to one entry (last-encountered wins).
 assert.equal(
   Object.keys(reconciledMalformed.info).length,

@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://maverickcer.github.io/data-cap/schema/data-cap-report.schema.json",
   "title": "data-cap --json report",
-  "description": "Machine-readable envelope emitted by `data-cap --json` (see README's CLI section). Generated from src/cli/json.ts's JsonReportPayload type -- never hand-authored. Embeds the composed Evidence Model (see evidence-model.schema.json) as its own `evidence` field -- this envelope is the CLI run's own summary (files written, finding counts), not a competing canonical model.",
+  "description": "Machine-readable envelope emitted by `data-cap --json` (see README's CLI section). Generated from src/cli/json.ts's JsonReportPayload type. Never hand-authored. Embeds the composed Evidence Model (see evidence-model.schema.json) as its own `evidence` field. This envelope is the CLI run's own summary (files written, finding counts), not a competing canonical model.",
   "$ref": "#/definitions/JsonReportPayload",
   "definitions": {
     "JsonReportPayload": {
@@ -14,7 +14,7 @@
           "$ref": "#/definitions/JsonErrorPayload"
         }
       ],
-      "description": "The complete `--json` envelope shape, success or failure -- the target type the published JSON Schema (`schemas/data-cap-report.schema.json`, `npm run schema`) is generated from."
+      "description": "The complete `--json` envelope shape, success or failure: the target type the published JSON Schema (`schemas/data-cap-report.schema.json`, `npm run schema`) is generated from."
     },
     "JsonSuccessPayload": {
       "type": "object",
@@ -29,7 +29,7 @@
         },
         "usage": {
           "$ref": "#/definitions/GenerateUsageResult",
-          "description": "Always present (F1): the usage scan (proven consumption positions, dependency edges, ownership/abandonment findings) runs on every call regardless of which flags were passed -- it's foundational evidence the Dependency Model needs, not something only `--ownership`/`--flow` consumers should get. `--ownership` only controls whether the rendered report additionally gets *written to disk* (`usage.location`) -- `usage` itself, and its `edges`/`findings`, are always real."
+          "description": "Always present: the usage scan runs on every call, whatever the flags. It yields proven consumption positions, dependency edges and ownership findings, which the Dependency Model needs. `--ownership` only controls whether the rendered report additionally gets *written to disk* (`usage.location`): `usage` itself, and its `edges`/`findings`, are always real."
         },
         "flow": {
           "$ref": "#/definitions/GenerateFlowResult",
@@ -37,7 +37,7 @@
         },
         "evidence": {
           "$ref": "#/definitions/EvidenceModel",
-          "description": "`data-cap`'s Evidence Model (ADR 0050), composed from this same run's `inventory`/`usage`/`manifest`/`findings` -- always present, unlike `manifest`/`documentation`/`usage`/`flow` above, since composing it costs nothing beyond data already held in memory. `--evidence` only controls whether it's *additionally written to disk*; every consumer of `ReportResult` (including `--json`) already gets the real, composed model on every run, whether or not a file was requested for it."
+          "description": "`data-cap`'s Evidence Model (ADR 0050), composed from this same run's `inventory`/`usage`/`manifest`/`findings`: always present, unlike `manifest`/`documentation`/`usage`/`flow` above, since composing it costs nothing beyond data already held in memory. `--evidence` only controls whether it is *also written to disk*. Every consumer of `ReportResult`, `--json` included, gets the composed model on every run."
         },
         "findings": {
           "type": "array",
@@ -67,7 +67,7 @@
         },
         "hasBlockingErrors": {
           "type": "boolean",
-          "description": "True when `errorCount > 0` -- `generateDataArtifacts` throws instead of writing when this is true."
+          "description": "True when `errorCount > 0`: `generateDataArtifacts` throws instead of writing when this is true."
         },
         "schemaVersion": {
           "type": "number",
@@ -139,7 +139,7 @@
         },
         "snapshot": {
           "$ref": "#/definitions/ManifestSnapshot",
-          "description": "The current inventory's snapshot -- persist this to enable \"changes since last report\" on the next run."
+          "description": "The current inventory's snapshot: persist this to enable \"changes since last report\" on the next run."
         },
         "changes": {
           "$ref": "#/definitions/ManifestChangeReport",
@@ -169,7 +169,7 @@
         "snapshotSchemaVersion": {
           "type": "number",
           "const": 2,
-          "description": "Bumped only on a breaking change to this snapshot's own shape. Bumped 1 -> 2 by OUT-01: every capability key (`file#exportName`) is now built from a root-relative `file`, so a v1 snapshot's keys can never match a v2 run's."
+          "description": "Bumped only on a breaking change to this snapshot's own shape. Bumped 1 -> 2: every capability key (`file#exportName`) is now built from a root-relative `file`, so a v1 snapshot's keys can never match a v2 run's."
         },
         "capabilities": {
           "type": "array",
@@ -184,14 +184,14 @@
         "capabilities"
       ],
       "additionalProperties": false,
-      "description": "A persisted, JSON-serializable snapshot of the inventory at one point in time -- see `buildManifestSnapshot`."
+      "description": "A persisted, JSON-serializable snapshot of the inventory at one point in time: see `buildManifestSnapshot`."
     },
     "ManifestSnapshotCapability": {
       "type": "object",
       "properties": {
         "file": {
           "type": "string",
-          "description": "Root-relative POSIX path of the file declaring this capability -- copied verbatim from `CapabilityNode.file` (OUT-01, see `display-path.ts`), which is what makes a committed snapshot diffable between two machines at all."
+          "description": "Root-relative POSIX path of the file declaring this capability: copied verbatim from `CapabilityNode.file` (see `display-path.ts`), which is what makes a committed snapshot diffable between two machines at all."
         },
         "exportName": {
           "type": "string",
@@ -241,7 +241,7 @@
               "$ref": "#/definitions/CitationSnapshotEntry"
             }
           },
-          "description": "Per-field citation integrity snapshots for declared `evidence.fields[key].dynamicAccess` entries, keyed by field name -- only present for a field that declares at least one citation that resolved to a real file at snapshot time (see `citation-verification.ts`)."
+          "description": "Per-field citation integrity snapshots for declared `evidence.fields[key].dynamicAccess` entries, keyed by field name. Present only for a field with at least one citation that resolved to a real file at snapshot time (see `citation-verification.ts`)."
         }
       },
       "required": [
@@ -254,7 +254,7 @@
         "subscriptions"
       ],
       "additionalProperties": false,
-      "description": "One capability's diffable shape at snapshot time -- field/operation names only, never their runtime values."
+      "description": "One capability's diffable shape at snapshot time: field/operation names only, never their runtime values."
     },
     "CitationSnapshotEntry": {
       "type": "object",
@@ -270,7 +270,7 @@
         },
         "hash": {
           "type": "string",
-          "description": "Whole-file SHA-256 (hex) of the cited file's content, at the moment this citation was last confirmed to exist. An integrity signal only -- \"this file hasn't visibly changed since the citation was written\" -- never proof the citation's own underlying claim is semantically correct (see ADR 0053)."
+          "description": "Whole-file SHA-256 (hex) of the cited file's content, at the moment this citation was last confirmed to exist. An integrity signal only (\"this file hasn't visibly changed since the citation was written\") never proof the citation's own underlying claim is semantically correct (see ADR 0053)."
         }
       },
       "required": [
@@ -280,7 +280,7 @@
         "line"
       ],
       "additionalProperties": false,
-      "description": "One `dynamicAccess` citation's integrity snapshot -- see `ManifestSnapshotCapability.citationSnapshots`."
+      "description": "One `dynamicAccess` citation's integrity snapshot: see `ManifestSnapshotCapability.citationSnapshots`."
     },
     "ManifestChangeReport": {
       "type": "object",
@@ -331,7 +331,7 @@
         },
         "fields": {
           "$ref": "#/definitions/ManifestFieldDiff",
-          "description": "The same field-level diff `changes` describes in prose, as data (EVD-05). Added so `ChangeModel`'s rename correlation has something to match against without re-parsing a human-readable sentence -- a report deriving structure back out of its own prose is exactly the kind of fragility this codebase avoids. `changes` is unaffected and still reads the same."
+          "description": "The same field-level diff `changes` describes in prose, as data. It gives `ChangeModel`'s rename correlation a value to match, so no report has to parse structure back out of its own prose. `changes` is unaffected and still reads the same."
         }
       },
       "required": [
@@ -376,7 +376,7 @@
         },
         "family": {
           "$ref": "#/definitions/ReportFindingFamily",
-          "description": "Which analysis pass produced this finding -- see `ReportFindingFamily`."
+          "description": "Which analysis pass produced this finding: see `ReportFindingFamily`."
         },
         "severity": {
           "$ref": "#/definitions/ReportSeverity",
@@ -422,21 +422,21 @@
         },
         "position": {
           "$ref": "#/definitions/SourcePosition",
-          "description": "Position of the declaration site (capability's own call, or field's own key) this finding is anchored to, when one is available -- see ADR 0052. Additive: absent for findings with no single declaration-site anchor (e.g. a usage-scan finding whose subject is a consuming file, not a declaration)."
+          "description": "Position of the declaration site (capability's own call, or field's own key) this finding is anchored to, when one is available: see ADR 0052. Additive: absent for findings with no single declaration-site anchor (e.g. a usage-scan finding whose subject is a consuming file, not a declaration)."
         },
         "evidence": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/EvidenceRef"
           },
-          "description": "The records in the Evidence Model this finding rests on -- flow nodes and edges, a policy result, an unknown (ADR 0070). Lets a reader drill from the finding to the analysis behind it, and lets SARIF show the path. Absent for findings derived from declared metadata alone."
+          "description": "The records in the Evidence Model this finding rests on: flow nodes and edges, a policy result, an unknown (ADR 0070). Lets a reader drill from the finding to the analysis behind it, and lets SARIF show the path. Absent for findings derived from declared metadata alone."
         },
         "indeterminateSites": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/SourceLocation"
           },
-          "description": "Every candidate access site a `\"FIELD_ACCESS_INDETERMINATE\"` finding could actually be about -- populated only for that code. Spans potentially multiple consuming files, so each entry carries its own `file` (`SourceLocation`, not just `SourcePosition`)."
+          "description": "Every candidate access site a `\"FIELD_ACCESS_INDETERMINATE\"` finding could actually be about: populated only for that code. Spans potentially multiple consuming files, so each entry carries its own `file` (`SourceLocation`, not only `SourcePosition`)."
         }
       },
       "required": [
@@ -446,7 +446,7 @@
         "message"
       ],
       "additionalProperties": false,
-      "description": "One reportable fact about the discovered capability graph. `severity` is assigned by the rule that produces the finding, following the two governing invariants in `AGENTS.md`: static analysis never infers a relationship from insufficient evidence (an ambiguous case is `info` or `indeterminate`-flavored, never guessed at as `error`), and a finding built from declared metadata (e.g. a missing `protections` field) never claims more than \"documented\" vs. \"not documented.\""
+      "description": "One reportable fact about the discovered capability graph. `severity` is assigned by the rule that produces the finding, following the two governing invariants in `AGENTS.md`. Static analysis never infers a relationship from insufficient evidence (an ambiguous case is `info` or `indeterminate`-flavored, never guessed at as `error`). A finding built from declared metadata (e.g. a missing `protections` field) never claims more than \"documented\" vs. \"not documented.\""
     },
     "ReportFindingCode": {
       "type": "string",
@@ -492,7 +492,7 @@
         "citation",
         "flow"
       ],
-      "description": "Which analysis pass a finding came out of -- an orthogonal axis to `severity` (how much it matters) and `code` (exactly what it is).\n\nThis is what makes the `--strict*` flags' own groupings legible in the output rather than only in the orchestrator's source: `--strict-docs` escalates `\"governance\"`/`\"structural\"`/`\"citation\"`, `--strict-ownership` escalates `\"usage\"`, `--strict-flow` escalates `\"flow\"`. A consumer filtering a report (\"show me only what a usage scan proved\") currently has to hardcode a list of `ReportFindingCode`s and keep it in sync by hand; `family` makes that a real, stable field instead.\n\nDeliberately assigned at the emission site, never derived from `code` by a lookup table: the rule that produces a finding is the only thing that actually knows which pass it belongs to, and a table would be a second source of truth to drift out of sync (the same reasoning that keeps `severity` at the emission site)."
+      "description": "Which analysis pass a finding came out of: an orthogonal axis to `severity` (how much it matters) and `code` (exactly what it is).\n\nThis is what makes the `--strict*` flags' own groupings legible in the output rather than only in the orchestrator's source: `--strict-docs` escalates `\"governance\"`/`\"structural\"`/`\"citation\"`, `--strict-ownership` escalates `\"usage\"`, `--strict-flow` escalates `\"flow\"`. With `family`, a consumer filters a report (\"only what a usage scan proved\") by one stable field, instead of a hand-kept list of `ReportFindingCode`s.\n\nDeliberately assigned at the emission site, never derived from `code` by a lookup table. The rule that produces a finding is the only thing that actually knows which pass it belongs to. A table would be a second source of truth to drift out of sync (the same reasoning that keeps `severity` at the emission site)."
     },
     "ReportSeverity": {
       "type": "string",
@@ -600,7 +600,7 @@
       "properties": {
         "location": {
           "type": "string",
-          "description": "Where this report is intended to be written, or `undefined` when the caller requested only the scan results -- see `GenerateUsageOptions.location`."
+          "description": "Where this report is intended to be written, or `undefined` when the caller requested only the scan results: see `GenerateUsageOptions.location`."
         },
         "content": {
           "type": "string",
@@ -642,11 +642,11 @@
       "properties": {
         "relationship": {
           "$ref": "#/definitions/DependencyRelationship",
-          "description": "Which kind of connection this is -- see `DependencyRelationship`."
+          "description": "Which kind of connection this is: see `DependencyRelationship`."
         },
         "from": {
           "type": "string",
-          "description": "The consuming file, as a root-relative POSIX path (OUT-01, see `display-path.ts`)."
+          "description": "The consuming file, as a root-relative POSIX path (see `display-path.ts`)."
         },
         "to": {
           "type": "object",
@@ -656,7 +656,7 @@
               "properties": {
                 "file": {
                   "type": "string",
-                  "description": "Root-relative POSIX path of the file declaring the capability -- the same value `CapabilityNode.file` publishes."
+                  "description": "Root-relative POSIX path of the file declaring the capability: the same value `CapabilityNode.file` publishes."
                 },
                 "exportName": {
                   "type": "string",
@@ -695,11 +695,11 @@
             "unresolved-consumer",
             "indeterminate"
           ],
-          "description": "Whether the consumer reference itself was unambiguously resolved -- see the usage-scan pass for what each value means."
+          "description": "Whether the consumer reference itself was unambiguously resolved: see the usage-scan pass for what each value means."
         },
         "position": {
           "$ref": "#/definitions/SourcePosition",
-          "description": "Position of the access site in `from` (file already known via `from`), when this edge originates from a specific identifier reference (every relationship except the file-level `\"imports\"` fallback edge scan-dependencies.ts synthesizes for a consumer with no further resolved usage)."
+          "description": "Position of the access site in `from` (file already known via `from`). Set when this edge originates from a specific identifier reference. That is every relationship except the file-level `\"imports\"` fallback edge scan-dependencies.ts synthesizes for a consumer with no further resolved usage."
         }
       },
       "required": [
@@ -709,7 +709,7 @@
         "resolution"
       ],
       "additionalProperties": false,
-      "description": "A statically-proven connection from one consuming file to a capability (or a specific field/operation on it). Unlike the declared metadata in `core/document.ts` (`source`, `credentials`, `endpoints`), every `DependencyEdge` is derived by AST analysis, never author-declared -- see `AGENTS.md`'s declared-vs-proven invariant. Produced by the usage-scan pass (`scan-dependencies.ts`), not by this module."
+      "description": "A statically-proven connection from one consuming file to a capability (or a specific field/operation on it). Unlike the declared metadata in `core/document.ts` (`source`, `credentials`, `endpoints`), every `DependencyEdge` is derived by AST analysis, never author-declared: see `AGENTS.md`'s declared-vs-proven invariant. Produced by the usage-scan pass (`scan-dependencies.ts`), not by this module."
     },
     "DependencyRelationship": {
       "type": "string",
@@ -739,7 +739,7 @@
         "message"
       ],
       "additionalProperties": false,
-      "description": "A recoverable issue found while statically parsing or linking one capability file -- never fatal, always surfaced to the caller as data."
+      "description": "A recoverable issue found while statically parsing or linking one capability file: never fatal, always surfaced to the caller as data."
     },
     "GenerateFlowResult": {
       "type": "object",
@@ -760,7 +760,7 @@
           "items": {
             "$ref": "#/definitions/ReportFinding"
           },
-          "description": "This pass's own findings only (`SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY`) -- `additionalFindings` are folded into the rendered review but not echoed back here, so a caller aggregating findings across every generator never double-counts them."
+          "description": "This pass's own findings only (`SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY`): `additionalFindings` are folded into the rendered review but not echoed back here, so a caller aggregating findings across every generator never double-counts them."
         }
       },
       "required": [
@@ -800,7 +800,7 @@
         },
         "provenance": {
           "$ref": "#/definitions/EvidenceProvenance",
-          "description": "Who/when/what produced this instance -- always present (see `EvidenceProvenance`)."
+          "description": "Who/when/what produced this instance: always present (see `EvidenceProvenance`)."
         },
         "capability": {
           "$ref": "#/definitions/CapabilityInventory",
@@ -808,47 +808,47 @@
         },
         "lifecycle": {
           "$ref": "#/definitions/LifecycleModel",
-          "description": "Lifecycle Model -- always populated, for the reason `EvidenceModelInputs.lifecycle` documents."
+          "description": "Lifecycle Model: always populated, for the reason `EvidenceModelInputs.lifecycle` documents."
         },
         "computed": {
           "$ref": "#/definitions/EvidenceComputedModels",
-          "description": "Which of the four optional sub-models below this run actually computed\n-- read this before concluding anything from an absent one (OUT-04)."
+          "description": "Which of the four optional sub-models below this run actually computed: read this before concluding anything from an absent one."
         },
         "dependency": {
           "$ref": "#/definitions/DependencyModel",
-          "description": "Dependency Model, or `undefined` when no usage scan was run -- see `computed.dependency` before reading absence as \"no dependencies.\""
+          "description": "Dependency Model, or `undefined` when no usage scan was run: see `computed.dependency` before reading absence as \"no dependencies.\""
         },
         "ownership": {
           "$ref": "#/definitions/OwnershipModel",
-          "description": "Ownership Model, or `undefined` when none was supplied -- see `computed.ownership`."
+          "description": "Ownership Model, or `undefined` when none was supplied: see `computed.ownership`."
         },
         "finding": {
           "$ref": "#/definitions/FindingModel",
-          "description": "Finding Model, or `undefined` when nothing was supplied -- see `computed.finding` before reading absence as \"no findings.\""
+          "description": "Finding Model, or `undefined` when nothing was supplied. See `computed.finding` before reading absence as \"no findings.\""
         },
         "change": {
           "$ref": "#/definitions/ChangeModel",
-          "description": "Change Model, or `undefined` when no manifest diff was available -- see `computed.change` before reading absence as \"nothing changed.\" Not a diffable input across two `EvidenceModel`s the way the other five project-varying fields conceptually are -- it already IS a diff."
+          "description": "Change Model, or `undefined` when no manifest diff was available. See `computed.change` before reading absence as \"nothing changed.\" It is not a diffable input across two `EvidenceModel`s the way the other five project-varying fields conceptually are: it already IS a diff."
         },
         "flow": {
           "$ref": "#/definitions/FlowModel",
-          "description": "Flow Model, or `undefined` when no flow pass ran -- see `computed.flow` before reading absence as \"no flows.\""
+          "description": "Flow Model, or `undefined` when no flow pass ran: see `computed.flow` before reading absence as \"no flows.\""
         },
         "policy": {
           "$ref": "#/definitions/PolicyModel",
-          "description": "Policy Model, or `undefined` when no rules were evaluated -- see `computed.policy`."
+          "description": "Policy Model, or `undefined` when no rules were evaluated: see `computed.policy`."
         },
         "observation": {
           "$ref": "#/definitions/ObservationModel",
-          "description": "Observation Model, or `undefined` when no observations were ingested -- see `computed.observation` before reading absence as \"nothing was observed.\""
+          "description": "Observation Model, or `undefined` when no observations were ingested. See `computed.observation` before reading absence as \"nothing was observed.\""
         },
         "claims": {
           "$ref": "#/definitions/ClaimsModel",
-          "description": "Claims Model, derived by `buildEvidenceModel` from `flow` (plus `policy` and `observation` when present), never supplied by a caller -- one derivation path, so the claims can never disagree with the facts they cite. `undefined` exactly when `flow` is."
+          "description": "Claims Model, derived by `buildEvidenceModel` from `flow` (plus `policy` and `observation` when present), never supplied by a caller. There is one derivation path, so the claims can never disagree with the facts they cite. `undefined` exactly when `flow` is."
         },
         "runtimeContract": {
           "$ref": "#/definitions/RuntimeContractModel",
-          "description": "Runtime Contract Model -- always populated, package-scoped rather than project-scoped (see this module's own doc comment). A static append, never itself a diffable \"changed since last run\" input."
+          "description": "Runtime Contract Model: always populated, package-scoped rather than project-scoped (see this module's own doc comment). A static append, never itself a diffable \"changed since last run\" input."
         }
       },
       "required": [
@@ -883,7 +883,7 @@
         "toolVersion"
       ],
       "additionalProperties": false,
-      "description": "Who/when/what produced a given `EvidenceModel` instance -- matching env-cap's own `EvidenceProvenance` shape exactly, so a consumer reading both packages' evidence artifacts reads one vocabulary, not two.\n\n`generatedAt`/`toolVersion` are required: every real caller can supply both (the tool version is `data-cap`'s own installed version, read from its `package.json` -- see `package-version.ts`), and a provenance stamp that might be missing either one is a provenance stamp no consumer can rely on. `commit` stays caller-supplied and explicitly `string | undefined` (never omitted from the shape): `data-cap` never shells out to `git` itself, so an absent commit is a stated absence, never a guess -- ADR 0050's \"provenance is caller-supplied, never ambient-detected\" convention, kept exactly where it still applies."
+      "description": "Who/when/what produced a given `EvidenceModel` instance: matching env-cap's own `EvidenceProvenance` shape exactly, so a consumer reading both packages' evidence artifacts reads one vocabulary, not two.\n\n`generatedAt`/`toolVersion` are required: every real caller can supply both. (The tool version is `data-cap`'s own installed version, read from its `package.json`; see `package-version.ts`.) A provenance stamp that might be missing either one is a provenance stamp no consumer can rely on. `commit` stays caller-supplied and explicitly `string | undefined` (never omitted from the shape). `data-cap` never shells out to `git` itself, so an absent commit is a stated absence, never a guess. This is ADR 0050's \"provenance is caller-supplied, never ambient-detected\" convention, kept exactly where it still applies."
     },
     "CapabilityInventory": {
       "type": "object",
@@ -905,7 +905,7 @@
           "items": {
             "$ref": "#/definitions/ParseWarning"
           },
-          "description": "Parse/link warnings carried through from the discovery/linking pass that produced this inventory, each `file` root-relative like every other path this model publishes (OUT-01)."
+          "description": "Parse/link warnings carried through from the discovery/linking pass that produced this inventory, each `file` root-relative like every other path this model publishes."
         }
       },
       "required": [
@@ -914,14 +914,14 @@
         "warnings"
       ],
       "additionalProperties": false,
-      "description": "The one authoritative model every report generator reads from -- see `buildInventory`. This type IS `data-cap`'s Capability Model (ADR 0050), not a separate thing that produces one: `CAPABILITY_MODEL_SCHEMA_VERSION` above versions this exact interface. ADR 0050 deliberately kept the `CapabilityInventory`/`buildInventory` names rather than introducing a `CapabilityModel`/`buildCapabilityModel` wrapper, since this type was already the intended public model before that ADR existed -- a rename would duplicate an already-correct, already-public shape for no gain. A canonical, versioned, JSON-serializable projection of every discovered capability's fields and operations, active or not."
+      "description": "The one authoritative model every report generator reads from: see `buildInventory`. This type IS `data-cap`'s Capability Model (ADR 0050), not a separate thing that produces one: `CAPABILITY_MODEL_SCHEMA_VERSION` above versions this exact interface. ADR 0050 kept the `CapabilityInventory` and `buildInventory` names rather than add a `CapabilityModel` wrapper. This type was already the public model, so a rename would only duplicate it. A canonical, versioned, JSON-serializable projection of every discovered capability's fields and operations, active or not."
     },
     "CapabilityNode": {
       "type": "object",
       "properties": {
         "file": {
           "type": "string",
-          "description": "Root-relative POSIX path of the file declaring this capability -- the one place an absolute discovery path is converted for publication (OUT-01, see `display-path.ts`). Every downstream model that carries a capability's `file` (Ownership, Finding, Dependency, Manifest Snapshot) copies this value rather than re-deriving it, so there is exactly one conversion point. Re-derive a real path with `absolutePathFrom(root, file)` when actual filesystem/import work needs one."
+          "description": "Root-relative POSIX path of the file declaring this capability: the one place an absolute discovery path is converted for publication (see `display-path.ts`). Every downstream model that carries a capability's `file` (Ownership, Finding, Dependency, Manifest Snapshot) copies this value rather than re-deriving it, so there is exactly one conversion point. Re-derive a real path with `absolutePathFrom(root, file)` when actual filesystem/import work needs one."
         },
         "exportName": {
           "type": "string",
@@ -933,11 +933,11 @@
             "buildData",
             "createData"
           ],
-          "description": "`\"buildData\"` or `\"createData\"` -- which call form declared this capability."
+          "description": "`\"buildData\"` or `\"createData\"`: which call form declared this capability."
         },
         "docs": {
           "$ref": "#/definitions/LooseCapabilityDocs",
-          "description": "This capability's own declared documentation, if any -- the single path for `owner`/`sensitivity`/`purpose`/`legalBasis`/`dataResidency`/`auditRequired` (ADR 0057): a capability has nothing above it to resolve against, so a separate top-level \"resolved\" property would only ever duplicate `docs.X` verbatim."
+          "description": "This capability's own declared documentation, if any. It is the single path for `owner`, `sensitivity`, `purpose`, `legalBasis`, `dataResidency` and `auditRequired` (ADR 0057). A capability has nothing above it to resolve against, so a separate \"resolved\" property would only copy `docs.X`."
         },
         "active": {
           "type": "boolean",
@@ -949,7 +949,7 @@
         },
         "declarationPosition": {
           "$ref": "#/definitions/SourcePosition",
-          "description": "Position of this capability's own `buildData`/`createData` call site -- always available (ADR 0052)."
+          "description": "Position of this capability's own `buildData`/`createData` call site: always available (ADR 0052)."
         },
         "fields": {
           "type": "array",
@@ -1036,7 +1036,7 @@
         },
         "name": {
           "type": "string",
-          "description": "Display name -- falls back to the export/binding name when omitted."
+          "description": "Display name: falls back to the export/binding name when omitted."
         },
         "description": {
           "type": "string",
@@ -1048,7 +1048,7 @@
         },
         "category": {
           "type": "string",
-          "description": "Free-form classification -- never validated."
+          "description": "Free-form classification: never validated."
         },
         "exclusiveGroup": {
           "type": "string",
@@ -1060,23 +1060,23 @@
         },
         "sensitivity": {
           "type": "string",
-          "description": "Data classification. Standard vocabulary: `\"public\"` / `\"internal\"` / `\"confidential\"` / `\"restricted\"` (ascending) -- custom values are allowed but flagged as non-standard, never blocking."
+          "description": "Data classification. Standard vocabulary: `\"public\"` / `\"internal\"` / `\"confidential\"` / `\"restricted\"` (ascending); custom values are allowed but flagged as non-standard, never blocking."
         },
         "protections": {
           "type": "string",
-          "description": "Documented safeguard -- presence only, never an adequacy claim."
+          "description": "Documented safeguard: presence only, never an adequacy claim."
         },
         "retention": {
           "type": "string",
-          "description": "Documented retention policy -- presence only, never an enforcement claim."
+          "description": "Documented retention policy: presence only, never an enforcement claim."
         },
         "purpose": {
           "type": "string",
-          "description": "The declared reason this capability's data is collected/retained. Declared only -- data-cap never verifies the stated purpose matches actual usage. A field's own `purpose` (see `FieldDocs`) overrides this for that field specifically."
+          "description": "The declared reason this capability's data is collected or retained. Declared only: data-cap never verifies the stated purpose matches actual usage. A field's own `purpose` (see `FieldDocs`) overrides this for that field specifically."
         },
         "legalBasis": {
           "type": "string",
-          "description": "The declared legal basis asserted for processing this capability's data (e.g. `\"consent\"`, `\"contract\"`, `\"legitimate interest\"`). Records that a basis was declared -- never that data-cap has determined the basis is legally valid; data-cap records declared governance facts, it does not determine whether those facts satisfy a law. A field's own `legalBasis` overrides this for that field specifically."
+          "description": "The declared legal basis asserted for processing this capability's data (e.g. `\"consent\"`, `\"contract\"`, `\"legitimate interest\"`). Records that a basis was declared, never that data-cap has determined the basis is legally valid. It records declared governance facts; data-cap does not determine whether those facts satisfy a law. A field's own `legalBasis` overrides this for that field specifically."
         },
         "dataResidency": {
           "anyOf": [
@@ -1090,11 +1090,11 @@
               }
             }
           ],
-          "description": "The declared jurisdiction(s) this capability's data is permitted/ expected to be *stored* in -- a policy constraint, not an observed fact, not a processing-location claim, not a data-subject-location claim. A field's own `dataResidency` overrides this for that field specifically."
+          "description": "The declared jurisdiction(s) this capability's data is permitted or expected to be *stored* in. It is a policy constraint, not an observed fact, a processing-location claim or a data-subject-location claim. A field's own `dataResidency` overrides this for that field specifically."
         },
         "transferSafeguard": {
           "type": "string",
-          "description": "The declared safeguard relied on for any transfer of this capability's data out of `dataResidency`'s own jurisdiction(s) -- paired conceptually with `dataResidency`, same presence-only discipline. A field's own `transferSafeguard` (see `FieldDocs`) overrides this for that field specifically."
+          "description": "The declared safeguard relied on for any transfer of this capability's data out of `dataResidency`'s own jurisdiction(s): paired conceptually with `dataResidency`, same presence-only discipline. A field's own `transferSafeguard` (see `FieldDocs`) overrides this for that field specifically."
         },
         "auditRequired": {
           "type": "boolean",
@@ -1102,7 +1102,7 @@
         },
         "expiresAt": {
           "type": "string",
-          "description": "When this capability's data (or the credential/source behind it) is declared to stop being valid, as an ISO-8601 date. A field's own `expiresAt` (see `FieldDocs`) overrides this for that field specifically. Declared only -- nothing expires at runtime."
+          "description": "When this capability's data (or the credential/source behind it) is declared to stop being valid, as an ISO-8601 date. A field's own `expiresAt` (see `FieldDocs`) overrides this for that field specifically. Declared only: nothing expires at runtime."
         },
         "deprecated": {
           "type": "boolean",
@@ -1115,7 +1115,7 @@
         "metadata": {
           "type": "object",
           "additionalProperties": {},
-          "description": "Free-form extension bag for anything data-cap itself has no named concept for -- opaque, never inspected or validated by any code path in this package (e.g. jurisdiction-specific regulatory classification: `{ regulatory: \"GDPR,PCI-DSS\" }`). Once a concept matters enough for data-cap to reason about, it gets its own named field above (as `purpose`/`legalBasis`/`dataResidency`/`transferSafeguard`/`auditRequired` did); everything else stays here."
+          "description": "Free-form extension bag for anything data-cap itself has no named concept for. It is opaque: no code path in this package inspects or validates it. An example is a jurisdiction-specific regulatory classification such as `{ regulatory: \"GDPR,PCI-DSS\" }`. Once a concept matters enough for data-cap to reason about, it gets its own named field above, as `purpose`, `legalBasis`, `dataResidency`, `transferSafeguard` and `auditRequired` did. Everything else stays here."
         },
         "flowPolicy": {
           "type": "array",
@@ -1147,15 +1147,15 @@
         },
         "retention": {
           "type": "string",
-          "description": "Documented retention policy for this field -- presence only, never an enforcement claim."
+          "description": "Documented retention policy for this field: presence only, never an enforcement claim."
         },
         "purpose": {
           "type": "string",
-          "description": "The declared reason this field's data is collected/retained. Declared only -- data-cap never verifies the stated purpose matches actual usage. Overrides the capability's own `purpose` for this field specifically."
+          "description": "The declared reason this field's data is collected/retained. Declared only: data-cap never verifies the stated purpose matches actual usage. Overrides the capability's own `purpose` for this field specifically."
         },
         "legalBasis": {
           "type": "string",
-          "description": "The declared legal basis asserted for processing this field (e.g. `\"consent\"`, `\"contract\"`, `\"legitimate interest\"`). Records that a basis was declared -- never that data-cap has determined the basis is legally valid. Overrides the capability's own `legalBasis` for this field specifically."
+          "description": "The declared legal basis asserted for processing this field (e.g. `\"consent\"`, `\"contract\"`, `\"legitimate interest\"`). Records that a basis was declared: never that data-cap has determined the basis is legally valid. Overrides the capability's own `legalBasis` for this field specifically."
         },
         "dataResidency": {
           "anyOf": [
@@ -1169,11 +1169,11 @@
               }
             }
           ],
-          "description": "The declared jurisdiction(s) this field's data is permitted/expected to be *stored* in -- a policy constraint, not an observed fact, not a processing-location claim, not a data-subject-location claim. Overrides the capability's own `dataResidency` for this field specifically."
+          "description": "The declared jurisdiction(s) this field's data is permitted or expected to be *stored* in. It is a policy constraint, not an observed fact, a processing-location claim or a data-subject-location claim. Overrides the capability's own `dataResidency` for this field specifically."
         },
         "transferSafeguard": {
           "type": "string",
-          "description": "The declared safeguard relied on for any transfer of this field's data out of `dataResidency`'s own jurisdiction(s) (e.g. `\"EU Standard Contractual Clauses\"`, `\"adequacy decision\"`) -- paired conceptually with `dataResidency` (which states where data is permitted to be\n*stored*; this states what protects a transfer *out of* that jurisdiction), same presence-only discipline as every other field here. Declared only -- data-cap never verifies a transfer actually occurred or that the named safeguard is legally adequate. Overrides the capability's own `transferSafeguard` for this field specifically. See `specs/decisions/0067-ropa-fields-recipient-categories-never-inferred.md`."
+          "description": "The declared safeguard relied on for any transfer of this field's data out of `dataResidency`'s jurisdictions, such as `\"EU Standard Contractual Clauses\"` or `\"adequacy decision\"`. `dataResidency` states where data may be *stored*; this states what protects a transfer *out of* that jurisdiction. Declared only: data-cap never verifies a transfer actually occurred or that the named safeguard is legally adequate. Overrides the capability's own `transferSafeguard` for this field specifically. See `specs/decisions/0067-ropa-fields-recipient-categories-never-inferred.md`."
         },
         "auditRequired": {
           "type": "boolean",
@@ -1181,22 +1181,22 @@
         },
         "dataSubjectCategory": {
           "type": "string",
-          "description": "The declared category of data subject this field's data concerns (e.g. `\"customers\"`, `\"employees\"`, `\"minors\"`). Declared only -- data-cap never verifies who a field's actual data subjects are. Field-level only: unlike `owner`/`sensitivity`/`purpose`/etc., this has no capability-level counterpart to override -- which data subjects a field concerns is a fact about that field's own data, not something a whole capability can meaningfully state once for every field under it."
+          "description": "The declared category of data subject this field's data concerns (e.g. `\"customers\"`, `\"employees\"`, `\"minors\"`). Declared only: data-cap never verifies who a field's actual data subjects are. Field-level only, with no capability-level counterpart to override. Which data subjects a field concerns is a fact about that field's own data, not one a capability can state for every field."
         },
         "recipientCategories": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "The declared categories of recipient this field's data has been or will be disclosed to (e.g. `\"payment processor\"`, `\"tax authority\"`, `\"internal support staff\"`). Always explicitly authored -- data-cap never infers a recipient category from its own dependency graph (a proven *consumer* relationship inside this codebase is a categorically different fact from a declared *external recipient*, and conflating the two would misrepresent both). Field-level only, for the same reason as `dataSubjectCategory`. See `specs/decisions/0067-ropa-fields-recipient-categories-never-inferred.md` for the full reasoning on why this is never derived."
+          "description": "The declared categories of recipient this field's data has been or will be disclosed to (e.g. `\"payment processor\"`, `\"tax authority\"`, `\"internal support staff\"`). Always explicitly authored: data-cap never infers a recipient category from its own dependency graph. A proven *consumer* inside this codebase is a different fact from a declared *external recipient*, and conflating them would misrepresent both. Field-level only, for the same reason as `dataSubjectCategory`. See `specs/decisions/0067-ropa-fields-recipient-categories-never-inferred.md` for the full reasoning on why this is never derived."
         },
         "expiresAt": {
           "type": "string",
-          "description": "When this field's data (or the credential/source behind it) is declared to stop being valid, as an ISO-8601 date (`\"2026-12-31\"`). Declared only: nothing expires anything at runtime, and `data-cap` never fetches a real expiry from a provider. Build tooling reads it to report what is expiring soon (see the Lifecycle Model) -- a date that has already passed is reported as expired, never acted on."
+          "description": "When this field's data (or the credential/source behind it) is declared to stop being valid, as an ISO-8601 date (`\"2026-12-31\"`). Declared only: nothing expires anything at runtime, and `data-cap` never fetches a real expiry from a provider. Build tooling reads it to report what is expiring soon (see the Lifecycle Model). A date that has already passed is reported as expired, never acted on."
         },
         "deprecated": {
           "type": "boolean",
-          "description": "Whether this field is documented as deprecated. Presence-only, same discipline as every other declared fact here -- nothing warns at runtime."
+          "description": "Whether this field is documented as deprecated. Presence-only, same discipline as every other declared fact here: nothing warns at runtime."
         },
         "deprecatedReason": {
           "type": "string",
@@ -1204,20 +1204,20 @@
         },
         "removeBy": {
           "type": "string",
-          "description": "The date by which a deprecated field is intended to be removed, ISO-8601. Field-level only: a removal deadline is about one specific field's own migration, and a capability-wide `removeBy` would say nothing about which of its fields still need work."
+          "description": "The date by which a deprecated field is intended to be removed, ISO-8601. Field-level only: a removal deadline is about one field's own migration. A capability-wide `removeBy` would say nothing about which of its fields still need work."
         },
         "renamedFrom": {
           "type": "string",
-          "description": "The previous name of this field, when it was renamed. Field-level only, for the same reason as `removeBy`. Build tooling uses this to correlate an added-field/removed-field pair across two runs into one rename rather than reporting an unrelated addition and deletion -- see `ChangeModel`'s `renamedFields`. Only ever populated from an *authored* value, never guessed from name similarity."
+          "description": "The previous name of this field, when it was renamed. Field-level only, for the same reason as `removeBy`. Build tooling uses it to read an added field and a removed field across two runs as one rename. Without it they are an unrelated addition and deletion (see `ChangeModel`'s `renamedFields`). Only ever populated from an *authored* value, never guessed from name similarity."
         },
         "metadata": {
           "type": "object",
           "additionalProperties": {},
-          "description": "Free-form extension bag for anything data-cap itself has no named concept for -- opaque, never inspected or validated by any code path in this package. Once a concept matters enough for data-cap to reason about, it gets its own named field above; everything else stays here."
+          "description": "Free-form extension bag for anything data-cap itself has no named concept for: opaque, never inspected or validated by any code path in this package. Once a concept matters enough for data-cap to reason about, it gets its own named field above; everything else stays here."
         }
       },
       "additionalProperties": false,
-      "description": "Every property here is always assigned (never conditionally omitted -- see extractCapabilityDocs()/extractOperationDocsMap()/ extractEvidenceFieldsMap() below), just sometimes with an `undefined` value when the AST literal didn't declare it. exactOptionalPropertyTypes distinguishes \"key absent\" from \"key present holding undefined\"; widening every property to explicitly include `| undefined` (rather than routing every assignment through a conditional-spread \"omit if absent\" instead) matches what this type actually represents: a raw, unconstrained parse result, not a validated CapabilityDocs."
+      "description": "Every property here is always assigned (never conditionally omitted: see extractCapabilityDocs()/extractOperationDocsMap()/ extractEvidenceFieldsMap() below). Some are assigned an `undefined` value when the AST literal didn't declare it. exactOptionalPropertyTypes distinguishes \"key absent\" from \"key present holding undefined\". This type widens every property to explicitly include `| undefined` (rather than routing every assignment through a conditional-spread \"omit if absent\" instead). That matches what this type actually represents: a raw, unconstrained parse result, not a validated CapabilityDocs."
     },
     "Loosen<OperationDocs>": {
       "type": "object",
@@ -1232,7 +1232,7 @@
         },
         "credentials": {
           "type": "string",
-          "description": "What's required to call this operation -- descriptive only, never an authorization/enforcement claim."
+          "description": "What's required to call this operation: descriptive only, never an authorization/enforcement claim."
         },
         "response": {
           "type": "string",
@@ -1243,12 +1243,12 @@
           "items": {
             "$ref": "#/definitions/DataFlowEndpoint"
           },
-          "description": "Declared data-flow boundaries this operation crosses -- see `DataFlowEndpoint`."
+          "description": "Declared data-flow boundaries this operation crosses: see `DataFlowEndpoint`."
         },
         "metadata": {
           "type": "object",
           "additionalProperties": {},
-          "description": "Free-form extension bag for anything data-cap itself has no named concept for -- opaque, never inspected or validated by any code path in this package. The index signature below remains for the same reason it always has (documenting never fights the type checker); `metadata` is the recommended place for new extension data going forward."
+          "description": "Free-form extension bag for anything data-cap itself has no named concept for: opaque, never inspected or validated by any code path in this package. The index signature below stays so documenting never fights the type checker. `metadata` is the recommended place for new extension data."
         }
       },
       "additionalProperties": {
@@ -1259,7 +1259,7 @@
           }
         ]
       },
-      "description": "Every property here is always assigned (never conditionally omitted -- see extractCapabilityDocs()/extractOperationDocsMap()/ extractEvidenceFieldsMap() below), just sometimes with an `undefined` value when the AST literal didn't declare it. exactOptionalPropertyTypes distinguishes \"key absent\" from \"key present holding undefined\"; widening every property to explicitly include `| undefined` (rather than routing every assignment through a conditional-spread \"omit if absent\" instead) matches what this type actually represents: a raw, unconstrained parse result, not a validated CapabilityDocs."
+      "description": "Every property here is always assigned (never conditionally omitted: see extractCapabilityDocs()/extractOperationDocsMap()/ extractEvidenceFieldsMap() below). Some are assigned an `undefined` value when the AST literal didn't declare it. exactOptionalPropertyTypes distinguishes \"key absent\" from \"key present holding undefined\". This type widens every property to explicitly include `| undefined` (rather than routing every assignment through a conditional-spread \"omit if absent\" instead). That matches what this type actually represents: a raw, unconstrained parse result, not a validated CapabilityDocs."
     },
     "DataFlowEndpoint": {
       "type": "object",
@@ -1274,15 +1274,15 @@
         },
         "name": {
           "type": "string",
-          "description": "Short identifier, e.g. \"stripe-api\", \"postgres:users\" -- a semantic label, not a sentence."
+          "description": "Short identifier, e.g. \"stripe-api\", \"postgres:users\"; a semantic label, not a sentence."
         },
         "url": {
           "type": "string",
-          "description": "A literal, trackable location for this endpoint -- a URL, a route path, a `table:column` reference. Distinct from `name` (a short label): this is meant to be compared/matched across capabilities (e.g. flagging two capabilities that declare the same URL as likely-duplicate fetches), not just read by a person."
+          "description": "A literal, trackable location for this endpoint: a URL, a route path, a `table:column` reference. Unlike `name` (a short label), it is compared and matched across capabilities, not only read by a person. For example, two capabilities that declare the same URL are flagged as likely duplicate fetches."
         },
         "handling": {
           "$ref": "#/definitions/FlowHandling",
-          "description": "The declared data-safety state of this field's value AT this specific boundary crossing -- e.g. a field that arrives `\"encrypted\"` on an `\"input\"` endpoint and is sent back out `\"redacted\"` on an `\"output\"` endpoint. Declared only, same presence-only discipline as every other field in this vocabulary: this records what a developer states about handling at this crossing, never that data-cap has verified the field's actual runtime value matches the claim."
+          "description": "The declared data-safety state of this field's value AT this specific boundary crossing. For example, a field can arrive `\"encrypted\"` on an `\"input\"` endpoint and leave `\"redacted\"` on an `\"output\"` endpoint. Declared only, like every other field in this vocabulary. It records what a developer states about handling at this crossing, never that data-cap verified the runtime value matches it."
         }
       },
       "required": [
@@ -1291,7 +1291,7 @@
         "name"
       ],
       "additionalProperties": false,
-      "description": "One declared data-flow boundary an operation crosses. A getter/ subscription's endpoints are typically `\"input\"` (where `execute`/ `subscribe` acquires data from); a mutator's are typically `\"output\"` (where it sends data to) -- nothing enforces the typical case, since this is documentation, not a runtime contract."
+      "description": "One declared data-flow boundary an operation crosses. A getter's or subscription's endpoints are typically `\"input\"`: where `execute` or `subscribe` acquires data from. A mutator's are typically `\"output\"`: where it sends data to. Nothing enforces the typical case, since this is documentation, not a runtime contract."
     },
     "DataFlowDirection": {
       "type": "string",
@@ -1299,7 +1299,7 @@
         "input",
         "output"
       ],
-      "description": "Which direction data moves across a declared boundary, and what kind of boundary it is. Author-declared documentation only -- never statically verified against an operation's actual `execute`/`subscribe` body (those stay opaque per `AGENTS.md` invariant 6). A report may never present an endpoint as a proven fact; see `AGENTS.md`'s declared-vs-proven invariant."
+      "description": "Which direction data moves across a declared boundary, and what kind of boundary it is. Author-declared documentation only: never statically verified against an operation's actual `execute`/`subscribe` body (those stay opaque per `AGENTS.md` invariant 6). A report may never present an endpoint as a proven fact; see `AGENTS.md`'s declared-vs-proven invariant."
     },
     "DataFlowEndpointKind": {
       "type": "string",
@@ -1314,7 +1314,7 @@
         "computed",
         "internal"
       ],
-      "description": "What kind of boundary a declared data-flow endpoint crosses -- a data store (`database`/`cache`/`storage`/`queue`), an external entity (`api`/`external-service`/`user-input`), or something internal to this codebase (`computed`/`internal`)."
+      "description": "What kind of boundary a declared data-flow endpoint crosses: a data store (`database`/`cache`/`storage`/`queue`), an external entity (`api`/`external-service`/`user-input`), or something internal to this codebase (`computed`/`internal`)."
     },
     "FlowHandling": {
       "type": "string",
@@ -1325,7 +1325,7 @@
         "hashed",
         "encrypted"
       ],
-      "description": "The declared data-safety state of a value at a boundary crossing -- the vocabulary of `DataFlowEndpoint.handling` and of flow policy rules."
+      "description": "The declared data-safety state of a value at a boundary crossing: the vocabulary of `DataFlowEndpoint.handling` and of flow policy rules."
     },
     "Loosen<EvidenceFieldDocs>": {
       "type": "object",
@@ -1335,11 +1335,11 @@
           "items": {
             "type": "string"
           },
-          "description": "Citations of where this field is accessed in a way static analysis can't see on its own (e.g. a truly dynamic key derived at runtime), each `\"<relative-path>:<line>:<column>\"`. Re-verified every run: a citation whose file no longer exists, or whose cited line has visibly changed since the citation was written, is downgraded and flagged, never trusted forever."
+          "description": "Citations of where this field is accessed in a way static analysis can't see on its own, such as a dynamic key derived at runtime. Each is `\"<relative-path>:<line>:<column>\"`. Every run re-verifies them. A citation whose file no longer exists, or whose cited line has visibly changed since it was written, is downgraded and flagged, never trusted forever."
         }
       },
       "additionalProperties": false,
-      "description": "Every property here is always assigned (never conditionally omitted -- see extractCapabilityDocs()/extractOperationDocsMap()/ extractEvidenceFieldsMap() below), just sometimes with an `undefined` value when the AST literal didn't declare it. exactOptionalPropertyTypes distinguishes \"key absent\" from \"key present holding undefined\"; widening every property to explicitly include `| undefined` (rather than routing every assignment through a conditional-spread \"omit if absent\" instead) matches what this type actually represents: a raw, unconstrained parse result, not a validated CapabilityDocs."
+      "description": "Every property here is always assigned (never conditionally omitted: see extractCapabilityDocs()/extractOperationDocsMap()/ extractEvidenceFieldsMap() below). Some are assigned an `undefined` value when the AST literal didn't declare it. exactOptionalPropertyTypes distinguishes \"key absent\" from \"key present holding undefined\". This type widens every property to explicitly include `| undefined` (rather than routing every assignment through a conditional-spread \"omit if absent\" instead). That matches what this type actually represents: a raw, unconstrained parse result, not a validated CapabilityDocs."
     },
     "FlowPolicyDocs": {
       "type": "object",
@@ -1390,7 +1390,7 @@
         "appliesTo"
       ],
       "additionalProperties": false,
-      "description": "One declared data-flow rule: which of this capability's fields it governs, and what must hold wherever their data goes. Evaluated against the Flow Model at build time; a rule is a declaration, never a runtime check, and a result is only as complete as the analysis behind it (see the Policy Model's `indeterminate` outcome). At least one of `forbidDestinations`, `allowedDestinations` and `requireHandling` is required."
+      "description": "One declared data-flow rule: which of this capability's fields it governs, and what must hold wherever their data goes. Evaluated against the Flow Model at build time. A rule is a declaration, never a runtime check. A result is only as complete as the analysis behind it (see the Policy Model's `indeterminate` outcome). At least one of `forbidDestinations`, `allowedDestinations` and `requireHandling` is required."
     },
     "FlowPolicyAppliesToDocs": {
       "type": "object",
@@ -1442,7 +1442,7 @@
         },
         "docs": {
           "$ref": "#/definitions/FieldDocs",
-          "description": "This field's own declared documentation, if any -- `description`/`protections`/`retention`/`metadata` have no resolution concept and live only here; for the six governed properties below, prefer `.value`/`.declaredOn` over reading this object directly (ADR 0057)."
+          "description": "This field's own declared documentation, if any: `description`/`protections`/`retention`/`metadata` have no resolution concept and live only here; for the six governed properties below, prefer `.value`/`.declaredOn` over reading this object directly (ADR 0057)."
         },
         "owner": {
           "$ref": "#/definitions/ResolvedGovernanceValue%3Cstring%3E",
@@ -1450,23 +1450,23 @@
         },
         "sensitivity": {
           "$ref": "#/definitions/ResolvedGovernanceValue%3Cstring%3E",
-          "description": "Resolved: the field's own `docs.sensitivity`, else the capability's `sensitivity` -- same inheritance rule as `owner` (ADR 0049, ADR 0050, ADR 0057)."
+          "description": "Resolved: the field's own `docs.sensitivity`, else the capability's `sensitivity`; same inheritance rule as `owner` (ADR 0049, ADR 0050, ADR 0057)."
         },
         "purpose": {
           "$ref": "#/definitions/ResolvedGovernanceValue%3Cstring%3E",
-          "description": "Resolved: the field's own `docs.purpose`, else the capability's `purpose` -- same inheritance rule as `owner`/`sensitivity` (ADR 0051, ADR 0057). Declared only, never verified."
+          "description": "Resolved: the field's own `docs.purpose`, else the capability's `purpose`; same inheritance rule as `owner`/`sensitivity` (ADR 0051, ADR 0057). Declared only, never verified."
         },
         "legalBasis": {
           "$ref": "#/definitions/ResolvedGovernanceValue%3Cstring%3E",
-          "description": "Resolved: the field's own `docs.legalBasis`, else the capability's `legalBasis` -- same inheritance rule. A declared fact, never a legal determination (ADR 0051, ADR 0057)."
+          "description": "Resolved: the field's own `docs.legalBasis`, else the capability's `legalBasis`; same inheritance rule. A declared fact, never a legal determination (ADR 0051, ADR 0057)."
         },
         "dataResidency": {
           "$ref": "#/definitions/ResolvedGovernanceValue%3C(string%7Cstring%5B%5D)%3E",
-          "description": "Resolved: the field's own `docs.dataResidency`, else the capability's `dataResidency` -- same inheritance rule. The declared permitted-storage jurisdiction(s), not an observed fact (ADR 0051, ADR 0057)."
+          "description": "Resolved: the field's own `docs.dataResidency`, else the capability's `dataResidency`; same inheritance rule. The declared permitted-storage jurisdiction(s), not an observed fact (ADR 0051, ADR 0057)."
         },
         "auditRequired": {
           "$ref": "#/definitions/ResolvedGovernanceValue%3Cboolean%3E",
-          "description": "Resolved: the field's own `docs.auditRequired`, else the capability's `auditRequired` -- same inheritance rule (ADR 0051, ADR 0057)."
+          "description": "Resolved: the field's own `docs.auditRequired`, else the capability's `auditRequired`; same inheritance rule (ADR 0051, ADR 0057)."
         },
         "writtenBy": {
           "type": "array",
@@ -1496,11 +1496,11 @@
           "description": "Every getter/mutator/subscription whose statically-extracted `writes` shape claims this field."
         },
         "shape": {
-          "description": "The field's literal-evaluated declared default -- structural comparison only (e.g. `structural-duplication.ts`), never a runtime value."
+          "description": "The field's literal-evaluated declared default: structural comparison only (e.g. `structural-duplication.ts`), never a runtime value."
         },
         "declarationPosition": {
           "$ref": "#/definitions/SourcePosition",
-          "description": "Position of this field's own key in the `fields` object literal -- only when `fields` was resolved as an inline literal in this file; `undefined` when identifier-resolved across a file boundary this pass doesn't retain AST access to (never guessed at -- ADR 0052)."
+          "description": "Position of this field's own key in the `fields` object literal. Set only when `fields` was resolved as an inline literal in this file. It is `undefined` when identifier-resolved across a file boundary this pass doesn't retain AST access to (never guessed at; ADR 0052)."
         }
       },
       "required": [
@@ -1538,15 +1538,15 @@
         },
         "retention": {
           "type": "string",
-          "description": "Documented retention policy for this field -- presence only, never an enforcement claim."
+          "description": "Documented retention policy for this field: presence only, never an enforcement claim."
         },
         "purpose": {
           "type": "string",
-          "description": "The declared reason this field's data is collected/retained. Declared only -- data-cap never verifies the stated purpose matches actual usage. Overrides the capability's own `purpose` for this field specifically."
+          "description": "The declared reason this field's data is collected/retained. Declared only: data-cap never verifies the stated purpose matches actual usage. Overrides the capability's own `purpose` for this field specifically."
         },
         "legalBasis": {
           "type": "string",
-          "description": "The declared legal basis asserted for processing this field (e.g. `\"consent\"`, `\"contract\"`, `\"legitimate interest\"`). Records that a basis was declared -- never that data-cap has determined the basis is legally valid. Overrides the capability's own `legalBasis` for this field specifically."
+          "description": "The declared legal basis asserted for processing this field (e.g. `\"consent\"`, `\"contract\"`, `\"legitimate interest\"`). Records that a basis was declared: never that data-cap has determined the basis is legally valid. Overrides the capability's own `legalBasis` for this field specifically."
         },
         "dataResidency": {
           "anyOf": [
@@ -1560,11 +1560,11 @@
               }
             }
           ],
-          "description": "The declared jurisdiction(s) this field's data is permitted/expected to be *stored* in -- a policy constraint, not an observed fact, not a processing-location claim, not a data-subject-location claim. Overrides the capability's own `dataResidency` for this field specifically."
+          "description": "The declared jurisdiction(s) this field's data is permitted or expected to be *stored* in. It is a policy constraint, not an observed fact, a processing-location claim or a data-subject-location claim. Overrides the capability's own `dataResidency` for this field specifically."
         },
         "transferSafeguard": {
           "type": "string",
-          "description": "The declared safeguard relied on for any transfer of this field's data out of `dataResidency`'s own jurisdiction(s) (e.g. `\"EU Standard Contractual Clauses\"`, `\"adequacy decision\"`) -- paired conceptually with `dataResidency` (which states where data is permitted to be\n*stored*; this states what protects a transfer *out of* that jurisdiction), same presence-only discipline as every other field here. Declared only -- data-cap never verifies a transfer actually occurred or that the named safeguard is legally adequate. Overrides the capability's own `transferSafeguard` for this field specifically. See `specs/decisions/0067-ropa-fields-recipient-categories-never-inferred.md`."
+          "description": "The declared safeguard relied on for any transfer of this field's data out of `dataResidency`'s jurisdictions, such as `\"EU Standard Contractual Clauses\"` or `\"adequacy decision\"`. `dataResidency` states where data may be *stored*; this states what protects a transfer *out of* that jurisdiction. Declared only: data-cap never verifies a transfer actually occurred or that the named safeguard is legally adequate. Overrides the capability's own `transferSafeguard` for this field specifically. See `specs/decisions/0067-ropa-fields-recipient-categories-never-inferred.md`."
         },
         "auditRequired": {
           "type": "boolean",
@@ -1572,22 +1572,22 @@
         },
         "dataSubjectCategory": {
           "type": "string",
-          "description": "The declared category of data subject this field's data concerns (e.g. `\"customers\"`, `\"employees\"`, `\"minors\"`). Declared only -- data-cap never verifies who a field's actual data subjects are. Field-level only: unlike `owner`/`sensitivity`/`purpose`/etc., this has no capability-level counterpart to override -- which data subjects a field concerns is a fact about that field's own data, not something a whole capability can meaningfully state once for every field under it."
+          "description": "The declared category of data subject this field's data concerns (e.g. `\"customers\"`, `\"employees\"`, `\"minors\"`). Declared only: data-cap never verifies who a field's actual data subjects are. Field-level only, with no capability-level counterpart to override. Which data subjects a field concerns is a fact about that field's own data, not one a capability can state for every field."
         },
         "recipientCategories": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "The declared categories of recipient this field's data has been or will be disclosed to (e.g. `\"payment processor\"`, `\"tax authority\"`, `\"internal support staff\"`). Always explicitly authored -- data-cap never infers a recipient category from its own dependency graph (a proven *consumer* relationship inside this codebase is a categorically different fact from a declared *external recipient*, and conflating the two would misrepresent both). Field-level only, for the same reason as `dataSubjectCategory`. See `specs/decisions/0067-ropa-fields-recipient-categories-never-inferred.md` for the full reasoning on why this is never derived."
+          "description": "The declared categories of recipient this field's data has been or will be disclosed to (e.g. `\"payment processor\"`, `\"tax authority\"`, `\"internal support staff\"`). Always explicitly authored: data-cap never infers a recipient category from its own dependency graph. A proven *consumer* inside this codebase is a different fact from a declared *external recipient*, and conflating them would misrepresent both. Field-level only, for the same reason as `dataSubjectCategory`. See `specs/decisions/0067-ropa-fields-recipient-categories-never-inferred.md` for the full reasoning on why this is never derived."
         },
         "expiresAt": {
           "type": "string",
-          "description": "When this field's data (or the credential/source behind it) is declared to stop being valid, as an ISO-8601 date (`\"2026-12-31\"`). Declared only: nothing expires anything at runtime, and `data-cap` never fetches a real expiry from a provider. Build tooling reads it to report what is expiring soon (see the Lifecycle Model) -- a date that has already passed is reported as expired, never acted on."
+          "description": "When this field's data (or the credential/source behind it) is declared to stop being valid, as an ISO-8601 date (`\"2026-12-31\"`). Declared only: nothing expires anything at runtime, and `data-cap` never fetches a real expiry from a provider. Build tooling reads it to report what is expiring soon (see the Lifecycle Model). A date that has already passed is reported as expired, never acted on."
         },
         "deprecated": {
           "type": "boolean",
-          "description": "Whether this field is documented as deprecated. Presence-only, same discipline as every other declared fact here -- nothing warns at runtime."
+          "description": "Whether this field is documented as deprecated. Presence-only, same discipline as every other declared fact here: nothing warns at runtime."
         },
         "deprecatedReason": {
           "type": "string",
@@ -1595,20 +1595,20 @@
         },
         "removeBy": {
           "type": "string",
-          "description": "The date by which a deprecated field is intended to be removed, ISO-8601. Field-level only: a removal deadline is about one specific field's own migration, and a capability-wide `removeBy` would say nothing about which of its fields still need work."
+          "description": "The date by which a deprecated field is intended to be removed, ISO-8601. Field-level only: a removal deadline is about one field's own migration. A capability-wide `removeBy` would say nothing about which of its fields still need work."
         },
         "renamedFrom": {
           "type": "string",
-          "description": "The previous name of this field, when it was renamed. Field-level only, for the same reason as `removeBy`. Build tooling uses this to correlate an added-field/removed-field pair across two runs into one rename rather than reporting an unrelated addition and deletion -- see `ChangeModel`'s `renamedFields`. Only ever populated from an *authored* value, never guessed from name similarity."
+          "description": "The previous name of this field, when it was renamed. Field-level only, for the same reason as `removeBy`. Build tooling uses it to read an added field and a removed field across two runs as one rename. Without it they are an unrelated addition and deletion (see `ChangeModel`'s `renamedFields`). Only ever populated from an *authored* value, never guessed from name similarity."
         },
         "metadata": {
           "type": "object",
           "additionalProperties": {},
-          "description": "Free-form extension bag for anything data-cap itself has no named concept for -- opaque, never inspected or validated by any code path in this package. Once a concept matters enough for data-cap to reason about, it gets its own named field above; everything else stays here."
+          "description": "Free-form extension bag for anything data-cap itself has no named concept for: opaque, never inspected or validated by any code path in this package. Once a concept matters enough for data-cap to reason about, it gets its own named field above; everything else stays here."
         }
       },
       "additionalProperties": false,
-      "description": "Documentation metadata for one field.\n\n`owner`, `sensitivity`, `protections`, and `transferSafeguard` override the capability-level value of the same name for this field specifically -- not every field in a capability is equally sensitive, equally owned, or crosses the same transfer boundary. `protections` and `retention` are documentation-presence signals only: a generator may say a safeguard/ policy is \"documented\" or \"not documented,\" never that it is adequate, correct, or enforced. `purpose`/`legalBasis`/`dataResidency`/ `transferSafeguard`/`auditRequired` carry the same presence-only discipline -- declared governance facts, never a claim that data-cap has determined they satisfy any law (see `specs/decisions/0051-documentdata-metadata-and-governance-fields.md`). `dataSubjectCategory`/`recipientCategories` are field-level only (no capability-level counterpart) -- see each property's own doc comment for why.\n\nThe boundary this interface draws is deliberate: a named property here is reserved for a concept data-cap itself understands, projects, or reports on. Anything else -- organization-specific detail with no data-cap-defined meaning -- belongs in `metadata`, never as an ad hoc extra property, so this vocabulary stays bounded instead of accreting one-off keys over time.\n\nNote what is deliberately absent: there is no per-field `validate`/ `validator` property, and no `helpers.validators` combinator library backing one, unlike `@maverickcer/env-cap`'s `EnvVarDocs`. That is a design choice, not a gap. `env-cap` validates on a reject-and-throw pipeline, where a failing validator must carry a message explaining the rejection; `data-cap` has no reject path to write a message for -- invalid processor/operation output resets the field to its declared default via `core/schema.ts`'s `checkValueAgainstSchema`, keeping fields synchronously readable (`AGENTS.md` invariant 2) and surfacing the mismatch through `DataInfo`. See `helpers/shape.ts`'s own module comment for the full reasoning."
+      "description": "Documentation metadata for one field.\n\n`owner`, `sensitivity`, `protections`, and `transferSafeguard` override the capability-level value of the same name for this field. Fields in one capability can differ in sensitivity, owner and transfer boundary. `protections` and `retention` only signal that documentation is present. A generator may say a safeguard or policy is \"documented\" or \"not documented\", never that it is adequate, correct or enforced. `purpose`, `legalBasis`, `dataResidency`, `transferSafeguard` and `auditRequired` follow the same presence-only rule. They are declared governance facts, never a claim that data-cap has determined they satisfy any law (see `specs/decisions/0051-documentdata-metadata-and-governance-fields.md`). `dataSubjectCategory` and `recipientCategories` are field-level only, with no capability-level counterpart; each property's own doc comment says why.\n\nThe boundary this interface draws is deliberate: a named property here is reserved for a concept data-cap itself understands, projects, or reports on. Anything else (organization-specific detail with no data-cap-defined meaning) belongs in `metadata`, never in an ad hoc extra property. That keeps this vocabulary bounded instead of accreting one-off keys over time.\n\nNote what is deliberately absent: there is no per-field `validate`/ `validator` property, and no `helpers.validators` combinator library backing one, unlike `@maverickcer/env-cap`'s `EnvVarDocs`. That is a design choice, not a gap. `env-cap` validates on a reject-and-throw pipeline, where a failing validator must carry a message explaining the rejection. `data-cap` has no reject path to write a message for. Invalid processor/operation output resets the field to its declared default via `core/schema.ts`'s `checkValueAgainstSchema`. That keeps fields synchronously readable (`AGENTS.md` invariant 2) and surfaces the mismatch through `DataInfo`. See `helpers/shape.ts`'s own module comment for the full reasoning."
     },
     "ResolvedGovernanceValue<string>": {
       "type": "object",
@@ -1627,7 +1627,7 @@
         }
       },
       "additionalProperties": false,
-      "description": "One resolved governance value plus its provenance (ADR 0057) -- the one path a `FieldNode` consumer reads for a governed property, replacing what used to require separately checking a bare resolved property AND `field.docs.X` to get the full picture. `declaredOn: undefined` means neither the field nor its capability declared a value at all (`value` is then also `undefined`)."
+      "description": "One resolved governance value plus its provenance (ADR 0057). It is the one path a `FieldNode` consumer reads for a governed property, instead of checking a resolved property and `field.docs.X` separately. `declaredOn: undefined` means neither the field nor its capability declared a value at all (`value` is then also `undefined`)."
     },
     "ResolvedGovernanceValue<(string|string[])>": {
       "type": "object",
@@ -1656,7 +1656,7 @@
         }
       },
       "additionalProperties": false,
-      "description": "One resolved governance value plus its provenance (ADR 0057) -- the one path a `FieldNode` consumer reads for a governed property, replacing what used to require separately checking a bare resolved property AND `field.docs.X` to get the full picture. `declaredOn: undefined` means neither the field nor its capability declared a value at all (`value` is then also `undefined`)."
+      "description": "One resolved governance value plus its provenance (ADR 0057). It is the one path a `FieldNode` consumer reads for a governed property, instead of checking a resolved property and `field.docs.X` separately. `declaredOn: undefined` means neither the field nor its capability declared a value at all (`value` is then also `undefined`)."
     },
     "ResolvedGovernanceValue<boolean>": {
       "type": "object",
@@ -1675,7 +1675,7 @@
         }
       },
       "additionalProperties": false,
-      "description": "One resolved governance value plus its provenance (ADR 0057) -- the one path a `FieldNode` consumer reads for a governed property, replacing what used to require separately checking a bare resolved property AND `field.docs.X` to get the full picture. `declaredOn: undefined` means neither the field nor its capability declared a value at all (`value` is then also `undefined`)."
+      "description": "One resolved governance value plus its provenance (ADR 0057). It is the one path a `FieldNode` consumer reads for a governed property, instead of checking a resolved property and `field.docs.X` separately. `declaredOn: undefined` means neither the field nor its capability declared a value at all (`value` is then also `undefined`)."
     },
     "OperationNode": {
       "type": "object",
@@ -1705,22 +1705,22 @@
               "type": "string"
             }
           },
-          "description": "Top-level field paths this operation's statically-extracted `writes` shape covers. Empty when `writes` was absent (on a getter/subscription) or unresolvable -- never guessed at."
+          "description": "Top-level field paths this operation's statically-extracted `writes` shape covers. Empty when `writes` was absent (on a getter/subscription) or unresolvable: never guessed at."
         },
         "hasProcessor": {
           "type": "boolean",
-          "description": "Whether this operation's config object literal declares a `processor` key -- a proven, structural presence fact (never an evaluation of what the processor does; see ADR 0050)."
+          "description": "Whether this operation's config object literal declares a `processor` key: a proven, structural presence fact (never an evaluation of what the processor does; see ADR 0050)."
         },
         "hasOptimistic": {
           "type": "boolean",
-          "description": "Whether this operation's config object literal declares an `optimistic` key -- structurally always `false` for a getter/subscription."
+          "description": "Whether this operation's config object literal declares an `optimistic` key: structurally always `false` for a getter/subscription."
         },
         "endpoints": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/DataFlowEndpoint"
           },
-          "description": "Hoisted from `docs.endpoints` for convenient lookup -- author-declared, never statically verified."
+          "description": "Hoisted from `docs.endpoints` for convenient lookup: author-declared, never statically verified."
         }
       },
       "required": [
@@ -1747,7 +1747,7 @@
         },
         "credentials": {
           "type": "string",
-          "description": "What's required to call this operation -- descriptive only, never an authorization/enforcement claim."
+          "description": "What's required to call this operation: descriptive only, never an authorization/enforcement claim."
         },
         "response": {
           "type": "string",
@@ -1758,16 +1758,16 @@
           "items": {
             "$ref": "#/definitions/DataFlowEndpoint"
           },
-          "description": "Declared data-flow boundaries this operation crosses -- see `DataFlowEndpoint`."
+          "description": "Declared data-flow boundaries this operation crosses: see `DataFlowEndpoint`."
         },
         "metadata": {
           "type": "object",
           "additionalProperties": {},
-          "description": "Free-form extension bag for anything data-cap itself has no named concept for -- opaque, never inspected or validated by any code path in this package. The index signature below remains for the same reason it always has (documenting never fights the type checker); `metadata` is the recommended place for new extension data going forward."
+          "description": "Free-form extension bag for anything data-cap itself has no named concept for: opaque, never inspected or validated by any code path in this package. The index signature below stays so documenting never fights the type checker. `metadata` is the recommended place for new extension data."
         }
       },
       "additionalProperties": {},
-      "description": "Documentation metadata for one getter/mutator/subscription. Reserved keys are explicitly typed (mirroring the vocabulary real capabilities tend to document -- what it does, where it talks to, what it costs to call) while still accepting arbitrary extra keys for anything project-specific, so documenting never fights the type checker.\n\n`credentials` is descriptive only -- documenting `credentials: \"user session\"` is never proof that authorization is actually enforced. `endpoints` is likewise author-declared, never verified."
+      "description": "Documentation metadata for one getter/mutator/subscription. Reserved keys are explicitly typed (mirroring the vocabulary real capabilities tend to document: what it does, where it talks to, what it costs to call). The type still accepts arbitrary extra keys for anything project-specific, so documenting never fights the type checker.\n\n`credentials` is descriptive only: documenting `credentials: \"user session\"` is never proof that authorization is actually enforced. `endpoints` is likewise author-declared, never verified."
     },
     "LifecycleModel": {
       "type": "object",
@@ -1805,7 +1805,7 @@
       "properties": {
         "file": {
           "type": "string",
-          "description": "Root-relative POSIX path -- carried through verbatim from `CapabilityNode.file`."
+          "description": "Root-relative POSIX path: carried through verbatim from `CapabilityNode.file`."
         },
         "exportName": {
           "type": "string",
@@ -1832,7 +1832,7 @@
           "items": {
             "$ref": "#/definitions/LifecycleModelField"
           },
-          "description": "Only fields with at least one lifecycle field set, sorted by path -- same \"only what's relevant\" scope the rendered report uses."
+          "description": "Only fields with at least one lifecycle field set, sorted by path: same \"only what's relevant\" scope the rendered report uses."
         }
       },
       "required": [
@@ -1851,7 +1851,7 @@
           "items": {
             "type": "string"
           },
-          "description": "The field's path within its capability -- `readonly string[]`, matching every other model's field addressing (never a flat key string)."
+          "description": "The field's path within its capability: `readonly string[]`, matching every other model's field addressing (never a flat key string)."
         },
         "expiresAt": {
           "type": "string",
@@ -1867,15 +1867,15 @@
         },
         "removeBy": {
           "type": "string",
-          "description": "Declared ISO-8601 removal deadline -- field-level only (see `core/document.ts`)."
+          "description": "Declared ISO-8601 removal deadline: field-level only (see `core/document.ts`)."
         },
         "renamedFrom": {
           "type": "string",
-          "description": "The field's previous name, when authored -- what `ChangeModel.renamedFields` correlates against."
+          "description": "The field's previous name, when authored: what `ChangeModel.renamedFields` correlates against."
         },
         "retention": {
           "type": "string",
-          "description": "Declared retention policy -- a policy statement, deliberately independent of `expiresAt`'s temporal constraint (a field can be retained long after its source credential expires, and vice versa)."
+          "description": "Declared retention policy: a policy statement, deliberately independent of `expiresAt`'s temporal constraint (a field can be retained long after its source credential expires, and vice versa)."
         }
       },
       "required": [
@@ -1953,7 +1953,7 @@
         },
         "claims": {
           "type": "boolean",
-          "description": "Whether claims were derived this run -- true exactly when `flow` was computed."
+          "description": "Whether claims were derived this run: true exactly when `flow` was computed."
         }
       },
       "required": [
@@ -1967,7 +1967,7 @@
         "claims"
       ],
       "additionalProperties": false,
-      "description": "Which project-varying sub-models this particular run actually computed (OUT-04).\n\nWithout this, a persisted `data.evidence.json` is ambiguous in exactly the way a governance artifact must never be: an absent `dependency` could mean \"nothing in this project depends on anything\" (a real, reportable finding) or \"this run never scanned for dependencies\" (no finding at all, just an un-run pass). Those are opposite conclusions and the JSON looked identical either way.\n\nenv-cap solves the same ambiguity by always computing all six sub-models, so absence never happens. `data-cap` deliberately does not follow that: the usage scan is the expensive pass here, and `--docs` alone is supposed to stay cheap. So instead of forcing every run to pay for a full dependency scan, each sub-model's presence is stated explicitly.\n\n`capability`, `lifecycle`, and `runtimeContract` have no flag -- they are always populated by construction, so a flag could only ever read `true`.\n\nA pass that ran and found nothing is `true` with an empty result, never `false`: \"we looked and found none\" is a genuine finding, and collapsing it into \"we didn't look\" is precisely the confusion this field exists to prevent."
+      "description": "Which project-varying sub-models this particular run actually computed.\n\nWithout this, a persisted `data.evidence.json` is ambiguous in exactly the way a governance artifact must never be. An absent `dependency` could mean \"nothing in this project depends on anything\" (a real, reportable finding) or \"this run never scanned for dependencies\" (no finding at all, only an un-run pass). Those are opposite conclusions and the JSON looked identical either way.\n\nenv-cap solves the same ambiguity by always computing all six sub-models, so absence never happens. `data-cap` deliberately does not follow that: the usage scan is the expensive pass here, and `--docs` alone is supposed to stay cheap. So instead of forcing every run to pay for a full dependency scan, each sub-model's presence is stated explicitly.\n\n`capability`, `lifecycle`, and `runtimeContract` have no flag: they are always populated by construction, so a flag could only ever read `true`.\n\nA pass that ran and found nothing is `true` with an empty result, never `false`. \"We looked and found none\" is a real finding, and this field keeps it apart from \"we did not look\"."
     },
     "DependencyModel": {
       "type": "object",
@@ -1982,7 +1982,7 @@
           "items": {
             "$ref": "#/definitions/DependencyEdge"
           },
-          "description": "Every proven edge, unindexed -- same array `scanDependencies` produced."
+          "description": "Every proven edge, unindexed: same array `scanDependencies` produced."
         }
       },
       "required": [
@@ -2005,7 +2005,7 @@
           "items": {
             "$ref": "#/definitions/OwnershipMatrixEntry"
           },
-          "description": "Every owner's row -- see `buildOwnershipMatrix`."
+          "description": "Every owner's row: see `buildOwnershipMatrix`."
         }
       },
       "required": [
@@ -2043,14 +2043,14 @@
         "fields"
       ],
       "additionalProperties": false,
-      "description": "One owner's row in the ownership matrix -- every capability and field they're accountable for."
+      "description": "One owner's row in the ownership matrix: every capability and field they're accountable for."
     },
     "OwnershipCapabilityRef": {
       "type": "object",
       "properties": {
         "file": {
           "type": "string",
-          "description": "Root-relative POSIX path of the file declaring this capability -- carried through verbatim from `CapabilityNode.file` (see `display-path.ts`)."
+          "description": "Root-relative POSIX path of the file declaring this capability: carried through verbatim from `CapabilityNode.file` (see `display-path.ts`)."
         },
         "exportName": {
           "type": "string",
@@ -2122,7 +2122,7 @@
         },
         "family": {
           "$ref": "#/definitions/ReportFindingFamily",
-          "description": "Which analysis pass produced this finding -- see `ReportFindingFamily`."
+          "description": "Which analysis pass produced this finding: see `ReportFindingFamily`."
         },
         "severity": {
           "$ref": "#/definitions/ReportSeverity",
@@ -2137,7 +2137,7 @@
           "items": {
             "$ref": "#/definitions/EvidenceRef"
           },
-          "description": "The records in the Evidence Model this finding rests on -- flow nodes and edges, a policy result, an unknown (ADR 0070). Lets a reader drill from the finding to the analysis behind it, and lets SARIF show the path. Absent for findings derived from declared metadata alone."
+          "description": "The records in the Evidence Model this finding rests on: flow nodes and edges, a policy result, an unknown (ADR 0070). Lets a reader drill from the finding to the analysis behind it, and lets SARIF show the path. Absent for findings derived from declared metadata alone."
         }
       },
       "required": [
@@ -2147,7 +2147,7 @@
         "message",
         "severity"
       ],
-      "description": "One finding, with its structured `location` computed -- and *only* that (OUT-02). A rule/scan emits a `ReportFinding` carrying the raw, optional `capability`/`field`/`operation`/`source`/`position`/`indeterminateSites` locators (see `findings.ts`); `locationOf` resolves all six into one required, structured `location`, and this type then drops them, so a consumer has exactly one path to \"where does this point\" instead of a structured answer sitting next to six flat ones that say the same thing (and could drift apart under a hand-constructed value). Two names for one lineage: emit a `ReportFinding`, consume a `LocatedFinding`."
+      "description": "One finding, with its structured `location` computed, and *only* that. A rule/scan emits a `ReportFinding` carrying the raw, optional `capability`/`field`/`operation`/`source`/`position`/`indeterminateSites` locators (see `findings.ts`). `locationOf` resolves all six into one required, structured `location`, and this type then drops them. So a consumer has exactly one path to \"where does this point\". There is no structured answer sitting next to six flat ones that say the same thing (and could drift apart under a hand-constructed value). Two names for one lineage: emit a `ReportFinding`, consume a `LocatedFinding`."
     },
     "FindingLocation": {
       "anyOf": [
@@ -2208,7 +2208,7 @@
               "items": {
                 "$ref": "#/definitions/SourceLocation"
               },
-              "description": "Every candidate access site a `\"FIELD_ACCESS_INDETERMINATE\"` finding could actually be about (ADR 0052) -- populated only for that code. Lives here, on the one variant that can carry it, rather than as a flat sibling of `location`: a field-level finding is the only kind that ever has one. Spans potentially multiple consuming files, so each entry carries its own `file` (`SourceLocation`, not just `SourcePosition`)."
+              "description": "Every candidate access site a `\"FIELD_ACCESS_INDETERMINATE\"` finding could actually be about (ADR 0052): populated only for that code. Lives here, on the one variant that can carry it, rather than as a flat sibling of `location`: a field-level finding is the only kind that ever has one. Spans potentially multiple consuming files, so each entry carries its own `file` (`SourceLocation`, not only `SourcePosition`)."
             }
           },
           "required": [
@@ -2264,14 +2264,14 @@
           "additionalProperties": false
         }
       ],
-      "description": "Where a finding points, as a discriminated union -- never a formatted string a consumer would have to parse back apart. Ships with only the variants `findings.ts`'s actual emission sites produce today (`\"capability\"`/`\"field\"`/`\"consumer\"`/`\"none\"`); `\"operation\"` is included because `ReportFinding.operation` is already part of that type's public shape, even though no current finding populates it -- trivially reachable the day one does, not a guess about what it would look like. `\"capability\"`/`\"field\"`/`\"operation\"` carry an optional `position` (ADR 0052) -- the declaration site's own position, when the source `ReportFinding.position` was populated; `\"consumer\"` doesn't, since it locates a *consuming file*, which has no single declaration position the way a capability/field/operation's own declaration does."
+      "description": "Where a finding points, as a discriminated union: never a formatted string a consumer would have to parse back apart. Ships with only the variants `findings.ts`'s actual emission sites produce today (`\"capability\"`/`\"field\"`/`\"consumer\"`/`\"none\"`). `\"operation\"` is included because `ReportFinding.operation` is already part of that type's public shape, even though no current finding populates it. It is trivially reachable the day one does, not a guess about what it would look like. `\"capability\"`, `\"field\"` and `\"operation\"` carry an optional `position` (ADR 0052): the declaration site, when the source `ReportFinding.position` was set. `\"consumer\"` has none, since a *consuming file* has no single declaration position."
     },
     "FindingLocationCapability": {
       "type": "object",
       "properties": {
         "file": {
           "type": "string",
-          "description": "Root-relative POSIX path of the file declaring the capability -- carried through verbatim from `CapabilityNode.file` (see `display-path.ts`)."
+          "description": "Root-relative POSIX path of the file declaring the capability: carried through verbatim from `CapabilityNode.file` (see `display-path.ts`)."
         },
         "exportName": {
           "type": "string",
@@ -2283,7 +2283,7 @@
         "exportName"
       ],
       "additionalProperties": false,
-      "description": "A finding's capability locator -- shared by every `FindingLocation` variant except `\"none\"`."
+      "description": "A finding's capability locator: shared by every `FindingLocation` variant except `\"none\"`."
     },
     "ChangeModel": {
       "type": "object",
@@ -2295,14 +2295,14 @@
         },
         "manifest": {
           "$ref": "#/definitions/ManifestChangeReport",
-          "description": "The underlying manifest diff -- see `diffManifestSnapshots`."
+          "description": "The underlying manifest diff: see `diffManifestSnapshots`."
         },
         "blastRadius": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/BlastRadiusEntry"
           },
-          "description": "One entry per added/updated capability, or `undefined` when no `DependencyModel` was supplied -- an optional layer, matching `--ownership`/`--flow`'s existing opt-in cost model (the usage scan isn't free)."
+          "description": "One entry per added/updated capability, or `undefined` when no `DependencyModel` was supplied: an optional layer, matching `--ownership`/`--flow`'s existing opt-in cost model (the usage scan isn't free)."
         },
         "renamedFields": {
           "type": "array",
@@ -2325,7 +2325,7 @@
       "properties": {
         "capability": {
           "type": "string",
-          "description": "The capability key (`file#exportName`) -- matches `ManifestChangeReport`'s own key convention."
+          "description": "The capability key (`file#exportName`): matches `ManifestChangeReport`'s own key convention."
         },
         "consumers": {
           "type": "array",
@@ -2347,15 +2347,15 @@
       "properties": {
         "capability": {
           "type": "string",
-          "description": "The owning capability's key (`file#exportName`) -- a rename never crosses capabilities."
+          "description": "The owning capability's key (`file#exportName`): a rename never crosses capabilities."
         },
         "previousName": {
           "type": "string",
-          "description": "The field's name before the rename -- matches a `removed` entry in that capability's own field diff."
+          "description": "The field's name before the rename: matches a `removed` entry in that capability's own field diff."
         },
         "currentName": {
           "type": "string",
-          "description": "The field's name after the rename -- matches an `added` entry in the same diff."
+          "description": "The field's name after the rename: matches an `added` entry in the same diff."
         }
       },
       "required": [
@@ -2364,7 +2364,7 @@
         "currentName"
       ],
       "additionalProperties": false,
-      "description": "One added-field/removed-field pair correlated into a single rename via the current declaration's `renamedFrom` (EVD-05)."
+      "description": "One added-field/removed-field pair correlated into a single rename via the current declaration's `renamedFrom`."
     },
     "FlowModel": {
       "type": "object",
@@ -2440,7 +2440,7 @@
         },
         "classification": {
           "type": "string",
-          "description": "Declared or inherited sensitivity classification, when known -- carried verbatim, never inferred here."
+          "description": "Declared or inherited sensitivity classification, when known: carried verbatim, never inferred here."
         },
         "boundaryKind": {
           "$ref": "#/definitions/FlowBoundaryKind",
@@ -2513,7 +2513,7 @@
         },
         "handling": {
           "$ref": "#/definitions/FlowHandling",
-          "description": "The data-safety state of the value at this hop, when declared or established -- policy evaluation reads it at boundary crossings."
+          "description": "The data-safety state of the value at this hop, when declared or established: policy evaluation reads it at boundary crossings."
         },
         "origin": {
           "type": "string",
@@ -2547,7 +2547,7 @@
         "crosses-boundary",
         "side-effect"
       ],
-      "description": "What an edge means. Data moves `from` -> `to` along `reads`, `writes`, `transforms`, `passes`, `returns` and `crosses-boundary`; `calls` is control flow and `discards` records that a function received a field and deliberately did not forward it -- neither carries data, so tracing does not follow them. `side-effect` links a function to the boundary it acts on."
+      "description": "What an edge means. Data moves `from` -> `to` along `reads`, `writes`, `transforms`, `passes`, `returns` and `crosses-boundary`. `calls` is control flow, and `discards` records that a function received a field and did not forward it. Neither carries data, so tracing does not follow them. `side-effect` links a function to the boundary it acts on."
     },
     "FlowUnknown": {
       "type": "object",
@@ -2591,7 +2591,7 @@
             "additionalProperties": false,
             "description": "A piece of capability-field data an unknown concerns: the field node and the path inside it."
           },
-          "description": "The tracked data that entered the part of the program that could not be followed. Absent means \"unknown which data\" -- every trace that reaches the subject must treat itself as incomplete. Present, it lets a trace of a different field or an unrelated path stay complete: an opaque call that only ever saw `email` says nothing about where `passwordHash` went."
+          "description": "The tracked data that entered the part of the program that could not be followed. Absent means \"unknown which data\": every trace that reaches the subject must treat itself as incomplete. Present, it lets a trace of a different field or an unrelated path stay complete: an opaque call that only ever saw `email` says nothing about where `passwordHash` went."
         },
         "id": {
           "type": "string",
@@ -2650,7 +2650,7 @@
         "complete"
       ],
       "additionalProperties": false,
-      "description": "What was and was not analyzed -- a projection must not call a graph complete unless `complete`."
+      "description": "What was and was not analyzed: a projection must not call a graph complete unless `complete`."
     },
     "FlowEdgeTag": {
       "type": "object",
@@ -2926,7 +2926,7 @@
         },
         "skipped": {
           "type": "number",
-          "description": "Events (and skip reports) dropped as malformed -- stated, never silent."
+          "description": "Events (and skip reports) dropped as malformed: stated, never silent."
         },
         "truncations": {
           "type": "array",
@@ -2940,7 +2940,7 @@
           "items": {
             "type": "string"
           },
-          "description": "The scopes with a truncation, sorted -- a claim built on one cannot be called verified near the cut. Absent when none."
+          "description": "The scopes with a truncation, sorted: a claim built on one cannot be called verified near the cut. Absent when none."
         }
       },
       "required": [
@@ -2980,7 +2980,7 @@
         },
         "field": {
           "type": "string",
-          "description": "Capability-qualified dotted field path -- the Flow Model's field-node naming."
+          "description": "Capability-qualified dotted field path: the Flow Model's field-node naming."
         },
         "handling": {
           "$ref": "#/definitions/FlowHandling"
@@ -3283,7 +3283,7 @@
         },
         "packageVersion": {
           "type": "string",
-          "description": "The `data-cap` package version this model describes -- read from `package.json`, the same way `cli/json.ts`'s `TOOL_VERSION` is."
+          "description": "The `data-cap` package version this model describes: read from `package.json`, the same way `cli/json.ts`'s `TOOL_VERSION` is."
         },
         "policies": {
           "type": "array",
@@ -3314,7 +3314,7 @@
         },
         "governingAdr": {
           "type": "string",
-          "description": "The ADR number (e.g. `\"0024\"`) that governs this fact -- always a real file under `specs/decisions/`."
+          "description": "The ADR number (e.g. `\"0024\"`) that governs this fact: always a real file under `specs/decisions/`."
         },
         "module": {
           "type": "string",

@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://maverickcer.github.io/data-cap/schema/dependency-model.schema.json",
   "title": "data-cap Dependency Model",
-  "description": "Canonical, versioned projection of every statically-proven consumer relationship, indexed by capability and by consuming file (see ADR 0050). Generated from src/build/dependency-model.ts's DependencyModel type -- never hand-authored.",
+  "description": "Canonical, versioned projection of every statically-proven consumer relationship, indexed by capability and by consuming file (see ADR 0050). Generated from src/build/dependency-model.ts's DependencyModel type. Never hand-authored.",
   "$ref": "#/definitions/DependencyModel",
   "definitions": {
     "DependencyModel": {
@@ -18,7 +18,7 @@
           "items": {
             "$ref": "#/definitions/DependencyEdge"
           },
-          "description": "Every proven edge, unindexed -- same array `scanDependencies` produced."
+          "description": "Every proven edge, unindexed: same array `scanDependencies` produced."
         }
       },
       "required": [
@@ -33,11 +33,11 @@
       "properties": {
         "relationship": {
           "$ref": "#/definitions/DependencyRelationship",
-          "description": "Which kind of connection this is -- see `DependencyRelationship`."
+          "description": "Which kind of connection this is: see `DependencyRelationship`."
         },
         "from": {
           "type": "string",
-          "description": "The consuming file, as a root-relative POSIX path (OUT-01, see `display-path.ts`)."
+          "description": "The consuming file, as a root-relative POSIX path (see `display-path.ts`)."
         },
         "to": {
           "type": "object",
@@ -47,7 +47,7 @@
               "properties": {
                 "file": {
                   "type": "string",
-                  "description": "Root-relative POSIX path of the file declaring the capability -- the same value `CapabilityNode.file` publishes."
+                  "description": "Root-relative POSIX path of the file declaring the capability: the same value `CapabilityNode.file` publishes."
                 },
                 "exportName": {
                   "type": "string",
@@ -86,11 +86,11 @@
             "unresolved-consumer",
             "indeterminate"
           ],
-          "description": "Whether the consumer reference itself was unambiguously resolved -- see the usage-scan pass for what each value means."
+          "description": "Whether the consumer reference itself was unambiguously resolved: see the usage-scan pass for what each value means."
         },
         "position": {
           "$ref": "#/definitions/SourcePosition",
-          "description": "Position of the access site in `from` (file already known via `from`), when this edge originates from a specific identifier reference (every relationship except the file-level `\"imports\"` fallback edge scan-dependencies.ts synthesizes for a consumer with no further resolved usage)."
+          "description": "Position of the access site in `from` (file already known via `from`). Set when this edge originates from a specific identifier reference. That is every relationship except the file-level `\"imports\"` fallback edge scan-dependencies.ts synthesizes for a consumer with no further resolved usage."
         }
       },
       "required": [
@@ -100,7 +100,7 @@
         "resolution"
       ],
       "additionalProperties": false,
-      "description": "A statically-proven connection from one consuming file to a capability (or a specific field/operation on it). Unlike the declared metadata in `core/document.ts` (`source`, `credentials`, `endpoints`), every `DependencyEdge` is derived by AST analysis, never author-declared -- see `AGENTS.md`'s declared-vs-proven invariant. Produced by the usage-scan pass (`scan-dependencies.ts`), not by this module."
+      "description": "A statically-proven connection from one consuming file to a capability (or a specific field/operation on it). Unlike the declared metadata in `core/document.ts` (`source`, `credentials`, `endpoints`), every `DependencyEdge` is derived by AST analysis, never author-declared: see `AGENTS.md`'s declared-vs-proven invariant. Produced by the usage-scan pass (`scan-dependencies.ts`), not by this module."
     },
     "DependencyRelationship": {
       "type": "string",

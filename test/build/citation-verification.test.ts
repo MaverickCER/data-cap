@@ -217,7 +217,7 @@ describe("citation-verification", () => {
         capabilities: [snapshotCapability({ citationSnapshots: { email: entry ?? [] } })],
       }
 
-      // The file the citation points to changes -- the developer's own
+      // The file the citation points to changes: the developer's own
       // assertion can no longer be confirmed to still describe reality.
       await fs.writeFile(filePath, "the file changed underneath the citation\n", "utf8")
 
@@ -280,7 +280,7 @@ describe("citation-verification", () => {
           family: "citation",
           severity: "warning",
           message:
-            'Declared dynamicAccess citation "src/missing.ts:12:34" on field "contact" on "userCapability" no longer resolves to a real file -- the developer\'s own citation could not be re-confirmed this run. Update the citation to point at the file that now performs this access, or remove it if the access no longer exists.',
+            'Declared dynamicAccess citation "src/missing.ts:12:34" on field "contact" on "userCapability" no longer resolves to a real file. The developer\'s own citation could not be re-confirmed this run. Update the citation to point at the file that now performs this access, or remove it if the access no longer exists.',
           capability: { file: "/project/user.ts", exportName: "userCapability" },
           field: ["contact", "email"],
           position: { line: 7, column: 4 },
@@ -334,7 +334,7 @@ describe("citation-verification", () => {
           family: "citation",
           severity: "warning",
           message:
-            'Declared dynamicAccess citation "src/legacy.ts:1:1" on field "email" on "userCapability" points to a file that has visibly changed since this citation was last confirmed -- re-verify it still describes real access at that location.',
+            'Declared dynamicAccess citation "src/legacy.ts:1:1" on field "email" on "userCapability" points to a file that has visibly changed since this citation was last confirmed. Re-verify it still describes real access at that location.',
           capability: { file: "/project/user.ts", exportName: "userCapability" },
           field: ["email"],
           position: undefined,

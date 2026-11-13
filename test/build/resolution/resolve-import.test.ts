@@ -100,7 +100,7 @@ describe("resolveImportSpecifier -- relative resolution", () => {
   })
 
   it("falls through past a non-matching alias config to package resolution", async () => {
-    // tsconfigPaths is present but the specifier is NOT an alias -- it's an
+    // tsconfigPaths is present but the specifier is NOT an alias: it's an
     // allow-listed package, so resolution must not stop at the alias step.
     await fs.writeFile(path.join(root, "package.json"), JSON.stringify({ name: "host" }))
     await write("node_modules/@vendor/pkg/package.json")

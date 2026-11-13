@@ -171,7 +171,7 @@ describe("processors.parseJSON", () => {
     expect(processors.parseJSON({ a: 1 })).toBeUndefined()
   })
   it("returns undefined for a number/boolean input, never JSON.parse(String(value))", () => {
-    // `JSON.parse("42")` / `JSON.parse("true")` would succeed -- the string
+    // `JSON.parse("42")` / `JSON.parse("true")` would succeed: the string
     // guard is what stops a non-string from being parsed as JSON.
     expect(processors.parseJSON(42)).toBeUndefined()
     expect(processors.parseJSON(true)).toBeUndefined()

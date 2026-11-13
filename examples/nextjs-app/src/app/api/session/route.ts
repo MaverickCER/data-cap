@@ -9,7 +9,7 @@ export async function GET(): Promise<NextResponse> {
   return NextResponse.json({ user: user ?? null, users })
 }
 
-/** Demo login switcher -- picks one of the three seeded users, no password. Real authentication is out of scope; real, server-enforced AUTHORIZATION once a session exists is the point (see api/todos/route.ts). */
+/** Demo login switcher: picks one of the three seeded users, no password. Real authentication is out of scope; real, server-enforced AUTHORIZATION once a session exists is the point (see api/todos/route.ts). */
 export async function POST(request: Request): Promise<NextResponse> {
   const body = (await request.json()) as { userId?: unknown }
   if (typeof body.userId !== "string" || !findUser(body.userId)) {

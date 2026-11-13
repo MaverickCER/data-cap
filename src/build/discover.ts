@@ -1,12 +1,12 @@
 /**
  * Recursively discovers files matching `include`/`exclude` under `root`,
  * pruning `node_modules`/`.git` (and any directory an `exclude` pattern
- * matches) during the walk itself, not after. Hand-rolled -- no glob
+ * matches) during the walk itself, not after. Hand-rolled: no glob
  * dependency, see glob.ts.
  *
  * Uses `fs.readdir(..., { withFileTypes: true })`'s `Dirent#isDirectory()`/
  * `isFile()`, which report the directory entry's own type (never following
- * a symlink) -- a symlink is neither, so it's silently skipped rather than
+ * a symlink): a symlink is neither, so it's silently skipped rather than
  * traversed. This makes the walk symlink-cycle-immune by construction, not
  * by explicit cycle tracking.
  */
@@ -17,7 +17,7 @@ import type { BuildDirent, BuildFileSystem } from "./types.js"
 
 /** Options for `discoverCapabilityFiles`. */
 export interface DiscoverOptions {
-  /** The filesystem capability -- `./build` never imports `node:fs` (ADR 0058). */
+  /** The filesystem capability: `./build` never imports `node:fs` (ADR 0058). */
   readonly fs: BuildFileSystem
   /** Directory to walk. */
   readonly root: string
@@ -61,7 +61,7 @@ async function walk(
   try {
     entries = await fs.readdir(dir, { withFileTypes: true })
   } catch {
-    return // unreadable directory (permissions, race with deletion, ...) -- skip silently, never throw during discovery
+    return // Unreadable directory (permissions, race with deletion, ...): skip silently, never throw during discovery.
   }
 
   for (const entry of entries) {
@@ -69,9 +69,9 @@ async function walk(
 
     if (entry.isDirectory()) {
       if (isAlwaysExcludedDir(entry.name)) continue
-      // Tested as a directory (trailing slash) so a pattern like
-      // "**/dist/**" -- meant to match *files inside* the directory --
-      // also prunes the directory itself before its contents are ever read.
+      // Tested as a directory (trailing slash) so a pattern meant to match
+      // *files inside* the directory also prunes the directory itself before
+      // its contents are ever read. An example of such a pattern is "**/dist/**".
       const relativeDir = `${toPosixRelative(root, fullPath)}/`
       if (matchesAnyPattern(relativeDir, exclude)) continue
       await walk(fs, fullPath, root, include, exclude, results)

@@ -1,5 +1,5 @@
 /**
- * Every department's own projects, in one list -- `projectsData` is owned
+ * Every department's own projects, in one list: `projectsData` is owned
  * by engineering-ops (see `projects.capability.ts`'s own header comment),
  * but every department reads it here through the exact same capability;
  * ownership is a governance/documentation fact `documentData()` records,

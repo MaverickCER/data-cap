@@ -40,7 +40,7 @@ export function methods() {
     ): Val {
       const cap = this.caps.get(capKey)
       const args = this.evalArgs(frame, node)
-      // Stryker disable next-line ConditionalExpression: equivalent -- a capability is registered before any value carries its key, so it is always found; the check only satisfies the type checker.
+      // Stryker disable next-line ConditionalExpression: equivalent: a capability is registered before any value carries its key, so it is always found; the check only satisfies the type checker.
       if (cap === undefined) return EMPTY_VAL
       if (name === "getSnapshot") {
         return { ...EMPTY_VAL, props: new Map([["fields", { ...EMPTY_VAL, fieldsOf: capKey }]]) }
@@ -158,23 +158,23 @@ export function methods() {
     flushDeferred(this: FlowScan): void {
       for (const [key, items] of this.provisional) {
         const fn = this.functions.get(key)
-        // Stryker disable next-line ConditionalExpression: equivalent -- every key in `provisional` was registered with `functions` first, so the function is always found; the check only satisfies the type checker.
+        // Stryker disable next-line ConditionalExpression: equivalent: every key in `provisional` was registered with `functions` first, so the function is always found; the check only satisfies the type checker.
         if (fn === undefined || (this.calledKeys.has(key) && !this.exposed(fn))) continue
         for (const item of items)
           this.unknown(item.fn, item.reason, item.node, item.detail, item.atoms)
       }
     },
 
-    // ----- decorators ----------------------------------------------------------------------------
+    // ----- decorators ---------------------------------------------------------------------------.
 
     /** Calls the decorators written on a class and on its members, as the language does when the class is defined. */
     applyDecorators(this: FlowScan, cls: ClassInfo): void {
-      // Stryker disable next-line ConditionalExpression,BooleanLiteral: equivalent -- the guard only keeps the decorators from being analyzed again; analyzing them again finds the same facts, which are kept as a set.
+      // Stryker disable next-line ConditionalExpression,BooleanLiteral: equivalent: the guard only keeps the decorators from being analyzed again; analyzing them again finds the same facts, which are kept as a set.
       if (cls.decorated) return
-      // Stryker disable next-line BooleanLiteral: equivalent -- see above; the flag only keeps the decorators from being analyzed twice.
+      // Stryker disable next-line BooleanLiteral: equivalent: see above; the flag only keeps the decorators from being analyzed twice.
       cls.decorated = true
       const fn = this.makeFunction(cls.file, `${cls.name}.decorators`, undefined)
-      // Stryker disable next-line BooleanLiteral: equivalent -- the decorator scope declares nothing of its own, so whether it is a function boundary decides nothing; what a decorator writes goes to the scopes it names.
+      // Stryker disable next-line BooleanLiteral: equivalent: the decorator scope declares nothing of its own, so whether it is a function boundary decides nothing; what a decorator writes goes to the scopes it names.
       const frame = this.frame(fn, new Env(cls.env, true), 1)
       for (const member of cls.node.members) this.decorateMember(frame, cls, member)
       for (const decorator of decoratorsOf(cls.node).reverse()) {
@@ -184,7 +184,7 @@ export function methods() {
           continue
         }
         if (result.classRef === undefined) continue
-        // Stryker disable next-line ConditionalExpression: equivalent -- the class handed back to itself is bound to its own name again, which changes nothing.
+        // Stryker disable next-line ConditionalExpression: equivalent: the class handed back to itself is bound to its own name again, which changes nothing.
         if (result.classRef !== cls.key) this.replaceClass(cls, result)
       }
     },
@@ -193,7 +193,7 @@ export function methods() {
     replaceClass(this: FlowScan, cls: ClassInfo, replacement: Val): void {
       cls.replacement = replacement
       const name = cls.node.name?.text
-      // Stryker disable next-line ConditionalExpression: equivalent -- a class with no name has nothing to rebind; setting an undefined name binds nothing anyone can look up.
+      // Stryker disable next-line ConditionalExpression: equivalent: a class with no name has nothing to rebind; setting an undefined name binds nothing anyone can look up.
       if (name !== undefined) cls.env.set(name, replacement)
     },
 
@@ -214,7 +214,7 @@ export function methods() {
       if (ts.isMethodDeclaration(member) || ts.isConstructorDeclaration(member))
         for (const param of member.parameters)
           for (const decorator of decoratorsOf(param))
-            // Stryker disable next-line ArrayDeclaration: equivalent -- the arguments are empty values, which a decorator reads the same as no arguments.
+            // Stryker disable next-line ArrayDeclaration: equivalent: the arguments are empty values, which a decorator reads the same as no arguments.
             this.runDecorator(frame, decorator, [EMPTY_VAL, EMPTY_VAL, EMPTY_VAL])
       if (
         ts.isMethodDeclaration(member) ||
@@ -224,10 +224,10 @@ export function methods() {
         this.decorateMethod(frame, cls, member)
         return
       }
-      // Stryker disable next-line ConditionalExpression: equivalent -- the other members that reach here (a constructor, an index signature) carry no decorators of their own, so running none changes nothing.
+      // Stryker disable next-line ConditionalExpression: equivalent: the other members that reach here (a constructor, an index signature) carry no decorators of their own, so running none changes nothing.
       if (ts.isPropertyDeclaration(member))
         for (const decorator of decoratorsOf(member).reverse())
-          // Stryker disable next-line ArrayDeclaration: equivalent -- the arguments are empty values, which a decorator reads the same as no arguments.
+          // Stryker disable next-line ArrayDeclaration: equivalent: the arguments are empty values, which a decorator reads the same as no arguments.
           this.runDecorator(frame, decorator, [EMPTY_VAL, EMPTY_VAL])
     },
 
@@ -239,7 +239,7 @@ export function methods() {
       member: TS.MethodDeclaration | TS.GetAccessorDeclaration | TS.SetAccessorDeclaration,
     ): void {
       const name = memberName(member.name)
-      // Stryker disable next-line ConditionalExpression: equivalent -- a member with no name has no entry under any key, which ends this at the next check.
+      // Stryker disable next-line ConditionalExpression: equivalent: a member with no name has no entry under any key, which ends this at the next check.
       if (name === undefined) return
       const kind = ts.isMethodDeclaration(member)
         ? "method"
@@ -263,7 +263,7 @@ export function methods() {
           continue
         }
         const replacement = this.replacementOf(result, original, slot)
-        // Stryker disable next-line ConditionalExpression,StringLiteral: equivalent -- storing "opaque" as the member itself reads back as opaque, the same as marking it so.
+        // Stryker disable next-line ConditionalExpression,StringLiteral: equivalent: storing "opaque" as the member itself reads back as opaque, the same as marking it so.
         if (replacement === "opaque") cls.opaque.add(key)
         else if (replacement !== undefined) cls.members.set(key, replacement)
       }
@@ -279,7 +279,7 @@ export function methods() {
       const returned = this.functionOf(result.callable)
       if (returned !== undefined) return returned
       const value = result.props.get(slot)
-      // Stryker disable next-line ConditionalExpression: equivalent -- putting the original method back in its own place changes nothing.
+      // Stryker disable next-line ConditionalExpression: equivalent: putting the original method back in its own place changes nothing.
       if (value === undefined || value.callable === original.callable) return undefined
       return this.functionOf(value.callable) ?? "opaque"
     },
@@ -289,7 +289,7 @@ export function methods() {
     /** The summary the project declared for a package export, if any. */
     summaryFor(this: FlowScan, external: string): FlowSummary | undefined {
       // `split` always gives at least the module.
-      // Stryker disable next-line StringLiteral: equivalent -- a key of this kind always holds the separator, so the path is always there and the default is never used.
+      // Stryker disable next-line StringLiteral: equivalent: a key of this kind always holds the separator, so the path is always there and the default is never used.
       const [module, path = ""] = external.split("\u0000") as [string, string?]
       const bare = path.startsWith("default.") ? path.slice(8) : undefined
       return this.summaries.find(
@@ -310,7 +310,7 @@ export function methods() {
       if (summary === undefined) return undefined
       const given = this.materialize(frame, mergeVals(...args), node)
       // Whatever the summary says, the function reads what it is handed.
-      // Stryker disable next-line CallExpression: equivalent -- `materialize` has already recorded every part of the arguments as read, so reading them again records nothing new.
+      // Stryker disable next-line CallExpression: equivalent: `materialize` has already recorded every part of the arguments as read, so reading them again records nothing new.
       this.touch(frame.fn, given, node)
       switch (summary.effect) {
         case "pass-through":
@@ -330,7 +330,7 @@ export function methods() {
 
     /** The result of a summarized call: the data it carries, as the author's word. */
     declaredResult(this: FlowScan, val: Val, approximated: true | undefined): Val {
-      // Stryker disable next-line ConditionalExpression,BooleanLiteral: equivalent -- a declared result outranks an approximate one in its status, and an approximation of data already declared keeps the same paths; no read of it tells them apart.
+      // Stryker disable next-line ConditionalExpression,BooleanLiteral: equivalent: a declared result outranks an approximate one in its status, and an approximation of data already declared keeps the same paths; no read of it tells them apart.
       return declaredVal(approximated === true ? approximate(val) : val)
     },
 

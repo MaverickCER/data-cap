@@ -2,13 +2,13 @@
 
 One chapter per entry point, each written for the reader who imports it. Start with the chapter for your role.
 
-| Chapter                                                                                      | Entry points                                                                       | Written for                                                         |
-| -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| [Application data](#application-data)                                                        | `data-cap`, `data-cap/runtime`, `data-cap/runtime/cache`, `data-cap/runtime/retry` | Front-end and Node developers modelling data they do not own        |
-| [Helpers](#helpers)                                                                          | `data-cap/helpers`                                                                 | The same developers                                                 |
-| [Build tooling, the CLI and the GitHub Action](#build-tooling-the-cli-and-the-github-action) | `data-cap/build`, `data-cap/node`, the `data-cap` CLI, the Action                  | Platform engineers who own CI                                       |
-| [Data flow](#data-flow) (Experimental)                                                       | `data-cap/evidence`, `data-cap/observe`, the flow options of `data-cap/build`      | Security and privacy reviewers, and anyone asked where a field goes |
-| [ESLint plugin](#eslint-plugin)                                                              | `data-cap/eslint-plugin`                                                           | Lint owners                                                         |
+| Chapter                                                                                      | Entry points                                                                       | Written for                                                                  |
+| -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| [Application data](#application-data)                                                        | `data-cap`, `data-cap/runtime`, `data-cap/runtime/cache`, `data-cap/runtime/retry` | Front-end and Node developers whose data comes from a server or another team |
+| [Helpers](#helpers)                                                                          | `data-cap/helpers`                                                                 | The same developers                                                          |
+| [Build tooling, the CLI and the GitHub Action](#build-tooling-the-cli-and-the-github-action) | `data-cap/build`, `data-cap/node`, the `data-cap` CLI, the Action                  | Platform engineers who own CI                                                |
+| [Data flow](#data-flow) (Experimental)                                                       | `data-cap/evidence`, `data-cap/observe`, the flow options of `data-cap/build`      | Security and privacy reviewers, and anyone asked where a field goes          |
+| [ESLint plugin](#eslint-plugin)                                                              | `data-cap/eslint-plugin`                                                           | Lint owners                                                                  |
 
 [Requirements](#requirements-and-runtimes), [Troubleshooting](#troubleshooting) and [Performance](#performance-characteristics) apply to all of them. For why the package is built this way, read [specs/architecture.md](specs/architecture.md) and the [ADRs](specs/decisions/).
 
@@ -16,10 +16,23 @@ One chapter per entry point, each written for the reader who imports it. Start w
 
 ### Requirements
 
+The exact ranges, generated from `package.json`:
+
+<!-- ipc:begin supported-versions -->
+
+| Requirement                | Range                              | Needed   |
+| -------------------------- | ---------------------------------- | -------- |
+| Node.js                    | `>=22.0.0`                         | always   |
+| `@typescript-eslint/utils` | `^8.0.0`                           | optional |
+| `eslint`                   | `^8.57.0 \|\| ^9.0.0 \|\| ^10.0.0` | optional |
+| `typescript`               | `^5.0.0 \|\| ^6.0.0 \|\| ^7.0.0`   | optional |
+
+<!-- ipc:end supported-versions -->
+
 - **Node.js 22 or later.** `package.json` `engines` says so, and CI runs the tests on Node 22 and 24.
 - **TypeScript is optional.** The runtime entries work in plain JavaScript.
 - **The generator** parses with your project's TypeScript when it is version 5 or 6. Otherwise, with TypeScript 7 or none installed, it uses the TypeScript 6 compiler bundled inside this package. Your `tsc` stays your own.
-- **TypeScript 5, 6 and 7** are tested in CI's `typescript-compat` job. The flow scan runs under each and must produce identical evidence. It runs on the flow-explorer example's source, with the latest 5, 6 and 7 releases; the 5.0 floor is not tested. That job does not block a merge.
+- **TypeScript 5, 6 and 7** are tested in CI's `typescript-compat` job. The flow scan runs under each and must produce identical evidence. It runs on the flow-explorer example's source, with the latest 5, 6 and 7 releases; the 5.0 floor is not tested. `required` waits for that job, so a failure blocks a merge.
 - **Type declarations** type-check with full library checking under TypeScript 5, 6 and 7 for every entry point but `./eslint-plugin`. That check runs in the same job, with `moduleResolution: nodenext` only.
 - **`moduleResolution`** must be `node16`, `nodenext` or `bundler`. The legacy `node10` resolver cannot see the subpath exports.
 - **`data-cap/eslint-plugin`** also needs `eslint` and `@typescript-eslint/utils`, both optional peers.
@@ -38,11 +51,11 @@ One chapter per entry point, each written for the reader who imports it. Start w
 | `./eslint-plugin`                                 | Node only (inside ESLint)  | No              | No             | No            |
 
 1. `test/runtime/browser-bundle.test.ts` bundles the entry for the browser and runs it in a V8 context with Web globals only. No real browser runs it.
-2. `test/cross-runtime/` runs one smoke test per entry under Bun and Deno. The job uses the latest Bun and does not block a merge.
+2. `test/cross-runtime/` runs one smoke test per entry under Bun and Deno. The job uses the latest Bun and `required` waits for it.
 
 ### Package managers
 
-npm is the fully tested package manager: every other CI job installs with it. CI's `package-managers` job tests pnpm, Yarn 1 and Yarn Berry with the `node-modules` linker for one thing. The packed tarball installs, and every entry point imports as ESM and as CommonJS. That job does not block a merge. Yarn Plug'n'Play and pnpm's `pnp` linker are unsupported.
+npm is the fully tested package manager: every other CI job installs with it. CI's `package-managers` job tests pnpm, Yarn 1 and Yarn Berry with the `node-modules` linker for one thing. The packed tarball installs, and every entry point imports as ESM and as CommonJS. `required` waits for that job, so a failure blocks a merge. Yarn Plug'n'Play and pnpm's `pnp` linker are unsupported.
 
 ## Application data
 
@@ -84,7 +97,7 @@ What the tests in `test/runtime/capability.test.ts` hold it to:
 - A newer getter call discards an older in-flight getter's commit. A mutator's commit is never discarded.
 - Operation methods reject like ordinary Promises. `runGetters` runs several getters at once and never rejects; it returns one outcome per operation.
 - `getSnapshot().operations` tracks each call by its canonicalized params, so two calls with different params stay separate.
-- `getSnapshot()` and `subscribe()` work with React's `useSyncExternalStore` without a hook. The Next.js example builds with this pattern in CI's `examples` job, which does not block a merge.
+- `getSnapshot()` and `subscribe()` work with React's `useSyncExternalStore` without a hook. The Next.js example builds with this pattern in CI's `examples` job, which `required` waits for.
 
 [ADR 0048](specs/decisions/0048-builddata-createdata-split-and-optional-operations-layer.md) is the full behavioural contract. `examples/application/` uses every feature on one capability.
 
@@ -139,7 +152,7 @@ store.removePendingTransition(transitionId)
 store.removePendingTransition(transitionId)
 ```
 
-There is no rollback call and no conflict policy such as last-write-wins ([ADR 0023](specs/decisions/0023-no-automatic-rollback-or-conflict-resolution.md)). Each commit folds onto the current authoritative state, never a snapshot taken when the mutation started. `optimistic()` receives authoritative state, not the projected one, so a second optimistic update never builds on the first one's pending value. The fixture `test/integration/runtime-core/optimistic-mutation-concurrency/` runs two overlapping mutations end to end, in a job that does not block a merge.
+There is no rollback call and no conflict policy such as last-write-wins ([ADR 0023](specs/decisions/0023-no-automatic-rollback-or-conflict-resolution.md)). Each commit folds onto the current authoritative state, never a snapshot taken when the mutation started. `optimistic()` receives authoritative state, not the projected one, so a second optimistic update never builds on the first one's pending value. The fixture `test/integration/runtime-core/optimistic-mutation-concurrency/` runs two overlapping mutations end to end, in a job `required` waits for.
 
 ### Subscriptions
 
@@ -156,7 +169,7 @@ const release = defaultCoordinator.acquireSubscription(subscribeToFeed, {
 })
 ```
 
-A status change (`connecting`, `connected`, `disconnected`) touches only `info.<field>.subscription`, never `fields`. A disconnect keeps the last good value. The fixtures under `test/integration/subscriptions/` cover the lifecycle, a `recover` resync and two capabilities sharing one transport. They run in CI's `integration-fixtures` job, which does not block a merge; the unit tests in `test/runtime/coordinator.test.ts` do.
+A status change (`connecting`, `connected`, `disconnected`) touches only `info.<field>.subscription`, never `fields`. A disconnect keeps the last good value. The fixtures under `test/integration/subscriptions/` cover the lifecycle, a `recover` resync and two capabilities sharing one transport. They run in CI's `integration-fixtures` job, which `required` waits for; the unit tests in `test/runtime/coordinator.test.ts` do.
 
 ### Coordinator: dedup and isolation
 
@@ -212,7 +225,7 @@ async function loadUser(): Promise<void> {
 }
 ```
 
-The fixture `test/integration/runtime-core/basic-standalone/` runs this pattern, including a concurrent call that checks the dedup, in a job that does not block a merge. Pick a path per capability, not per application.
+The fixture `test/integration/runtime-core/basic-standalone/` runs this pattern, including a concurrent call that checks the dedup, in a job `required` waits for. Pick a path per capability, not per application.
 
 ### Cache and retry
 
@@ -240,7 +253,7 @@ await withRetry((signal) => userData.getUser({ id: "1" }, signal), controller.si
 
 ### TanStack Query and Socket.IO
 
-No adapter package ships, and no React package either ([ADR 0037](specs/decisions/0037-no-first-party-integration-packages.md)). Two fixtures show the patterns to copy. They run in a job that does not block a merge:
+No adapter package ships, and no React package either ([ADR 0037](specs/decisions/0037-no-first-party-integration-packages.md)). Two fixtures show the patterns to copy. They run in a job `required` waits for:
 
 - `test/integration/adoption-patterns/tanstack-query-integration/`: TanStack Query fetches and caches, and its results flow into a `data-cap` store.
 - `test/integration/subscriptions/socket-io-subscription/`: a local Socket.IO server and client wired into `coordinator.acquireSubscription`.
@@ -284,7 +297,7 @@ An item a refetch did not touch keeps its exact `FieldInfo` object: `next.info.c
 
 ## Build tooling, the CLI and the GitHub Action
 
-For the platform engineer who owns CI. The build pass reads your declarations and source, never runs them, and writes the reports. In CI, `--check` turns a stale report into a failed pull request. Every artifact is evidence that can support a review; none of it says a review was done.
+For the platform engineer who owns CI. The build pass reads your declarations and source, never runs them, and writes the reports. In CI, `node scripts/generate-data.mjs --check`, which `init` scaffolds, turns a stale report into a failed pull request, and `data-cap --check` does the same for the evidence file. Every artifact is evidence that can support a review; none of it says a review was done.
 
 ### Documenting a capability
 
@@ -364,7 +377,12 @@ const inventory = buildInventory(
 
 None of these is a CLI flag ([ADR 0066](specs/decisions/0066-cli-restricted-to-runtime-and-evidence-output.md)). Call the orchestrator, or the single generators `generateManifest`, `generateDocumentation`, `generateUsage` and `generateFlow`. [`examples/application/scripts/generate-docs`](https://github.com/MaverickCER/data-cap/tree/main/examples/application/scripts/generate-docs) is a worked script.
 
-Every report separates two kinds of fact. **Declared** facts are what an author wrote (`owner`, `sensitivity`, `protections`, `endpoints`); their presence is checked, never their truth. **Proven** facts come from the AST (`writes`, a dependency edge). An ambiguous case becomes an `info` or `indeterminate` finding, never a guessed `error`. `test/build/negative-guarantees.test.ts` holds this, and checks that finding messages never claim adequacy or verification. [specs/generated-artifacts.md](specs/generated-artifacts.md) lists what is generated, and what is deliberately not.
+Every report separates two kinds of fact:
+
+- **Declared** facts are what an author wrote (`owner`, `sensitivity`, `protections`, `endpoints`); their presence is checked, never their truth.
+- **Proven** facts come from the AST (`writes`, a dependency edge).
+
+An ambiguous case becomes an `info` or `indeterminate` finding, never a guessed `error`. `test/build/negative-guarantees.test.ts` holds this, and checks that finding messages never claim adequacy or verification. [specs/generated-artifacts.md](specs/generated-artifacts.md) lists what is generated, and what is deliberately not.
 
 ### Programmatic orchestration
 
@@ -409,30 +427,30 @@ npx data-cap --evidence docs/data.evidence.json
 npx data-cap --help
 ```
 
-| Flag                         | Meaning                                                                                                                                            |
-| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--evidence <path>`          | Required. Write the composed Evidence Model as JSON at this path.                                                                                  |
-| `--root <path>`              | Directory the globs resolve from. Default: the current directory.                                                                                  |
-| `--include <glob>`           | Discovery glob. Repeatable. Default: every `.ts` and `.tsx` file.                                                                                  |
-| `--exclude <glob>`           | Glob to exclude from discovery. Repeatable.                                                                                                        |
-| `--package <name>`           | Also discover a capability from an installed package's `dataCap.schema` field. Repeatable.                                                         |
-| `--tsconfig <path>`          | `tsconfig.json`, relative to the root, whose `paths` and `baseUrl` resolve aliased imports. Default: the one at the root.                          |
-| `--no-tsconfig`              | Turn path-alias resolution off.                                                                                                                    |
-| `--expiring-within-days <n>` | How many days out counts as "expiring soon" in the Lifecycle Model. Default: 30.                                                                   |
-| `--strict`                   | Treat every warning as an error. Info findings never escalate.                                                                                     |
-| `--strict-docs`              | Escalate static findings only: ownership, sensitivity, duplication.                                                                                |
-| `--strict-ownership`         | Escalate proven usage findings only: abandoned capabilities, unconsumed owned fields.                                                              |
-| `--strict-flow`              | Escalate data-flow warnings: a sensitive field crossing a boundary, an undecided policy, a field sent whole to a client, an unused sensitive path. |
-| `--flow-evidence`            | Trace each field through your functions, evaluate the `flowPolicy` rules, and add the result to the evidence. Experimental.                        |
-| `--observations <path>`      | Runtime observations from `data-cap/observe`, added to the evidence and compared with the static findings. Experimental.                           |
-| `--rules <path>`             | A JSON file of rules over the evidence. Exits 1 if one is violated. A rule whose analysis did not run counts as violated. Experimental.            |
-| `--json`                     | Print a machine-readable report instead of text.                                                                                                   |
-| `--check`                    | Write nothing. Exit 1 if the evidence file is stale or missing.                                                                                    |
-| `--help`, `-h`               | Show the help text.                                                                                                                                |
+| Flag                         | Meaning                                                                                                                                                                                                    |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--evidence <path>`          | Write the Evidence Model as JSON at this path. Required.                                                                                                                                                   |
+| `--root <path>`              | Directory to resolve globs from. Default: the current directory.                                                                                                                                           |
+| `--include <glob>`           | Discovery glob. Repeatable. Default: every `.ts` and `.tsx` file.                                                                                                                                          |
+| `--exclude <glob>`           | Glob to exclude from discovery. Repeatable.                                                                                                                                                                |
+| `--package <name>`           | Also discover a capability from an installed package's `dataCap.schema` field. Repeatable.                                                                                                                 |
+| `--tsconfig <path>`          | The `tsconfig.json`, relative to the root, whose `paths` and `baseUrl` resolve aliased imports. Default: the one at the root.                                                                              |
+| `--no-tsconfig`              | Do not resolve aliased imports.                                                                                                                                                                            |
+| `--expiring-within-days <n>` | How many days out counts as "expiring soon" in the Lifecycle Model. Default: 30.                                                                                                                           |
+| `--strict`                   | Treat every warning as an error. Info findings never escalate.                                                                                                                                             |
+| `--strict-docs`              | Treat static warnings as errors: ownership, sensitivity, duplication.                                                                                                                                      |
+| `--strict-ownership`         | Treat proven usage warnings as errors: abandoned capabilities, unconsumed owned fields.                                                                                                                    |
+| `--strict-flow`              | Treat data-flow warnings as errors: a sensitive field crossing a boundary, flow policies that could not be decided, fields sent to a client whole or never used. The last three need `--flow-evidence`.    |
+| `--flow-evidence`            | Trace each field through your functions, evaluate the `flowPolicy` rules your capabilities declare, and add the result to the Evidence Model. Experimental.                                                |
+| `--observations <path>`      | Runtime observations from `data-cap/observe`, added to the Evidence Model and compared with the static findings. The file is a JSON array of events, or an object with `events` and `skips`. Experimental. |
+| `--rules <path>`             | A JSON file of rules enforced over the evidence. Exit 1 if any is violated, and a rule whose analysis did not run is a violation. Experimental.                                                            |
+| `--json`                     | Print a machine-readable report instead of text.                                                                                                                                                           |
+| `--check`                    | Write nothing. Exit 1 if the evidence is stale or missing.                                                                                                                                                 |
+| `--help`, `-h`               | Show the help text.                                                                                                                                                                                        |
 
-`test/docs-cli-flags.test.ts` fails when a flag in `src/cli/index.ts` is missing from this Guide. `--check` and the `--strict*` flags are covered by `test/cli/index.test.ts`.
+`test/docs-cli-flags.test.ts` fails when a flag in `src/cli/index.ts` is missing from this Guide, or when a default here differs from the one in `--help`. It also fails when a meaning's first sentences differ from that flag's `--help` line, read without its parentheses. Later sentences, such as "Experimental.", are this Guide's own. `--check` and the `--strict*` flags are covered by `test/cli/index.test.ts`.
 
-`npx data-cap init` scaffolds `src/data.ts` and `scripts/generate-data.mjs`. It never overwrites a file and runs nothing (`test/cli/init.test.ts`).
+`npx data-cap init` scaffolds `src/data.ts` and `scripts/generate-data.mjs`. It never overwrites a file and runs nothing (`test/cli/init.test.ts`). The script writes the manifest and docs. With `--check` it writes nothing and exits 1 when a committed file is stale, which is the CI step (`test/cli/quick-start.test.ts`).
 
 ### Using the CLI in any CI system
 
@@ -446,11 +464,13 @@ The GitHub Action wraps the CLI; every other CI system gets the same gate from t
 
 2. Fail the job on the exit code:
 
-   | Exit code | Meaning                                                                                                                                                                                                                        |
-   | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-   | `0`       | The evidence is current and no rule is violated.                                                                                                                                                                               |
-   | `1`       | The evidence is stale, a rule is violated, or the run failed. On a failed run the JSON report has an `error`. On stale evidence `checkResult.stale` lists the files, and on a violated rule `evidenceRules` holds the verdict. |
-   | `2`       | Only from the GitHub Action's wrapper: `data-cap` is not installed and no `version` was given, or `version` is not a plain version or dist-tag.                                                                                |
+   | Exit code | Meaning                                                                                                                                                                                                                                   |
+   | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+   | `0`       | The evidence is current and no rule is violated.                                                                                                                                                                                          |
+   | `1`       | The evidence is stale or missing, a rule is violated, or the run failed. On a failed run the JSON report has an `error`. On stale evidence `checkResult.stale` lists the files, and on a violated rule `evidenceRules` holds the verdict. |
+   | `2`       | Only from the GitHub Action's wrapper: `data-cap` is not installed and no `version` was given, or `version` is not a plain version or dist-tag.                                                                                           |
+
+   `test/docs-cli-flags.test.ts` fails when this table lists a code the CLI and the Action's wrapper never set, or misses one they set. The meanings are checked by review.
 
 3. Read `data-cap.json`. `checkResult.stale` names each stale artifact, and `evidenceRules` holds the rule verdict. On failed generation, `error.findings` lists each issue with its `severity`, `message`, `file` and `position`.
 
@@ -485,15 +505,19 @@ jobs:
           args: "--evidence docs/data.evidence.json --strict-docs --strict-ownership"
 ```
 
-| Input               | Default               | Purpose                                                                                                                                                 |
-| ------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `args`              | _(required)_          | Arguments for `data-cap --json`, such as `--evidence`, `--flow-evidence`, `--rules` and the `--strict*` flags.                                          |
-| `working-directory` | `.`                   | Directory to run `data-cap` from.                                                                                                                       |
-| `version`           | _(none)_              | Version to run through `npx` when `data-cap` is not installed locally. Pin an exact version: a dist-tag such as `latest` is accepted and runs unpinned. |
-| `comment`           | `true`                | Create or update one summary comment on the pull request.                                                                                               |
-| `annotations`       | `true`                | Emit workflow annotations for the findings.                                                                                                             |
-| `report-key`        | _(working-directory)_ | Names this report, so two runs on one pull request do not overwrite each other's comment.                                                               |
-| `github-token`      | `github.token`        | Token for the comment calls.                                                                                                                            |
+<!-- ipc:begin action-inputs -->
+
+| Input               | Required | Default               | What it does                                                                                                                       |
+| ------------------- | -------- | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `args`              | yes      | none                  | Arguments for `data-cap --json`, for example '--evidence docs/data.evidence.json --strict-docs --strict-ownership'.                |
+| `working-directory` | no       | `.`                   | Directory to run data-cap from.                                                                                                    |
+| `version`           | no       | none                  | Version to run through npx when data-cap is not installed locally.                                                                 |
+| `comment`           | no       | `true`                | Create or update one summary comment on the pull request.                                                                          |
+| `report-key`        | no       | none                  | Names this run's summary comment, so several runs on one pull request (one per package in a monorepo) do not overwrite each other. |
+| `annotations`       | no       | `true`                | Emit a workflow annotation (::warning or ::error) for each finding.                                                                |
+| `github-token`      | no       | `${{ github.token }}` | Token the summary comment is posted with, through `gh`.                                                                            |
+
+<!-- ipc:end action-inputs -->
 
 The Action has no policy of its own: the job passes or fails on the CLI's exit code. Without a local install and without `version`, it exits 2 rather than run an unpinned build. Inputs reach its script as environment variables, never interpolated (`test/scripts/github-action-run-cli.test.ts`). With `--flow-evidence`, the comment adds a data-flow section; with `--rules`, the rule verdict. The comment and annotation rendering is tested in `test/scripts/github-action-report.test.ts`; the call that posts the comment to GitHub is not.
 
@@ -767,7 +791,7 @@ Data handled more than it needs to be. `analyzeRedundantTransforms(flow)` report
 
 ### The explorer
 
-[`examples/flow-explorer/`](https://github.com/MaverickCER/data-cap/tree/main/examples/flow-explorer) turns one evidence file into an interactive page. Pick a field, trace it, filter it, compare two revisions, and read the same facts as text. It draws with a devDependency (`@viz-js/viz`) and calls `traceFlow`, `diffFlow` and `renderFlowText` itself. Its tests run in jsdom with axe-core and a contrast check; no real browser or screen reader runs them. The page says on screen when the analysis is incomplete. CI's `examples` job runs those tests, plus a scan over all four consumer examples; that job does not block a merge.
+[`examples/flow-explorer/`](https://github.com/MaverickCER/data-cap/tree/main/examples/flow-explorer) turns one evidence file into an interactive page. Pick a field, trace it, filter it, compare two revisions, and read the same facts as text. It draws with a devDependency (`@viz-js/viz`) and calls `traceFlow`, `diffFlow` and `renderFlowText` itself. Its tests run in jsdom with axe-core and a contrast check; no real browser or screen reader runs them. The page says on screen when the analysis is incomplete. CI's `examples` job runs those tests, plus a scan over all four consumer examples; `required` waits for that job, so a failure blocks a merge.
 
 ## ESLint plugin
 
@@ -797,19 +821,32 @@ export default [
 | `no-fields-escape`           | A whole `.fields` or `getSnapshot()` result escaping the file: spread or rest, a bare call argument, one named JSX prop, or an export. Each shape has its own message id. A plain local alias is out of scope. | `allow` (globs)                                                                       |
 | `no-node-fs`                 | An `import`, `require` or dynamic `import()` of `node:fs`, so a module takes its filesystem from its caller.                                                                                                   | none                                                                                  |
 
-Each rule has its own test under `test/eslint-plugin/`. Rule names and message ids are Stable ([VERSIONING.md](VERSIONING.md#stable)). The unit tests run on ESLint 10. A fixture runs the plugin under ESLint 9 in a job that does not block a merge. ESLint 8.57 is in the peer range but untested. See [ADR 0063](specs/decisions/0063-eslint-plugin-multiple-rules-and-no-fields-spread.md) and [ADR 0064](specs/decisions/0064-no-fields-escape-export-argument-and-prop.md).
+Each rule has its own test under `test/eslint-plugin/`. Rule names and message ids are Stable ([VERSIONING.md](VERSIONING.md#stable)). The unit tests run on ESLint 10. A fixture runs the plugin under ESLint 9 in a job `required` waits for. ESLint 8.57 is in the peer range but untested. See [ADR 0063](specs/decisions/0063-eslint-plugin-multiple-rules-and-no-fields-spread.md) and [ADR 0064](specs/decisions/0064-no-fields-escape-export-argument-and-prop.md).
 
 ## Troubleshooting
 
 ### Error classes
 
-Every error the package throws extends `DataCapError` and carries a stable `code`. Switch on the `code`: `instanceof` can fail across bundle boundaries (`test/core/errors.test.ts`).
+The four classes below extend `DataCapError` and carry a stable `code`. Switch on the `code`: `instanceof` can fail across bundle boundaries. `test/docs-error-codes.test.ts` fails when an exported `DataCapError` subclass is missing from this table.
 
-| Error                                                               | Thrown by                       | Common cause                                        | Fix                                                      |
-| ------------------------------------------------------------------- | ------------------------------- | --------------------------------------------------- | -------------------------------------------------------- |
-| `InvalidFieldDefaultError` (`DATA_CAP_INVALID_FIELD_DEFAULT`)       | `buildData()`, `documentData()` | A field default is a function or contains a cycle.  | Declare a plain, acyclic default value.                  |
-| `UnknownGetterError` (`DATA_CAP_UNKNOWN_GETTER`)                    | `runGetters()`                  | A getter name that the capability does not declare. | Fix the name at the call site.                           |
-| `DataProjectGenerationError` (`DATA_CAP_PROJECT_GENERATION_FAILED`) | `data-cap/build` generators     | The run found at least one `error` finding.         | Read the listed findings; each names its fix. Run again. |
+| Error                                                               | Thrown by                                  | Common cause                                                                                  | Fix                                                      |
+| ------------------------------------------------------------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| `InvalidFieldDefaultError` (`DATA_CAP_INVALID_FIELD_DEFAULT`)       | `buildData()`, `documentData()`            | A field default is a function or contains a cycle.                                            | Declare a plain, acyclic default value.                  |
+| `UnknownGetterError` (`DATA_CAP_UNKNOWN_GETTER`)                    | `runGetters()`                             | A getter name that the capability does not declare.                                           | Fix the name at the call site.                           |
+| `DataProjectGenerationError` (`DATA_CAP_PROJECT_GENERATION_FAILED`) | `data-cap/build` generators                | The run found at least one `error` finding.                                                   | Read the listed findings; each names its fix. Run again. |
+| `FlowModelError` (`DATA_CAP_FLOW_MODEL_INVALID`)                    | `buildFlowModel()`, `buildEvidenceModel()` | Inconsistent flow input, such as an edge to a missing node, or a Policy Model without a flow. | Fix the input that the message names.                    |
+
+Some input checks throw a plain built-in error with no `code`:
+
+| Error        | Thrown by                       | Cause                                                                                                                  |
+| ------------ | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `RangeError` | `createDataCache()`             | `maxEntries` is not a positive integer.                                                                                |
+| `TypeError`  | `instrumentBoundary()`          | The target has no method of that name.                                                                                 |
+| `Error`      | `buildOscalAssessmentResults()` | Strict mode without `assessmentPlan` or `evidenceHref`.                                                                |
+| `Error`      | the `data-cap` CLI              | A bad argument, an unreadable `--observations` file, or a bad `init` target. The CLI prints the message and exits 1.   |
+| `Error`      | every `data-cap/build` scanner  | The installed `typescript` has no compiler API and the bundled TypeScript 6 could not load. The message names the fix. |
+
+Any other plain `Error`, for example from `withRetry` or the flow scan, means an internal loop bound failed. That is a data-cap bug: please report it.
 
 ### Reading a field does not wait for data
 
@@ -841,7 +878,13 @@ The table states the cost each operation is designed to have:
 | `identity.reconcileArrayInfo`                 | One pass over the items           | A full rebuild loses the object identity of unchanged items. |
 | `coordinator.dedupe` lookup                   | O(1) amortized, one map lookup    | A scan of in-flight requests is O(in-flight calls).          |
 
-The benchmarks fit a growth class to each function. A run fails on a growth class two or more classes off, a class worse than at the last release without a recorded exception, or overhead growth ([PERFORMANCE.md](PERFORMANCE.md#what-fails-a-run)). A failed `benchmark-pr` skips `lint`, `verify` and `contract`, and GitHub counts a skipped required check as passing, so check it by hand. The release still needs a successful `contract` run. Every entry point also has a gzip budget, which `verify` and `contract` enforce.
+The benchmarks fit a growth class to each function. A run fails on any of these ([PERFORMANCE.md](PERFORMANCE.md#what-fails-a-run)):
+
+- a growth class two or more classes off;
+- a class worse than at the last release without a recorded exception;
+- overhead growth.
+
+A failed `benchmark-pr` skips `lint` and `verify`, and `contract` then fails in its first step, so the merge is blocked. The release still needs a successful `contract` run. Every entry point also has a gzip budget, which `verify` and `contract` enforce.
 
 ## Further reading
 

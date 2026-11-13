@@ -1,19 +1,19 @@
 /**
- * `data-cap`'s Evidence Model (ADR 0050) -- the composition of the other
+ * `data-cap`'s Evidence Model (ADR 0050): the composition of the other
  * six canonical models into one provenance-stamped artifact. Every
  * reference projection (a Classification/Privacy/Retention/Audit/
  * Compliance Evidence report, an Assurance report, ...) reads this, never
  * a second, independently-assembled source.
  *
- * No prior art exists for this model in either `data-cap` or `env-cap` --
+ * No prior art exists for this model in either `data-cap` or `env-cap`:
  * this is first-of-its-kind design work, not a port. `capability` is the
- * only required input; every other project-varying model is independently
- * optional, mirroring `ReportResult`'s own established convention
+ * only required input. Every other project-varying model is independently
+ * optional. This mirrors `ReportResult`'s own established convention
  * (`manifest?`/`documentation?`/`flow?`) of "a caller passes whatever it
- * actually has." `runtimeContract` is the one exception --
- * always populated automatically, since `buildRuntimeContractModel()`
+ * actually has." `runtimeContract` is the one exception: it is
+ * always populated automatically. `buildRuntimeContractModel()`
  * takes no argument and is identical for every caller on the same
- * `data-cap` version; there is no scenario where a caller "doesn't have"
+ * `data-cap` version. There is no scenario where a caller "doesn't have"
  * it the way it might not have run a usage scan.
  */
 
@@ -33,29 +33,29 @@ import type { ChangeModel } from "./change-model.js"
 import type { LifecycleModel } from "./lifecycle-model.js"
 
 /**
- * Bump only when a reader could misinterpret the shape -- same discipline
+ * Bump only when a reader could misinterpret the shape: same discipline
  * every other model's schema-version constant already documents. Bumped
- * 1 -> 2: `provenance` became required and gained `toolVersion`/`commit`
- * (OUT-06), `lifecycle` was added (EVD-05), and `computed` was added
- * (OUT-04). Bumped 2 -> 3 (ADR 0070): `flow`, `policy`, `observation` and
- * `claims` were added, each with its own `computed` flag. Additive -- a v2
+ * 1 -> 2: `provenance` became required and gained `toolVersion`/`commit`,
+ * and `lifecycle` and `computed` were added. Bumped 2 -> 3 (ADR 0070):
+ * `flow`, `policy`, `observation` and
+ * `claims` were added, each with its own `computed` flag. Additive: a v2
  * reader's interpretation of every field it knew is unchanged.
  */
 export const EVIDENCE_MODEL_SCHEMA_VERSION = 3
 
 /**
- * Who/when/what produced a given `EvidenceModel` instance -- matching
+ * Who/when/what produced a given `EvidenceModel` instance: matching
  * env-cap's own `EvidenceProvenance` shape exactly, so a consumer reading
  * both packages' evidence artifacts reads one vocabulary, not two.
  *
  * `generatedAt`/`toolVersion` are required: every real caller can supply
- * both (the tool version is `data-cap`'s own installed version, read from
- * its `package.json` -- see `package-version.ts`), and a provenance stamp
+ * both. (The tool version is `data-cap`'s own installed version, read from
+ * its `package.json`; see `package-version.ts`.) A provenance stamp
  * that might be missing either one is a provenance stamp no consumer can
  * rely on. `commit` stays caller-supplied and explicitly `string |
- * undefined` (never omitted from the shape): `data-cap` never shells out to
- * `git` itself, so an absent commit is a stated absence, never a guess --
- * ADR 0050's "provenance is caller-supplied, never ambient-detected"
+ * undefined` (never omitted from the shape). `data-cap` never shells out to
+ * `git` itself, so an absent commit is a stated absence, never a guess.
+ * This is ADR 0050's "provenance is caller-supplied, never ambient-detected"
  * convention, kept exactly where it still applies.
  */
 export interface EvidenceProvenance {
@@ -67,15 +67,15 @@ export interface EvidenceProvenance {
   readonly commit: string | undefined
 }
 
-/** The project-varying models Evidence Model composes -- `capability` and `lifecycle` are required; the rest depend on which passes actually ran. */
+/** The project-varying models Evidence Model composes: `capability` and `lifecycle` are required; the rest depend on which passes actually ran. */
 export interface EvidenceModelInputs {
-  /** Capability Model -- the base every other model is derived from or indexed against. */
+  /** Capability Model: the base every other model is derived from or indexed against. */
   readonly capability: CapabilityInventory
   /**
    * Lifecycle Model. Required alongside `capability`, not optional like
-   * `dependency`/`ownership`: it is a pure projection over the inventory
+   * `dependency`/`ownership`. It is a pure projection over the inventory
    * (`buildLifecycleModel`), so any caller holding a `capability` can always
-   * produce one -- there is no scenario where a caller legitimately
+   * produce one. There is no scenario where a caller legitimately
    * "doesn't have" it the way it might not have run a usage scan. Only the
    * `expiringWithinDays`/`now` window is a caller choice, and that changes
    * the contents, never the availability.
@@ -98,13 +98,12 @@ export interface EvidenceModelInputs {
 }
 
 /**
- * Which project-varying sub-models this particular run actually computed
- * (OUT-04).
+ * Which project-varying sub-models this particular run actually computed.
  *
  * Without this, a persisted `data.evidence.json` is ambiguous in exactly the
- * way a governance artifact must never be: an absent `dependency` could mean
+ * way a governance artifact must never be. An absent `dependency` could mean
  * "nothing in this project depends on anything" (a real, reportable finding)
- * or "this run never scanned for dependencies" (no finding at all, just an
+ * or "this run never scanned for dependencies" (no finding at all, only an
  * un-run pass). Those are opposite conclusions and the JSON looked identical
  * either way.
  *
@@ -114,13 +113,12 @@ export interface EvidenceModelInputs {
  * to stay cheap. So instead of forcing every run to pay for a full
  * dependency scan, each sub-model's presence is stated explicitly.
  *
- * `capability`, `lifecycle`, and `runtimeContract` have no flag -- they are
+ * `capability`, `lifecycle`, and `runtimeContract` have no flag: they are
  * always populated by construction, so a flag could only ever read `true`.
  *
  * A pass that ran and found nothing is `true` with an empty result, never
- * `false`: "we looked and found none" is a genuine finding, and collapsing
- * it into "we didn't look" is precisely the confusion this field exists to
- * prevent.
+ * `false`. "We looked and found none" is a real finding, and this field keeps
+ * it apart from "we did not look".
  */
 export interface EvidenceComputedModels {
   /** Whether a usage scan ran and produced a Dependency Model this run. */
@@ -137,7 +135,7 @@ export interface EvidenceComputedModels {
   readonly policy: boolean
   /** Whether runtime observations were ingested and produced an Observation Model this run. */
   readonly observation: boolean
-  /** Whether claims were derived this run -- true exactly when `flow` was computed. */
+  /** Whether claims were derived this run: true exactly when `flow` was computed. */
   readonly claims: boolean
 }
 
@@ -149,45 +147,45 @@ export interface EvidenceComputedModels {
 export interface EvidenceModel {
   /** Always `EVIDENCE_MODEL_SCHEMA_VERSION`. */
   readonly schemaVersion: typeof EVIDENCE_MODEL_SCHEMA_VERSION
-  /** Who/when/what produced this instance -- always present (see `EvidenceProvenance`). */
+  /** Who/when/what produced this instance: always present (see `EvidenceProvenance`). */
   readonly provenance: EvidenceProvenance
   /** Capability Model. */
   readonly capability: CapabilityInventory
-  /** Lifecycle Model -- always populated, for the reason `EvidenceModelInputs.lifecycle` documents. */
+  /** Lifecycle Model: always populated, for the reason `EvidenceModelInputs.lifecycle` documents. */
   readonly lifecycle: LifecycleModel
   /**
-   * Which of the four optional sub-models below this run actually computed
-   * -- read this before concluding anything from an absent one (OUT-04).
+   * Which of the four optional sub-models below this run actually computed:
+   * read this before concluding anything from an absent one.
    */
   readonly computed: EvidenceComputedModels
-  /** Dependency Model, or `undefined` when no usage scan was run -- see `computed.dependency` before reading absence as "no dependencies." */
+  /** Dependency Model, or `undefined` when no usage scan was run: see `computed.dependency` before reading absence as "no dependencies." */
   readonly dependency: DependencyModel | undefined
-  /** Ownership Model, or `undefined` when none was supplied -- see `computed.ownership`. */
+  /** Ownership Model, or `undefined` when none was supplied: see `computed.ownership`. */
   readonly ownership: OwnershipModel | undefined
-  /** Finding Model, or `undefined` when nothing was supplied -- see `computed.finding` before reading absence as "no findings." */
+  /** Finding Model, or `undefined` when nothing was supplied. See `computed.finding` before reading absence as "no findings." */
   readonly finding: FindingModel | undefined
   /**
-   * Change Model, or `undefined` when no manifest diff was available -- see
-   * `computed.change` before reading absence as "nothing changed." Not a
+   * Change Model, or `undefined` when no manifest diff was available. See
+   * `computed.change` before reading absence as "nothing changed." It is not a
    * diffable input across two `EvidenceModel`s the way the other five
-   * project-varying fields conceptually are -- it already IS a diff.
+   * project-varying fields conceptually are: it already IS a diff.
    */
   readonly change: ChangeModel | undefined
-  /** Flow Model, or `undefined` when no flow pass ran -- see `computed.flow` before reading absence as "no flows." */
+  /** Flow Model, or `undefined` when no flow pass ran: see `computed.flow` before reading absence as "no flows." */
   readonly flow: FlowModel | undefined
-  /** Policy Model, or `undefined` when no rules were evaluated -- see `computed.policy`. */
+  /** Policy Model, or `undefined` when no rules were evaluated: see `computed.policy`. */
   readonly policy: PolicyModel | undefined
-  /** Observation Model, or `undefined` when no observations were ingested -- see `computed.observation` before reading absence as "nothing was observed." */
+  /** Observation Model, or `undefined` when no observations were ingested. See `computed.observation` before reading absence as "nothing was observed." */
   readonly observation: ObservationModel | undefined
   /**
    * Claims Model, derived by `buildEvidenceModel` from `flow` (plus `policy`
-   * and `observation` when present), never supplied by a caller -- one
+   * and `observation` when present), never supplied by a caller. There is one
    * derivation path, so the claims can never disagree with the facts they
    * cite. `undefined` exactly when `flow` is.
    */
   readonly claims: ClaimsModel | undefined
   /**
-   * Runtime Contract Model -- always populated, package-scoped rather than
+   * Runtime Contract Model: always populated, package-scoped rather than
    * project-scoped (see this module's own doc comment). A static append,
    * never itself a diffable "changed since last run" input.
    */
@@ -218,8 +216,8 @@ export function buildEvidenceModel(
     capability: models.capability,
     lifecycle: models.lifecycle,
     // Derived from what was actually supplied, never from whether a supplied
-    // model happens to be empty -- an empty `DependencyModel` means the scan
-    // ran and proved zero edges, which is a real result (OUT-04).
+    // model happens to be empty: an empty `DependencyModel` means the scan
+    // ran and proved zero edges, which is a real result.
     computed: {
       dependency: models.dependency !== undefined,
       ownership: models.ownership !== undefined,

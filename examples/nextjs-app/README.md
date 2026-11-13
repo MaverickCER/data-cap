@@ -35,7 +35,7 @@ Build the package first: `npm run build` at the repository root. Then, in this d
 | `npm run check` | 0         | `[generate-docs check] manifest/docs/ownership/evidence artifacts are up to date.` |
 | `npm start`     | stays up  | the server listening on `http://localhost:3000`                                    |
 
-CI's `examples` job runs `npm ci` and `npm run build` here; `npm run build` runs `npm run docs` first. CI does not run `npm run check`, `npm start` or the authorization steps below. That job does not block a merge.
+CI's `examples` job runs `npm ci` and `npm run build` here; `npm run build` runs `npm run docs` first. CI does not run `npm run check`, `npm start` or the authorization steps below. `required` waits for that job, so a failure blocks a merge.
 
 Then visit `/`, sign in as any of the three seeded users, and try the authorization boundaries below. Or drive them with `curl`:
 
@@ -61,7 +61,7 @@ These were checked by hand against a running server, not in CI. Alice can read a
 
 `data.schema.ts`'s `documentData()` call declares the `todos` field's `sensitivity`, `protections`, `retention` and `purpose`. The route handlers above enforce per-record ownership; `data-cap` does not. `docs/OWNERSHIP.md` says so: `data-cap`'s ownership model is per capability (which team owns the field), not per record (which user owns the row).
 
-**A known limitation, left visible:** `npm run check` reports one warning, `UNCONSUMED_FIELD` on `todos`. The dependency scan recognizes a literal `x.fields.Y` or `x.getSnapshot().fields.Y` read. It does not follow `todo-app.tsx`'s `useSyncExternalStore(todoData.subscribe, todoData.getSnapshot, todoData.getSnapshot)`, which passes `getSnapshot` by reference. The field is read and displayed; the scan cannot see it. No unused direct read was added just to satisfy the check.
+**A known limitation, left visible:** `npm run check` reports one warning, `UNCONSUMED_FIELD` on `todos`. The dependency scan recognizes a literal `x.fields.Y` or `x.getSnapshot().fields.Y` read. It does not follow `todo-app.tsx`'s `useSyncExternalStore(todoData.subscribe, todoData.getSnapshot, todoData.getSnapshot)`, which passes `getSnapshot` by reference. The field is read and displayed; the scan cannot see it. No unused direct read was added only to satisfy the check.
 
 ## What it took to get `next start` working
 

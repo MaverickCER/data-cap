@@ -1,15 +1,15 @@
 /**
  * The graph view (ADR 0070): the stable, documented, library-independent
- * shape a renderer reads. It is a pure projection of the one Evidence Model
- * -- computed on demand, never persisted, never a second source of truth --
- * and it says nothing about how it will be drawn: DOT, Mermaid, an SVG
+ * shape a renderer reads. It is a pure projection of the one Evidence Model:
+ * computed on demand, never persisted, never a second source of truth.
+ * It says nothing about how it will be drawn: DOT, Mermaid, an SVG
  * layout or an accessible table all start here.
  *
  * Per function it exposes inputs, output, field-level reads, forwards,
  * side effects, discards, callers, callees, security classifications and the
  * confidence of the evidence behind it. Per field it exposes where the data
- * is declared to come from, which boundaries it reaches (and by which
- * paths), who drops which paths, and whether the picture is complete.
+ * is declared to come from and which boundaries it reaches, by which paths.
+ * It also exposes who drops which paths, and whether the picture is complete.
  *
  * Isomorphic: no Node, no compiler. A flow that was not computed yields
  * `undefined`, never an empty view that could be read as "no flows exist".

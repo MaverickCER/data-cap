@@ -4,7 +4,7 @@
  * identity. `coordinator.acquireSubscription` ref-counts this: the first
  * acquirer actually opens the transport; later acquirers reuse it and
  * immediately learn its current status; the transport tears down only once
- * every acquirer has released -- not on any single consumer's own
+ * every acquirer has released; not on any single consumer's own
  * unsubscribe.
  */
 import assert from "node:assert/strict"
@@ -54,7 +54,7 @@ const release1 = defaultCoordinator.acquireSubscription(subscribeToFeed, consume
 assert.equal(connectionCount, 1, "the first acquirer opens the transport")
 assert.deepEqual(consumer1.statuses, ["connecting"])
 
-// A second consumer joins with the SAME subscribeToFeed reference -- reuses
+// A second consumer joins with the SAME subscribeToFeed reference: reuses
 // the existing transport (connectionCount stays 1) and immediately learns
 // the CURRENT status, rather than waiting for the next transition.
 const consumer2 = makeConsumer("consumer2")
@@ -72,12 +72,12 @@ await new Promise((resolve) => setTimeout(resolve, 10))
 assert.deepEqual(consumer1.statuses, ["connecting", "connected"])
 assert.deepEqual(consumer2.statuses, ["connecting", "connected"])
 
-// The first consumer unsubscribes -- the transport stays open (consumer2 is
+// The first consumer unsubscribes: the transport stays open (consumer2 is
 // still attached), so disconnectionCount stays 0.
 release1()
 assert.equal(disconnectionCount, 0, "the transport stays open while any acquirer remains")
 
-// The last consumer unsubscribes -- only now does the transport tear down.
+// The last consumer unsubscribes: only now does the transport tear down.
 release2()
 assert.equal(disconnectionCount, 1, "the transport disconnects once every acquirer has released")
 

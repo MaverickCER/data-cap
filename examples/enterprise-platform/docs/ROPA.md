@@ -1,15 +1,15 @@
 # Record of Processing Activities (GDPR Art. 30(1))
 
-> This document is a generated illustration of GDPR Article 30(1) record-of-processing-activities (ROPA) content, produced from data-cap's own declared governance metadata. It is not legal advice, not a compliance certification, and not a substitute for your organization's own Art. 30 review -- see this generator's own README (scripts/ropa/README.md) for exactly which of the 7 required items below are direct schema fields, which are partial/approximate mappings, and which require your own input before this document is published externally.
+> This document is a generated illustration of GDPR Article 30(1) record-of-processing-activities (ROPA) content, produced from data-cap's own declared governance metadata. It is not legal advice, not a compliance certification, and not a substitute for your organization's own Art. 30 review. See this generator's own README (scripts/ropa/README.md) for exactly which of the 7 required items below are direct schema fields, which are partial/approximate mappings, and which require your own input before this document is published externally.
 
-Generated at: 2026-11-13T03:03:19.406Z
+Generated at: 2026-11-13T20:51:04.033Z
 
 ## (a) Controller identity
 
 - **Name:** Atlas Platform, Inc. (example placeholder)
 - **Contact:** privacy@example.com (example placeholder)
 
-## Processing activities -- summary
+## Processing activities: summary
 
 | Processing activity (capability) | (b) Purpose(s) | (c) Data subject categories | (c) Personal data categories | (d) Recipient categories | (e) Transfer safeguards | (f) Retention | (g) Security measures |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -17,7 +17,7 @@ Generated at: 2026-11-13T03:03:19.406Z
 | `identityData` | Authorizing access to every other capability in this platform. | staff members | confidential | Not documented | Not documented | Not documented | Session-authenticated access only; TLS in transit; password never leaves the server. |
 | `projectsData` | Cross-department project navigation. | Not documented | internal | Not documented | Not documented | Not documented | Session-authenticated access only; TLS in transit. |
 
-## Processing activities -- detail
+## Processing activities: detail
 
 ### `billingData`
 

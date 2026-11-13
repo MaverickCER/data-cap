@@ -1,10 +1,13 @@
 # helpers
 
+`data-cap/helpers`: optional helpers for writing processors (`processors`), keying array items
+(`identity`, `canonicalize`) and narrowing raw values (`shape`).
+
 ## Interfaces
 
 ### IdentityWarning
 
-One array item that couldn't be reconciled by identity -- surfaced, never silently dropped.
+One array item that couldn't be reconciled by identity: surfaced, never silently dropped.
 
 #### Properties
 
@@ -62,7 +65,7 @@ Items that couldn't be reconciled by identity, never silently dropped.
 type IdentityKeys<Item> = readonly (keyof Item & string)[];
 ```
 
-Declared identity field names for one array item shape -- e.g. `["id"]`, or `["postId", "commentId"]` for a composite key.
+Declared identity field names for one array item shape: e.g. `["id"]`, or `["postId", "commentId"]` for a composite key.
 
 #### Type Parameters
 
@@ -91,7 +94,7 @@ const identity: {
 };
 ```
 
-Array-identity primitives -- the same ones the standalone runtime uses to reconcile `info` for an identity-configured array field.
+Array-identity primitives: the same ones the standalone runtime uses to reconcile `info` for an identity-configured array field.
 
 #### Type Declaration
 
@@ -104,13 +107,13 @@ computeItemIdentity: <Item>(item, keys, path, warnings) => string;
 Computes the joined identity key for one array item from its declared identity fields.
 
 Computes the joined identity key for one array item. Each declared key's
-value is independently canonicalized (so `1` and `"1"`, or `NaN` and any
-number, can never collide) and concatenated via `canonicalize`'s own
-self-delimiting encoding -- no additional separator is needed. A missing
-key, a `null`/`undefined` component, or a non-canonicalizable component
-(a function, a symbol, ...) all degrade to the same fixed token rather
-than throwing or silently colliding with unrelated data; each is recorded
-as a warning against `path`.
+value is canonicalized on its own, so `1` and `"1"`, or `NaN` and any
+number, can never collide. The parts are concatenated through
+`canonicalize`'s self-delimiting encoding, so no extra separator is needed. A missing key, a
+`null` or `undefined` component, or one that cannot be canonicalized (a
+function, a symbol) becomes the same fixed token. Nothing throws or silently
+collides with unrelated data, and each case is recorded as a warning against
+`path`.
 
 ###### Type Parameters
 
@@ -140,18 +143,17 @@ reconcileArrayInfo: <Item, TInfo>(prevInfo, nextItems, identityKeys, touchedIden
 Reconciles an identity-keyed `DataInfo` map against a new items array, preserving reference identity for untouched entries.
 
 Recomputes an array field's identity-keyed `DataInfo` map by diffing
-against the previous map: an identity the current operation did not touch
+against the previous map. An identity the current operation did not touch
 (per `touchedIdentities`), but that still exists in `nextItems`, keeps its
-previous `TInfo` object reference exactly -- this is the release-blocking
+previous `TInfo` object reference exactly. This is the release-blocking
 performance invariant `next.info.comments["1"] === previous.info.comments["1"]`
-relies on. Identities no longer present in `nextItems` are dropped (no
-orphans); this is always a full recompute of the key SET (never
-incremental), even though individual entries are reference-preserved.
+relies on. Identities no longer present in `nextItems` are dropped, so no
+orphans remain. The key SET is always fully recomputed, never
+incrementally, even though individual entries keep their references.
 
-A duplicate identity across two items is not an error: both items remain
-in `fields` untouched, but they share one `DataInfo` slot -- the
-last-encountered item during the walk determines that slot's info
-(recorded as a warning, never silently ignored).
+A duplicate identity across two items is not an error. Both items stay in
+`fields` untouched, but they share one `DataInfo` slot. The last item the
+walk meets sets that slot's info, and a warning records it.
 
 ###### Type Parameters
 
@@ -196,7 +198,7 @@ const processors: {
 };
 ```
 
-Convenience coercion helpers for a `processor(raw, ctx)` function (e.g. `processors.toNumber(raw.age)`). Never throw -- unparseable input resolves to `undefined`.
+Convenience coercion helpers for a `processor(raw, ctx)` function (e.g. `processors.toNumber(raw.age)`). Never throw: unparseable input resolves to `undefined`.
 
 #### Type Declaration
 
@@ -209,10 +211,10 @@ parseJSON: (value) => unknown;
 Parses a JSON string; non-string input returns `undefined`.
 
 Parses a JSON string; non-string input returns `undefined`. Returns
-`unknown` rather than an assertable `<T>` -- its result flows into a
+`unknown` rather than an assertable `<T>`. Its result flows into a
 processor's returned patch, which already runs through
-`core/ownership.ts`'s own shape check on the way to a commit, so an
-unchecked generic cast here would just hide that same unsafety behind a
+`core/ownership.ts`'s own shape check on the way to a commit. So an
+unchecked generic cast here would only hide that same unsafety behind a
 type parameter instead of surfacing it at the call site.
 
 ###### Parameters
@@ -504,9 +506,9 @@ value is null \| undefined
 isPlainObject: (value) => value is Record<string, unknown>;
 ```
 
-True for a plain object literal (or `Object.create(null)`) -- false for arrays, `null`, and class instances.
+True for a plain object literal (or `Object.create(null)`): false for arrays, `null`, and class instances.
 
-True for a plain object literal (or `Object.create(null)`) -- false for
+True for a plain object literal (or `Object.create(null)`): false for
 `null`, arrays, and any class instance (including `Date`/`URL`/`RegExp`),
 matching the same "plain object" notion `core/canonicalize.ts` uses
 internally.
@@ -565,12 +567,12 @@ True for a `URL` instance.
 function canonicalize(value): string | undefined;
 ```
 
-Canonicalizes `value` into a deterministic string, or `undefined` if it
-cannot be safely canonicalized (a function, a symbol, a cyclic reference,
-an invalid `Date`, a class instance without `.toJSON()`, or any object
-carrying `__proto__`/`constructor`/`prototype` as an own key). Never
+Canonicalizes `value` into a deterministic string, or returns `undefined`
+when that is unsafe. Unsafe values are a function, a symbol, a cyclic
+reference, an invalid `Date` and a class instance without `.toJSON()`.
+So is an object with an own `__proto__`, `constructor` or `prototype` key. Never
 throws. Equal inputs always produce equal output; distinct supported
-values never collide (own-enumerable-key walk only, `Object.keys` --
+values never collide (own-enumerable-key walk only: `Object.keys`,
 never `for...in`).
 
 #### Parameters

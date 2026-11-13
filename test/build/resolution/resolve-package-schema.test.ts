@@ -97,7 +97,7 @@ beforeAll(async () => {
   await writeFile("outside.ts", "export const shouldNeverBeRead = true;\n")
 
   // "dataCap.schema" is a symlink whose real target escapes the package
-  // directory -- must be rejected even though the declared path *string*
+  // directory: must be rejected even though the declared path *string*
   // never contains "..".
   await writeFile("escape-target/secret.ts", "export const shouldNeverBeRead = true;\n")
   await writeJson("node_modules/@fixtures/escape-symlink/package.json", {
@@ -115,7 +115,7 @@ beforeAll(async () => {
   )
 
   // "dataCap.schema" is a symlink whose real target stays *inside* the
-  // package directory -- must be allowed (symlinks aren't rejected on
+  // package directory: must be allowed (symlinks aren't rejected on
   // sight; only an escaping real target is).
   await writeJson("node_modules/@fixtures/safe-symlink/package.json", {
     name: "@fixtures/safe-symlink",
@@ -145,7 +145,7 @@ beforeAll(async () => {
   )
 
   // Decoy nested package.json (no "name" field) between the main entry and
-  // the real root package.json -- the upward walk must not stop there. Only
+  // the real root package.json: the upward walk must not stop there. Only
   // reachable via the fallback path, so "exports" must omit "./package.json".
   await writeJson("node_modules/@fixtures/decoy-walk/package.json", {
     name: "@fixtures/decoy-walk",
@@ -166,7 +166,7 @@ beforeAll(async () => {
 
   // Main entry nested deep enough (more than PACKAGE_JSON_ANCESTOR_SEARCH_LIMIT
   // levels) below the package's own package.json that the upward walk
-  // exhausts its iteration budget before ever reaching it -- must return
+  // exhausts its iteration budget before ever reaching it: must return
   // undefined (PACKAGE_NOT_FOUND) rather than loop forever or crash.
   await writeJson("node_modules/@fixtures/deep-nomatch/package.json", {
     name: "@fixtures/deep-nomatch",
@@ -192,7 +192,7 @@ beforeAll(async () => {
   await writeFile("node_modules/@fixtures/missing-file/index.js", "module.exports = {};\n")
 
   // "dataCap.schema" resolves (after realpath) to a real directory rather
-  // than a regular file -- a directory can still be named with a ".ts"
+  // than a regular file: a directory can still be named with a ".ts"
   // suffix, so the extension check alone doesn't catch this.
   await writeJson("node_modules/@fixtures/schema-is-directory/package.json", {
     name: "@fixtures/schema-is-directory",
@@ -206,7 +206,7 @@ beforeAll(async () => {
   )
 
   // Package directory itself reached via a symlink (mimics pnpm's
-  // content-addressable store) -- the declared schema file must still
+  // content-addressable store): the declared schema file must still
   // resolve and pass the realpath containment check correctly.
   await writeJson(".store/symlinked-pkg-real/package.json", {
     name: "@fixtures/symlinked-pkg",
@@ -226,7 +226,7 @@ beforeAll(async () => {
 
   // Second package for cross-package "cycle" scenario: bare-imports the
   // first from within its own schema file's surrounding module (the schema
-  // file itself doesn't need to import anything for resolution purposes --
+  // file itself doesn't need to import anything for resolution purposes;
   // resolution is per-package-name and non-recursive by construction).
   await writeJson("node_modules/@fixtures/cycle-a/package.json", {
     name: "@fixtures/cycle-a",
@@ -361,7 +361,7 @@ describe("resolvePackageSchemaFile", () => {
     // Node's own module resolution needs to parse a package's package.json
     // just to locate anything inside it, so a package.json malformed enough
     // to reach this code's own JSON.parse can't be constructed as a package
-    // Node itself can resolve at all -- spy on the read this code does once
+    // Node itself can resolve at all: spy on the read this code does once
     // it already has a resolved, Node-valid path in hand.
     const readFileSpy = vi.spyOn(fs, "readFile").mockResolvedValueOnce("{ this is not json")
     try {
@@ -373,7 +373,7 @@ describe("resolvePackageSchemaFile", () => {
   })
 
   it("reports MALFORMED_PACKAGE_JSON when the resolved package.json parses to something other than a JSON object", async () => {
-    // A bare JSON string, not `[]` -- isRecord()'s own `typeof value ===
+    // A bare JSON string, not `[]`: isRecord()'s own `typeof value ===
     // "object"` check does not exclude arrays, so this is the shape that
     // actually exercises the "not a JSON object" rejection.
     const readFileSpy = vi.spyOn(fs, "readFile").mockResolvedValueOnce('"just a string"')
@@ -811,7 +811,7 @@ describe("sync failure builders (direct)", () => {
     expect(result.reason).toContain('"@x/y"')
     expect(result.reason).toContain("/some/root")
     expect(result.reason).toContain("could not be resolved")
-    expect(result.reason).toContain("is it installed?")
+    expect(result.reason).toContain("Is it installed?")
   })
 
   it("malformedJsonFailure names the package.json path", () => {

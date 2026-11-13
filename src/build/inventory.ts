@@ -1,20 +1,20 @@
 /**
  * Builds the one authoritative, in-memory model every report generator
- * reads from -- a pure function over an already-discovered `LinkResult`,
+ * reads from: a pure function over an already-discovered `LinkResult`,
  * never touching the filesystem or an AST itself. Generators that only
  * need ownership/sensitivity/flow-endpoint data (a manifest, the docs
  * catalog, the exclusive-group check) read this and never pay for the
  * separate, more expensive usage-scan pass (`scan-dependencies.ts`) that
- * produces `DependencyEdge`s -- those stay a distinct, optional layer.
+ * produces `DependencyEdge`s: those stay a distinct, optional layer.
  *
  * Field/operation granularity is deliberately top-level only, matching
  * what `documentData()`'s `CapabilityFieldDocs` can actually describe
- * (`{[K in keyof TFields]?: FieldDocs}` -- one level deep, not a recursive
+ * (`{[K in keyof TFields]?: FieldDocs}`: one level deep, not a recursive
  * walk of nested field paths). `OperationNode.writes` is resolved down to
- * the same top-level granularity: an operation "writes" a top-level field
+ * the same top-level granularity. An operation "writes" a top-level field
  * whenever its statically-extracted `writes` shape claims that field at
- * all (`true` at the root, or any truthy value under that key), regardless
- * of how deep within the field the actual claimed subtree goes.
+ * all (`true` at the root, or any truthy value under that key). This holds
+ * regardless of how deep within the field the actual claimed subtree goes.
  */
 
 import type { DataFlowEndpoint, FieldDocs, OperationDocs } from "../core/document.js"
@@ -25,24 +25,24 @@ import type { Loosen, LooseCapabilityDocs, ParseWarning, RawOperationPresence } 
 import type { SourcePosition } from "./source-position.js"
 
 /**
- * Capability Model's schema version (ADR 0050) -- `CapabilityInventory` is
+ * Capability Model's schema version (ADR 0050): `CapabilityInventory` is
  * both. Bumped only when a reader could misinterpret the shape (a field
- * changes type/meaning, or is removed), never for a purely additive field --
+ * changes type/meaning, or is removed), never for a purely additive field:
  * the same discipline `MANIFEST_SNAPSHOT_SCHEMA_VERSION`
  * (manifest-snapshot.ts) and `JSON_SCHEMA_VERSION` (cli/json.ts) already
  * document. Bumped 1 -> 2 by ADR 0057: `CapabilityNode`'s six governance properties
  * moved to `docs` only; `FieldNode`'s six moved from a bare value to
- * `ResolvedGovernanceValue<T>` (`{value, declaredOn}`). Bumped 2 -> 3 by
- * OUT-01: `CapabilityNode.file` is now root-relative, not absolute.
+ * `ResolvedGovernanceValue<T>` (`{value, declaredOn}`). Bumped 2 -> 3:
+ * `CapabilityNode.file` is now root-relative, not absolute.
  */
 export const CAPABILITY_MODEL_SCHEMA_VERSION = 3
 
 /**
- * One resolved governance value plus its provenance (ADR 0057) -- the one path a
- * `FieldNode` consumer reads for a governed property, replacing what used to require
- * separately checking a bare resolved property AND `field.docs.X` to get the full
- * picture. `declaredOn: undefined` means neither the field nor its capability
- * declared a value at all (`value` is then also `undefined`).
+ * One resolved governance value plus its provenance (ADR 0057). It is the one path a
+ * `FieldNode` consumer reads for a governed property, instead of checking a resolved
+ * property and `field.docs.X` separately. `declaredOn: undefined` means neither the
+ * field nor its capability declared a value at all (`value` is then also
+ * `undefined`).
  */
 export interface ResolvedGovernanceValue<T> {
   /** The effective value: the field's own declaration, else the capability's. */
@@ -55,19 +55,19 @@ export interface ResolvedGovernanceValue<T> {
 export interface FieldNode {
   /** Top-level field key, as a single-element path (see the module doc comment on why granularity stops here). */
   readonly path: readonly string[]
-  /** This field's own declared documentation, if any -- `description`/`protections`/`retention`/`metadata` have no resolution concept and live only here; for the six governed properties below, prefer `.value`/`.declaredOn` over reading this object directly (ADR 0057). */
+  /** This field's own declared documentation, if any: `description`/`protections`/`retention`/`metadata` have no resolution concept and live only here; for the six governed properties below, prefer `.value`/`.declaredOn` over reading this object directly (ADR 0057). */
   readonly docs: FieldDocs | undefined
   /** Resolved: the field's own `docs.owner`, else the capability's `owner`, plus which one declared it. */
   readonly owner: ResolvedGovernanceValue<string>
-  /** Resolved: the field's own `docs.sensitivity`, else the capability's `sensitivity` -- same inheritance rule as `owner` (ADR 0049, ADR 0050, ADR 0057). */
+  /** Resolved: the field's own `docs.sensitivity`, else the capability's `sensitivity`; same inheritance rule as `owner` (ADR 0049, ADR 0050, ADR 0057). */
   readonly sensitivity: ResolvedGovernanceValue<string>
-  /** Resolved: the field's own `docs.purpose`, else the capability's `purpose` -- same inheritance rule as `owner`/`sensitivity` (ADR 0051, ADR 0057). Declared only, never verified. */
+  /** Resolved: the field's own `docs.purpose`, else the capability's `purpose`; same inheritance rule as `owner`/`sensitivity` (ADR 0051, ADR 0057). Declared only, never verified. */
   readonly purpose: ResolvedGovernanceValue<string>
-  /** Resolved: the field's own `docs.legalBasis`, else the capability's `legalBasis` -- same inheritance rule. A declared fact, never a legal determination (ADR 0051, ADR 0057). */
+  /** Resolved: the field's own `docs.legalBasis`, else the capability's `legalBasis`; same inheritance rule. A declared fact, never a legal determination (ADR 0051, ADR 0057). */
   readonly legalBasis: ResolvedGovernanceValue<string>
-  /** Resolved: the field's own `docs.dataResidency`, else the capability's `dataResidency` -- same inheritance rule. The declared permitted-storage jurisdiction(s), not an observed fact (ADR 0051, ADR 0057). */
+  /** Resolved: the field's own `docs.dataResidency`, else the capability's `dataResidency`; same inheritance rule. The declared permitted-storage jurisdiction(s), not an observed fact (ADR 0051, ADR 0057). */
   readonly dataResidency: ResolvedGovernanceValue<string | readonly string[]>
-  /** Resolved: the field's own `docs.auditRequired`, else the capability's `auditRequired` -- same inheritance rule (ADR 0051, ADR 0057). */
+  /** Resolved: the field's own `docs.auditRequired`, else the capability's `auditRequired`; same inheritance rule (ADR 0051, ADR 0057). */
   readonly auditRequired: ResolvedGovernanceValue<boolean>
   /** Every getter/mutator/subscription whose statically-extracted `writes` shape claims this field. */
   readonly writtenBy: readonly {
@@ -76,9 +76,9 @@ export interface FieldNode {
     /** The writing operation's key name. */
     readonly name: string
   }[]
-  /** The field's literal-evaluated declared default -- structural comparison only (e.g. `structural-duplication.ts`), never a runtime value. */
+  /** The field's literal-evaluated declared default: structural comparison only (e.g. `structural-duplication.ts`), never a runtime value. */
   readonly shape: unknown
-  /** Position of this field's own key in the `fields` object literal -- only when `fields` was resolved as an inline literal in this file; `undefined` when identifier-resolved across a file boundary this pass doesn't retain AST access to (never guessed at -- ADR 0052). */
+  /** Position of this field's own key in the `fields` object literal. Set only when `fields` was resolved as an inline literal in this file. It is `undefined` when identifier-resolved across a file boundary this pass doesn't retain AST access to (never guessed at; ADR 0052). */
   readonly declarationPosition: SourcePosition | undefined
 }
 
@@ -90,22 +90,22 @@ export interface OperationNode {
   readonly name: string
   /** This operation's own declared documentation, if any. */
   readonly docs: OperationDocs | undefined
-  /** Top-level field paths this operation's statically-extracted `writes` shape covers. Empty when `writes` was absent (on a getter/subscription) or unresolvable -- never guessed at. */
+  /** Top-level field paths this operation's statically-extracted `writes` shape covers. Empty when `writes` was absent (on a getter/subscription) or unresolvable: never guessed at. */
   readonly writes: readonly (readonly string[])[]
-  /** Whether this operation's config object literal declares a `processor` key -- a proven, structural presence fact (never an evaluation of what the processor does; see ADR 0050). */
+  /** Whether this operation's config object literal declares a `processor` key: a proven, structural presence fact (never an evaluation of what the processor does; see ADR 0050). */
   readonly hasProcessor: boolean
-  /** Whether this operation's config object literal declares an `optimistic` key -- structurally always `false` for a getter/subscription. */
+  /** Whether this operation's config object literal declares an `optimistic` key: structurally always `false` for a getter/subscription. */
   readonly hasOptimistic: boolean
-  /** Hoisted from `docs.endpoints` for convenient lookup -- author-declared, never statically verified. */
+  /** Hoisted from `docs.endpoints` for convenient lookup: author-declared, never statically verified. */
   readonly endpoints: readonly DataFlowEndpoint[]
 }
 
 /** One `buildData`/`createData` capability, resolved from the inventory's shared model. */
 export interface CapabilityNode {
   /**
-   * Root-relative POSIX path of the file declaring this capability -- the
+   * Root-relative POSIX path of the file declaring this capability: the
    * one place an absolute discovery path is converted for publication
-   * (OUT-01, see `display-path.ts`). Every downstream model that carries a
+   * (see `display-path.ts`). Every downstream model that carries a
    * capability's `file` (Ownership, Finding, Dependency, Manifest Snapshot)
    * copies this value rather than re-deriving it, so there is exactly one
    * conversion point. Re-derive a real path with `absolutePathFrom(root,
@@ -114,20 +114,20 @@ export interface CapabilityNode {
   readonly file: string
   /** The binding name the `buildData`/`createData` result is exported as. */
   readonly exportName: string
-  /** `"buildData"` or `"createData"` -- which call form declared this capability. */
+  /** `"buildData"` or `"createData"`: which call form declared this capability. */
   readonly kind: "buildData" | "createData"
   /**
-   * This capability's own declared documentation, if any -- the single path for
-   * `owner`/`sensitivity`/`purpose`/`legalBasis`/`dataResidency`/`auditRequired`
-   * (ADR 0057): a capability has nothing above it to resolve against, so a separate
-   * top-level "resolved" property would only ever duplicate `docs.X` verbatim.
+   * This capability's own declared documentation, if any. It is the single path for
+   * `owner`, `sensitivity`, `purpose`, `legalBasis`, `dataResidency` and
+   * `auditRequired` (ADR 0057). A capability has nothing above it to resolve against,
+   * so a separate "resolved" property would only copy `docs.X`.
    */
   readonly docs: LooseCapabilityDocs | undefined
   /** Defaults to `true` when `docs.active` is absent. */
   readonly active: boolean
   /** Resolved: `docs.exclusiveGroup`, if declared. */
   readonly exclusiveGroup: string | undefined
-  /** Position of this capability's own `buildData`/`createData` call site -- always available (ADR 0052). */
+  /** Position of this capability's own `buildData`/`createData` call site: always available (ADR 0052). */
   readonly declarationPosition: SourcePosition
   /** Every declared field. */
   readonly fields: readonly FieldNode[]
@@ -140,14 +140,12 @@ export interface CapabilityNode {
 }
 
 /**
- * The one authoritative model every report generator reads from -- see
+ * The one authoritative model every report generator reads from: see
  * `buildInventory`. This type IS `data-cap`'s Capability Model (ADR 0050),
  * not a separate thing that produces one: `CAPABILITY_MODEL_SCHEMA_VERSION`
- * above versions this exact interface. ADR 0050 deliberately kept the
- * `CapabilityInventory`/`buildInventory` names rather than introducing a
- * `CapabilityModel`/`buildCapabilityModel` wrapper, since this type was
- * already the intended public model before that ADR existed -- a rename
- * would duplicate an already-correct, already-public shape for no gain. A
+ * above versions this exact interface. ADR 0050 kept the `CapabilityInventory`
+ * and `buildInventory` names rather than add a `CapabilityModel` wrapper. This
+ * type was already the public model, so a rename would only duplicate it. A
  * canonical, versioned, JSON-serializable projection of every discovered
  * capability's fields and operations, active or not.
  */
@@ -156,7 +154,7 @@ export interface CapabilityInventory {
   readonly schemaVersion: typeof CAPABILITY_MODEL_SCHEMA_VERSION
   /** Every discovered, linked capability. */
   readonly capabilities: readonly CapabilityNode[]
-  /** Parse/link warnings carried through from the discovery/linking pass that produced this inventory, each `file` root-relative like every other path this model publishes (OUT-01). */
+  /** Parse/link warnings carried through from the discovery/linking pass that produced this inventory, each `file` root-relative like every other path this model publishes. */
   readonly warnings: readonly ParseWarning[]
 }
 
@@ -285,7 +283,7 @@ function buildCapabilityNode(discovered: DiscoveredCapability, root: string): Ca
   ])
 
   return {
-    // The single absolute -> root-relative conversion point (OUT-01). Every
+    // The single absolute -> root-relative conversion point. Every
     // other model's `file` is a copy of this one, never an independent
     // conversion that could disagree with it.
     file: displayPath(root, discovered.file),
@@ -303,12 +301,11 @@ function buildCapabilityNode(discovered: DiscoveredCapability, root: string): Ca
 }
 
 /**
- * Builds the `CapabilityInventory` from an already-discovered `LinkResult`
- * -- the one shared model every report generator (Phase C) reads from, and
- * the boundary where each capability's absolute discovery path becomes the
- * root-relative `file` every downstream model publishes (OUT-01). The root
- * comes from `linkResult.root` -- the same one linking itself resolved
- * against -- so the two can never disagree.
+ * Builds the `CapabilityInventory`, the model every report generator reads,
+ * from an already-discovered `LinkResult`. Here each capability's absolute
+ * discovery path becomes the root-relative `file` every later model publishes.
+ * The root comes from `linkResult.root` (the same one linking itself resolved
+ * against) so the two can never disagree.
  */
 export function buildInventory(linkResult: LinkResult): CapabilityInventory {
   return {
@@ -317,8 +314,8 @@ export function buildInventory(linkResult: LinkResult): CapabilityInventory {
       buildCapabilityNode(discovered, linkResult.root),
     ),
     // Warnings are part of the published model too, so their `file` gets the
-    // same absolute -> root-relative treatment as a capability's (OUT-01) --
-    // an otherwise fully-relative artifact with one absolute path hiding in
+    // same absolute -> root-relative treatment as a capability's. An
+    // otherwise fully-relative artifact with one absolute path hiding in
     // its warnings list is exactly the leak this was meant to close.
     warnings: linkResult.warnings.map((warning) => ({
       ...warning,

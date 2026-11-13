@@ -25,7 +25,7 @@ describe("eslint-plugin public exports", () => {
     expect(noNodeFs.meta.type).toBe("problem")
     // "problem", not "suggestion": raw external I/O outside a capability
     // isn't a style preference, it's data acquisition the whole analysis
-    // layer is blind to -- same severity class as env-cap's own
+    // layer is blind to; same severity class as env-cap's own
     // `no-raw-process-env`.
     expect(noRawExternalIo.meta.type).toBe("problem")
     // "problem", not "suggestion": a capability's fields escaping whole is
@@ -39,7 +39,7 @@ describe("eslint-plugin public exports", () => {
       expect(Object.keys(rule.meta.messages).length).toBeGreaterThan(0)
     }
     expect(Object.keys(noRawExternalIo.meta.messages)).toEqual(["noRawExternalIo"])
-    // Four distinct, specific diagnostics -- one per escape shape -- not
+    // Four distinct, specific diagnostics (one per escape shape) not
     // one generic "escape detected" message.
     expect(new Set(Object.keys(noFieldsEscape.meta.messages))).toEqual(
       new Set(["spread", "argument", "prop", "exported"]),

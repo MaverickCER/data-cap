@@ -1,5 +1,5 @@
 /**
- * Client-side pattern: data-cap ships no `./socket-io` adapter -- this is
+ * Client-side pattern: data-cap ships no `./socket-io` adapter; this is
  * the wiring an application writes itself. A real local Socket.IO server +
  * client pair (no external network dependency) stands in for a production
  * WebSocket deployment; `coordinator.acquireSubscription` is exactly what
@@ -29,7 +29,7 @@ async function waitUntil(predicate: () => boolean, timeoutMs: number): Promise<v
   }
 }
 
-// -- A real local Socket.IO server, listening on an OS-assigned port -- --
+// A real local Socket.IO server, listening on an OS-assigned port.
 let serverSideDisconnectCount = 0
 // The server holds its one event back until the test says so. Releasing it on a timer instead made the
 // "connecting doesn't touch fields" assertion below race the event: on a busy machine the event could
@@ -90,7 +90,7 @@ assert.equal(
 assert.equal(store.getSnapshot().info.price?.source, "priceFeed")
 
 // The last (and only) acquirer's own release() removes it from the
-// coordinator's consumer set BEFORE the transport's teardown runs -- so
+// coordinator's consumer set BEFORE the transport's teardown runs, so
 // the releasing consumer never observes its OWN "disconnected" status via
 // onStatusChange (there's no one left in the fan-out to broadcast it to).
 // Confirmed instead from the server side: the real socket really closed.

@@ -102,19 +102,19 @@ describe("createDataStore -- optimistic transitions", () => {
 
     // B completes first: its processor commits against CURRENT authoritative
     // state (still the defaults, since neither A nor B ever touched
-    // authoritative yet) -- the server confirms count: 100.
+    // authoritative yet); the server confirms count: 100.
     store.commitAuthoritative({ count: 100 }, undefined)
     store.removePendingTransition(idB)
 
     // A's pending transition automatically reapplies on top of the new
-    // authoritative state -- no special code needed for this to happen, and
+    // authoritative state: no special code needed for this to happen, and
     // B's commit never clobbered A's still-pending, unrelated-field contribution.
     expect(store.getAuthoritativeState().fields.count).toBe(100)
     expect(store.getSnapshot().fields.count).toBe(100)
     expect(store.getSnapshot().fields.user.email).toBe("a-optimistic@example.com")
 
     // A completes later: whoever is about to call commitAuthoritative() for A
-    // can read the LATEST authoritative state (100, established by B) --
+    // can read the LATEST authoritative state (100, established by B);
     // never a stale snapshot captured when A started (which would have been 0).
     expect(store.getAuthoritativeState().fields.count).toBe(100)
     store.commitAuthoritative({ user: { email: "a-confirmed@example.com" } }, undefined)
@@ -131,7 +131,7 @@ describe("createDataStore -- optimistic transitions", () => {
     store.commitAuthoritative({ count: 100 }, undefined) // an unrelated commit lands on the SAME field
 
     // A's stale, already-computed absolute patch ({count: 1}) simply replaces
-    // whatever is authoritative when reprojected -- patches are absolute
+    // whatever is authoritative when reprojected; patches are absolute
     // value replacements, never deltas, and the runtime never tries to be
     // clever about reconciling two writers of the same field automatically
     // (see "no invented conflict-resolution policy").
@@ -149,7 +149,7 @@ describe("createDataStore -- optimistic transitions", () => {
     expect(store.getSnapshot().fields.count).toBe(999)
 
     // Simulates a mutation failing: its transition is simply removed, exactly
-    // like a success would be -- commitAuthoritative is never called at all.
+    // like a success would be; commitAuthoritative is never called at all.
     store.removePendingTransition(id)
 
     expect(store.getAuthoritativeState()).toBe(authoritativeBefore)

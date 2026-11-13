@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://maverickcer.github.io/data-cap/schema/finding-model.schema.json",
   "title": "data-cap Finding Model",
-  "description": "Canonical, versioned list of every finding, each with a structured, pre-computed `location` (see ADR 0050). Generated from src/build/finding-model.ts's FindingModel type -- never hand-authored.",
+  "description": "Canonical, versioned list of every finding, each with a structured, pre-computed `location` (see ADR 0050). Generated from src/build/finding-model.ts's FindingModel type. Never hand-authored.",
   "$ref": "#/definitions/FindingModel",
   "definitions": {
     "FindingModel": {
@@ -41,7 +41,7 @@
         },
         "family": {
           "$ref": "#/definitions/ReportFindingFamily",
-          "description": "Which analysis pass produced this finding -- see `ReportFindingFamily`."
+          "description": "Which analysis pass produced this finding: see `ReportFindingFamily`."
         },
         "severity": {
           "$ref": "#/definitions/ReportSeverity",
@@ -56,7 +56,7 @@
           "items": {
             "$ref": "#/definitions/EvidenceRef"
           },
-          "description": "The records in the Evidence Model this finding rests on -- flow nodes and edges, a policy result, an unknown (ADR 0070). Lets a reader drill from the finding to the analysis behind it, and lets SARIF show the path. Absent for findings derived from declared metadata alone."
+          "description": "The records in the Evidence Model this finding rests on: flow nodes and edges, a policy result, an unknown (ADR 0070). Lets a reader drill from the finding to the analysis behind it, and lets SARIF show the path. Absent for findings derived from declared metadata alone."
         }
       },
       "required": [
@@ -66,7 +66,7 @@
         "message",
         "severity"
       ],
-      "description": "One finding, with its structured `location` computed -- and *only* that (OUT-02). A rule/scan emits a `ReportFinding` carrying the raw, optional `capability`/`field`/`operation`/`source`/`position`/`indeterminateSites` locators (see `findings.ts`); `locationOf` resolves all six into one required, structured `location`, and this type then drops them, so a consumer has exactly one path to \"where does this point\" instead of a structured answer sitting next to six flat ones that say the same thing (and could drift apart under a hand-constructed value). Two names for one lineage: emit a `ReportFinding`, consume a `LocatedFinding`."
+      "description": "One finding, with its structured `location` computed, and *only* that. A rule/scan emits a `ReportFinding` carrying the raw, optional `capability`/`field`/`operation`/`source`/`position`/`indeterminateSites` locators (see `findings.ts`). `locationOf` resolves all six into one required, structured `location`, and this type then drops them. So a consumer has exactly one path to \"where does this point\". There is no structured answer sitting next to six flat ones that say the same thing (and could drift apart under a hand-constructed value). Two names for one lineage: emit a `ReportFinding`, consume a `LocatedFinding`."
     },
     "FindingLocation": {
       "anyOf": [
@@ -127,7 +127,7 @@
               "items": {
                 "$ref": "#/definitions/SourceLocation"
               },
-              "description": "Every candidate access site a `\"FIELD_ACCESS_INDETERMINATE\"` finding could actually be about (ADR 0052) -- populated only for that code. Lives here, on the one variant that can carry it, rather than as a flat sibling of `location`: a field-level finding is the only kind that ever has one. Spans potentially multiple consuming files, so each entry carries its own `file` (`SourceLocation`, not just `SourcePosition`)."
+              "description": "Every candidate access site a `\"FIELD_ACCESS_INDETERMINATE\"` finding could actually be about (ADR 0052): populated only for that code. Lives here, on the one variant that can carry it, rather than as a flat sibling of `location`: a field-level finding is the only kind that ever has one. Spans potentially multiple consuming files, so each entry carries its own `file` (`SourceLocation`, not only `SourcePosition`)."
             }
           },
           "required": [
@@ -183,14 +183,14 @@
           "additionalProperties": false
         }
       ],
-      "description": "Where a finding points, as a discriminated union -- never a formatted string a consumer would have to parse back apart. Ships with only the variants `findings.ts`'s actual emission sites produce today (`\"capability\"`/`\"field\"`/`\"consumer\"`/`\"none\"`); `\"operation\"` is included because `ReportFinding.operation` is already part of that type's public shape, even though no current finding populates it -- trivially reachable the day one does, not a guess about what it would look like. `\"capability\"`/`\"field\"`/`\"operation\"` carry an optional `position` (ADR 0052) -- the declaration site's own position, when the source `ReportFinding.position` was populated; `\"consumer\"` doesn't, since it locates a *consuming file*, which has no single declaration position the way a capability/field/operation's own declaration does."
+      "description": "Where a finding points, as a discriminated union: never a formatted string a consumer would have to parse back apart. Ships with only the variants `findings.ts`'s actual emission sites produce today (`\"capability\"`/`\"field\"`/`\"consumer\"`/`\"none\"`). `\"operation\"` is included because `ReportFinding.operation` is already part of that type's public shape, even though no current finding populates it. It is trivially reachable the day one does, not a guess about what it would look like. `\"capability\"`, `\"field\"` and `\"operation\"` carry an optional `position` (ADR 0052): the declaration site, when the source `ReportFinding.position` was set. `\"consumer\"` has none, since a *consuming file* has no single declaration position."
     },
     "FindingLocationCapability": {
       "type": "object",
       "properties": {
         "file": {
           "type": "string",
-          "description": "Root-relative POSIX path of the file declaring the capability -- carried through verbatim from `CapabilityNode.file` (see `display-path.ts`)."
+          "description": "Root-relative POSIX path of the file declaring the capability: carried through verbatim from `CapabilityNode.file` (see `display-path.ts`)."
         },
         "exportName": {
           "type": "string",
@@ -202,7 +202,7 @@
         "exportName"
       ],
       "additionalProperties": false,
-      "description": "A finding's capability locator -- shared by every `FindingLocation` variant except `\"none\"`."
+      "description": "A finding's capability locator: shared by every `FindingLocation` variant except `\"none\"`."
     },
     "SourcePosition": {
       "type": "object",
@@ -286,7 +286,7 @@
         "citation",
         "flow"
       ],
-      "description": "Which analysis pass a finding came out of -- an orthogonal axis to `severity` (how much it matters) and `code` (exactly what it is).\n\nThis is what makes the `--strict*` flags' own groupings legible in the output rather than only in the orchestrator's source: `--strict-docs` escalates `\"governance\"`/`\"structural\"`/`\"citation\"`, `--strict-ownership` escalates `\"usage\"`, `--strict-flow` escalates `\"flow\"`. A consumer filtering a report (\"show me only what a usage scan proved\") currently has to hardcode a list of `ReportFindingCode`s and keep it in sync by hand; `family` makes that a real, stable field instead.\n\nDeliberately assigned at the emission site, never derived from `code` by a lookup table: the rule that produces a finding is the only thing that actually knows which pass it belongs to, and a table would be a second source of truth to drift out of sync (the same reasoning that keeps `severity` at the emission site)."
+      "description": "Which analysis pass a finding came out of: an orthogonal axis to `severity` (how much it matters) and `code` (exactly what it is).\n\nThis is what makes the `--strict*` flags' own groupings legible in the output rather than only in the orchestrator's source: `--strict-docs` escalates `\"governance\"`/`\"structural\"`/`\"citation\"`, `--strict-ownership` escalates `\"usage\"`, `--strict-flow` escalates `\"flow\"`. With `family`, a consumer filters a report (\"only what a usage scan proved\") by one stable field, instead of a hand-kept list of `ReportFindingCode`s.\n\nDeliberately assigned at the emission site, never derived from `code` by a lookup table. The rule that produces a finding is the only thing that actually knows which pass it belongs to. A table would be a second source of truth to drift out of sync (the same reasoning that keeps `severity` at the emission site)."
     },
     "ReportSeverity": {
       "type": "string",

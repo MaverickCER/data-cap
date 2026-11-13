@@ -300,7 +300,7 @@ describe("evaluateAllowedConstructor (direct)", () => {
     expect(evaluateAllowedConstructor("RegExp", argsOf('new RegExp("a", 5)'))).toEqual({
       ok: false,
     })
-    // `[]` would coerce to "" (valid empty flags) -- the non-string guard must
+    // `[]` would coerce to "" (valid empty flags): the non-string guard must
     // still reject it, not let it through.
     expect(evaluateAllowedConstructor("RegExp", argsOf('new RegExp("a", [])'))).toEqual({
       ok: false,
@@ -309,7 +309,7 @@ describe("evaluateAllowedConstructor (direct)", () => {
 
   it("rejects a non-string URL base even when it is a valid URL instance", () => {
     // `new URL("/p", <URL instance>)` is valid at runtime, but this evaluator
-    // only accepts a string base -- the non-string guard must reject it.
+    // only accepts a string base: the non-string guard must reject it.
     expect(
       evaluateAllowedConstructor("URL", argsOf('new URL("/p", new URL("https://base.example/"))')),
     ).toEqual({ ok: false })

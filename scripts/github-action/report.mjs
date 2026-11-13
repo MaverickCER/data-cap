@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 // Turns a `data-cap --json` report into GitHub PR annotations, a job-summary
-// table, and a sticky PR comment. Plain Node, no dependencies -- matches
+// table, and a sticky PR comment. Plain Node, no dependencies: matches
 // `ci/size-budgets.mjs`'s dependency-free convention, and every GitHub
 // interaction goes through the preinstalled `gh` CLI rather than octokit.
 //
 // data-cap's `ReportResult` already unifies every generator's output into
-// one `findings: ReportFinding[]` array (see src/build/findings.ts) -- unlike
+// one `findings: ReportFinding[]` array (see src/build/findings.ts): unlike
 // a per-generator-shaped payload, this script needs exactly one mapping from
 // `ReportFinding` to a GitHub annotation, not one collector per section.
 
@@ -34,7 +34,7 @@ function toFinding(finding) {
  * `result.findings` is present on every successful run (`--json`'s
  * `ok: true` envelope always spreads the full `ReportResult`), including
  * `--check`. `result.error.findings` is present only when the run failed
- * with a `DataProjectGenerationError` (a real blocking finding) -- a usage
+ * with a `DataProjectGenerationError` (a real blocking finding): a usage
  * error (e.g. no target flags given) has no `findings` at all.
  * @param {unknown} result @returns {Finding[]}
  */
@@ -113,8 +113,8 @@ export function renderMarkdownSummary(result) {
     lines.push("## Data flow", "")
     lines.push(
       coverage.complete
-        ? `- Coverage: ${parts.join(", ")} -- complete.`
-        : `- Coverage: ${parts.join(", ")} -- **not complete**; a flow missing from the evidence is not proof that it does not exist.`,
+        ? `- Coverage: ${parts.join(", ")}; complete.`
+        : `- Coverage: ${parts.join(", ")}; **not complete**. A flow missing from the evidence is not proof that it does not exist.`,
     )
     const policy = result.evidence.policy
     if (policy) {
@@ -179,7 +179,7 @@ export function renderMarkdownSummary(result) {
 /**
  * `file` values coming out of the CLI are absolute paths resolved against
  * the CLI's own `--root` (`cliRoot`, i.e. `working-directory`), not
- * necessarily the Action's checkout root (`workspaceRoot`) -- the two only
+ * necessarily the Action's checkout root (`workspaceRoot`): the two only
  * coincide when `working-directory: .`. `path.resolve(cliRoot, file)` is
  * correct whether `file` was already absolute or root-relative to `cliRoot`.
  */
@@ -264,7 +264,7 @@ function main() {
   } catch (error) {
     // A malformed/missing result file means the `npx data-cap --json` step
     // itself failed to produce valid output (package resolution failure,
-    // network error, ...) -- surface that plainly instead of letting a raw
+    // network error, ...): surface that plainly instead of letting a raw
     // SyntaxError/ENOENT stack trace be this Action's only diagnostic.
     const message = error instanceof Error ? error.message : String(error)
     process.stderr.write(
@@ -315,7 +315,7 @@ function main() {
   }
 }
 
-// Same direct-run guard as src/cli/index.ts -- importing this module from a
+// Same direct-run guard as src/cli/index.ts: importing this module from a
 // test must never have the side effect of running main().
 const isDirectRun =
   process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href

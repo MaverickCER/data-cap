@@ -1,6 +1,6 @@
 /**
- * The explorer's browser code. It reads ONE thing -- the Evidence Model embedded
- * in the page -- and uses data-cap's own isomorphic functions (`traceFlow`,
+ * The explorer's browser code. It reads ONE thing (the Evidence Model embedded
+ * in the page) and uses data-cap's own isomorphic functions (`traceFlow`,
  * `diffFlow` (via the comparison), `buildFlowGraphView`, `renderFlowText`) for every question it
  * answers, so what the page says about a flow is, by construction, what the
  * build says. Nothing here re-derives a fact.

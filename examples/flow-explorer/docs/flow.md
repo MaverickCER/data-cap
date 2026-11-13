@@ -2,7 +2,7 @@
 
 > Machine-generated engineering artifact assembled from statically-provable code facts and author-declared documentation. It can support a security, privacy, or compliance review. It does not itself establish compliance with any standard. Incomplete traces are recorded as unknown, never hidden; an absent flow is not evidence of no flow.
 
-Coverage: 5 function(s) analyzed, 1 unknown(s) -- not complete: parts of the program could not be followed, so a flow missing below is not proof that it does not exist.
+Coverage: 5 function(s) analyzed, 1 unknown(s); not complete. Parts of the program could not be followed, so a flow missing below is not proof that it does not exist.
 
 ## Status legend
 
@@ -47,7 +47,7 @@ Coverage: 5 function(s) analyzed, 1 unknown(s) -- not complete: parts of the pro
 - Inputs: res
 - Reads: userData.user: (whole); userData.user (via return): email, id, name
 - Returns: none
-- Passes on: buildUserProfile.user -- userData.user: (whole); sendProfileToClient.profile -- userData.user: email, id, name
+- Passes on: buildUserProfile.user (userData.user): (whole); sendProfileToClient.profile (userData.user): email, id, name
 - Side effects: none
 - Discards: none
 - Callers: none
@@ -78,7 +78,7 @@ Coverage: 5 function(s) analyzed, 1 unknown(s) -- not complete: parts of the pro
 - Discards: userData.user: id, name, passwordHash, role
 - Callers: none
 - Callees: none
-- Not followed: src/app/track.ts:11:3 -- an unresolved call that receives tracked data
+- Not followed: src/app/track.ts:11:3, an unresolved call that receives tracked data
 
 ## Fields
 
@@ -89,7 +89,7 @@ Coverage: 5 function(s) analyzed, 1 unknown(s) -- not complete: parts of the pro
 - Reaches: client-response http-response: (whole), email, id, name (static)
 - Dropped by: buildUserProfile: passwordHash, role; trackUser: id, name, passwordHash, role
 - Read by: exportEverything, profileHandler, trackUser
-- Complete: no -- the analysis could not follow part of this field's flow, so the destinations above may be incomplete.
+- Complete: no. The analysis could not follow part of this field's flow, so the destinations above may be incomplete.
 
 ## Claims
 
@@ -100,15 +100,15 @@ Coverage: 5 function(s) analyzed, 1 unknown(s) -- not complete: parts of the pro
 
 ## What the analysis could not follow
 
-- src/app/track.ts:11:3 -- an unresolved call that receives tracked data (call target is not a project function)
+- src/app/track.ts:11:3, an unresolved call that receives tracked data (call target is not a project function)
 
 ## Diagram
 
 ```mermaid
 %% Machine-generated engineering artifact assembled from statically-provable code facts and author-declared documentation. It can support a security, privacy, or compliance review. It does not itself establish compliance with any standard. Incomplete traces are recorded as unknown, never hidden; an absent flow is not evidence of no flow.
 flowchart LR
-  %% Data flow -- NOT complete: parts could not be followed
-  cov["Coverage: NOT complete -- a missing flow is not proof of absence"]
+  %% Data flow: NOT complete (parts could not be followed)
+  cov["Coverage: NOT complete (a missing flow is not proof of absence)"]
   n0[("database: postgres:users")]
   n1[("client-response: http-response")]
   n2[/"userData.user<br/>(confidential)"/]

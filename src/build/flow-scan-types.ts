@@ -69,7 +69,7 @@ export interface ScanFlowOptions {
   readonly inventory: CapabilityInventory
   /** Absolute paths of every project file to analyze. */
   readonly files: readonly string[]
-  /** The filesystem capability -- `./build` never imports `node:fs` (ADR 0058). */
+  /** The filesystem capability: `./build` never imports `node:fs` (ADR 0058). */
   readonly fs: BuildFileSystem
   /** Directory import specifiers resolve against and paths are published relative to. */
   readonly root: string
@@ -116,7 +116,7 @@ export type ClassLike = TS.ClassDeclaration | TS.ClassExpression
 export type FunctionRole = "plain" | "method" | "static" | "constructor"
 
 interface ExportRef {
-  /** The file the export list is in -- where a name declared there is looked up. */
+  /** The file the export list is in: where a name declared there is looked up. */
   readonly owner: FileInfo
   /** The file the name is re-exported from; `undefined` when it is declared in the exporting file. */
   readonly file: string | undefined
@@ -180,7 +180,7 @@ export interface ClassInfo {
   readonly name: string
   readonly file: FileInfo
   readonly node: ClassLike
-  /** The scope the class was declared in -- where its members and `extends` clause are resolved. */
+  /** The scope the class was declared in: where its members and `extends` clause are resolved. */
   readonly env: Env
   /** Methods and accessors by `<kind>:<static|instance>:<name>` (see `memberKey`). */
   readonly members: Map<string, FunctionInfo>

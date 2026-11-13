@@ -1,5 +1,5 @@
 /**
- * Mongoose schemas -- the persistence shape. Deliberately narrower than
+ * Mongoose schemas: the persistence shape. Deliberately narrower than
  * some capabilities' own field shapes in places (e.g. `InvoiceDoc` has no
  * `projectName`) precisely to make the point every one of this session's
  * examples makes: the database schema and a capability's declared field
@@ -63,7 +63,7 @@ const invoiceSchema = new Schema<InvoiceDoc>({
   createdAt: { type: String, required: true },
 })
 
-// `mongoose.models.X` reuse guards against "OverwriteModelError" -- this
+// `mongoose.models.X` reuse guards against "OverwriteModelError": this
 // module can be imported more than once across the headless script, the
 // reports scripts, and (in `npm run dev`) TanStack Start's own server-
 // function bundling, all inside the same process.

@@ -1,26 +1,43 @@
 /**
+ * `data-cap/runtime/cache`: `createDataCache`, an optional bounded cache of whole `DataState`
+ * snapshots. `data-cap/runtime` does not include it.
+ *
+ * @packageDocumentation
+ */
+
+/**
  * Creates a bounded, least-recently-used-eviction cache of complete
  * `DataState` snapshots keyed by an opaque string the caller computes (e.g.
  * a canonicalized function-identity + params key, mirroring the
- * coordinator's own dedup key -- computing that key is an integration
- * concern outside this module, which is deliberately keying-scheme-agnostic).
+ * coordinator's own dedup key). Computing that key is an integration
+ * concern outside this module, which is deliberately keying-scheme-agnostic.
  */
 export declare function createDataCache<TFields>(options?: DataCacheOptions): DataCache<TFields>;
 
+/**
+ * A bounded cache of complete `DataState` snapshots, keyed by a string the caller computes.
+ * It evicts the least recently used entry first. It never builds keys and never fetches.
+ */
 export declare interface DataCache<TFields> {
+    /** The snapshot stored under `key`, or `undefined`. A hit marks the entry as most recently used. */
     get(key: string): DataState<TFields> | undefined;
+    /** Stores a complete snapshot, `fields` and `info` together, evicting the oldest entries past `maxEntries`. */
     set(key: string, state: DataState<TFields>): void;
+    /** Removes the entry under `key`, if any. */
     delete(key: string): void;
+    /** Removes every entry. */
     clear(): void;
+    /** How many entries the cache holds now. */
     readonly size: number;
 }
 
+/** Options for `createDataCache`. */
 export declare interface DataCacheOptions {
     /** Maximum number of entries retained; least-recently-used entries are evicted first. Defaults to 100. */
     readonly maxEntries?: number;
 }
 
-/** The latest relevant error for a field/operation, never a history -- see FieldInfo.error. */
+/** The latest relevant error for a field/operation, never a history: see FieldInfo.error. */
 declare interface DataError {
     /** The getter/mutator/subscription operation key that produced this error. */
     readonly operator: string;
@@ -29,11 +46,11 @@ declare interface DataError {
 }
 
 /**
- * Mandatory, sparse metadata mirroring `fields`' logical structure -- never
- * generated eagerly for an untouched field. `fields` stay ordinary arrays;
- * only `info` represents array items as identity-keyed objects (a bare
- * `string` key here, since the identity-joining scheme lives in
- * `identity.ts`, added in a later phase).
+ * Mandatory, sparse metadata mirroring `fields`' logical structure: never
+ * generated eagerly for an untouched field. `fields` stay ordinary arrays.
+ * Only `info` represents array items as identity-keyed objects. The key is a
+ * bare `string` here, because the identity-joining scheme lives in
+ * `identity.ts`.
  */
 declare type DataInfo<T> = T extends readonly (infer Item)[] ? Partial<Record<string, DataInfo<Item> & FieldInfo>> : T extends Date | URL | RegExp ? FieldInfo : T extends object ? {
     [K in keyof T]?: DataInfo<T[K]>;
@@ -41,13 +58,13 @@ declare type DataInfo<T> = T extends readonly (infer Item)[] ? Partial<Record<st
 
 /**
  * `fields` and `info` are always present and always committed/published
- * together as one atomic snapshot -- never independently. See
+ * together as one atomic snapshot: never independently. See
  * specs/architecture.md.
  */
 declare interface DataState<TFields> {
     /** The capability's current field values. */
     readonly fields: TFields;
-    /** Execution metadata mirroring `fields`' shape -- status/error/timestamps, never the values themselves. */
+    /** Execution metadata mirroring `fields`' shape: status/error/timestamps, never the values themselves. */
     readonly info: DataInfo<TFields>;
 }
 
@@ -55,10 +72,10 @@ declare interface DataState<TFields> {
 declare type DataStatus = "idle" | "loading" | "success" | "error" | "retrying";
 
 /**
- * Current authoritative execution metadata for one field -- never an event
+ * Current authoritative execution metadata for one field: never an event
  * history. `source` is the operation key that most recently established the
- * field's current value; `error` clears on the next successful establishing
- * operation unless a still-newer operation has since set a different one.
+ * field's current value. `error` clears on the next successful establishing
+ * operation, unless a still-newer operation has since set a different one.
  */
 declare interface FieldInfo {
     /** This field's current lifecycle status. */

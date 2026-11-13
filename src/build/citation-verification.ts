@@ -1,21 +1,21 @@
 /**
  * Re-verifies developer-declared `evidence.fields[key].dynamicAccess`
- * citations every run -- never trusted forever. Two independent steps,
+ * citations every run: never trusted forever. Two independent steps,
  * kept as two separate functions rather than one, since they run at
  * different points in the pipeline and need different inputs:
  *
  * - `buildCitationSnapshots` (this run): for every citation that currently
- *   resolves to a real file under `root`, computes a whole-file SHA-256 --
+ *   resolves to a real file under `root`, computes a whole-file SHA-256;
  *   the baseline the *next* run compares against. Never throws on a
- *   missing file; that citation simply gets no snapshot entry.
+ *   missing file; that citation gets no snapshot entry.
  * - `verifyDynamicAccessCitations` (this run vs. the *previous* run's
  *   snapshot): for every currently-declared citation, checks it against
  *   the previous run's recorded hash. A citation with no prior recorded
- *   hash (first time it's been seen) is never flagged -- there is nothing
+ *   hash (first time it's been seen) is never flagged: there is nothing
  *   to have gone stale relative to yet.
  *
  * Deliberately separate from `manifest-snapshot.ts`'s own
- * `buildManifestSnapshot`, which stays synchronous/pure -- these two
+ * `buildManifestSnapshot`, which stays synchronous/pure: these two
  * functions are the only filesystem-touching, citation-specific part of
  * the manifest-snapshot lifecycle (see ADR 0053).
  */
@@ -55,7 +55,7 @@ function collectDeclaredCitations(inventory: CapabilityInventory): readonly Decl
     if (evidenceFields === undefined) continue
     for (const [fieldKey, evidence] of Object.entries(evidenceFields)) {
       const citations = evidence.dynamicAccess
-      // An empty array is not an error -- it just contributes no work below.
+      // An empty array is not an error: it contributes no work below.
       if (citations === undefined) continue
       out.push({ capability, fieldKey, citations })
     }
@@ -75,9 +75,9 @@ async function hashFile(fs: BuildFileSystem, absolutePath: string): Promise<stri
 }
 
 /**
- * Computes this run's citation snapshots -- one `CitationSnapshotEntry` per
+ * Computes this run's citation snapshots: one `CitationSnapshotEntry` per
  * currently-declared citation that resolves to a real, readable file under
- * `root`. A capability with no declared citations at all is simply absent
+ * `root`. A capability with no declared citations at all is absent
  * from the returned map (never an empty-object placeholder).
  */
 export async function buildCitationSnapshots(
@@ -94,7 +94,7 @@ export async function buildCitationSnapshots(
       if (parsed === undefined) continue
       const absolutePath = path.resolve(root, parsed.relativePath)
       const hash = await hashFile(fs, absolutePath)
-      if (hash === undefined) continue // unresolvable this run -- no baseline recorded; MISSING_DYNAMIC_ACCESS_CITATION covers this case directly, not a stale baseline
+      if (hash === undefined) continue // unresolvable this run: no baseline recorded; MISSING_DYNAMIC_ACCESS_CITATION covers this case directly, not a stale baseline
 
       const capKey = `${capability.file}#${capability.exportName}`
       const byField = result.get(capKey) ?? {}
@@ -127,19 +127,17 @@ function findPreviousHash(
 }
 
 /**
- * Re-checks every currently-declared citation against `previousSnapshot`.
- * Two independent failure modes, both real findings, never silently
- * folded into one: a citation whose file no longer resolves at all
- * (`MISSING_DYNAMIC_ACCESS_CITATION`), and one that resolves but whose
- * content hash no longer matches what was recorded last run
- * (`STALE_DYNAMIC_ACCESS_CITATION`). A citation with no prior recorded
- * hash (first time seen, or `previousSnapshot` is `undefined` -- a first
- * run) is never flagged either way -- there is nothing to have gone stale
- * relative to yet, and "missing" only means the file doesn't currently
- * resolve, not that it used to.
+ * Re-checks every currently-declared citation against `previousSnapshot`. Two
+ * separate failure modes, each its own finding. A citation whose file no
+ * longer resolves is `MISSING_DYNAMIC_ACCESS_CITATION`. One whose content hash
+ * differs from the last recorded run is `STALE_DYNAMIC_ACCESS_CITATION`. A
+ * citation with no prior recorded hash (first time seen, or `previousSnapshot`
+ * is `undefined` on a first run) is never flagged either way. There is nothing
+ * to have gone stale relative to yet, and "missing" only means the file
+ * doesn't currently resolve, not that it used to.
  *
  * Deliberately additive to, never a replacement for,
- * `FIELD_DYNAMIC_ACCESS_DECLARED` (`usage-report.ts`) -- that finding
+ * `FIELD_DYNAMIC_ACCESS_DECLARED` (`usage-report.ts`): that finding
  * states what was *asserted*; these state the assertion's own *current
  * integrity*. Both can legitimately appear together for the same field.
  */
@@ -167,7 +165,7 @@ export async function verifyDynamicAccessCitations(
           code: "MISSING_DYNAMIC_ACCESS_CITATION",
           family: "citation",
           severity: "warning",
-          message: `Declared dynamicAccess citation "${citation}" on field "${fieldKey}" on "${capability.exportName}" no longer resolves to a real file -- the developer's own citation could not be re-confirmed this run. Update the citation to point at the file that now performs this access, or remove it if the access no longer exists.`,
+          message: `Declared dynamicAccess citation "${citation}" on field "${fieldKey}" on "${capability.exportName}" no longer resolves to a real file. The developer's own citation could not be re-confirmed this run. Update the citation to point at the file that now performs this access, or remove it if the access no longer exists.`,
           capability: ref,
           field: field?.path ?? [fieldKey],
           ...(field?.declarationPosition !== undefined
@@ -189,7 +187,7 @@ export async function verifyDynamicAccessCitations(
           code: "STALE_DYNAMIC_ACCESS_CITATION",
           family: "citation",
           severity: "warning",
-          message: `Declared dynamicAccess citation "${citation}" on field "${fieldKey}" on "${capability.exportName}" points to a file that has visibly changed since this citation was last confirmed -- re-verify it still describes real access at that location.`,
+          message: `Declared dynamicAccess citation "${citation}" on field "${fieldKey}" on "${capability.exportName}" points to a file that has visibly changed since this citation was last confirmed. Re-verify it still describes real access at that location.`,
           capability: ref,
           field: field?.path ?? [fieldKey],
           ...(field?.declarationPosition !== undefined

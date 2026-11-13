@@ -34,19 +34,19 @@ Covered by semver. From 1.0, a breaking change to any of these needs a major ver
 - **`./runtime/cache`:** `createDataCache` and the `DataCache` contract.
 - **`./runtime/retry`:** `withRetry` and `isStillDefault`.
 - **`./helpers`:** the `processors`, `identity`, `canonicalize` and `shape` namespaces and every function in them.
-- **`./build`:** discovery and linking (`discoverCapabilityFiles`, `parseCapabilityFile`, `linkCapabilityFiles`, `evaluateLiteral`), path-alias and cross-package resolution, the fact models, the generators and the orchestrator. The data-flow options are Experimental (below).
+- **`./build`:** discovery and linking (`discoverCapabilityFiles`, `parseCapabilityFile`, `linkCapabilityFiles`, `evaluateLiteral`), path-alias and cross-package resolution, the fact models, the generators and the orchestrator. For the Markdown documents the generators write, the section headings are Stable; the wording inside a section is not. The data-flow options are Experimental (below).
 - **`./node`:** `nodeBuildFileSystem`, the sanctioned way to give `./build` a filesystem. Every generator `init` scaffolds uses it.
 - **`./evidence`:** `defineEvidenceProjection`, the `EvidenceModel` shape it reads, and the persisted evidence file's version 2 fields.
 - **The CLI:** every flag except the Experimental ones below, and the exit codes.
 - **`./eslint-plugin`:** every rule name and message id. Removing a rule or renaming a message id is breaking.
-- **The GitHub Action** (`action.yml`): input and output names and meanings, and the summary comment's sections. The major tag (`@v0` while the package is 0.x, `@v1` from 1.0.0) moves only within its major.
+- **The GitHub Action** (`action.yml`): input and output names and meanings, and the section headings of the summary comment (not the wording inside them). The major tag (`@v0` while the package is 0.x, `@v1` from 1.0.0) moves only within its major.
 
 **Supported toolchain:** Node.js 22 or later, and the TypeScript versions in the `typescript` peer range (`^5 || ^6 || ^7`).
 
 - The build-time scanner needs TypeScript's classic compiler API, which TypeScript 7 does not ship. It uses your `typescript` when that has the API, and otherwise the bundled `@typescript/typescript6` ([ADR 0069](specs/decisions/0069-typescript-7-scanner-uses-a-bundled-typescript-6.md)). Your `tsc` stays TypeScript 7.
 - Every entry point but `./eslint-plugin` type-checks with full library checking under TypeScript 5, 6 and 7. Under 7, the `types@>=7` export condition serves declarations whose compiler types come from the bundled TypeScript 6.
 - `moduleResolution` must be `node16`, `nodenext` or `bundler`; `node10` is not supported.
-- CI's `typescript-compat` job tests these under `nodenext`. It runs the flow scan under 5, 6 and 7 and requires identical evidence. It runs on the flow-explorer example's source, with the latest 5, 6 and 7 releases; the 5.0 floor is not tested. That job does not block a merge.
+- CI's `typescript-compat` job tests these under `nodenext`. It runs the flow scan under 5, 6 and 7 and requires identical evidence. It runs on the flow-explorer example's source, with the latest 5, 6 and 7 releases; the 5.0 floor is not tested. `required` waits for that job, so a failure blocks a merge.
 
 ## Experimental
 
@@ -56,7 +56,7 @@ The data-flow surface. It may change shape, including in a breaking way, in a mi
 - `flowPolicy` in `documentData()`.
 - The `--flow-evidence`, `--observations` and `--rules` flags, and the `flowEvidence`, `flowSinks`, `flowSummaries` and `observations` options, with `FlowSummary`.
 - All of `./observe`.
-- The flow queries, views and adapters in `./evidence`: `traceFlow`, `traceFlowBetween`, `filterFlow`, `diffFlow`, `observedFlow`, `flowNodeId`, `flowEdgeId`, `buildFlowGraphView`, `renderFlowText`, `renderFlowDot`, `renderFlowMermaid`, `buildProvDocument`, `buildOscalAssessmentResults`, `observationsToOtlp`, `observationsFromOtlp`, `buildCycloneDxBom`, `renderFlowCycloneDx`, `analyzeLeastData`, `leastDataFindings`, `analyzeRedundantTransforms` and `redundantTransformFindings`. In short: every export of `./evidence` except `defineEvidenceProjection`, its own types and the `EvidenceModel` types.
+- The flow queries, views and adapters in `./evidence`. This is every export of `./evidence` except `defineEvidenceProjection`, its own types and the `EvidenceModel` types. They are `traceFlow`, `traceFlowBetween`, `filterFlow`, `diffFlow`, `observedFlow`, `flowNodeId`, `flowEdgeId`, `buildFlowGraphView`, `renderFlowText`, `renderFlowDot`, `renderFlowMermaid`, `buildProvDocument`, `buildOscalAssessmentResults`, `observationsToOtlp`, `observationsFromOtlp`, `buildCycloneDxBom`, `renderFlowCycloneDx`, `analyzeLeastData`, `leastDataFindings`, `analyzeRedundantTransforms` and `redundantTransformFindings`.
 - `evaluateEvidenceRules`, `parseEvidenceRules` and every rule they accept, and the optional `edgeTags` of the Flow Model.
 - `ReportFinding.evidence`, `buildSarifLog`'s `flow` option, and the finding codes `FLOW_POLICY_VIOLATED`, `FLOW_POLICY_INDETERMINATE`, `FLOW_ANALYSIS_INCOMPLETE` and `LEAST_DATA_*`.
 
@@ -73,11 +73,11 @@ Never covered by semver; may change in any release:
 ## How a change is checked
 
 - **`ApiContract`** (in the `contract` job) diffs each entry point's declarations against a committed baseline. A breaking diff without a changeset of the right bump fails. It compares declarations, not behaviour.
-- **`SurfaceContract`** does the same for the CLI help and the Action's inputs and outputs.
+- **`SurfaceContract`** does the same for the CLI help, the JSON Schemas, the Action's inputs and outputs, and the section headings of the generated Markdown documents and the Action summary. Section headings written as fixed text are baselined. A heading built from data, such as a capability's name, is not. Nor is the wording inside a section: tests and review hold it.
 - **Behaviour** is held by the tests, and by review against this page.
 
 ## Pre-1.0 status
 
-`data-cap` is below 1.0. **Before 1.0, a minor release may include a breaking change to the Stable tier.** This page defines the scope semver will cover; it does not say the scope is frozen at `0.x`.
+`data-cap` is below 1.0. **Before 1.0, a minor release may include a breaking change to the Stable tier**. This page defines the scope semver will cover; it does not say the scope is frozen at `0.x`.
 
 How a `0.x` bump is chosen: changesets generated from commits are deflated one level below 1.0: a breaking commit releases a minor, a feature a patch. A hand-written `major` changeset is not deflated and publishes 1.0.0. A person merges every version pull request ([RELEASING.md](RELEASING.md)). The Experimental and Private tiers behave the same before and after 1.0.

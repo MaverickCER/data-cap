@@ -4,8 +4,8 @@
  * the DOT and Mermaid renderers so they cannot disagree about what a diagram
  * contains. Pure, isomorphic, and a projection of the one Evidence Model.
  *
- * A selection always carries its own completeness: a diagram of a trace that
- * touches something the analysis could not follow is not complete, and the
+ * A selection always carries its own completeness. A diagram of a trace that
+ * touches something the analysis could not follow is not complete. The
  * renderers must say so on the diagram itself (ADR 0071).
  */
 
@@ -77,7 +77,7 @@ export function selectDiagram(
       (edge) => kept.has(edge.from) && kept.has(edge.to) && (keepCalls || edge.kind !== "calls"),
     )
     // A parameter or return value nothing connects to carries no flow; drawing every one buries the graph. A function
-    // is always drawn -- an unconnected function is a fact about coverage, not clutter -- and the text equivalent lists
+    // is always drawn (an unconnected function is a fact about coverage, not clutter) and the text equivalent lists
     // every input regardless.
     const connected = new Set(drawn.flatMap((edge) => [edge.from, edge.to]))
     const visible = nodes.filter(

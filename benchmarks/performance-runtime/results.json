@@ -11,7 +11,7 @@
     },
     "workload": {
       "unit": "record",
-      "description": "One record in the collection a getter fetches and commits (a CRM contact, an order, a support ticket). 640 is a typical full page of a mid-sized table or a busy list endpoint.",
+      "description": "One record is one item a getter fetches and commits, such as a CRM contact, an order or a support ticket. A typical full page of a mid-sized table or a busy list endpoint holds 640.",
       "typicalN": 640
     },
     "tiers": [
@@ -5043,6 +5043,9 @@
         "withPackageMs": 0.21564200000011624,
         "overheadMs": 0.21496460483882596,
         "overheadPercent": 31734.003595384973,
+        "overheadCi95Ms": null,
+        "overheadCi95Percent": null,
+        "pairs": null,
         "overheadCpuMs": 0.2222741935483871,
         "overheadHeapBytes": 30969.677419354837,
         "cost": {
@@ -5057,6 +5060,9 @@
         "withPackageMs": 0.2363500000001295,
         "overheadMs": 0.23591618884133123,
         "overheadPercent": 54382.23154398541,
+        "overheadCi95Ms": null,
+        "overheadCi95Percent": null,
+        "pairs": null,
         "overheadCpuMs": 0.2415450643776824,
         "overheadHeapBytes": 37372.63519313305,
         "cost": {
@@ -5071,6 +5077,9 @@
         "withPackageMs": 0.2871250000002874,
         "overheadMs": 0.28676432547198555,
         "overheadPercent": 79507.78415713365,
+        "overheadCi95Ms": null,
+        "overheadCi95Percent": null,
+        "pairs": null,
         "overheadCpuMs": 0.9546132075471697,
         "overheadHeapBytes": 50172.45283018868,
         "cost": {
@@ -5085,6 +5094,9 @@
         "withPackageMs": 0.36322599999994054,
         "overheadMs": 0.3627853811474813,
         "overheadPercent": 82335.41963143158,
+        "overheadCi95Ms": null,
+        "overheadCi95Percent": null,
+        "pairs": null,
         "overheadCpuMs": 1.3925368852459017,
         "overheadHeapBytes": 75772.7868852459,
         "cost": {
@@ -5099,6 +5111,9 @@
         "withPackageMs": 0.46538799999962066,
         "overheadMs": 0.46494233471036456,
         "overheadPercent": 104325.45363503964,
+        "overheadCi95Ms": null,
+        "overheadCi95Percent": null,
+        "pairs": null,
         "overheadCpuMs": 1.5195330578512396,
         "overheadHeapBytes": 126972.76033057852,
         "cost": {
@@ -5113,6 +5128,9 @@
         "withPackageMs": 0.665990999999849,
         "overheadMs": 0.6656384089217818,
         "overheadPercent": 188784.81343618926,
+        "overheadCi95Ms": null,
+        "overheadCi95Percent": null,
+        "pairs": null,
         "overheadCpuMs": 1.7236282527881042,
         "overheadHeapBytes": 227813.20446096655,
         "cost": {
@@ -5127,6 +5145,9 @@
         "withPackageMs": 1.0779789999996865,
         "overheadMs": 1.077621681102049,
         "overheadPercent": 301585.415220659,
+        "overheadCi95Ms": null,
+        "overheadCi95Percent": null,
+        "pairs": null,
         "overheadCpuMs": 2.1376220472440943,
         "overheadHeapBytes": 432645.03937007877,
         "cost": {
@@ -5141,6 +5162,9 @@
         "withPackageMs": 1.8776289999996152,
         "overheadMs": 1.8772669407110774,
         "overheadPercent": 518497.1081096005,
+        "overheadCi95Ms": null,
+        "overheadCi95Percent": null,
+        "pairs": null,
         "overheadCpuMs": 2.909616600790514,
         "overheadHeapBytes": 842269.0276679841,
         "cost": {
@@ -5155,6 +5179,9 @@
         "withPackageMs": 3.421596999999565,
         "overheadMs": 3.421237650942961,
         "overheadPercent": 952065.2936385828,
+        "overheadCi95Ms": null,
+        "overheadCi95Percent": null,
+        "pairs": null,
         "overheadCpuMs": 3.7296179245283017,
         "overheadHeapBytes": 1661628.4528301887,
         "cost": {
@@ -5169,6 +5196,9 @@
         "withPackageMs": 7.381617000000006,
         "overheadMs": 7.381255075000005,
         "overheadPercent": 2039443.2755379283,
+        "overheadCi95Ms": null,
+        "overheadCi95Percent": null,
+        "pairs": null,
         "overheadCpuMs": 11.018616666666667,
         "overheadHeapBytes": 3300276.8666666667,
         "cost": {
@@ -5427,6 +5457,12 @@
         "group": "fn:to-array",
         "description": "Run when a list value is read; measured on its own.",
         "rows": []
+      },
+      {
+        "id": "observe-value",
+        "group": "fn:observe-value",
+        "description": "Not part of a data fetch; it runs only where an application instruments a boundary. Measured on its own.",
+        "rows": []
       }
     ],
     "cost": {
@@ -5437,6 +5473,9 @@
         "withPackageMs": 0.665990999999849,
         "overheadMs": 0.6656384089217818,
         "overheadPercent": 188784.81343618926,
+        "overheadCi95Ms": null,
+        "overheadCi95Percent": null,
+        "pairs": null,
         "overheadCpuMs": 1.7236282527881042,
         "overheadHeapBytes": 227813.20446096655,
         "cost": {
@@ -5451,6 +5490,9 @@
         "withPackageMs": 7.381617000000006,
         "overheadMs": 7.381255075000005,
         "overheadPercent": 2039443.2755379283,
+        "overheadCi95Ms": null,
+        "overheadCi95Percent": null,
+        "pairs": null,
         "overheadCpuMs": 11.018616666666667,
         "overheadHeapBytes": 3300276.8666666667,
         "cost": {
@@ -5503,13 +5545,35 @@
               "separator": "fixed: a comma, the default, which is what almost every list uses"
             }
           }
+        },
+        {
+          "id": "observe-value",
+          "covers": {
+            "observeValue": {
+              "value": "swept",
+              "sink.record": "fixed: a function that only counts, called once per distinct field path (eighteen here, whatever the record count)",
+              "sink.skip": "fixed: absent; it is called only when the walker leaves something out, which these records never cause",
+              "context.boundary": "fixed: one client response, which is copied into each event",
+              "context.capability": "fixed: one short name, which prefixes each recorded path",
+              "context.clock": "fixed: absent, so no time is read; given, it is read once per call",
+              "context.handling": "fixed: absent; given, it is copied into each event",
+              "context.scope": "fixed: one string; a function instead is called once per call",
+              "options.collections": "fixed: off, the default; the records hold no Map or Set either way",
+              "options.maxDepth": "fixed: 8, the default; the records nest four levels deep, so it never binds",
+              "options.maxNodes": "fixed: unbounded, so every record is walked; the default of 1,000 caps the walk and its cost",
+              "options.onSkip": "fixed: absent; it is called only for what the walker leaves out, which these records never cause"
+            }
+          }
         }
       ],
       "notBenchmarked": {
+        "instrumentBoundary": "Setting it up replaces one method, a constant amount of work; each wrapped call then runs `observeValue` on its argument or result, which `observe-value` measures.",
+        "observeResponse": "It clones the response and parses the clone's body as JSON, which is the platform's work and scales with the body's bytes. It then hands the parsed value to `observeValue`, which `observe-value` measures.",
+        "observeSink": "It returns one closure, a constant amount of work; each call of that closure is one `observeValue` call, which `observe-value` measures.",
         "fieldPathName": "It joins one capability name and one field path into one string, a constant amount of work done once per observed field.",
-        "observeBoundary": "It makes one call to the caller's sink per field it is given, so its cost is the length of that list times the cost of the sink, and the sink is the caller's own (a memory array, a log line, a metrics client); a benchmark would measure whichever sink we chose, not data-cap.",
-        "documentData": "A deliberate no-op at runtime: it exists so build tooling can read the call site and so the compiler checks the documentation's shape, and it does nothing with its arguments, so it costs the same whatever they hold.",
-        "createDataStore": "It keeps one reference to the state it is given and returns the controller, a constant amount of work whatever the state holds; every commit benchmark creates one in its setup.",
+        "observeBoundary": "It calls the caller's sink once per field it is given. Its cost is the length of that list times the cost of the sink. The sink is the caller's own (a memory array, a log line, a metrics client). A benchmark would measure whichever sink we chose, not data-cap.",
+        "documentData": "A deliberate no-op at runtime. It exists so build tooling can read the call site and the compiler checks the documentation's shape. It does nothing with its arguments, so it costs the same whatever they hold.",
+        "createDataStore": "It keeps one reference to the state it is given and returns the controller, a constant amount of work whatever the state holds. Every commit benchmark creates one in its setup.",
         "rejectOnAbort": "It attaches one listener to one signal and races one promise, a constant amount of work done once per aborted wait."
       }
     }

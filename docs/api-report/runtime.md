@@ -1,13 +1,17 @@
 # runtime
 
+`data-cap/runtime`: `createData` turns a capability schema into one store every consumer reads,
+with request dedup, per-field status and optimistic mutations. The store, coordinator and abort
+helpers it composes are exported for manual control.
+
 ## Classes
 
 ### UnknownGetterError
 
 Thrown by `createData`'s `runGetters` when asked to run a getter name
-that was never declared on the schema -- a caller/typo bug, not a data
-failure (a genuine getter failure surfaces as a per-operation
-`{status: "error"}` outcome instead, never a thrown rejection here).
+that was never declared on the schema. That is a caller/typo bug, not a
+data failure. A genuine getter failure surfaces as a per-operation
+`{status: "error"}` outcome instead, never a thrown rejection here.
 
 #### Extends
 
@@ -53,7 +57,7 @@ cause?: unknown;
 readonly code: "DATA_CAP_UNKNOWN_GETTER" = "DATA_CAP_UNKNOWN_GETTER";
 ```
 
-Stable, programmatic discriminant -- prefer this over `instanceof` across bundling boundaries.
+Stable, programmatic discriminant: prefer this over `instanceof` across bundling boundaries.
 
 ###### Overrides
 
@@ -213,7 +217,7 @@ https://v8.dev/docs/stack-trace-api#customizing-stack-traces
 
 ### CapabilityDescriptor
 
-Static, non-reactive operation metadata -- returned by `.describe()`, distinct from the live `operations` snapshot key. See requirement O (build tooling/ESLint/devtools discoverability).
+Static, non-reactive operation metadata: returned by `.describe()`, distinct from the live `operations` snapshot key. See requirement O (build tooling/ESLint/devtools discoverability).
 
 #### Properties
 
@@ -245,7 +249,7 @@ Every declared subscription, by name.
 
 ### Coordinator
 
-An isolated coordination domain for dedup and shared subscriptions -- see `createCoordinator`/`defaultCoordinator`.
+An isolated coordination domain for dedup and shared subscriptions: see `createCoordinator`/`defaultCoordinator`.
 
 #### Methods
 
@@ -258,7 +262,7 @@ acquireSubscription<TEvent>(subscribeFn, handlers): () => void;
 Acquires a shared subscription for `subscribeFn`. The first acquirer
 establishes the transport; later acquirers with the same function
 identity reuse it and immediately learn its current status. Returns a
-release function -- the transport tears down only once every acquirer
+release function: the transport tears down only once every acquirer
 has released.
 
 ###### Type Parameters
@@ -290,11 +294,11 @@ dedupe<TParams, TResult>(
 
 Deduplicates concurrent calls to `fn` (by its own identity) with
 canonically-equal `params`. Non-canonicalizable params (or a
-non-canonicalizable-adjacent failure) simply never dedupe -- `fn` runs
+non-canonicalizable-adjacent failure) never dedupe: `fn` runs
 fresh every time, never throwing and never silently colliding two
 unrelated calls onto one shared promise.
 
-Each caller's own `signal` only affects THEIR OWN wait -- aborting it
+Each caller's own `signal` only affects THEIR OWN wait: aborting it
 rejects this call's returned promise without affecting the shared
 underlying execution or any other caller sharing it.
 
@@ -331,7 +335,7 @@ Options for [createData](#createdata).
 readonly coordinator?: Coordinator;
 ```
 
-Overrides `defaultCoordinator` -- an explicit, isolated coordination domain (ADR 0027), e.g. per-tenant on a server.
+Overrides `defaultCoordinator`: an explicit, isolated coordination domain (ADR 0027), e.g. per-tenant on a server.
 
 ##### maxOperationHistory?
 
@@ -339,17 +343,16 @@ Overrides `defaultCoordinator` -- an explicit, isolated coordination domain (ADR
 readonly maxOperationHistory?: number;
 ```
 
-Bounds how many distinct canonicalized-params entries are retained per
-operation in the reactive `operations` snapshot (an LRU cap -- an
-operation called with many different params over a session, e.g.
-search-as-you-type, would otherwise grow this unboundedly). Defaults to
-50.
+Bounds how many distinct canonicalized-params entries each operation keeps
+in the reactive `operations` snapshot. It is an LRU cap: without it, an
+operation called with many params over a session (search-as-you-type) would
+grow without bound. Defaults to 50.
 
 ***
 
 ### DataCapabilitySnapshot
 
-A strict superset of `DataState<TFields>` -- every existing `DataStore` consumer (`useSyncExternalStore`, etc.) still works unchanged reading `.fields`/`.info` off it.
+A strict superset of `DataState<TFields>`: every existing `DataStore` consumer (`useSyncExternalStore`, etc.) still works unchanged reading `.fields`/`.info` off it.
 
 #### Extends
 
@@ -381,7 +384,7 @@ The capability's current field values.
 readonly info: DataInfo<TFields>;
 ```
 
-Execution metadata mirroring `fields`' shape -- status/error/timestamps, never the values themselves.
+Execution metadata mirroring `fields`' shape: status/error/timestamps, never the values themselves.
 
 ###### Inherited from
 
@@ -393,13 +396,13 @@ Execution metadata mirroring `fields`' shape -- status/error/timestamps, never t
 readonly operations: OperationsSnapshot;
 ```
 
-Every operation's current execution state -- see `OperationsSnapshot`.
+Every operation's current execution state: see `OperationsSnapshot`.
 
 ***
 
 ### DataStoreController
 
-The store contract the standalone runtime implements --
+The store contract the standalone runtime implements:
 `useSyncExternalStore`-compatible without importing React.
 
 #### Extends
@@ -526,7 +529,7 @@ Registers `listener` to be called after every committed state change; returns an
 
 ### OperationDescriptor
 
-Static, per-operation metadata -- one entry within a `CapabilityDescriptor`.
+Static, per-operation metadata: one entry within a `CapabilityDescriptor`.
 
 #### Properties
 
@@ -566,7 +569,7 @@ The operation's declared `writes` ownership shape (`true` means the whole capabi
 
 ### OperationState
 
-One operation's current execution state, keyed by canonicalized params in `operations`. Distinct from `info.<field>` -- see the module doc comment.
+One operation's current execution state, keyed by canonicalized params in `operations`. Distinct from `info.<field>`: see the module doc comment.
 
 #### Properties
 
@@ -638,7 +641,7 @@ Aborts every getter this call started that hasn't already settled.
 
 ### SubscriptionHandlers
 
-Handlers a coordinator-managed subscription drives -- see `SubscriptionEventHandlers`, the same shape without a bound `params`.
+Handlers a coordinator-managed subscription drives: see `SubscriptionEventHandlers`, the same shape without a bound `params`.
 
 #### Type Parameters
 
@@ -857,7 +860,7 @@ package's `engines.node >= 18` floor).
 function createCoordinator(): Coordinator;
 ```
 
-Creates a fresh, isolated `Coordinator` -- an independent dedup/shared-subscription domain, e.g. per-tenant on a server (ADR 0027).
+Creates a fresh, isolated `Coordinator`: an independent dedup/shared-subscription domain, e.g. per-tenant on a server (ADR 0027).
 
 #### Returns
 
@@ -871,15 +874,15 @@ Creates a fresh, isolated `Coordinator` -- an independent dedup/shared-subscript
 function createData<TSchema>(schema, options?): DataCapability<TSchema>;
 ```
 
-Declares a capability's field contract AND, optionally, the getters/
-mutators/subscriptions that acquire, mutate, and continuously observe it
--- the batteries-included counterpart to `buildData` + hand-wired
-`createDataStore`/`coordinator` calls. Internally: exactly one
-`buildData` call, exactly one `createDataStore` instance, and the given
-(or default) `Coordinator` -- see the module doc comment.
+Declares a capability: its fields and, optionally, the getters, mutators
+and subscriptions that load, change and watch them. Returns the one store
+every consumer reads. It is the one-call counterpart to `buildData` plus
+hand-wired `createDataStore` and `coordinator` calls. Internally it makes
+one `buildData` call and one `createDataStore` instance, and uses the given
+(or default) `Coordinator`.
 
 A schema with no `getters`/`mutators`/`subscriptions` at all still works,
-returning a fully valid capability with zero bound operation methods --
+returning a fully valid capability with zero bound operation methods:
 the direct one-call equivalent of `createDataStore(buildData({fields}))`.
 
 #### Type Parameters
@@ -907,7 +910,7 @@ the direct one-call equivalent of `createDataStore(buildData({fields}))`.
 function createDataStore<TFields>(initialState): DataStoreController<TFields>;
 ```
 
-Creates a standalone `DataStoreController`, seeded with `initialState` -- the manual-control building block `createData` composes over.
+Creates a standalone `DataStoreController`, seeded with `initialState`: the manual-control building block `createData` composes over.
 
 #### Type Parameters
 
@@ -933,10 +936,10 @@ Creates a standalone `DataStoreController`, seeded with `initialState` -- the ma
 function rejectOnAbort<T>(promise, signal): Promise<T>;
 ```
 
-Wraps `promise` so it rejects immediately if `signal` aborts. Never
-affects `promise` itself -- does not cancel or otherwise influence any
-underlying shared work (see coordinator.ts: a caller giving up on waiting
-is not the same as the shared execution being cancelled for every caller).
+Wraps `promise` so it rejects immediately if `signal` aborts. Never affects
+`promise` itself, and never cancels the shared work behind it. A caller that
+stops waiting does not cancel the shared execution for every other caller
+(see coordinator.ts).
 
 #### Type Parameters
 

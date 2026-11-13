@@ -1,11 +1,11 @@
 /**
- * One project's own invoices -- fetches on mount, subscribes for the
+ * One project's own invoices (fetches on mount, subscribes for the
  * lifetime of the component (a second open tab/component viewing the same
- * project's invoices never opens a second SSE connection -- see
+ * project's invoices never opens a second SSE connection) see
  * `main-headless.ts`'s own proof against the server's real subscriber
  * count), and renders `markInvoicePaid`'s optimistic lifecycle directly:
  * paying an invoice flips its status instantly, no separate "pending" state
- * to manage. Deliberately never reads `snapshot.info.invoices` -- see
+ * to manage. Deliberately never reads `snapshot.info.invoices`: see
  * `billing.capability.ts`'s own comment on why that's meaningless for an
  * array-typed field's subscription status.
  */

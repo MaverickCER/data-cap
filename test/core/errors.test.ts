@@ -10,7 +10,7 @@ describe("InvalidFieldDefaultError", () => {
     expect(error).toBeInstanceOf(DataCapError)
     expect(error).toBeInstanceOf(Error)
     expect(error.message).toBe(
-      'Invalid field default at "profile.avatar" -- functions are not valid data',
+      'Invalid field default at "profile.avatar": functions are not valid data',
     )
     expect(error.name).toBe("InvalidFieldDefaultError")
     expect(error.code).toBe("DATA_CAP_INVALID_FIELD_DEFAULT")
@@ -19,7 +19,7 @@ describe("InvalidFieldDefaultError", () => {
 
   it("renders a single-segment path with no separator", () => {
     expect(new InvalidFieldDefaultError(["email"], "cyclic").message).toBe(
-      'Invalid field default at "email" -- cyclic',
+      'Invalid field default at "email": cyclic',
     )
   })
 })

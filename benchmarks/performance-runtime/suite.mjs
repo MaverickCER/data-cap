@@ -15,6 +15,7 @@ import { createCoordinator, createData, createDataStore } from "data-cap/runtime
 import { createDataCache } from "data-cap/runtime/cache"
 import { withRetry } from "data-cap/runtime/retry"
 import { canonicalize, identity, processors } from "data-cap/helpers"
+import { observeValue } from "data-cap/observe"
 import {
   capabilitySchemaFields,
   generateRecords,
@@ -76,16 +77,16 @@ export default defineSuite({
   workload: {
     unit: "record",
     description:
-      "One record in the collection a getter fetches and commits (a CRM contact, an order, a support ticket). 640 is a typical full page of a mid-sized table or a busy list endpoint.",
+      "One record is one item a getter fetches and commits, such as a CRM contact, an order or a support ticket. A typical full page of a mid-sized table or a busy list endpoint holds 640.",
     typicalN: 640,
   },
 
   endToEnd: {
     purpose:
-      "Shows what an application pays per data fetch just for putting data-cap between its data source and its UI, compared with handling the same payload by hand. Both sides get the same pre-fetched records from a simulated instant source and both end with the records available to a reader; the only difference is data-cap's dispatch, deduplication, ownership checking, immutability and state bookkeeping. This is the floor: a real getter adds its own network or database time on top, which dwarfs this overhead in production but cannot be avoided by anything the application does.",
+      "Shows what an application pays per data fetch for putting data-cap between its data source and its UI. It compares that with handling the same payload by hand. Both sides get the same pre-fetched records from a simulated instant source, and both end with the records available to a reader. The only difference is data-cap's dispatch, deduplication, ownership checking, immutability and state bookkeeping. This is the floor: a real getter adds its own network or database time on top. That time dwarfs this overhead in production, and nothing the application does can avoid it.",
     baseline: {
       description:
-        "An async function returns n pre-generated records and the caller stores them in a plain object -- no data-cap.",
+        "An async function returns n pre-generated records and the caller stores them in a plain object, with no data-cap.",
       setup: (n) => {
         const payloads = [generateRecords(n), generateRecords(n)]
         return { payloads, state: { items: [] }, call: 0 }
@@ -98,7 +99,7 @@ export default defineSuite({
     },
     withPackage: {
       description:
-        "The same n records arrive through a data-cap getter (`createData`) and the caller reads the resulting snapshot: coordinator dedup registry, simulated async execute, ownership-checked commit, structural sharing and deep freeze of the new nodes.",
+        "The same n records arrive through a data-cap getter (`createData`), and the caller reads the resulting snapshot. The path covers the coordinator dedup registry, simulated async execute, ownership-checked commit, structural sharing and deep freeze of the new nodes.",
       fresh: true,
       setup: (n) => ({ capability: capabilityOver(simulatedSource(n)), call: 0 }),
       run: async (ctx) => {
@@ -115,7 +116,7 @@ export default defineSuite({
         how: "fixed",
         value: "0 ms (simulated, instant)",
         description:
-          "A real network or database call is far slower than anything measured here; it is excluded on purpose so the report shows data-cap's cost, not the network's.",
+          "A real network or database call is far slower than anything measured here. It is excluded on purpose, so the report shows data-cap's cost, not the network's.",
       },
       {
         name: "concurrent identical calls",
@@ -128,14 +129,20 @@ export default defineSuite({
   },
 
   notBenchmarked: {
+    instrumentBoundary:
+      "Setting it up replaces one method, a constant amount of work; each wrapped call then runs `observeValue` on its argument or result, which `observe-value` measures.",
+    observeResponse:
+      "It clones the response and parses the clone's body as JSON, which is the platform's work and scales with the body's bytes. It then hands the parsed value to `observeValue`, which `observe-value` measures.",
+    observeSink:
+      "It returns one closure, a constant amount of work; each call of that closure is one `observeValue` call, which `observe-value` measures.",
     fieldPathName:
       "It joins one capability name and one field path into one string, a constant amount of work done once per observed field.",
     observeBoundary:
-      "It makes one call to the caller's sink per field it is given, so its cost is the length of that list times the cost of the sink, and the sink is the caller's own (a memory array, a log line, a metrics client); a benchmark would measure whichever sink we chose, not data-cap.",
+      "It calls the caller's sink once per field it is given. Its cost is the length of that list times the cost of the sink. The sink is the caller's own (a memory array, a log line, a metrics client). A benchmark would measure whichever sink we chose, not data-cap.",
     documentData:
-      "A deliberate no-op at runtime: it exists so build tooling can read the call site and so the compiler checks the documentation's shape, and it does nothing with its arguments, so it costs the same whatever they hold.",
+      "A deliberate no-op at runtime. It exists so build tooling can read the call site and the compiler checks the documentation's shape. It does nothing with its arguments, so it costs the same whatever they hold.",
     createDataStore:
-      "It keeps one reference to the state it is given and returns the controller, a constant amount of work whatever the state holds; every commit benchmark creates one in its setup.",
+      "It keeps one reference to the state it is given and returns the controller, a constant amount of work whatever the state holds. Every commit benchmark creates one in its setup.",
     rejectOnAbort:
       "It attaches one listener to one signal and races one promise, a constant amount of work done once per aborted wait.",
   },
@@ -144,12 +151,12 @@ export default defineSuite({
     {
       id: "cold-start",
       name: "createData (cold start)",
-      why: "Every process that imports capability modules pays this before serving its first request: a deploy, a serverless cold start, a CLI invocation or a test run. It is the cost of adopting data-cap at the moment it hurts most, and it recurs on every scale-up.",
+      why: "Every process that imports capability modules pays this before serving its first request. That includes a deploy, a serverless cold start, a CLI invocation and a test run. It is the cost of adopting data-cap at the moment it hurts most, and it recurs on every scale-up.",
       poorPerformanceMeans:
-        "Slower deploys, longer first-request latency on every new instance, and (on serverless platforms) a cold-start penalty billed on every scale-from-zero event. A quadratic regression would make large applications visibly slow to boot.",
+        "Slower deploys and longer first-request latency on every new instance. On serverless platforms, a cold-start penalty is billed on every scale-from-zero event. A quadratic regression would make large applications visibly slow to boot.",
       expectedComplexity: "linear",
       complexityReason:
-        "Each capability module evaluates one `createData` call, which builds its schema, registers its operations and allocates its store independently of every other capability, so total boot time is the process start-up floor plus a constant amount of work per capability.",
+        "Each capability module evaluates one `createData` call. That call builds its schema, registers its operations and allocates its store independently of every other capability. Total boot time is the process start-up floor plus a constant amount of work per capability.",
       variables: [
         { name: "capabilities imported", how: "swept", description: "The tier axis: how many `createData`-declaring modules the process imports." },
         { name: "process start-up floor", how: "fixed", value: "one fresh Node process per sample", description: "Every sample spawns a new process, so Node's own start-up time is included and sets the flat floor of the curve." },
@@ -176,9 +183,9 @@ export default defineSuite({
     {
       id: "build-data",
       name: "buildData",
-      why: "Builds the initial immutable state from a schema; every capability and every store creation calls it, so it sits inside cold start and inside every test that creates a store.",
+      why: "Builds the initial immutable state from a schema. Every capability and every store creation calls it, so it sits inside cold start and inside every test that creates a store.",
       poorPerformanceMeans:
-        "Slower boot and slower tests; for an application that creates stores per request or per component, the cost lands on the hot path.",
+        "Slower boot and slower tests. For an application that creates stores per request or per component, the cost lands on the hot path.",
       expectedComplexity: "linear",
       complexityReason:
         "It walks the schema's initial field values once to freeze and index them, so its cost follows the number of initial records.",
@@ -196,15 +203,15 @@ export default defineSuite({
       name: "commitAuthoritative (replace a whole array)",
       why: "Every successful getter ends here: the fetched collection is committed into state. It runs once per fetch for every capability in the application, so it is the dominant steady-state cost of reading data.",
       poorPerformanceMeans:
-        "Every fetch gets slower in proportion to its size; at thousands of records a regression turns a page load into a visible stall and raises server CPU per request. A quadratic bug would make large lists unusable.",
+        "Every fetch gets slower in proportion to its size. At thousands of records, a regression turns a page load into a visible stall and raises server CPU per request. A quadratic bug would make large lists unusable.",
       expectedComplexity: "linear",
       complexityReason:
-        "Committing a new array replaces the field and deep-freezes every newly arrived record exactly once (`deepFreezeNewNodes`), so the work is proportional to the number of new records.",
+        "Committing a new array replaces the field and deep-freezes every newly arrived record exactly once (`deepFreezeNewNodes`). The work is proportional to the number of new records.",
       variables: [
         ITEMS,
         RECORD_SHAPE,
-        { name: "existing state size", how: "fixed", value: "empty collection", description: "The store starts with an empty collection, so no reconciliation against old records is included; that is measured in reconcile-array-info." },
-        { name: "reference reuse", how: "fixed", value: "always new references", description: "Each sample commits freshly built records; committing the same reference again is a free no-op by design and is not what this measures." },
+        { name: "existing state size", how: "fixed", value: "empty collection", description: "The store starts with an empty collection, so no reconciliation against old records is included. That is measured in reconcile-array-info." },
+        { name: "reference reuse", how: "fixed", value: "always new references", description: "Each sample commits freshly built records. Committing the same reference again is a free no-op by design and is not what this measures." },
       ],
       notCovered: [{ name: "commits that fail ownership checks", reason: "A rejected commit stops early and is not a steady-state cost." }],
       inEndToEnd: {
@@ -223,12 +230,12 @@ export default defineSuite({
     {
       id: "commit-authoritative-leaf",
       name: "commitAuthoritative (change one small field)",
-      why: "Most state changes are tiny (a filter, a selection, a timestamp) but happen while a large collection sits in the same store. This proves the central design promise, structural sharing: a small change must not pay for the large data next to it.",
+      why: "Most state changes are tiny: a filter, a selection, a timestamp. They happen while a large collection sits in the same store. This proves the central design promise, structural sharing: a small change must not pay for the large data next to it.",
       poorPerformanceMeans:
-        "If the cost grew with the collection, every keystroke or click would re-copy thousands of records, and the application would get slower as its data grew -- the exact failure structural sharing exists to prevent.",
+        "If the cost grew with the collection, every keystroke or click would re-copy thousands of records. The application would get slower as its data grew. Structural sharing exists to prevent exactly that failure.",
       expectedComplexity: "constant",
       complexityReason:
-        "A leaf commit rebuilds only the path from the root to the changed field and reuses every other branch by reference, so the work does not depend on how many records the store holds.",
+        "A leaf commit rebuilds only the path from the root to the changed field and reuses every other branch by reference. The work does not depend on how many records the store holds.",
       variables: [
         { name: "records held in the store", how: "swept", description: "The tier axis: how large the unrelated collection in the same store is." },
         RECORD_SHAPE,
@@ -241,12 +248,12 @@ export default defineSuite({
     {
       id: "reconcile-array-info",
       name: "reconcileArrayInfo",
-      why: "Builds the identity-keyed bookkeeping that lets lists update in place instead of being replaced; it runs on every collection commit that carries an identity key.",
+      why: "Builds the identity-keyed bookkeeping that lets lists update in place instead of being replaced. It runs on every collection commit that carries an identity key.",
       poorPerformanceMeans:
-        "Collection commits slow down in proportion to their size, adding directly to every list fetch; a quadratic regression would appear first on large tables.",
+        "Collection commits slow down in proportion to their size, adding directly to every list fetch. A quadratic regression would appear first on large tables.",
       expectedComplexity: "linear",
       complexityReason:
-        "It visits each incoming record once to compute its identity key and look it up in a hash map of known records, so the work is proportional to the number of records.",
+        "It visits each incoming record once to compute its identity key and look it up in a hash map of known records. The work is proportional to the number of records.",
       variables: [
         ITEMS,
         { name: "previous-records", how: "swept", description: "How many records the previous state already holds (none on a first load)." },
@@ -261,7 +268,7 @@ export default defineSuite({
           primaryValue: 640,
           expectedComplexity: "constant",
           complexityReason:
-            "The previous state is a hash map consulted once per incoming record, so how many records it holds changes neither the number of lookups nor the cost of each.",
+            "The previous state is a hash map consulted once per incoming record. How many records it holds changes neither the number of lookups nor the cost of each.",
         },
       ],
       covers: {
@@ -293,12 +300,12 @@ export default defineSuite({
     {
       id: "getter-dispatch-cold",
       name: "getter dispatch (one full round trip)",
-      why: "This is what an application actually calls: one getter through `createData` -- dedup registry, async execute, ownership-checked commit and the loading-then-success state transitions. It is the best single number for 'what does one fetch cost through data-cap'.",
+      why: "This is what an application actually calls: one getter through `createData`. That covers the dedup registry, async execute, ownership-checked commit and the loading-then-success state transitions. It is the best single number for 'what does one fetch cost through data-cap'.",
       poorPerformanceMeans:
-        "Every read in the application is slower and burns more CPU, and the cost scales with traffic and with payload size.",
+        "Every read in the application is slower and burns more CPU. The cost scales with traffic and with payload size.",
       expectedComplexity: "linear",
       complexityReason:
-        "Dispatch bookkeeping is constant per call, and the commit that follows touches every new record once, so the total is a small constant plus a term proportional to the records returned.",
+        "Dispatch bookkeeping is constant per call, and the commit that follows touches every new record once. The total is a small constant plus a term proportional to the records returned.",
       variables: [
         ITEMS,
         RECORD_SHAPE,
@@ -320,14 +327,14 @@ export default defineSuite({
       name: "canonicalize (request key)",
       why: "Turns a request's parameters into the string the coordinator uses to recognise identical in-flight requests. It runs on every getter and mutator call, so it sits on the hot path of everything the application does.",
       poorPerformanceMeans:
-        "Every call pays a surcharge proportional to how complex its parameters are; large filter objects would make deduplication more expensive than the requests it saves.",
+        "Every call pays a surcharge proportional to how complex its parameters are. Large filter objects would make deduplication more expensive than the requests it saves.",
       expectedComplexity: "linearithmic",
       complexityReason:
-        "It walks every key of the parameters object (linear) and sorts the keys of each object so equal objects produce equal strings (n log n), so the sort dominates as objects grow.",
+        "It walks every key of the parameters object (linear). It sorts the keys of each object so equal objects produce equal strings (n log n), so the sort dominates as objects grow.",
       variables: [
         { name: "keys in the parameters object", how: "swept", description: "The tier axis: how many keys the parameter object has." },
         { name: "value types", how: "fixed", value: "short strings and numbers", description: "Dates, URLs, nested objects and arrays add proportional work per node and are not swept." },
-        { name: "typical real parameters", how: "fixed", value: "3-6 keys in real use", description: "Real calls pass 3-6 keys; the ladder deliberately goes far beyond that to expose the growth rate." },
+        { name: "typical real parameters", how: "fixed", value: "3-6 keys in real use", description: "Real calls pass 3-6 keys. The ladder deliberately goes far beyond that to expose the growth rate." },
       ],
       notCovered: [{ name: "deeply nested parameters", reason: "Nesting is bounded by a hard depth limit and is not representative of real request parameters." }],
       setup: (n) => Object.fromEntries(Array.from({ length: n }, (_, i) => [`key${String(i).padStart(5, "0")}`, i % 2 === 0 ? `value-${String(i)}` : i])),
@@ -338,18 +345,18 @@ export default defineSuite({
       name: "coordinator dedup (identical concurrent calls)",
       why: "When many components ask for the same data at once, the coordinator should run the request once and share the result. This benchmark proves the saving is real and shows what the sharing itself costs.",
       poorPerformanceMeans:
-        "Without effective deduplication every concurrent caller hits the data source, multiplying load and cost on the backend; if the sharing itself were slow, dedup would cost more than it saves.",
+        "Without effective deduplication, every concurrent caller hits the data source, multiplying load and cost on the backend. If the sharing itself were slow, dedup would cost more than it saves.",
       expectedComplexity: "linear",
       complexityReason:
-        "Each of the n callers registers on the shared in-flight request and receives the one result, so the work is proportional to the number of callers while the underlying fetch runs only once.",
+        "Each of the n callers registers on the shared in-flight request and receives the one result. The work is proportional to the number of callers, while the underlying fetch runs only once.",
       variables: [
         { name: "concurrent identical callers", how: "swept", description: "The tier axis: how many callers ask for the same data at the same moment." },
-        { name: "payload size", how: "fixed", value: "200 records", description: "Held constant so only the caller count varies; payload scaling is measured in getter-dispatch-cold." },
+        { name: "payload size", how: "fixed", value: "200 records", description: "Held constant so only the caller count varies. Payload scaling is measured in getter-dispatch-cold." },
         { name: "request identity", how: "variant", description: "Identical requests (shared) versus independent requests (not shared), measured as the two variants below." },
       ],
       variants: [
-        { name: "identical", description: "Every caller asks for the same page; the coordinator runs one fetch and shares it." },
-        { name: "independent", description: "Every caller asks for a different page; nothing can be shared, so this is the no-dedup comparison." },
+        { name: "identical", description: "Every caller asks for the same page. The coordinator runs one fetch and shares it." },
+        { name: "independent", description: "Every caller asks for a different page. Nothing can be shared, so this is the no-dedup comparison." },
       ],
       fresh: true,
       setup: (n, options) => {
@@ -372,13 +379,13 @@ export default defineSuite({
       name: "runGetters (one call, many getters)",
       why: "Screens usually need several datasets at once; `runGetters` starts them together. Its overhead is paid on every screen load.",
       poorPerformanceMeans:
-        "Screen-load latency grows with the number of datasets a screen needs, and a super-linear regression would punish exactly the most data-rich screens.",
+        "Screen-load latency grows with the number of datasets a screen needs. A super-linear regression would punish exactly the most data-rich screens.",
       expectedComplexity: "quadratic",
       complexityReason:
-        "Dispatching and aggregating are linear in the getters, but each getter commits to its own field and every commit rebuilds the root fields object, whose size is the number of fields (confirmed separately: one commit costs roughly 0.1 ms at 500 fields and 1.3 ms at 8,000). Here every getter owns one field, so n getters make n commits of O(n) each. A real capability has a handful of fields, where this is effectively linear; the quadratic term only appears when fields and getters grow together, which is why it is measured this way.",
+        "Dispatching and aggregating are linear in the getters. But each getter commits to its own field, and every commit rebuilds the root fields object, whose size is the number of fields. A separate measurement confirmed this: one commit costs roughly 0.1 ms at 500 fields and 1.3 ms at 8,000. Here every getter owns one field, so n getters make n commits of O(n) each. A real capability has a handful of fields, where this is effectively linear. The quadratic term only appears when fields and getters grow together, which is why it is measured this way.",
       variables: [
         { name: "getters per call", how: "swept", description: "The tier axis: how many getters one `runGetters` call starts." },
-        { name: "fields per capability", how: "swept", description: "Swept together with getters on purpose (one field per getter): the cost of each commit depends on the field count, so the two cannot be separated in this benchmark." },
+        { name: "fields per capability", how: "swept", description: "Swept together with getters on purpose (one field per getter). The cost of each commit depends on the field count, so the two cannot be separated in this benchmark." },
         { name: "payload per getter", how: "fixed", value: "20 records", description: "Small and constant so the getter count, not payload size, drives the result." },
         { name: "getter independence", how: "fixed", value: "all independent, all succeed", description: "A failing getter takes the error path, which is cheaper and not representative." },
       ],
@@ -401,14 +408,14 @@ export default defineSuite({
       name: "createDataCache (set then get)",
       why: "The optional snapshot cache lets a screen restore instantly. It must never become a hidden per-item cost: it should hold snapshots by reference.",
       poorPerformanceMeans:
-        "If the cache copied snapshots, every cache write would cost as much as re-fetching, and memory would multiply with the number of cached screens.",
+        "If the cache copied snapshots, every cache write would cost as much as re-fetching. Memory would multiply with the number of cached screens.",
       expectedComplexity: "constant",
       complexityReason:
-        "Entries are stored by reference in a bounded map with least-recently-used eviction, so set, get and eviction are constant-time regardless of how many records a snapshot contains.",
+        "Entries are stored by reference in a bounded map with least-recently-used eviction. Set, get and eviction are constant-time regardless of how many records a snapshot contains.",
       variables: [
         { name: "records inside the cached snapshot", how: "swept", description: "The tier axis: the size of the snapshot being cached." },
         { name: "cache fullness", how: "fixed", value: "full (50 entries), every set evicts", description: "The worst case: each set evicts the oldest entry." },
-        { name: "hit versus miss", how: "fixed", value: "hit", description: "The get immediately follows the set, so it is always a hit; a miss is cheaper." },
+        { name: "hit versus miss", how: "fixed", value: "hit", description: "The get immediately follows the set, so it is always a hit. A miss is cheaper." },
       ],
       fresh: true,
       setup: (n) => {
@@ -429,9 +436,9 @@ export default defineSuite({
     {
       id: "compute-item-identity",
       name: "computeItemIdentity",
-      why: "It builds the identity key of every record in a collection commit, so it runs once per record on every list fetch.",
+      why: "It builds the identity key of every record in a collection commit. It runs once per record on every list fetch.",
       poorPerformanceMeans:
-        "Collection commits slow down in proportion to the number of key fields, adding to every list fetch of every capability that uses a composite key.",
+        "Collection commits slow down in proportion to the number of key fields. That adds to every list fetch of every capability that uses a composite key.",
       expectedComplexity: "linear",
       complexityReason:
         "Each key field's value is read and joined once, so cost is proportional to the number of key fields.",
@@ -457,12 +464,12 @@ export default defineSuite({
     {
       id: "create-data",
       name: "createData",
-      why: "Every capability is declared by one `createData` call, so its cost is paid at module load by every process that imports a capability, not only by the first fetch.",
+      why: "Every capability is declared by one `createData` call. Every process that imports a capability pays this at module load, not only on the first fetch.",
       poorPerformanceMeans:
-        "Slower start-up for every process in proportion to the initial state each capability declares, on top of the per-capability floor cold start measures.",
+        "Slower start-up for every process, in proportion to the initial state each capability declares. This adds to the per-capability floor that cold start measures.",
       expectedComplexity: "linear",
       complexityReason:
-        "It builds the initial state once, which walks the schema's initial records to freeze and index them, so cost is proportional to the number of initial records.",
+        "It builds the initial state once, walking the schema's initial records to freeze and index them. Cost is proportional to the number of initial records.",
       variables: [
         { name: "initial records", how: "swept", description: "How many records the schema's collection field starts with." },
         RECORD_SHAPE,
@@ -487,7 +494,7 @@ export default defineSuite({
     {
       id: "to-array",
       name: "processors.toArray",
-      why: "It splits a delimited value into a list, once for every variable that declares it, wherever a list is read from a single string.",
+      why: "It splits a delimited value into a list. It runs once for every variable that declares it, wherever a list is read from a single string.",
       poorPerformanceMeans: "Slower reads of every list value, in proportion to its length.",
       expectedComplexity: "linear",
       complexityReason: "The text is scanned once and one item is produced for each separator, so cost is proportional to the number of items.",
@@ -506,23 +513,70 @@ export default defineSuite({
       run: (text) => processors.toArray(text, ","),
     },
     {
-      id: "with-retry",
-      name: "withRetry",
-      why: "Opt-in retry wrapper used around flaky data sources. Its loop, timers and abort handling run only on failure, exactly when the system is already struggling, so its overhead must be small and predictable.",
+      id: "observe-value",
+      name: "observeValue",
+      why: "It is how `data-cap/observe` records which fields cross a boundary. Wrapped around `res.json`, a logger or a database call, it walks every value that passes, on every request of an instrumented process.",
       poorPerformanceMeans:
-        "Retry storms amplify an outage: if each retry is expensive, a struggling dependency makes the retrying service slower and more resource-hungry still.",
+        "Instrumented requests get slower in proportion to the size of what they send. That is why the walk is bounded by `maxNodes` (1,000 values by default). It is also why recording is meant for tests and staging, not for every production request.",
       expectedComplexity: "linear",
       complexityReason:
-        "Each failed attempt goes once around the loop (error handling, backoff computation, a timer and microtask hand-off), so total cost is proportional to the number of attempts.",
+        "It visits every value inside the payload once (array elements collapse into one path) and records each distinct path in a map. Then it records one event per distinct path, so the work is proportional to the values walked.",
+      variables: [
+        { name: "records in the payload", how: "swept", description: "The tier axis: how many records the observed value (a response body) holds." },
+        RECORD_SHAPE,
+        { name: "node bound", how: "fixed", value: "unbounded", description: "Lifted so the walk reaches every record and the growth shows. The default of 1,000 values stops the walk after about 50 of these records, which caps the cost of a large payload at a constant." },
+        { name: "sink", how: "fixed", value: "one that only counts", description: "The sink is the caller's (an array, a log line, a metrics client). Counting keeps its cost out of the result." },
+        RUNTIME,
+      ],
+      covers: {
+        observeValue: {
+          value: "swept",
+          "sink.record": "fixed: a function that only counts, called once per distinct field path (eighteen here, whatever the record count)",
+          "sink.skip": "fixed: absent; it is called only when the walker leaves something out, which these records never cause",
+          "context.boundary": "fixed: one client response, which is copied into each event",
+          "context.capability": "fixed: one short name, which prefixes each recorded path",
+          "context.clock": "fixed: absent, so no time is read; given, it is read once per call",
+          "context.handling": "fixed: absent; given, it is copied into each event",
+          "context.scope": "fixed: one string; a function instead is called once per call",
+          "options.collections": "fixed: off, the default; the records hold no Map or Set either way",
+          "options.maxDepth": "fixed: 8, the default; the records nest four levels deep, so it never binds",
+          "options.maxNodes": "fixed: unbounded, so every record is walked; the default of 1,000 caps the walk and its cost",
+          "options.onSkip": "fixed: absent; it is called only for what the walker leaves out, which these records never cause",
+        },
+      },
+      inEndToEnd: { callsPerOperation: 0, description: "Not part of a data fetch; it runs only where an application instruments a boundary. Measured on its own." },
+      setup: (n) => {
+        const counter = { recorded: 0 }
+        return {
+          counter,
+          sink: { record: () => (counter.recorded += 1) },
+          context: { scope: "request", boundary: { kind: "client-response", name: "http-response" }, capability: "listData" },
+          body: { items: generateRecords(n) },
+        }
+      },
+      run: ({ counter, sink, context, body }) => {
+        observeValue(sink, context, body, { maxNodes: Number.POSITIVE_INFINITY })
+        return counter.recorded
+      },
+    },
+    {
+      id: "with-retry",
+      name: "withRetry",
+      why: "Opt-in retry wrapper used around flaky data sources. Its loop, timers and abort handling run only on failure, exactly when the system is already struggling. So its overhead must be small and predictable.",
+      poorPerformanceMeans:
+        "Retry storms amplify an outage. If each retry is expensive, a struggling dependency makes the retrying service slower and more resource-hungry still.",
+      expectedComplexity: "linear",
+      complexityReason:
+        "Each failed attempt goes once around the loop: error handling, backoff computation, a timer and a microtask hand-off. Total cost is proportional to the number of attempts.",
       variables: [
         { name: "attempts before success", how: "swept", description: "The tier axis: how many calls fail before one succeeds." },
-        { name: "backoff delay", how: "fixed", value: "0 ms", description: "Real backoff waits seconds and would measure the timer, not the loop; the real control flow still runs." },
+        { name: "backoff delay", how: "fixed", value: "0 ms", description: "Real backoff waits seconds and would measure the timer, not the loop. The real control flow still runs." },
         { name: "abort signal", how: "fixed", value: "never aborted", description: "The abort path exits early and is cheaper." },
       ],
-      notCovered: [{ name: "real backoff delays", reason: "Waiting is not CPU or memory cost; it is latency the caller chose." }],
+      notCovered: [{ name: "real backoff delays", reason: "Waiting is not CPU or memory cost. It is latency the caller chose." }],
       tiers: [10, 20, 40, 80],
       tiersReason:
-        "withRetry refuses more than 100 attempts (a built-in loop guard that fails fast on a broken exit condition), so the ladder stops at 80; real retry policies use 3-10 attempts, so this still covers well beyond real use.",
+        "withRetry refuses more than 100 attempts, a built-in loop guard that fails fast on a broken exit condition. So the ladder stops at 80. Real retry policies use 3-10 attempts, so this still covers well beyond real use.",
       setup: (n) => ({ n, signal: new AbortController().signal }),
       run: async ({ n, signal }) => {
         let call = 0

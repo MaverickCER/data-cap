@@ -1,12 +1,12 @@
 /**
  * Report findings derived from the Policy Model and from what the flow pass
- * could not follow (ADR 0070, ADR 0071). Pure -- no filesystem access.
+ * could not follow (ADR 0070, ADR 0071). Pure: no filesystem access.
  *
- * Severity follows the repo's invariants: a violation proven by static or
- * declared evidence is an `error`; one resting on an inferred edge is a
- * `warning` (never an `error` from insufficient evidence); a result the
+ * Severity follows the repo's invariants. A violation proven by static or
+ * declared evidence is an `error`. One resting on an inferred edge is a
+ * `warning` (never an `error` from insufficient evidence). A result the
  * analysis could not decide is a `warning`, so `--strict-flow` makes
- * "we could not prove this rule" block the build, which is the point of
+ * "we could not prove this rule" block the build. That is the point of
  * declaring a rule at all.
  */
 
@@ -25,7 +25,7 @@ function indeterminateText(reason: PolicyIndeterminateReason): string {
   return text[reason]
 }
 
-/** A plain-language phrase for why part of the program could not be followed -- shared by findings and text rendering so they cannot disagree. */
+/** A plain-language phrase for why part of the program could not be followed: shared by findings and text rendering so they cannot disagree. */
 export function unknownText(reason: FlowUnknownReason): string {
   const text: Readonly<Record<FlowUnknownReason, string>> = {
     "dynamic-access": "a computed property key on tracked data",

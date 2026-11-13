@@ -1,6 +1,6 @@
 /**
  * Build-tooling pattern: runs the real `stable-operation-reference` ESLint
- * rule, through ESLint's own Node API, against two real fixture files --
+ * rule, through ESLint's own Node API, against two real fixture files;
  * one using only stable module-level references (never flagged), one with
  * both mistakes the rule exists to catch.
  */

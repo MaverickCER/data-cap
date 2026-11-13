@@ -295,7 +295,7 @@ describe("linkCapabilityFiles", () => {
       "user.ts",
       [
         `const a = b;`,
-        `const b = a;`, // genuine cycle -- depth-limiting is what prevents an infinite loop here
+        `const b = a;`, // genuine cycle: depth-limiting is what prevents an infinite loop here
         `export const userCapability = createData({ fields: a });`,
       ].join("\n"),
     )
@@ -598,7 +598,7 @@ describe("linkCapabilityFiles", () => {
         root,
         tsconfig: false,
       })
-      // The capability's own fields resolve for real -- not silently empty.
+      // The capability's own fields resolve for real: not silently empty.
       expect(capabilities[0]!.fieldsShape).toEqual({ id: "" })
       expect(capabilities[0]!.operationNames?.getters).toEqual(["getUser"])
       // And the operation-name mismatch check still fires against a shared,
@@ -702,7 +702,7 @@ describe("linkCapabilityFiles", () => {
         ].join("\n"),
       )
       // b.ts is passed directly (parsed once via the main loop) AND is reached
-      // again via a.ts's cross-file "fields" resolution -- the second lookup
+      // again via a.ts's cross-file "fields" resolution: the second lookup
       // must hit the parse cache rather than re-reading/re-parsing the file.
       const { capabilities, warnings } = await linkCapabilityFiles([fileA, fileB], {
         fs: nodeBuildFs,
@@ -736,7 +736,7 @@ describe("linkCapabilityFiles", () => {
         [
           `const userFields = { id: "" };`,
           `export const userCapability = createData({ fields: userFields });`,
-          // Fixture file content, not real code in this test file -- deliberately
+          // Fixture file content, not real code in this test file: deliberately
           // omits documentData's second (docs) argument to exercise docsNode === undefined.
           `documentData({ fields: userFields });`,
         ].join("\n"),
@@ -799,7 +799,7 @@ describe("linkCapabilityFiles", () => {
     it("resolves an identifier chain that lands exactly on the maximum resolvable depth", async () => {
       // a -> b -> c -> d -> e -> f -> { id: "" } : six identifier hops, the
       // last of which is checked at `depth === MAX_IDENTIFIER_CHAIN_DEPTH`
-      // (must still resolve -- the bound is strictly `>` MAX, not `>=`).
+      // (must still resolve; the bound is strictly `>` MAX, not `>=`).
       const file = await writeFile(
         "user.ts",
         [
@@ -851,7 +851,7 @@ describe("linkCapabilityFiles", () => {
       // maximally deep or cyclic) identifier chain reachable through
       // `linkCapabilityFiles`, so this internal fail-safe can only be
       // organically exercised by starting `totalHops` already past its
-      // ceiling directly -- an "unresolvable" ref hits the guard before
+      // ceiling directly: an "unresolvable" ref hits the guard before
       // `ref.kind` is even inspected, so nothing else about the context
       // needs to be real.
       const context = new LinkContext({
@@ -913,7 +913,7 @@ describe("linkCapabilityFiles", () => {
       // A single same-file identifier hop ("x" -> its own literal) passes
       // through both of resolveFieldsShape's internal `totalHops + 1` call
       // sites (the "local const" branch into `resolveExpression`, then
-      // `resolveExpression`'s own call back into `resolveFieldsShape`) --
+      // `resolveExpression`'s own call back into `resolveFieldsShape`):
       // exactly two hops. Starting `totalHops` already at the ceiling means
       // *both* increments are needed to exceed it: if either one were
       // mutated away, this resolves successfully instead of throwing.
@@ -933,7 +933,7 @@ describe("linkCapabilityFiles", () => {
 
     it("resolveFieldsShape's totalHops fail-safe also requires the cross-file import branch's own +1", async () => {
       // Same shape as the previous test, but for the *other* branch that
-      // calls `resolveExpression` -- a cross-file import hop, not a
+      // calls `resolveExpression`: a cross-file import hop, not a
       // same-file local const. Requires real files on disk since
       // `resolveImportSpecifier` does real resolution.
       await writeFile("imported.ts", `export const x = { id: "" };`)

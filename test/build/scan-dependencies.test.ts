@@ -20,7 +20,7 @@ describe("scanDependencies", () => {
 
   /**
    * Every edge `scanDependencies` returns is root-relative (OUT-01), while a
-   * `ScanTarget` and the file list it scans stay absolute -- so an expectation
+   * `ScanTarget` and the file list it scans stay absolute: so an expectation
    * about an edge goes through this, and one about an input doesn't.
    */
   function rel(absolutePath: string): string {
@@ -625,7 +625,7 @@ describe("scanDependencies", () => {
         `export const pkgACapability = createData({ fields: { id: "" } });`,
       )
       // The package's own consumer file is never in the locally-discovered
-      // `files` list passed in -- only reachable by walking the package's
+      // `files` list passed in: only reachable by walking the package's
       // own directory, which is exactly what this feature adds.
       await writeFile(
         "node_modules/@fixtures/pkg-a/consumer.ts",
@@ -689,7 +689,7 @@ describe("scanDependencies", () => {
         tsconfig: false,
       })
       expect(scannedPackages).toEqual([])
-      // An omitted `packages` must resolve to an empty allowlist -- not a
+      // An omitted `packages` must resolve to an empty allowlist: not a
       // one-element list that then fails package resolution and warns.
       expect(warnings).toEqual([])
     })
@@ -718,7 +718,7 @@ describe("scanDependencies", () => {
         `import { userCapability } from "../../../user.js";\nuserCapability.getUser();`,
       )
       // The package's directory is resolved through its realpath, so match that
-      // here -- the same physical consumer file, passed in the local list too.
+      // here: the same physical consumer file, passed in the local list too.
       const pkgConsumer = await fs.realpath(
         path.join(root, "node_modules/@fixtures/pkg-b/consumer.ts"),
       )
@@ -731,7 +731,7 @@ describe("scanDependencies", () => {
         subscriptionNames: [],
       }
       // `pkgConsumer` is passed in the local list AND lives under the walked
-      // package directory -- it must be scanned exactly once.
+      // package directory: it must be scanned exactly once.
       const { edges } = await scanDependencies([capabilityFile, pkgConsumer], [target], {
         fs: nodeBuildFs,
         root,
@@ -770,7 +770,7 @@ describe("scanDependencies", () => {
       tsconfig: false,
     })
     // `foo` in combo.ts is the imported binding (-> other.ts#foo), never the
-    // same-named local target -- so no `calls-getter` edge to combo.ts#foo.
+    // same-named local target: so no `calls-getter` edge to combo.ts#foo.
     expect(edges.every((e) => e.relationship !== "calls-getter")).toBe(true)
     expect(edges).toEqual([
       {

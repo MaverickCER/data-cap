@@ -94,7 +94,7 @@ describe("renderFlowText (exact output)", () => {
         "",
         `> ${flowEvidenceDisclaimer()}`,
         "",
-        "Coverage: 3 function(s) analyzed -- complete.",
+        "Coverage: 3 function(s) analyzed; complete.",
         "",
         "## Status legend",
         "",
@@ -116,16 +116,16 @@ describe("renderFlowText (exact output)", () => {
     })
     const a = renderFlowText(evidence()) ?? ""
     expect(a).toContain(
-      "Coverage: 3 function(s) analyzed, 2 not fully analyzed -- not complete: parts of the program could not be followed, so a flow missing below is not proof that it does not exist.\n",
+      "Coverage: 3 function(s) analyzed, 2 not fully analyzed; not complete. Parts of the program could not be followed, so a flow missing below is not proof that it does not exist.\n",
     )
     expect(a).not.toContain("unknown(s)")
     view({ coverage: coverage({ functionsUnanalyzed: 0, unknowns: 4, complete: false }) })
     const b = renderFlowText(evidence()) ?? ""
-    expect(b).toContain("Coverage: 3 function(s) analyzed, 4 unknown(s) -- not complete:")
+    expect(b).toContain("Coverage: 3 function(s) analyzed, 4 unknown(s); not complete.")
     expect(b).not.toContain("not fully analyzed")
     view({ coverage: coverage({ functionsUnanalyzed: 1, unknowns: 1, complete: true }) })
     expect(renderFlowText(evidence())).toContain(
-      "Coverage: 3 function(s) analyzed, 1 not fully analyzed, 1 unknown(s) -- complete.\n",
+      "Coverage: 3 function(s) analyzed, 1 not fully analyzed, 1 unknown(s); complete.\n",
     )
   })
 
@@ -344,7 +344,7 @@ describe("renderFlowText (exact output)", () => {
 
       > Machine-generated engineering artifact assembled from statically-provable code facts and author-declared documentation. It can support a security, privacy, or compliance review. It does not itself establish compliance with any standard. Incomplete traces are recorded as unknown, never hidden; an absent flow is not evidence of no flow.
 
-      Coverage: 3 function(s) analyzed -- complete.
+      Coverage: 3 function(s) analyzed; complete.
 
       ## Status legend
 
@@ -360,20 +360,20 @@ describe("renderFlowText (exact output)", () => {
       - Inputs: user, plain, deep
       - Reads: f: (whole), b; f (via parameter): (whole), a, m.n; f (via return): z; f2: x
       - Returns: a: (whole), w; b: q
-      - Passes on: A -- bc: (whole); AB -- c: (whole); T1 -- f: h, i; T1 -- g: j; T2 -- f: k
+      - Passes on: A (bc): (whole); AB (c): (whole); T1 (f): h, i; T1 (g): j; T2 (f): k
       - Side effects: database B1: f: r, s, t, u (masked, encrypted); log B2: f: p; boundary B3: f: (whole); api X: yz: (whole); api XY: z: (whole)
       - Discards: f: (whole), c; g: d
       - Callers: aa, yy
       - Callees: bb, mm
-      - Not followed: a/b.ts:7:9 -- a computed property key on tracked data
-      - Not followed: a/b.ts:7:9 -- an unresolved call that receives tracked data
+      - Not followed: a/b.ts:7:9, a computed property key on tracked data
+      - Not followed: a/b.ts:7:9, an unresolved call that receives tracked data
 
       ## Fields
 
       ## What the analysis could not follow
 
-      - a/b.ts:7:9 -- an unresolved call that receives tracked data
-      - a/b.ts:7:9 -- a computed property key on tracked data (x)
+      - a/b.ts:7:9, an unresolved call that receives tracked data
+      - a/b.ts:7:9, a computed property key on tracked data (x)
       "
     `)
   })
@@ -442,7 +442,7 @@ describe("renderFlowText (exact output)", () => {
 
       > Machine-generated engineering artifact assembled from statically-provable code facts and author-declared documentation. It can support a security, privacy, or compliance review. It does not itself establish compliance with any standard. Incomplete traces are recorded as unknown, never hidden; an absent flow is not evidence of no flow.
 
-      Coverage: 3 function(s) analyzed -- complete.
+      Coverage: 3 function(s) analyzed; complete.
 
       ## Status legend
 
@@ -508,7 +508,7 @@ describe("renderFlowText (exact output)", () => {
 
       > Machine-generated engineering artifact assembled from statically-provable code facts and author-declared documentation. It can support a security, privacy, or compliance review. It does not itself establish compliance with any standard. Incomplete traces are recorded as unknown, never hidden; an absent flow is not evidence of no flow.
 
-      Coverage: 3 function(s) analyzed -- complete.
+      Coverage: 3 function(s) analyzed; complete.
 
       ## Status legend
 
@@ -536,7 +536,7 @@ describe("renderFlowText (exact output)", () => {
       - Reaches: client-response out: (whole), a, z (static); boundary nb: (whole) (unknown)
       - Dropped by: fa: p1; fb: (whole), p2
       - Read by: ra, rb
-      - Complete: no -- the analysis could not follow part of this field's flow, so the destinations above may be incomplete.
+      - Complete: no. The analysis could not follow part of this field's flow, so the destinations above may be incomplete.
       "
     `)
   })
@@ -562,7 +562,7 @@ describe("renderFlowText (exact output)", () => {
 
       > Machine-generated engineering artifact assembled from statically-provable code facts and author-declared documentation. It can support a security, privacy, or compliance review. It does not itself establish compliance with any standard. Incomplete traces are recorded as unknown, never hidden; an absent flow is not evidence of no flow.
 
-      Coverage: 3 function(s) analyzed -- complete.
+      Coverage: 3 function(s) analyzed; complete.
 
       ## Status legend
 
@@ -582,8 +582,8 @@ describe("renderFlowText (exact output)", () => {
 
       ## What the analysis could not follow
 
-      - a/b.ts:7:9 -- an unresolved call that receives tracked data
-      - a/b.ts:7:9 -- source that is not available (why)
+      - a/b.ts:7:9, an unresolved call that receives tracked data
+      - a/b.ts:7:9, source that is not available (why)
       "
     `)
     expect(renderFlowText(evidence({ claims: [] }))).toMatchInlineSnapshot(`
@@ -591,7 +591,7 @@ describe("renderFlowText (exact output)", () => {
 
       > Machine-generated engineering artifact assembled from statically-provable code facts and author-declared documentation. It can support a security, privacy, or compliance review. It does not itself establish compliance with any standard. Incomplete traces are recorded as unknown, never hidden; an absent flow is not evidence of no flow.
 
-      Coverage: 3 function(s) analyzed -- complete.
+      Coverage: 3 function(s) analyzed; complete.
 
       ## Status legend
 
@@ -610,8 +610,8 @@ describe("renderFlowText (exact output)", () => {
 
       ## What the analysis could not follow
 
-      - a/b.ts:7:9 -- an unresolved call that receives tracked data
-      - a/b.ts:7:9 -- source that is not available (why)
+      - a/b.ts:7:9, an unresolved call that receives tracked data
+      - a/b.ts:7:9, source that is not available (why)
       "
     `)
   })
@@ -687,7 +687,7 @@ describe("renderFlowText (exact output)", () => {
 
       > Machine-generated engineering artifact assembled from statically-provable code facts and author-declared documentation. It can support a security, privacy, or compliance review. It does not itself establish compliance with any standard. Incomplete traces are recorded as unknown, never hidden; an absent flow is not evidence of no flow.
 
-      Coverage: 3 function(s) analyzed -- complete.
+      Coverage: 3 function(s) analyzed; complete.
 
       ## Status legend
 
@@ -714,7 +714,7 @@ describe("renderFlowText (exact output)", () => {
       - Inputs: none
       - Reads: none
       - Returns: none
-      - Passes on: T -- w: (whole)
+      - Passes on: T (w): (whole)
       - Side effects: none
       - Discards: none
       - Callers: none
@@ -756,12 +756,12 @@ describe("renderFlowText (exact output)", () => {
 
       ## What the analysis could not follow
 
-      - a/b.ts:7:9 -- an unresolved call that receives tracked data
+      - a/b.ts:7:9, an unresolved call that receives tracked data
       "
     `)
     view({ functions: [], fields: [field("w")] })
     expect(renderFlowText(evidence(), { field: "nope" })).toBe(
-      `# Data flow\n\n> ${flowEvidenceDisclaimer()}\n\nCoverage: 3 function(s) analyzed -- complete.\n\nNo field named nope in this evidence.\n`,
+      `# Data flow\n\n> ${flowEvidenceDisclaimer()}\n\nCoverage: 3 function(s) analyzed; complete.\n\nNo field named nope in this evidence.\n`,
     )
     expect(renderFlowText(evidence(), { field: "w" })).toContain("None.\n")
   })

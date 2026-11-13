@@ -78,7 +78,7 @@ describe("renderDependencyGraphDot", () => {
   })
 
   it("declares a capability referenced by two edges as exactly one node, not one per edge, when it is otherwise absent from the capabilities list", () => {
-    // `capabilities` deliberately omits this capability -- `groupEdgesByCapability`
+    // `capabilities` deliberately omits this capability: `groupEdgesByCapability`
     // only iterates the explicit `capabilities` list, so the FIRST node-declaring
     // loop never touches it, isolating the edge loop's own
     // `declaredCapabilities` de-dup guard as the only thing that can prevent
@@ -252,7 +252,7 @@ describe("renderOwnershipGraphDot -- full DOT snapshot", () => {
   it("emits each capability and field node exactly once even when the model carries duplicate refs", () => {
     // Feeds a hand-built model (not the builder) whose single entry lists the
     // same capability ref twice and two field refs that collide only if the
-    // key drops its `.` separator -- so the `!declaredNodes.has(key)` guards
+    // key drops its `.` separator: so the `!declaredNodes.has(key)` guards
     // and the `field.field.join(".")` key separator are all load-bearing.
     const capRef = { file: "/project/src/user.ts", exportName: "userCapability" }
     const model: OwnershipModel = {

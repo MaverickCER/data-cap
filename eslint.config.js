@@ -12,34 +12,34 @@ import eslintConfigPrettier from "eslint-config-prettier/flat"
  * real issues) and is intentionally not linted here, same rationale
  * env-cap uses. Each `test/integration/<category>/<name>/` fixture is the
  * same kind of self-contained npm project (relocated out of `examples/`,
- * see examples/README.md) and gets the same treatment -- only the flat
+ * see examples/README.md) and gets the same treatment: only the flat
  * `<category>/<name>.test.ts` wrapper one level up is linted here.
  * `benchmarks/performance-runtime/` and `benchmarks/performance-buildtime/`
  * are the same kind of self-contained npm project too (each its own
  * `package.json` depending on `data-cap` via `file:../..`,
- * installed by its own `npm install`, never the root `npm ci`) -- only
+ * installed by its own `npm install`, never the root `npm ci`): only
  * `benchmarks/benchmark-fixtures/` and the top-level orchestration scripts
  * directly under `benchmarks/` are linted here, same rationale env-cap
  * uses for its own `benchmark/performance-runtime`/`performance-buildtime`.
  *
  * Extends internal-package-contract's org-wide baseline (`js.configs.
  * recommended` + untyped `tseslint.configs.recommended` + Node globals,
- * deliberately non-type-checked -- see that package's own eslint.config.mjs
+ * deliberately non-type-checked: see that package's own eslint.config.mjs
  * for why) rather than duplicating it. `baseline` is spread first; every
  * block below layers stricter, package-specific rules on top for the files
- * it targets -- flat config applies later same-file blocks after earlier
+ * it targets: flat config applies later same-file blocks after earlier
  * ones, so this package's own stricter tier and `eslintConfigPrettier`
  * (last, so Prettier still wins) both still take effect exactly as before.
  */
 export default tseslint.config(
   ...baseline,
   // Baseline's own `tseslint.configs.recommended` matches every `**/*.ts`
-  // file with no `tsconfigRootDir` of its own (deliberately -- it's meant
+  // file with no `tsconfigRootDir` of its own (deliberately: it's meant
   // to work unmodified in any consuming project). Once this package's own
   // node_modules contains another package (internal-package-contract) that
   // also ships a tsconfig.json, typescript-eslint's auto-detection for
   // root-level `.ts` config files this repo's own blocks don't otherwise
-  // scope becomes genuinely ambiguous between the two candidate roots --
+  // scope becomes genuinely ambiguous between the two candidate roots:
   // same fix as env-cap's identical eslint.config.js migration. Setting it
   // explicitly, globally, removes the ambiguity without touching baseline's
   // own file matching.
@@ -50,9 +50,9 @@ export default tseslint.config(
   },
   {
     // test/cross-runtime/**: Bun's own native test runner (bun:test) and
-    // Deno's global `Deno` namespace execute these -- neither is part of
+    // Deno's global `Deno` namespace execute these (neither is part of
     // this project's Node-targeted tsconfig, and each runtime does its own
-    // type-checking (or deliberately skips it -- see deno.test.ts) when
+    // type-checking (or deliberately skips it) see deno.test.ts) when
     // actually running the file.
     ignores: [
       "dist",
@@ -63,12 +63,12 @@ export default tseslint.config(
       // Pre-existing gap, surfaced (not caused) by extending
       // internal-package-contract's baseline below: that baseline's own
       // js.configs.recommended applies no-undef globally (no `files`
-      // restriction, by design -- see its own eslint.config.mjs), which is
+      // restriction, by design; see its own eslint.config.mjs), which is
       // the first rule ever applied broadly enough to reach docs/ at all.
       // docs/api/** is typedoc-generated output, never hand-edited;
       // docs/script.js is hand-authored browser code needing
       // window/document globals this Node-focused TS toolchain doesn't
-      // configure -- the website is reviewed separately, not part of this
+      // configure: the website is reviewed separately, not part of this
       // TypeScript project. Matches env-cap's identical, already-correct
       // exclusion.
       "docs",
@@ -78,7 +78,7 @@ export default tseslint.config(
       // Tooling-owned data, not source: api-contract/ holds one subdirectory per ApiContract
       // target (core/, runtime/, helpers/, build/, eslint-plugin/) of API-Extractor-backed
       // snapshots of src/'s public surface (baseline.* committed as the compatibility diffing
-      // target, current.* regenerated every run -- `eslint --fix` rewriting baseline.* would
+      // target, current.* regenerated every run; `eslint --fix` rewriting baseline.* would
       // corrupt that diff; see internal-package-contract's own
       // scripts/api-contract/baseline-store.ts), and exceptions/ holds the reviewed-exception
       // registries. Matches internal-package-contract's own repo-contract's identical exclusion.
@@ -88,7 +88,7 @@ export default tseslint.config(
       // eslint.config.js) still descends into and loads a fixture's own
       // eslint.config.js during traversal if the ignore pattern only
       // matches *contents* of the fixture directory rather than the
-      // directory path itself -- and loading it fails, since these
+      // directory path itself; and loading it fails, since these
       // fixtures' own node_modules aren't installed by the root `npm ci`.
       // A literal directory path (same as the bare "examples" entry above)
       // prunes traversal before that discovery step ever runs.
@@ -125,7 +125,7 @@ export default tseslint.config(
     },
     rules: {
       // Encodes ADR "build tooling is static-analysis-only" as something CI
-      // enforces, not just documents -- once src/build/ exists it must never
+      // enforces, not just documents: once src/build/ exists it must never
       // gain a dynamic-execution code path for discovered schema files. On
       // from day one so the rule can't be silently dropped when that phase
       // lands.
@@ -151,7 +151,7 @@ export default tseslint.config(
   {
     // ADR 0058: every library surface (`.`, `./helpers`, `./runtime`,
     // `./build`, `./evidence`) must not acquire a filesystem capability
-    // implicitly -- `./build` accepts a `BuildFileSystem` from its caller
+    // implicitly; `./build` accepts a `BuildFileSystem` from its caller
     // instead. Only `src/cli/**` (the executable capability boundary that
     // constructs the `node:fs/promises` adapter) may import `node:fs`. The
     // published `data-cap/eslint-plugin` ships `no-node-fs` for
@@ -203,7 +203,7 @@ export default tseslint.config(
   },
   {
     // Every coercion here exists specifically to turn a raw `unknown` value
-    // into a target type -- `String(value)` is the deliberate, correct way
+    // into a target type: `String(value)` is the deliberate, correct way
     // to do that (well-defined for every JS value, unlike a bare template
     // literal). The rule can't know these `unknown`s are never a
     // plain-object-without-toString in practice; it's flagging the exact
@@ -224,12 +224,12 @@ export default tseslint.config(
   },
   {
     // Root-level config files aren't part of tsconfig.json's `include`, so
-    // these get syntax-only TS linting -- no `projectService`, hence no
-    // type-aware rules -- rather than failing to resolve a TS project.
+    // these get syntax-only TS linting (no `projectService`, hence no
+    // type-aware rules) rather than failing to resolve a TS project.
     files: ["*.config.ts"],
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
   },
-  // Last on purpose -- turns off every core/stylistic rule that would
+  // Last on purpose: turns off every core/stylistic rule that would
   // otherwise fight Prettier's own formatting decisions.
   eslintConfigPrettier,
 )

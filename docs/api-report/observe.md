@@ -1,5 +1,8 @@
 # observe
 
+`data-cap/observe` (Experimental): record which field names cross a boundary at runtime, never
+their values, into a sink you supply. Pass the recording to `data-cap --observations`.
+
 ## Interfaces
 
 ### BodyReadable
@@ -143,7 +146,7 @@ readonly boundary: ObservedBoundary;
 readonly field: string;
 ```
 
-Capability-qualified dotted field path, for example `userData.user.email` -- the same naming the static Flow Model uses for field nodes.
+Capability-qualified dotted field path, for example `userData.user.email`: the same naming the static Flow Model uses for field nodes.
 
 ##### handling?
 
@@ -445,7 +448,7 @@ function createMemorySink(): {
 };
 ```
 
-An in-memory sink -- the only one this package provides.
+An in-memory sink: the only one this package provides.
 
 #### Returns
 
@@ -513,10 +516,11 @@ function instrumentBoundary(
 ): () => void;
 ```
 
-Wraps `target[method]` so its first argument (`observe: "args"`, the default), its result (`"result"`: a returned
-`Response` is observed by clone, a native promise by its resolved value) or both are observed (`observeValue`) on
-every call, which then goes through with its `this`, arguments and result untouched. Returns a restore function (a no-op if someone else has since
-replaced the method). Throws a `TypeError` at set-up when `target[method]` is not a function.
+Wraps `target[method]` so every call is observed with `observeValue`. `observe: "args"` (the
+default) observes the first argument, `"result"` the result, and `"both"` both. A returned
+`Response` is observed through a clone, a native promise through its resolved value. The call
+then goes through with its `this`, arguments and result untouched. Returns a restore function
+(a no-op if someone else has since replaced the method). Throws a `TypeError` at set-up when `target[method]` is not a function.
 
 #### Parameters
 
@@ -628,13 +632,15 @@ function observeValue<T>(
 ): T;
 ```
 
-Walks any JSON-like `value` and records the field path of every object and leaf it contains -- names and paths
-only, never a value -- through `observeBoundary`, then returns `value` itself so it can wrap a call
-(`res.json(observeValue(sink, ctx, body))`). Array elements (and, with `collections`, Map values and Set members)
+Walks any JSON-like `value` and records, through `observeBoundary`, the field path of every
+object and leaf in it: names and paths, never a value. It returns `value` itself, so it can wrap
+a call (`res.json(observeValue(sink, ctx, body))`). Array elements (and, with `collections`, Map
+values and Set members)
 collapse into the Flow Model's element marker `[]`. Functions, symbols and `undefined` are ignored; getters are
 never run; cycles are not re-entered; depth and visited-value count are bounded. The root itself is not a field
-(a root primitive records nothing); keys that are empty or contain a dot cannot be path segments (the Flow Model names a path by joining segments with a
-dot, so there is no reversible spelling) and are skipped -- but never silently: every skip (`dotted-key`, `max-depth`,
+(a root primitive records nothing). Keys that are empty or contain a dot cannot be path segments (the Flow Model
+names a path by joining segments with a dot, so there is no reversible spelling). They are skipped, but never
+silently. Every skip (`dotted-key`, `max-depth`,
 `max-nodes`, `cycle`) is reported to `options.onSkip` and to `sink.skip`. Never throws.
 
 #### Type Parameters

@@ -1,13 +1,13 @@
 ---
 name: data-cap
-description: Load when a task creates or edits a data-cap capability (a schema with fields, getters, mutators or subscriptions), calls createData or buildData, or generates data-cap manifests, docs or reports. Skip it for state that does not use data-cap.
+description: Load when a task creates or edits a data-cap capability (a schema of fields and operations), calls createData or buildData, or generates data-cap manifests, docs or reports.
 ---
 
 # data-cap
 
-data-cap gives each capability (a feature or package) an analyzable data contract: the fields it owns and the getters, mutators and subscriptions that change or observe them.
+Declare who owns your app's data and how it may be handled. Lint and build checks enforce those rules, and the data documentation regenerates from your code, so it never falls behind. Each declaration is a capability, documented with `documentData()`.
 
-Not for: fetching data or holding UI state. It declares and checks ownership; your functions do the I/O.
+Not for: fetching data or holding UI state. Your own functions do the I/O.
 
 ## Use it
 
@@ -62,8 +62,8 @@ From `examples/team-service/src/capabilities/member.capability.ts`.
 | `data-cap/helpers` | `processors`, `identity`, `canonicalize`, `shape` |
 | `data-cap/build` | Node only: discovery, models, and generating manifests, docs and reports |
 | `data-cap/node` | Node only: `nodeBuildFileSystem`, for `/build` |
-| `data-cap/evidence` | `defineEvidenceProjection`, projections over the evidence model, and (experimental) the flow views |
-| `data-cap/observe` | Experimental: `observeBoundary` records field names crossing a boundary, never values |
+| `data-cap/evidence` | `defineEvidenceProjection`; experimental flow views |
+| `data-cap/observe` | Experimental: `observeBoundary` records field names, never values |
 | `data-cap/eslint-plugin` | Lint rules: `stable-operation-reference`, `no-raw-external-io`, `no-fields-escape`, `no-node-fs` |
 | `data-cap/schema` | JSON Schemas for `data-cap --json` output |
 
@@ -71,9 +71,9 @@ From `examples/team-service/src/capabilities/member.capability.ts`.
 
 - Declare the schema once as a literal and pass it to `createData(schema)` and `documentData(schema, docs)`, as the example does.
 - Give every getter and subscription a `writes` map naming the fields it may write; a mutator without one may write the whole schema.
-- Keep `execute` and `subscribe` references stable: sharing and dedupe are by function identity, so a fresh arrow per render defeats them.
+- Keep `execute` and `subscribe` references stable: sharing and dedupe go by function identity.
 - Import only from package.json exports; `/build` and `/node` are Node-only.
-- To govern where a field's data may go, add `flowPolicy` to `documentData`; run the CLI with `--flow-evidence`.
+- In `documentData`, give each field with a `sensitivity` a `purpose`, `legalBasis` and `protections`; add `flowPolicy` to govern where it may go (`--flow-evidence` checks it).
 
 ## Rely on
 
@@ -89,8 +89,8 @@ From `examples/team-service/src/capabilities/member.capability.ts`.
 
 ## Verify
 
-1. Run the type check and tests.
-2. Update the `documentData()` entry and run the project's data-cap script.
+1. Run the type check and tests; both pass.
+2. Update the `documentData()` entry and run the project's data-cap generate script; it exits 0.
 
 Report any check you could not run, and any assumption you made.
 
@@ -101,4 +101,4 @@ Report any check you could not run, and any assumption you made.
 
 ## Authority
 
-Target `data-cap@0.10.0`. The installed package's exports and type declarations are the API: do not invent exports, options or return values. Behaviour is established by its tests and examples. If this skill and the code disagree, say so rather than guessing.
+Target `data-cap@0.10.0`. The installed package's exports and type declarations are the API: use only what they declare. Its tests and examples establish its behaviour. When this skill and the code disagree, report the disagreement before acting on either.

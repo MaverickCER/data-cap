@@ -9,7 +9,7 @@
  *   `"database" | "cache" | "storage" | "queue"`, drawn as cylinder nodes
  *   (`[( )]`) outside the trust boundary.
  * - **Processes** (OWASP) -> one node per getter/mutator/subscription (not
- *   one node per capability -- see below), drawn as stadium nodes (`([ ])`)
+ *   one node per capability: see below), drawn as stadium nodes (`([ ])`)
  *   inside the trust boundary.
  * - **Data** -> one node per field, drawn as a parallelogram (`[/ /]`)
  *   inside the trust boundary, sitting between an operation and its proven
@@ -18,17 +18,17 @@
  *   from in-repo AST analysis (operations, fields, proven consumer edges);
  *   declared external endpoints sit outside it.
  *
- * The chain for one field is real, not a single flattened hop: a declared
+ * The chain for one field is real, not a single flattened hop. A declared
  * origin endpoint connects to the SPECIFIC getter/subscription that
  * declares it, which connects to the field, which connects to each proven
- * consumer site (labeled with its exact `file:line:column` when known) --
- * and symmetrically for a mutator's declared destination endpoint. Every
+ * consumer site (labeled with its exact `file:line:column` when known).
+ * The same holds symmetrically for a mutator's declared destination endpoint. Every
  * edge is labeled by its epistemic status ("declared" or "proven"), never
  * left ambiguous; a "declared" edge touching the endpoint itself also
  * carries the endpoint's own declared `handling` state when present (e.g.
  * `"declared: email (encrypted)"`). A `SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY`
  * finding's edge is styled distinctly (`linkStyle`) so a reviewer's eye
- * goes straight to it -- only the endpoint-touching edge, never the purely
+ * goes straight to it: only the endpoint-touching edge, never the purely
  * internal operation<->field hop, since the finding is about the boundary
  * crossing specifically. No SVG rasterization: fenced ` ```mermaid ` blocks
  * already render natively on GitHub/GitHub Pages/most docs tooling, so a
@@ -80,9 +80,9 @@ class DiagramBuilder {
   //   operation    `file#export#kind:name`   (a `#kind:name` suffix on the above)
   //   endpoint     `endpointKind:name`       (endpoint kinds are disjoint from op kinds)
   // Two need an explicit tag:
-  //   field        `field:file#export#path`  -- else a `path` of `"kind:name"`
+  //   field        `field:file#export#path` (else a `path` of `"kind:name"`
   //                                             would collide with an operation
-  //   consumer     `consumer:from`           -- else a `from` of `"file#export"`
+  //   consumer     `consumer:from`) else a `from` of `"file#export"`
   //                                             would collide with a capability
 
   processNode(capability: { readonly file: string; readonly exportName: string }): string {
@@ -90,7 +90,7 @@ class DiagramBuilder {
     return this.boundaryNode(id, `${id}(["${capability.exportName}"])`)
   }
 
-  /** One node per getter/mutator/subscription -- the specific operation an endpoint/field chain actually runs through, not the whole capability. */
+  /** One node per getter/mutator/subscription: the specific operation an endpoint/field chain actually runs through, not the whole capability. */
   operationNode(
     capability: { readonly file: string; readonly exportName: string },
     operation: { readonly kind: "getter" | "mutator" | "subscription"; readonly name: string },
@@ -101,7 +101,7 @@ class DiagramBuilder {
     return this.boundaryNode(id, `${id}(["${operation.kind}: ${operation.name}"])`)
   }
 
-  /** One node per field -- sits between the operation(s) that write it and its proven consumers, drawn as a parallelogram (the conventional flowchart shape for data, distinct from a process). */
+  /** One node per field: sits between the operation(s) that write it and its proven consumers, drawn as a parallelogram (the conventional flowchart shape for data, distinct from a process). */
   fieldNode(
     capability: { readonly file: string; readonly exportName: string },
     field: readonly string[],
@@ -118,7 +118,7 @@ class DiagramBuilder {
       ? `${id}[["${label}"]]` // external entity (OWASP)
       : isStoreKind(endpoint.kind)
         ? `${id}[("${label}")]` // data store (OWASP)
-        : `${id}["${label}"]` // "internal"/"computed" -- neither a store nor an external entity
+        : `${id}["${label}"]` // "internal"/"computed": neither a store nor an external entity
     // Endpoint nodes carry no per-reference state, so re-`set`ting the same id is
     // idempotent (a `Map` keeps the original insertion position).
     this.nodeLines.set(id, shape)
@@ -164,12 +164,12 @@ class DiagramBuilder {
   }
 }
 
-/** Matches `flow-graph.ts`'s own `SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY` condition exactly -- the diagram must never highlight an edge as a boundary crossing that the findings don't also flag, or vice versa. */
+/** Matches `flow-graph.ts`'s own `SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY` condition exactly: the diagram must never highlight an edge as a boundary crossing that the findings don't also flag, or vice versa. */
 function isSensitiveCrossing(flow: FieldFlow, endpoint: DataFlowEndpoint): boolean {
   return flow.sensitivity !== undefined && isBoundaryCrossingKind(endpoint.kind)
 }
 
-/** `"declared: <field>"`, plus the endpoint's own declared `handling` state when present (e.g. `"declared: email (encrypted)"`) -- never implying handling is verified, only stating what's declared, same as everything else this diagram draws from `documentData()`. */
+/** `"declared: <field>"`, plus the endpoint's own declared `handling` state when present (e.g. `"declared: email (encrypted)"`): never implying handling is verified, only stating what's declared, same as everything else this diagram draws from `documentData()`. */
 function declaredLabel(fieldLabel: string, endpoint: DataFlowEndpoint): string {
   return endpoint.handling !== undefined
     ? `declared: ${fieldLabel} (${endpoint.handling})`
@@ -236,7 +236,7 @@ function addFieldFlow(
     flow.declaredDestinations.length === 0 &&
     flow.provenConsumers.length === 0
   ) {
-    return // nothing to draw for this field -- no dangling, unconnected field node
+    return // nothing to draw for this field: no dangling, unconnected field node
   }
   const fieldId = builder.fieldNode(capability, flow.field)
   const fieldLabel = builder.fieldLabel(flow.field)
@@ -274,7 +274,7 @@ export function renderOverviewDiagram(
     for (const flow of ownFlows) addFieldFlow(builder, capability, flow, root)
   }
 
-  return builder.render("System overview -- declared endpoints and proven consumers per capability")
+  return builder.render("System overview: declared endpoints and proven consumers per capability")
 }
 
 /** Renders a diagram scoped to one capability's own fields. `root` is the discovery root every rendered path displays relative to. */
