@@ -2,6 +2,9 @@
   "exceptions": [
     {
       "id": "benchmark-complexity:performance-runtime:end-to-end:baseline:logarithmic",
+      "suite": "performance-runtime",
+      "group": "end-to-end:baseline",
+      "to": "logarithmic",
       "version": 2,
       "justification": "The runtime suite's end-to-end baseline is a plain async function that returns a pre-built array and spreads it into an object, with no data-cap code. Its true cost is constant and sub-microsecond, so its fitted exponent (0.01 at the last release, 0.37 and 0.42 on two runs of this pull request) is timer noise on a different CPU model (EPYC 9V45 against the reference EPYC 7763), not a change in the package.",
       "ruleBroken": "A benchmark group must not get worse at big-O than at the last release without a human accepting it.",
