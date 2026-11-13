@@ -1,5 +1,5 @@
 /**
- * The fix for a real inefficiency: `litigation-evidence.ts` and
+ * The fix for a real inefficiency: `data-handling-record.ts` and
  * `audit-prep.ts` each used to call `computeDataArtifacts()` themselves --
  * two full discover -> link -> scan passes over the same source, every
  * `npm run reports`. ADR 0054's own "Alternatives considered" rejected
@@ -46,7 +46,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
 export const EVIDENCE_PATH = path.join(root, "docs/data.evidence.json")
 
 /**
- * The exact `computeDataArtifacts()` options `litigation-evidence.ts`/
+ * The exact `computeDataArtifacts()` options `data-handling-record.ts`/
  * `audit-prep.ts` share, via `getEvidence()` below.
  *
  * `location`/`docs`/`ownership`/`flow` are real `computeDataArtifacts()`

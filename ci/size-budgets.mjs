@@ -2,7 +2,9 @@
 // this is dev/CI tooling, not something that ships or runs at runtime).
 //
 // Guards the package's core promise: the isomorphic, consumer-facing entry
-// points (core, runtime, runtime/cache, runtime/retry, helpers) stay tiny.
+// points (core, runtime, runtime/cache, runtime/retry, helpers, observe) stay
+// tiny, and the two that are not tiny (evidence) or not isomorphic (node) stay
+// the size they are.
 // Build tooling (`dist/build.js`), the eslint plugin
 // (`dist/eslint-plugin/index.js`), and the CLI (`dist/cli/index.js`) are
 // Node-only and dev-time-only by design, so they aren't meaningfully
@@ -35,6 +37,13 @@ export default [
   // (about 2.1KB used) when response observation (observeResponse), path-level claims and the truncation signal
   // joined; still dependency-free.
   { label: "observe", file: "dist/observe.js", maxGzipBytes: 2.5 * 1024 },
+  // The evidence entry is isomorphic but not small: it carries the flow views and the seven standards
+  // adapters (SARIF, OSCAL, CycloneDX, PROV, OTLP, DOT, Mermaid), about 26KB gzip when this budget was set.
+  // Budgeted so a dependency or a duplicated adapter cannot slip in unnoticed; it never ships to a browser
+  // bundle unless an application imports it there on purpose.
+  { label: "evidence", file: "dist/evidence.js", maxGzipBytes: 32 * 1024 },
+  // A thin Node adapter (about 0.3KB gzip): the budget guards against it growing into a second runtime.
+  { label: "node", file: "dist/node.js", maxGzipBytes: 1 * 1024 },
   { label: "build", file: "dist/build.js", maxGzipBytes: 999 * 1024 },
   { label: "eslint-plugin", file: "dist/eslint-plugin/index.js", maxGzipBytes: 999 * 1024 },
   { label: "cli", file: "dist/cli/index.js", maxGzipBytes: 999 * 1024 },

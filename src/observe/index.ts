@@ -69,6 +69,7 @@ export interface ObservationSkip {
 
 /** Where events go. The package never provides one that does I/O. */
 export interface ObservationSink {
+  /** Receives one event. A throw here is caught; the observed code never sees it. */
   record(event: ObservationEvent): void
   /** Optional channel for what the walker left out; pass `skips()` of the memory sink to `buildObservationModel`. */
   skip?(info: ObservationSkip): void
@@ -154,7 +155,9 @@ export function observeBoundary(sink: ObservationSink, input: ObserveBoundaryInp
 /** An in-memory sink -- the only one this package provides. */
 export function createMemorySink(): {
   readonly sink: ObservationSink
+  /** Every event recorded so far, in order. */
   events(): readonly ObservationEvent[]
+  /** Every skip recorded so far: what the walker knowingly left out. */
   skips(): readonly ObservationSkip[]
 } {
   const events: ObservationEvent[] = []
@@ -360,7 +363,9 @@ export function observeValue<T>(
 
 /** The part of a web `Response` or `Request` that `observeResponse` uses; both satisfy it. */
 export interface BodyReadable {
+  /** A copy whose body can be read without consuming the original's. */
   clone(): BodyReadable
+  /** The body parsed as JSON. */
   json(): Promise<unknown>
 }
 

@@ -9,7 +9,7 @@
       "attempted": "Installing every example and fixture project inside the contract job.",
       "constraint": "Each fixture is a separate npm project, and the contract job installs only the root package.",
       "whyPreferable": "Installing them again in the contract job would duplicate the examples and integration-fixtures jobs and slow the gate that also runs mutation testing.",
-      "residualRisk": "None while the examples and integration-fixtures jobs stay required checks; they run these files with the fixtures installed.",
+      "residualRisk": "None while the examples and integration-fixtures jobs are required through the `required` status check, which fails unless both finished with success; they run these files with the fixtures installed.",
       "revisitWhen": "The fixtures are installed by the root install, or the contract job runs after them.",
       "expires": ""
     },
@@ -22,7 +22,7 @@
       "attempted": "Installing every example and fixture project inside the contract job.",
       "constraint": "Each fixture is a separate npm project, and the contract job installs only the root package.",
       "whyPreferable": "Installing them again in the contract job would duplicate the examples and integration-fixtures jobs and slow the gate that also runs mutation testing.",
-      "residualRisk": "None while the examples and integration-fixtures jobs stay required checks; they run these files with the fixtures installed.",
+      "residualRisk": "None while the examples and integration-fixtures jobs are required through the `required` status check, which fails unless both finished with success; they run these files with the fixtures installed.",
       "revisitWhen": "The fixtures are installed by the root install, or the contract job runs after them.",
       "expires": ""
     },
@@ -35,7 +35,7 @@
       "attempted": "Installing every example and fixture project inside the contract job.",
       "constraint": "Each fixture is a separate npm project, and the contract job installs only the root package.",
       "whyPreferable": "Installing them again in the contract job would duplicate the examples and integration-fixtures jobs and slow the gate that also runs mutation testing.",
-      "residualRisk": "None while the examples and integration-fixtures jobs stay required checks; they run these files with the fixtures installed.",
+      "residualRisk": "None while the examples and integration-fixtures jobs are required through the `required` status check, which fails unless both finished with success; they run these files with the fixtures installed.",
       "revisitWhen": "The fixtures are installed by the root install, or the contract job runs after them.",
       "expires": ""
     },
@@ -48,7 +48,7 @@
       "attempted": "Installing every example and fixture project inside the contract job.",
       "constraint": "Each fixture is a separate npm project, and the contract job installs only the root package.",
       "whyPreferable": "Installing them again in the contract job would duplicate the examples and integration-fixtures jobs and slow the gate that also runs mutation testing.",
-      "residualRisk": "None while the examples and integration-fixtures jobs stay required checks; they run these files with the fixtures installed.",
+      "residualRisk": "None while the examples and integration-fixtures jobs are required through the `required` status check, which fails unless both finished with success; they run these files with the fixtures installed.",
       "revisitWhen": "The fixtures are installed by the root install, or the contract job runs after them.",
       "expires": ""
     },
@@ -61,7 +61,7 @@
       "attempted": "Installing every example and fixture project inside the contract job.",
       "constraint": "Each fixture is a separate npm project, and the contract job installs only the root package.",
       "whyPreferable": "Installing them again in the contract job would duplicate the examples and integration-fixtures jobs and slow the gate that also runs mutation testing.",
-      "residualRisk": "None while the examples and integration-fixtures jobs stay required checks; they run these files with the fixtures installed.",
+      "residualRisk": "None while the examples and integration-fixtures jobs are required through the `required` status check, which fails unless both finished with success; they run these files with the fixtures installed.",
       "revisitWhen": "The fixtures are installed by the root install, or the contract job runs after them.",
       "expires": ""
     },
@@ -74,7 +74,7 @@
       "attempted": "Installing every example and fixture project inside the contract job.",
       "constraint": "Each fixture is a separate npm project, and the contract job installs only the root package.",
       "whyPreferable": "Installing them again in the contract job would duplicate the examples and integration-fixtures jobs and slow the gate that also runs mutation testing.",
-      "residualRisk": "None while the examples and integration-fixtures jobs stay required checks; they run these files with the fixtures installed.",
+      "residualRisk": "None while the examples and integration-fixtures jobs are required through the `required` status check, which fails unless both finished with success; they run these files with the fixtures installed.",
       "revisitWhen": "The fixtures are installed by the root install, or the contract job runs after them.",
       "expires": ""
     },
@@ -87,7 +87,7 @@
       "attempted": "Installing every example and fixture project inside the contract job.",
       "constraint": "Each fixture is a separate npm project, and the contract job installs only the root package.",
       "whyPreferable": "Installing them again in the contract job would duplicate the examples and integration-fixtures jobs and slow the gate that also runs mutation testing.",
-      "residualRisk": "None while the examples and integration-fixtures jobs stay required checks; they run these files with the fixtures installed.",
+      "residualRisk": "None while the examples and integration-fixtures jobs are required through the `required` status check, which fails unless both finished with success; they run these files with the fixtures installed.",
       "revisitWhen": "The fixtures are installed by the root install, or the contract job runs after them.",
       "expires": ""
     },
@@ -100,7 +100,7 @@
       "attempted": "Installing every example and fixture project inside the contract job.",
       "constraint": "Each fixture is a separate npm project, and the contract job installs only the root package.",
       "whyPreferable": "Installing them again in the contract job would duplicate the examples and integration-fixtures jobs and slow the gate that also runs mutation testing.",
-      "residualRisk": "None while the examples and integration-fixtures jobs stay required checks; they run these files with the fixtures installed.",
+      "residualRisk": "None while the examples and integration-fixtures jobs are required through the `required` status check, which fails unless both finished with success; they run these files with the fixtures installed.",
       "revisitWhen": "The fixtures are installed by the root install, or the contract job runs after them.",
       "expires": ""
     },
@@ -113,7 +113,7 @@
       "attempted": "Installing every example and fixture project inside the contract job.",
       "constraint": "Each fixture is a separate npm project, and the contract job installs only the root package.",
       "whyPreferable": "Installing them again in the contract job would duplicate the examples and integration-fixtures jobs and slow the gate that also runs mutation testing.",
-      "residualRisk": "None while the examples and integration-fixtures jobs stay required checks; they run these files with the fixtures installed.",
+      "residualRisk": "None while the examples and integration-fixtures jobs are required through the `required` status check, which fails unless both finished with success; they run these files with the fixtures installed.",
       "revisitWhen": "The fixtures are installed by the root install, or the contract job runs after them.",
       "expires": ""
     },
@@ -126,7 +126,7 @@
       "attempted": "Installing every example and fixture project inside the contract job.",
       "constraint": "Each fixture is a separate npm project, and the contract job installs only the root package.",
       "whyPreferable": "Installing them again in the contract job would duplicate the examples and integration-fixtures jobs and slow the gate that also runs mutation testing.",
-      "residualRisk": "None while the examples and integration-fixtures jobs stay required checks; they run these files with the fixtures installed.",
+      "residualRisk": "None while the examples and integration-fixtures jobs are required through the `required` status check, which fails unless both finished with success; they run these files with the fixtures installed.",
       "revisitWhen": "The fixtures are installed by the root install, or the contract job runs after them.",
       "expires": ""
     },
@@ -139,7 +139,7 @@
       "attempted": "Installing every example and fixture project inside the contract job.",
       "constraint": "Each fixture is a separate npm project, and the contract job installs only the root package.",
       "whyPreferable": "Installing them again in the contract job would duplicate the examples and integration-fixtures jobs and slow the gate that also runs mutation testing.",
-      "residualRisk": "None while the examples and integration-fixtures jobs stay required checks; they run these files with the fixtures installed.",
+      "residualRisk": "None while the examples and integration-fixtures jobs are required through the `required` status check, which fails unless both finished with success; they run these files with the fixtures installed.",
       "revisitWhen": "The fixtures are installed by the root install, or the contract job runs after them.",
       "expires": ""
     },
@@ -152,7 +152,7 @@
       "attempted": "Installing every example and fixture project inside the contract job.",
       "constraint": "Each fixture is a separate npm project, and the contract job installs only the root package.",
       "whyPreferable": "Installing them again in the contract job would duplicate the examples and integration-fixtures jobs and slow the gate that also runs mutation testing.",
-      "residualRisk": "None while the examples and integration-fixtures jobs stay required checks; they run these files with the fixtures installed.",
+      "residualRisk": "None while the examples and integration-fixtures jobs are required through the `required` status check, which fails unless both finished with success; they run these files with the fixtures installed.",
       "revisitWhen": "The fixtures are installed by the root install, or the contract job runs after them.",
       "expires": ""
     },
@@ -165,7 +165,7 @@
       "attempted": "Installing every example and fixture project inside the contract job.",
       "constraint": "Each fixture is a separate npm project, and the contract job installs only the root package.",
       "whyPreferable": "Installing them again in the contract job would duplicate the examples and integration-fixtures jobs and slow the gate that also runs mutation testing.",
-      "residualRisk": "None while the examples and integration-fixtures jobs stay required checks; they run these files with the fixtures installed.",
+      "residualRisk": "None while the examples and integration-fixtures jobs are required through the `required` status check, which fails unless both finished with success; they run these files with the fixtures installed.",
       "revisitWhen": "The fixtures are installed by the root install, or the contract job runs after them.",
       "expires": ""
     },
@@ -178,7 +178,7 @@
       "attempted": "Installing every example and fixture project inside the contract job.",
       "constraint": "Each fixture is a separate npm project, and the contract job installs only the root package.",
       "whyPreferable": "Installing them again in the contract job would duplicate the examples and integration-fixtures jobs and slow the gate that also runs mutation testing.",
-      "residualRisk": "None while the examples and integration-fixtures jobs stay required checks; they run these files with the fixtures installed.",
+      "residualRisk": "None while the examples and integration-fixtures jobs are required through the `required` status check, which fails unless both finished with success; they run these files with the fixtures installed.",
       "revisitWhen": "The fixtures are installed by the root install, or the contract job runs after them.",
       "expires": ""
     },
@@ -191,7 +191,7 @@
       "attempted": "Installing every example and fixture project inside the contract job.",
       "constraint": "Each fixture is a separate npm project, and the contract job installs only the root package.",
       "whyPreferable": "Installing them again in the contract job would duplicate the examples and integration-fixtures jobs and slow the gate that also runs mutation testing.",
-      "residualRisk": "None while the examples and integration-fixtures jobs stay required checks; they run these files with the fixtures installed.",
+      "residualRisk": "None while the examples and integration-fixtures jobs are required through the `required` status check, which fails unless both finished with success; they run these files with the fixtures installed.",
       "revisitWhen": "The fixtures are installed by the root install, or the contract job runs after them.",
       "expires": ""
     },
@@ -204,7 +204,7 @@
       "attempted": "Installing every example and fixture project inside the contract job.",
       "constraint": "Each fixture is a separate npm project, and the contract job installs only the root package.",
       "whyPreferable": "Installing them again in the contract job would duplicate the examples and integration-fixtures jobs and slow the gate that also runs mutation testing.",
-      "residualRisk": "None while the examples and integration-fixtures jobs stay required checks; they run these files with the fixtures installed.",
+      "residualRisk": "None while the examples and integration-fixtures jobs are required through the `required` status check, which fails unless both finished with success; they run these files with the fixtures installed.",
       "revisitWhen": "The fixtures are installed by the root install, or the contract job runs after them.",
       "expires": ""
     },
@@ -217,7 +217,7 @@
       "attempted": "Installing every example and fixture project inside the contract job.",
       "constraint": "Each fixture is a separate npm project, and the contract job installs only the root package.",
       "whyPreferable": "Installing them again in the contract job would duplicate the examples and integration-fixtures jobs and slow the gate that also runs mutation testing.",
-      "residualRisk": "None while the examples and integration-fixtures jobs stay required checks; they run these files with the fixtures installed.",
+      "residualRisk": "None while the examples and integration-fixtures jobs are required through the `required` status check, which fails unless both finished with success; they run these files with the fixtures installed.",
       "revisitWhen": "The fixtures are installed by the root install, or the contract job runs after them.",
       "expires": ""
     },
@@ -230,7 +230,7 @@
       "attempted": "Installing every example and fixture project inside the contract job.",
       "constraint": "Each fixture is a separate npm project, and the contract job installs only the root package.",
       "whyPreferable": "Installing them again in the contract job would duplicate the examples and integration-fixtures jobs and slow the gate that also runs mutation testing.",
-      "residualRisk": "None while the examples and integration-fixtures jobs stay required checks; they run these files with the fixtures installed.",
+      "residualRisk": "None while the examples and integration-fixtures jobs are required through the `required` status check, which fails unless both finished with success; they run these files with the fixtures installed.",
       "revisitWhen": "The fixtures are installed by the root install, or the contract job runs after them.",
       "expires": ""
     },
@@ -243,7 +243,7 @@
       "attempted": "Installing every example and fixture project inside the contract job.",
       "constraint": "Each fixture is a separate npm project, and the contract job installs only the root package.",
       "whyPreferable": "Installing them again in the contract job would duplicate the examples and integration-fixtures jobs and slow the gate that also runs mutation testing.",
-      "residualRisk": "None while the examples and integration-fixtures jobs stay required checks; they run these files with the fixtures installed.",
+      "residualRisk": "None while the examples and integration-fixtures jobs are required through the `required` status check, which fails unless both finished with success; they run these files with the fixtures installed.",
       "revisitWhen": "The fixtures are installed by the root install, or the contract job runs after them.",
       "expires": ""
     },
@@ -256,7 +256,7 @@
       "attempted": "Installing every example and fixture project inside the contract job.",
       "constraint": "Each fixture is a separate npm project, and the contract job installs only the root package.",
       "whyPreferable": "Installing them again in the contract job would duplicate the examples and integration-fixtures jobs and slow the gate that also runs mutation testing.",
-      "residualRisk": "None while the examples and integration-fixtures jobs stay required checks; they run these files with the fixtures installed.",
+      "residualRisk": "None while the examples and integration-fixtures jobs are required through the `required` status check, which fails unless both finished with success; they run these files with the fixtures installed.",
       "revisitWhen": "The fixtures are installed by the root install, or the contract job runs after them.",
       "expires": ""
     },
@@ -269,7 +269,7 @@
       "attempted": "Installing every example and fixture project inside the contract job.",
       "constraint": "Each fixture is a separate npm project, and the contract job installs only the root package.",
       "whyPreferable": "Installing them again in the contract job would duplicate the examples and integration-fixtures jobs and slow the gate that also runs mutation testing.",
-      "residualRisk": "None while the examples and integration-fixtures jobs stay required checks; they run these files with the fixtures installed.",
+      "residualRisk": "None while the examples and integration-fixtures jobs are required through the `required` status check, which fails unless both finished with success; they run these files with the fixtures installed.",
       "revisitWhen": "The fixtures are installed by the root install, or the contract job runs after them.",
       "expires": ""
     },
@@ -282,7 +282,7 @@
       "attempted": "Installing every example and fixture project inside the contract job.",
       "constraint": "Each fixture is a separate npm project, and the contract job installs only the root package.",
       "whyPreferable": "Installing them again in the contract job would duplicate the examples and integration-fixtures jobs and slow the gate that also runs mutation testing.",
-      "residualRisk": "None while the examples and integration-fixtures jobs stay required checks; they run these files with the fixtures installed.",
+      "residualRisk": "None while the examples and integration-fixtures jobs are required through the `required` status check, which fails unless both finished with success; they run these files with the fixtures installed.",
       "revisitWhen": "The fixtures are installed by the root install, or the contract job runs after them.",
       "expires": ""
     },
@@ -295,7 +295,7 @@
       "attempted": "Installing every example and fixture project inside the contract job.",
       "constraint": "Each fixture is a separate npm project, and the contract job installs only the root package.",
       "whyPreferable": "Installing them again in the contract job would duplicate the examples and integration-fixtures jobs and slow the gate that also runs mutation testing.",
-      "residualRisk": "None while the examples and integration-fixtures jobs stay required checks; they run these files with the fixtures installed.",
+      "residualRisk": "None while the examples and integration-fixtures jobs are required through the `required` status check, which fails unless both finished with success; they run these files with the fixtures installed.",
       "revisitWhen": "The fixtures are installed by the root install, or the contract job runs after them.",
       "expires": ""
     }

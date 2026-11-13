@@ -1,5 +1,5 @@
 /**
- * The litigation-evidence report -- one of this tier's two generated
+ * The data-handling record -- one of this tier's two generated
  * governance reports (`reports/audit-prep.ts` is the other). Every
  * declared/proven fact below comes from data-cap's own canonical models
  * (Capability, Dependency, Finding, Evidence -- ADR 0050), never hand-typed
@@ -10,8 +10,8 @@
  *
  * Scoped to the same concrete scenario `main-headless.ts` runs for real:
  * a client disputes an invoice (`billingData.disputeInvoice`), and this
- * report proves what billing (and identity) data existed and how it was
- * handled -- not just for `invoices`, but for every declared-sensitive
+ * report records what billing (and identity) data existed and how it was
+ * handled, as declared and as found in the code -- not just for `invoices`, but for every declared-sensitive
  * field across the platform, since a real dispute review needs to account
  * for who touched the data, not only what the data was.
  *
@@ -99,7 +99,7 @@ interface FieldEvidenceEntry {
   readonly handlingByOperation: readonly HandlingStage[]
 }
 
-export interface LitigationEvidenceReport {
+export interface DataHandlingRecord {
   readonly disclaimer: string
   readonly generatedAt: string
   readonly scanSurface: { readonly scanned: readonly string[]; readonly notScanned: string }
@@ -169,13 +169,13 @@ const CITATION_INTEGRITY_CODES: ReadonlySet<string> = new Set([
  * separate lookup map is needed the way an earlier version of this file
  * built one.
  */
-function buildLitigationEvidenceProjection(
+function buildDataHandlingRecordProjection(
   findingsByField: ReadonlyMap<string, readonly LocatedFinding[]>,
-  scanSurface: LitigationEvidenceReport["scanSurface"],
+  scanSurface: DataHandlingRecord["scanSurface"],
 ): EvidenceProjection<{
   disclaimer: string
   generatedAt: string
-  scanSurface: LitigationEvidenceReport["scanSurface"]
+  scanSurface: DataHandlingRecord["scanSurface"]
   fields: readonly FieldEvidenceEntry[]
 }> {
   return defineEvidenceProjection({
@@ -255,9 +255,9 @@ function buildLitigationEvidenceProjection(
   })
 }
 
-function renderMarkdown(report: LitigationEvidenceReport): string {
+function renderMarkdown(report: DataHandlingRecord): string {
   const lines: string[] = []
-  lines.push("# Litigation Evidence Report")
+  lines.push("# Data Handling Record")
   lines.push("")
   lines.push(`> ${report.disclaimer}`)
   lines.push("")
@@ -274,13 +274,19 @@ function renderMarkdown(report: LitigationEvidenceReport): string {
   for (const entry of report.fields) {
     lines.push(`## ${entry.capability}.${entry.field}`)
     lines.push("")
+    // A declared value is author text: a pipe or line break in it must not become another cell or row.
+    const cell = (value: string): string =>
+      value
+        .replace(/\\/g, "\\\\")
+        .replace(/\|/g, "\\|")
+        .replace(/\r?\n/g, " ")
     lines.push("| Declared fact | Value |")
     lines.push("| --- | --- |")
-    lines.push(`| Owner | ${entry.declared.owner ?? "_not declared_"} |`)
-    lines.push(`| Classification (sensitivity) | ${entry.declared.sensitivity ?? "_not declared_"} |`)
-    lines.push(`| Purpose | ${entry.declared.purpose ?? "_not declared_"} |`)
+    lines.push(`| Owner | ${cell(entry.declared.owner ?? "_not declared_")} |`)
+    lines.push(`| Classification (sensitivity) | ${cell(entry.declared.sensitivity ?? "_not declared_")} |`)
+    lines.push(`| Purpose | ${cell(entry.declared.purpose ?? "_not declared_")} |`)
     lines.push(
-      `| Legal basis (declared, not a legal determination) | ${entry.declared.legalBasis ?? "_not declared_"} |`,
+      `| Legal basis (declared, not a legal determination) | ${cell(entry.declared.legalBasis ?? "_not declared_")} |`,
     )
     lines.push(
       `| Data residency (permitted storage jurisdiction, declared) | ${
@@ -332,8 +338,14 @@ function renderMarkdown(report: LitigationEvidenceReport): string {
       lines.push("")
     }
     if (entry.dynamicAccessCitations.length > 0) {
+      // The caption must not call a citation "supported" when this run's integrity check found it stale.
+      const stale = entry.citationIntegrityFindings.some(
+        (finding) => finding.code === "STALE_DYNAMIC_ACCESS_CITATION",
+      )
       lines.push(
-        "**Developer-asserted dynamic access (declared; currently supported by its own citation/integrity check, never proof the described access was independently verified):**",
+        stale
+          ? "**Developer-asserted dynamic access (declared; its citation/integrity check found it STALE this run, see the findings below; never proof the described access was independently verified):**"
+          : "**Developer-asserted dynamic access (declared; currently supported by its own citation/integrity check, never proof the described access was independently verified):**",
       )
       for (const citation of entry.dynamicAccessCitations) {
         lines.push(`- \`${citation}\``)
@@ -359,7 +371,7 @@ function renderMarkdown(report: LitigationEvidenceReport): string {
  * a real `computeDataArtifacts()` fallback (logged, never silent) when
  * it isn't.
  */
-export async function generateLitigationEvidenceReport(): Promise<LitigationEvidenceReport> {
+export async function generateDataHandlingRecord(): Promise<DataHandlingRecord> {
   const evidence = await getEvidence()
 
   // Findings are indexed off their structured `location`, the single path a
@@ -377,15 +389,15 @@ export async function generateLitigationEvidenceReport(): Promise<LitigationEvid
     findingsByField.set(key, existing)
   }
 
-  const projectLitigationEvidence = buildLitigationEvidenceProjection(findingsByField, {
+  const projectDataHandlingRecord = buildDataHandlingRecordProjection(findingsByField, {
     scanned: ["application source (src/**)"],
     notScanned: "all other dependencies (no --package allow-list configured for this example)",
   })
-  return projectLitigationEvidence(evidence)
+  return projectDataHandlingRecord(evidence)
 }
 
 /** Strips the one wall-clock provenance stamp (`generatedAt` in JSON, the `Generated: ` line in Markdown) so two renders a moment apart compare equal whenever every *derived* fact agrees -- the same discipline `main-headless.ts`'s own determinism check applies. */
-function stableJson(report: LitigationEvidenceReport): string {
+function stableJson(report: DataHandlingRecord): string {
   return JSON.stringify({ ...report, generatedAt: null }, null, 2)
 }
 function stableMarkdown(markdown: string): string {
@@ -394,9 +406,9 @@ function stableMarkdown(markdown: string): string {
 
 async function main(): Promise<void> {
   const check = process.argv.includes("--check")
-  const report = await generateLitigationEvidenceReport()
-  const jsonPath = path.join(root, "reports", "litigation-evidence.json")
-  const mdPath = path.join(root, "reports", "litigation-evidence.md")
+  const report = await generateDataHandlingRecord()
+  const jsonPath = path.join(root, "reports", "data-handling-record.json")
+  const mdPath = path.join(root, "reports", "data-handling-record.md")
 
   if (check) {
     const [committedJson, committedMd] = await Promise.all([
@@ -405,24 +417,24 @@ async function main(): Promise<void> {
     ])
     const jsonFresh =
       committedJson !== undefined &&
-      stableJson(JSON.parse(committedJson) as LitigationEvidenceReport) === stableJson(report)
+      stableJson(JSON.parse(committedJson) as DataHandlingRecord) === stableJson(report)
     const mdFresh = committedMd !== undefined && stableMarkdown(committedMd) === stableMarkdown(renderMarkdown(report))
     if (!jsonFresh || !mdFresh) {
-      process.stderr.write("litigation-evidence.{json,md} are stale. Run `npm run reports` to regenerate.\n")
+      process.stderr.write("data-handling-record.{json,md} are stale. Run `npm run reports` to regenerate.\n")
       process.exitCode = 1
       return
     }
-    process.stdout.write("litigation-evidence.{json,md} are up to date.\n")
+    process.stdout.write("data-handling-record.{json,md} are up to date.\n")
     return
   }
 
   await writeFile(jsonPath, `${JSON.stringify(report, null, 2)}\n`, "utf8")
   await writeFile(mdPath, renderMarkdown(report), "utf8")
-  console.log(`Litigation evidence report written for ${report.fields.length} sensitive field(s).`)
+  console.log(`Data-handling record written for ${report.fields.length} sensitive field(s).`)
 }
 
 // Only runs the CLI entry when invoked directly (`npm run reports`) -- not
-// when `main-headless.ts` imports `generateLitigationEvidenceReport` itself.
+// when `main-headless.ts` imports `generateDataHandlingRecord` itself.
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   await main()
 }

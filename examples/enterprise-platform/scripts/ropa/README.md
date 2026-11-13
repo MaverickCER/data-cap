@@ -11,7 +11,7 @@ example established (C9), just for a different document, and structured exactly 
 
 GDPR Art. 30(1) requires a controller's record to address seven items, (a) through (g). Here is
 exactly how each one is sourced -- **read this before publishing `docs/ROPA.md` outside this
-repository**, since two of the seven are approximations, not rigorous answers.
+repository**, since three of the seven are approximations, not rigorous answers.
 
 | Item | What Art. 30(1) requires | How this generator sources it | Status |
 | --- | --- | --- | --- |
@@ -20,11 +20,11 @@ repository**, since two of the seven are approximations, not rigorous answers.
 | (c), data subjects | Categories of data subjects | `FieldDocs.dataSubjectCategory` (new) | **New schema field, direct** |
 | (c), personal data | Categories of personal data | `FieldNode.sensitivity` (pre-existing classification) | **Partial mapping -- see below** |
 | (d) | Categories of recipients | `FieldDocs.recipientCategories` (new) | **New schema field, direct -- never inferred** |
-| (e) | Third-country transfers and safeguards | `FieldDocs.transferSafeguard`/`CapabilityDocs.transferSafeguard` (new) | **New schema field, direct** |
+| (e) | Third-country transfers, the destination, and safeguards | `FieldDocs.transferSafeguard`/`CapabilityDocs.transferSafeguard` (new) | **Partial mapping -- see below** |
 | (f) | Envisaged erasure/retention time limits | `FieldDocs.retention`/`CapabilityDocs.retention` (pre-existing) | **Direct** |
 | (g) | Technical/organisational security measures | `FieldDocs.protections`/`CapabilityDocs.protections` (pre-existing) | **Partial mapping -- see below** |
 
-### The two partial mappings, stated honestly
+### The three partial mappings, stated honestly
 
 **`sensitivity` -> "categories of personal data" (c).** `sensitivity` is a general
 data-classification label (`"public"`/`"internal"`/`"confidential"`/`"restricted"`, or a
@@ -45,7 +45,17 @@ intends (encryption standards, access-control mechanisms, pseudonymisation, resi
 measures, testing regimes, etc.). **Review the "(g) Security measures" column against your
 organization's actual Art. 32 security program before relying on it.**
 
-data-cap cannot verify either mapping's accuracy -- both are declared, author-supplied text,
+**`transferSafeguard` -> "transfers to a third country" (e).** Art. 30(1)(e) asks for the
+transfer itself, "including the identification of that third country or international
+organisation", and, for transfers under the second subparagraph of Art. 49(1), the documentation
+of suitable safeguards. `transferSafeguard` records only the safeguard. No field records the
+destination country or organisation (`dataResidency` says where data is stored, not where it is
+sent), so the "(e) Transfer safeguards" column does not identify where data goes. **Until a
+destination is modeled, write it into the safeguard text yourself (for example
+`"United States, EU Standard Contractual Clauses"`) and review the column against your
+organization's transfer register.**
+
+data-cap cannot verify any of these mappings' accuracy -- all of them are declared, author-supplied text,
 never independently checked against reality (the same declared-vs-proven discipline every
 other governance field in this package follows; see `AGENTS.md`'s invariant 12).
 
@@ -101,11 +111,11 @@ own header comment for the full reasoning and the EDPB/ICO-style two-tier format
 
 ```bash
 npm run ropa      # generate docs/ROPA.md alone
-npm run reports    # generates litigation-evidence + audit-prep + ROPA together
+npm run reports    # generates data-handling-record + audit-prep + ROPA together
 ```
 
 `npm run reports` runs `npm run docs` first via each report's own reliance on
 `docs/data.evidence.json`'s freshness -- see `reports/evidence-cache.ts`'s own header comment.
 This generator has no `--check` freshness mode (unlike `../generate-docs/check.ts` or
-`reports/litigation-evidence.ts --check`) -- it mirrors env-cap's rotation-log generator, which
+`reports/data-handling-record.ts --check`) -- it mirrors env-cap's rotation-log generator, which
 doesn't have one either; regenerate and review the diff instead.

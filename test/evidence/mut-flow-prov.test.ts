@@ -208,6 +208,7 @@ describe("buildProvDocument exact mapping", () => {
         },
         "agent": {
           "dc:tool": {
+            "dc:disclaimer": "Machine-generated engineering artifact assembled from statically-provable code facts and author-declared documentation. It can support a security, privacy, or compliance review. It does not itself establish compliance with any standard. Incomplete traces are recorded as unknown, never hidden; an absent flow is not evidence of no flow.",
             "dc:name": "data-cap",
             "dc:version": "9.9.9",
             "prov:type": "prov:SoftwareAgent",
@@ -542,6 +543,7 @@ describe("buildProvDocument exact mapping", () => {
         },
         "agent": {
           "dc:tool": {
+            "dc:disclaimer": "Machine-generated engineering artifact assembled from statically-provable code facts and author-declared documentation. It can support a security, privacy, or compliance review. It does not itself establish compliance with any standard. Incomplete traces are recorded as unknown, never hidden; an absent flow is not evidence of no flow.",
             "dc:name": "data-cap",
             "dc:version": "9.9.9",
             "prov:type": "prov:SoftwareAgent",

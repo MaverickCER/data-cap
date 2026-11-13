@@ -15,6 +15,7 @@
 
 import { canonicalize } from "../core/canonicalize.js"
 
+/** Options for `withRetry`. Every field is optional; the defaults retry every error up to 3 times with capped backoff. */
 export interface RetryOptions {
   /** Maximum retry attempts after the initial call (not counting the first attempt itself). Defaults to 3. */
   readonly maxAttempts?: number

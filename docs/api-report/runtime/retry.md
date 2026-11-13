@@ -4,6 +4,8 @@
 
 ### RetryOptions
 
+Options for `withRetry`. Every field is optional; the defaults retry every error up to 3 times with capped backoff.
+
 #### Properties
 
 ##### delayMs?

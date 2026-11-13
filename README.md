@@ -10,21 +10,19 @@
 [![Node](https://img.shields.io/node/v/data-cap)](https://www.npmjs.com/package/data-cap)
 [![License](https://img.shields.io/npm/l/data-cap)](LICENSE)
 
-**Your application's data should have an owner.**
+**Give every piece of application data one owner and one status vocabulary.**
 
-`data-cap` treats application data as a capability-owned contract: its fields, the operations that acquire or change them, and the code that depends on them. It does not replace TanStack Query, Redux, Zustand, Apollo, or plain `fetch` + `useState`; it gives those tools a stable contract around the data they already manage.
+`data-cap` declares each piece of application data once: its fields, and the getters, mutators and subscriptions that touch them. Every consumer then reads the same snapshot. It works next to TanStack Query, Redux, Zustand, Apollo or plain `fetch`, and replaces none of them.
 
 [Why](#why-it-exists) · [See it run](#see-it-run) · [Install](#install-and-verify) · [Fit](#fit-and-capabilities) · [Limits](#limits-and-when-not-to-use-it) · [Security](#security-and-supply-chain) · [Maturity](#maturity-versioning-and-support) · [Docs](#documentation)
 
 ## Why it exists
 
-**Benefit:** one declared owner and one shared status vocabulary for each piece of application data, so every part of the application agrees on what the data is doing and who may change it.
+A field is added to an API response. A second component starts to depend on it, a mutation changes it, and a cache starts to supply it. Later, nobody can say who owns it or what depends on it.
 
-**Problem:** application data outlives the code that introduced it. A field is added to an API response, a second component starts depending on it, a mutation changes it, a cache begins supplying it, and eventually nobody can say why it exists, who owns it, what can change it, or where it is used. Fetching libraries retrieve data, caches manage freshness, and state libraries manage state, but none of them record ownership, so each component works out its own idea of "loading", "stale", and "optimistic".
+Fetching libraries fetch, caches manage freshness, and stores hold state. None of them records ownership, so each component invents its own "loading", "stale" and "optimistic". The components then disagree, and the UI shows stale values as current.
 
-**Who it is for:** teams whose data crosses component, feature, team, or system boundaries, and the platform and staff engineers who need those relationships visible and reviewable.
-
-**Why it matters:** when components disagree about what the data's status means, the result is UI that flickers, stale values presented as current, and optimistic updates that cannot be reasoned about. Ownership gives reviewers and automated contributors something concrete to check.
+`data-cap` turns that agreement into a declared contract. Reviewers and coding agents can read who owns a field, and what uses it, from generated files. It is for teams whose data crosses component, feature, team or system boundaries.
 
 ## How it differs
 
@@ -36,44 +34,40 @@
 | Apollo          | How do I manage GraphQL data?                                    |
 | **`data-cap`**  | **Why does this data exist, who owns it, and where is it used?** |
 
-These concerns coexist: TanStack Query can keep fetching and caching while `data-cap` defines the ownership contract around the resulting data ([TanStack Query and Socket.IO](GUIDE.md#tanstack-query-and-socketio)). The [migration guides](specs/migrations/README.md) cover adoption from a global store, Apollo, TanStack Query alone, and manual fetch-and-state.
+You keep your existing tools. TanStack Query can keep fetching and caching while `data-cap` declares the contract around the result ([the pattern](GUIDE.md#tanstack-query-and-socketio)). The [migration guides](specs/migrations/README.md) start from a global store, Apollo, TanStack Query alone, or manual fetch-and-state.
 
 ## What it does
 
-A capability declares its fields and the getters and mutators that touch them, and every consumer reads the same synchronously available snapshot. A build-time pass reads those declarations and your source, and writes a manifest, a documentation catalog, a dependency and ownership report, and an evidence artifact. With `--flow-evidence` it also traces each field through your functions, checks the data-flow rules you declare, and compares what it finds with what was observed at runtime, all inside that one evidence file ([data flow](GUIDE.md#data-flow)). The same Stable primitives (`buildData`, `createDataStore`, `coordinator`) give full manual control, and `createData` composes them into a batteries-included layer with dedup, per-operation status, and an optimistic mutation lifecycle ([the two paths](GUIDE.md#the-low-level-path-full-manual-control)).
+- **At runtime** (`data-cap`, `data-cap/runtime`): a capability declares its fields with defaults, and every field is readable synchronously from the start. `createData` adds request dedup, per-operation status and an optimistic mutation lifecycle.
+- **At build time** (`data-cap/build`, the CLI, the GitHub Action): a static pass reads your declarations and source without running them. It writes a manifest, a documentation catalog, an ownership report and one evidence file. `--check` fails CI when that file is stale.
+- **Data flow** (Experimental): `--flow-evidence` traces each field through your functions and checks the rules you declare. What the scan cannot follow is recorded as an unknown, and the trace is marked incomplete.
 
 ### See it run
 
-Define a capability around the data your application owns:
+A capability declares its fields and the operations that write them. This excerpt is from [`examples/application/src/main.ts`](https://github.com/MaverickCER/data-cap/blob/main/examples/application/src/main.ts), which CI's `examples` job runs:
 
 ```ts
-import { createData } from "data-cap/runtime"
-
-const user = createData({
+const taskSchema = {
   fields: {
-    profile: UserProfileSchema,
-    preferences: UserPreferencesSchema,
+    tasks: [] as Task[],
+    selectedTask: fields.nullable<Task>({ id: "", title: "", done: false, priority: "low" }),
   },
-
   getters: {
-    load: {
-      execute: (_params, signal) => fetchUser(signal),
-      processor: (profile) => ({ profile }),
-      writes: { profile: true },
+    getTask: {
+      params: { id: "" },
+      execute: (params: { id: string }, signal: AbortSignal): Promise<Task> =>
+        fetchTaskRemote(params.id, signal),
+      processor: (task: Task): { selectedTask: Task } => ({ selectedTask: task }),
+      writes: { selectedTask: true },
     },
+    // ...getTasks, mutators and a subscription
   },
+}
 
-  mutators: {
-    updatePreferences: {
-      execute: (preferences, signal) => updateUserPreferences(preferences, signal),
-      processor: (_result, preferences) => ({ preferences }),
-      writes: { preferences: true },
-    },
-  },
-})
+export const taskData = createData(taskSchema)
 ```
 
-Then inspect the application as a whole. The declaration above is deliberately minimal; the output below comes from a different, larger program, [`examples/application`](https://github.com/MaverickCER/data-cap/tree/main/examples/application), whose `taskData` capability declares the two fields named in the warnings:
+Then run the build pass over the whole example. `taskData` declares the two fields named in the warnings:
 
 ```text
 $ npm run docs
@@ -86,101 +80,110 @@ Wrote evidence model: docs/data.evidence.json
   - [warning] [SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY] [taskData] Field "selectedTask" on "taskData" is sensitivity "internal" and has a declared endpoint crossing an external-service/api/queue boundary -- verify this is intentional and adequately protected.
 ```
 
-This is real output from the example's own `npm run docs` (a `data-cap --evidence` CLI step chained with its `generate-docs` script), not a mockup, including the two warnings. Nobody had declared `tasks` and `selectedTask` as crossing an external boundary on purpose; the tool found it because the field's declared `sensitivity` and its getter's declared network endpoint disagreed, not because anyone remembered to ask. The generated artifacts make the contract visible to developers, reviewers, and automated contributors.
+This is the real output of `npm run docs` in `examples/application`. CI's `examples` job compares the block with a fresh run; that job does not block a merge. Nobody had declared `tasks` and `selectedTask` as crossing an external boundary on purpose. The warning comes from a mismatch: the field's declared `sensitivity` and its getter's declared endpoint disagree.
 
-### Evidence it works
+### What CI checks on every change
 
-- **Real fixtures:** the output above comes from a runnable example, and [complete applications](https://github.com/MaverickCER/data-cap/tree/main/examples) cover the model from one capability to a whole application.
-- **Enforced in CI:** coverage is a ratchet that may only move up, mutation score is a gate ([CODE_REVIEW.md](CODE_REVIEW.md)), and a bundle-size budget is checked ([`ci/size-budgets.mjs`](https://github.com/MaverickCER/data-cap/blob/main/ci/size-budgets.mjs)).
-- **Runtime-tested:** core, runtime, and helpers are verified against real Node, Bun, and Deno engines in CI ([support matrix](GUIDE.md#runtime-support-matrix)).
-- **Known hazards tested:** the dual-package (ESM and CommonJS) hazard is pinned by a test that states its exact consequence ([SECURITY.md](SECURITY.md#dual-package-hazard)).
-- **Verifiable release:** published with npm OIDC provenance and no long-lived token ([SECURITY.md](SECURITY.md#supply-chain-posture)).
+- **Coverage:** `vitest.config.ts` sets floors of 90% branches, 100% functions, and 95% lines and statements. The `contract` check fails below them. They are raised in review and never lowered to fit a drop.
+- **Mutation testing:** the `contract` check fails unless every mutant is killed or recorded as equivalent in `.repo-contract/exceptions/mutation.json`. Code marked with a `Stryker disable` comment is not mutated.
+- **Bundle size:** every entry point has a gzip budget in [`ci/size-budgets.mjs`](https://github.com/MaverickCER/data-cap/blob/main/ci/size-budgets.mjs), and the `verify` and `contract` jobs fail over it. The budgets cover the ESM files only.
+- **Dual-package hazard:** a test pins what happens when the package loads as both ESM and CommonJS ([SECURITY.md](SECURITY.md#dual-package-hazard)).
 
 ## Install and verify
 
-**Prerequisites:** Node.js `>=22`. TypeScript 5, 6, or 7 is needed only for the build-time generator (the runtime works in plain JavaScript); the [requirements](GUIDE.md#requirements) are in the Guide.
+**Prerequisites:** Node.js 22 or later. The runtime entries need no TypeScript. The generator parses with your TypeScript 5 or 6, and otherwise with a bundled TypeScript 6 ([requirements](GUIDE.md#requirements)).
 
 ```sh
 npm install data-cap
-npx data-cap init                  # writes src/data.ts and scripts/generate-data.mjs
-npm install --save-dev typescript # the generator parses your source with it
-node scripts/generate-data.mjs
+npx data-cap init               # writes src/data.ts and scripts/generate-data.mjs
+node scripts/generate-data.mjs  # discovers the capability and writes the reports
 ```
 
-**Using an AI agent?** Give it [the skill](https://raw.githubusercontent.com/MaverickCER/data-cap/main/skills/data-cap/SKILL.md): a short manual written from this package's own exports, with the rules a type signature cannot say.
+**Verify it works:** `init` writes two files and runs nothing; it never overwrites an existing file. The generated script prints `Discovered 1 active capability(ies).` and writes the manifest, `docs/DATA.md` and an ownership report (the scaffold's text is tested; the script is not run in a test).
 
-`init` is filesystem-only: it never runs a package manager and never edits `package.json`. **Verify it works:** the generator prints `Discovered 1 active capability(ies).` and writes the manifest, `docs/DATA.md`, and an ownership report. The smallest practical capability declares fields and one getter:
+A capability with one getter, copied from `examples/team-service/src/capabilities/member.capability.ts`, which CI's `examples` job runs:
 
 ```ts
 import { createData } from "data-cap/runtime"
 
-const account = createData({
-  fields: { balance: 0, status: "active" as "active" | "suspended" },
+const memberSchema = {
+  fields: { members: [] as Member[] },
   getters: {
-    load: {
-      execute: (_params, signal) => getAccount(signal),
-      writes: { balance: true, status: true },
+    listMembers: {
+      params: {},
+      execute: (_params: object, signal: AbortSignal): Promise<Member[]> =>
+        listMembersThroughCache(signal),
+      processor: (result: Member[]): { members: Member[] } => ({ members: result }),
+      writes: { members: true },
     },
   },
-})
+}
+
+export const memberData = createData(memberSchema)
 ```
 
-Use the capability from your application without coupling its ownership to a particular transport, database, framework, or state library. The [Guide](GUIDE.md) has the full API and integration patterns.
+**Using an AI agent?** Give it [the skill](https://raw.githubusercontent.com/MaverickCER/data-cap/main/skills/data-cap/SKILL.md): a short manual generated from this package's exports, with the rules a type signature cannot state.
 
 ## Fit and capabilities
 
-**Use cases:** make it obvious who owns each piece of data; share one status vocabulary and request dedup across components; reason about optimistic updates; find fields whose declared sensitivity and network behavior disagree; give reviewers and coding agents an inventory of what the application's data is and where it flows.
+Each entry point has one reader in mind. The Guide has one chapter per row.
 
-**Core capabilities:**
+| Entry point                                                                                                             | Written for                                                  | Guide chapter                                                         |
+| ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ | --------------------------------------------------------------------- |
+| `data-cap`, `data-cap/runtime`, `data-cap/runtime/cache`, `data-cap/runtime/retry`                                      | Front-end and Node developers modelling data they do not own | [Application data](GUIDE.md#application-data)                         |
+| `data-cap/helpers`                                                                                                      | The same developers                                          | [Helpers](GUIDE.md#helpers)                                           |
+| `data-cap/build`, `data-cap/node`, the CLI, the GitHub Action                                                           | Platform engineers who own CI                                | [Build tooling](GUIDE.md#build-tooling-the-cli-and-the-github-action) |
+| `data-cap/evidence` (`defineEvidenceProjection` Stable, the flow views Experimental), `data-cap/observe` (Experimental) | Security and privacy reviewers                               | [Data flow](GUIDE.md#data-flow)                                       |
+| `data-cap/eslint-plugin`                                                                                                | Lint owners                                                  | [ESLint plugin](GUIDE.md#eslint-plugin)                               |
 
-- Capability-owned fields with getters, mutators, subscriptions, and a synchronously readable snapshot, with ownership enforced by warning rather than by throwing ([ownership model](SECURITY.md#runtime-security-model)).
-- A manifest, documentation catalog, dependency and ownership report, and data-flow diagrams, generated by static analysis that never executes your code ([generated artifacts](GUIDE.md#generated-artifacts)).
-- Field-level, interprocedural data flow with declared policies, least-data analysis, runtime observation, and CI rules, exported as DOT, Mermaid, PROV, SARIF, OSCAL, OpenTelemetry, and CycloneDX, every one a projection of the single evidence file ([data flow](GUIDE.md#data-flow), [explorer example](https://github.com/MaverickCER/data-cap/tree/main/examples/flow-explorer)).
-- Governance metadata per field (`owner`, `sensitivity`, `purpose`, `retention`) that the build pass cross-references against actual reads and writes ([documented example](GUIDE.md#documented-example)).
-- An [ESLint plugin](GUIDE.md#eslint-plugin) that catches an inline `execute`, `processor`, or `subscribe` function silently breaking dedup and subscription sharing, and a [GitHub Action](GUIDE.md#github-action).
+**Use it to** name the owner of each piece of data, share one status vocabulary and request dedup across components, and reason about optimistic updates. It also finds fields whose declared sensitivity and network endpoints disagree.
 
-**How it works:** the runtime and the build tooling are separate. The runtime coordinates fields, operations, and subscriptions; the build pass analyzes declarations and usage in development and CI ([Architecture](specs/architecture.md)).
+**Integration:** it sits under or next to your fetching and state libraries, with no transport, database or store change. Pick manual control or `createData` per capability, and add [cache and retry](GUIDE.md#cache-and-retry) where you need them.
 
-**Integration:** it sits under or next to TanStack Query, Redux, Zustand, Apollo, or plain `fetch`, with no transport, database, or state-library change. **Runtimes:** Node.js 22+, browsers, Bun, and Deno for core, runtime, and helpers; `./build` and the ESLint plugin are Node-only ([support matrix](GUIDE.md#runtime-support-matrix)). **Configuration and extension:** pick manual control or `createData` per capability, add cache and retry policy ([Cache and retry](GUIDE.md#cache-and-retry)), and share capabilities from a [reusable package](GUIDE.md#reusable-packages).
+**Runtimes:** core, runtime, cache, retry, helpers, evidence and observe import nothing and run on Node 22 or later. A test bundles each for the browser and runs it with Web globals only; no real browser runs them. Bun and Deno smoke tests, one per entry, run in a CI job that does not block a merge. `./build`, `./node`, the CLI and the ESLint plugin are Node-only ([support matrix](GUIDE.md#runtime-support-matrix)).
+
+**Package managers:** npm is fully tested. pnpm, Yarn 1 and Yarn Berry (node-modules linker) are tested for install and import only, in a job that does not block a merge ([details](GUIDE.md#package-managers)).
 
 ## Limits and when not to use it
 
-- **Skip it when** the application is small enough that data ownership, dependencies, and usage are already obvious, or one team owns the entire data layer and a conventional fetch-and-`useState` pattern is simpler. It becomes useful when data crosses component, feature, team, or system boundaries.
-- **Trade-offs:** it adds a declaration per capability and a build step. There is no automatic rollback or conflict resolution: a failed optimistic update reverts by removing its pending transition ([ADR 0023](specs/decisions/0023-no-automatic-rollback-or-conflict-resolution.md), [troubleshooting](GUIDE.md#my-mutations-optimistic-value-doesnt-automatically-roll-back-on-failure)).
-- **Not a replacement** for a fetching or state library: on the manual path you supply execution, retry, and caching, and `createData` adds dedup, status, and an optimistic lifecycle but not your transport. It is not an authorization, encryption, or compliance system.
-- **Data flow is syntactic:** it follows your project's own code (classes, modules, closures, common builtins), not packages unless you declare what a call does. It records what it could not follow and calls that trace incomplete, but it cannot prove a flow absent from code it cannot see ([what it follows](GUIDE.md#what-it-follows-and-what-it-says-when-it-cannot)).
-- **Install weight:** the build entry bundles a TypeScript 6 compiler, adding roughly 26 MB to the install, used only in development and CI.
-- **Automation:** generated manifests and ownership documentation give agents repository-local context, but they do not guarantee a correct change; the automation owns its retry and validation loop.
+- **Skip it when** the application is small and data ownership is already obvious, or one team owns the whole data layer. A plain fetch-and-`useState` pattern is simpler there.
+- **Trade-offs:** each capability needs a declaration, and the reports need a build step. There is no automatic rollback or conflict resolution ([ADR 0023](specs/decisions/0023-no-automatic-rollback-or-conflict-resolution.md)).
+- **Not a replacement** for a fetching or state library. `createData` adds dedup, status and an optimistic lifecycle, but you supply the transport. It is not an authorization or encryption system.
+- **Data flow is syntactic:** it follows your project's own code, not packages, unless you declare what a package call does. It cannot prove a flow absent from code it cannot see ([what it follows](GUIDE.md#what-it-follows-and-what-it-says-when-it-cannot)).
+- **Install weight:** the one dependency is a TypeScript 6 compiler, bundled inside the tarball. Only `./build` and the CLI load it.
+- **Automation:** generated reports give coding agents context. They do not make a change correct.
 
 ## Security and supply chain
 
-- **Guarantees:** an operation writing a field it does not own has that write dropped with a development-mode warning that never includes the offending value, so a warning cannot leak a secret ([runtime security model](SECURITY.md#runtime-security-model)).
-- **Trust boundaries:** the build tool analyzes files statically and never imports or evaluates them, which covers the build tooling only, not your application at runtime ([build-time model](SECURITY.md#build-time-security-model), [your responsibilities](SECURITY.md#application-responsibilities)).
-- **Dependencies and licence:** the runtime has no dependencies; the build entry bundles one compiler. MIT licensed.
-- **Release integrity:** npm OIDC trusted publishing with provenance ([supply-chain posture](SECURITY.md#supply-chain-posture)). Report a vulnerability through [SECURITY.md](SECURITY.md#reporting-a-vulnerability).
+- **Runtime:** a write to a field the operation does not own is dropped. The development-mode warning names the operation and path, never the value ([runtime security model](SECURITY.md#runtime-security-model)).
+- **Build time:** the build tool reads files through the TypeScript Compiler API and never imports or evaluates them. Lint bans `eval` and `new Function` in `src/`; review guards against a computed `import()` ([build-time model](SECURITY.md#build-time-security-model)).
+- **Ambient access:** the `AmbientCapabilities` check scans the packed tarball. It fails if any file reaches `child_process`, or if anything but the CLI reads `process.env`. Only the CLI, `./node` and the ESLint plugin may reach `fs`.
+- **Dependencies and licence:** the runtime entries import nothing. The [Adoption guide](ADOPTION.md#what-installing-it-adds) lists what installing adds, generated from `package.json`. MIT licensed.
+- **Release integrity:** npm trusted publishing over OIDC with provenance. The release run fails if npm does not serve the attestation ([supply-chain posture](SECURITY.md#supply-chain-posture)). This check runs after the publish; a failure marks the run red but does not withdraw the version. Report a vulnerability through [SECURITY.md](SECURITY.md#reporting-a-vulnerability).
 
 ## Maturity, versioning and support
 
-Pre-1.0 (see the npm badge for the current version). The core runtime, build tooling, CLI, ESLint integration, and generated artifacts (including `createData`) are implemented, tested, and Stable; [VERSIONING.md](VERSIONING.md) lists the exact surface semver covers, and a `0.x` minor may still change a Stable API, so pin accordingly. Security fixes target the latest published `0.x` only until 1.0 ([Adoption guide](ADOPTION.md#versioning-stability-and-long-term-support)).
+Pre-1.0. The runtime, helpers, build tooling, CLI flags, GitHub Action interface and ESLint rule names are Stable. The data-flow surface (the flow models, `./observe`, and the flow views in `./evidence`) is Experimental and may change in any release. Before 1.0 a minor release may still break a Stable API, so pin a version ([VERSIONING.md](VERSIONING.md)). Security fixes go to the latest `0.x` only ([supported versions](SECURITY.md#supported-versions)).
 
-- **Upgrade and migrate:** read the [CHANGELOG](CHANGELOG.md) on every minor; [migration guides](specs/migrations/README.md) cover adoption from common data-management patterns.
-- **Release history:** [CHANGELOG](CHANGELOG.md) and [GitHub releases](https://github.com/MaverickCER/data-cap/releases); the process is in [RELEASING.md](RELEASING.md).
+- **Upgrade:** read the [CHANGELOG](CHANGELOG.md) on every minor.
+- **Release history:** the [CHANGELOG](CHANGELOG.md) and the [GitHub releases](https://github.com/MaverickCER/data-cap/releases); the process is in [RELEASING.md](RELEASING.md).
 - **Bugs and requests:** [open an issue](https://github.com/MaverickCER/data-cap/issues); see [SUPPORT.md](SUPPORT.md).
 - **Troubleshooting:** the [Guide's troubleshooting section](GUIDE.md#troubleshooting).
 
 ## Documentation
 
-- **[Guide](GUIDE.md)**: concepts, usage, integration patterns, build tooling, and the ESLint plugin.
-- **[Adoption guide](ADOPTION.md)**: the decision-maker summary of security, bundle size, and versioning.
-- **[API reference](https://maverickcer.github.io/data-cap/api/)**: every exported symbol, generated from source.
-- **[Architecture](specs/architecture.md)** and **[ADRs](https://github.com/MaverickCER/data-cap/tree/main/specs/decisions)**: why it is designed this way.
-- **[Examples](https://github.com/MaverickCER/data-cap/tree/main/examples)**: complete working applications.
-- **Part of the MaverickCER toolkit:** `@maverickcer/env-cap` governs configuration and `data-cap` governs application data; `repo-contract` and `internal-package-contract` are how they are verified ([toolkit overview](https://github.com/MaverickCER/internal-package-contract/blob/main/TOOLKIT.md)).
+- **[Guide](GUIDE.md):** one chapter per entry point, plus requirements, troubleshooting and performance.
+- **[Adoption guide](ADOPTION.md):** what adopting costs, what it needs, and what it refuses to do.
+- **[Security policy](SECURITY.md):** the threat model and what each check covers.
+- **[API reference](https://maverickcer.github.io/data-cap/api/):** every exported symbol, generated from source.
+- **[Architecture](specs/architecture.md)** and **[ADRs](https://github.com/MaverickCER/data-cap/tree/main/specs/decisions):** why it is built this way.
+- **[Examples](https://github.com/MaverickCER/data-cap/tree/main/examples):** complete applications, each run in CI.
+- **Toolkit:** `@maverickcer/env-cap` governs configuration and `data-cap` governs application data. `repo-contract` and `internal-package-contract` check both ([toolkit overview](https://github.com/MaverickCER/internal-package-contract/blob/main/TOOLKIT.md)).
 
 ## Next steps
 
-- **Evaluate:** read the [Adoption guide](ADOPTION.md), then try data-cap on one feature.
+- **Evaluate:** read the [Adoption guide](ADOPTION.md), then try `data-cap` on one feature.
 - **Integrate:** follow the [Guide](GUIDE.md) and the [examples](https://github.com/MaverickCER/data-cap/tree/main/examples).
-- **Verify:** inspect the [security model](SECURITY.md#runtime-security-model) and the [architecture](specs/architecture.md).
+- **Verify:** read the [security model](SECURITY.md#runtime-security-model) and the [architecture](specs/architecture.md).
 
 Contributing: [CONTRIBUTING.md](CONTRIBUTING.md) covers setup and the change workflow. License: MIT, see [LICENSE](LICENSE).

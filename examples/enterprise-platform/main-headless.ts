@@ -16,7 +16,7 @@
  * depends on once a session exists. A client disputes an invoice; this
  * script proves, the same way a real incident review would, exactly what
  * billing data existed and how it was declared to be handled at every
- * endpoint it crossed -- via `reports/litigation-evidence.ts` -- and rolls
+ * endpoint it crossed -- via `reports/data-handling-record.ts` -- and rolls
  * up governance-declaration completeness across all three departments' own
  * capabilities -- via `reports/audit-prep.ts`. A final section proves the
  * CI-configuration guard these two reports depend on (`data-cap --strict-
@@ -40,7 +40,7 @@ import { setBaseUrl, setSessionCookie } from "./src/capabilities/api-client.js"
 import { identityData } from "./src/capabilities/identity.capability.js"
 import { projectsData } from "./src/capabilities/projects.capability.js"
 import { billingData } from "./src/capabilities/billing.capability.js"
-import { generateLitigationEvidenceReport } from "./reports/litigation-evidence.js"
+import { generateDataHandlingRecord } from "./reports/data-handling-record.js"
 import { generateAuditPrepReport } from "./reports/audit-prep.js"
 
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms))
@@ -146,8 +146,8 @@ releaseViewB()
 await sleep(10)
 assert.equal(subscriberCountFor(projectId), 0, "unsubscribing both releases the real connection")
 
-// -- Disputing an invoice -- the concrete scenario `reports/litigation- -- //
-// -- evidence.ts` is scoped to. Sends the (console-fallback) email and -- //
+// -- Disputing an invoice -- the concrete scenario `reports/data-handling- -- //
+// -- record.ts` is scoped to. Sends the (console-fallback) email and -- //
 // -- pushes a live update, same as any other mutator. -- //
 await billingData.disputeInvoice({ projectId, invoiceId: secondInvoice.id })
 assert.equal(
@@ -162,17 +162,17 @@ assert.equal(
 auditCurrentFields()
 
 // =========================================================================
-// Litigation-evidence report -- the actual point of this tier. Generated
+// Data-handling record -- the actual point of this tier. Generated
 // against this same source tree: `invoices` resolves to "declared-dynamic"
 // (the citation above); `currentUser` resolves to "indeterminate" -- a
 // real, undisclosed gap this script does NOT paper over.
 // =========================================================================
-const litigationReport = await generateLitigationEvidenceReport()
+const dataHandlingRecord = await generateDataHandlingRecord()
 
-const invoicesEntry = litigationReport.fields.find(
+const invoicesEntry = dataHandlingRecord.fields.find(
   (f) => f.capability === "billingData" && f.field === "invoices",
 )
-assert.ok(invoicesEntry, "the litigation report must include the invoices field")
+assert.ok(invoicesEntry, "the data-handling record must include the invoices field")
 assert.equal(
   invoicesEntry.consumptionStatus,
   "declared-dynamic",
@@ -185,10 +185,10 @@ assert.ok(
   "every declared endpoint invoices crosses must show its declared handling state",
 )
 
-const currentUserEntry = litigationReport.fields.find(
+const currentUserEntry = dataHandlingRecord.fields.find(
   (f) => f.capability === "identityData" && f.field === "currentUser",
 )
-assert.ok(currentUserEntry, "the litigation report must include the currentUser field")
+assert.ok(currentUserEntry, "the data-handling record must include the currentUser field")
 assert.equal(
   currentUserEntry.consumptionStatus,
   "indeterminate",
@@ -203,13 +203,13 @@ assert.ok(currentUserEntry.indeterminateSites.length > 0)
 // behind it. This can't run as a root-level unit test (examples/ is a
 // separate npm project data-cap's own test suite can't import from), so it
 // runs here instead, for real, on every `npm start`.
-const secondLitigationReport = await generateLitigationEvidenceReport()
+const secondDataHandlingRecord = await generateDataHandlingRecord()
 assert.deepEqual(
-  JSON.parse(JSON.stringify({ ...litigationReport, generatedAt: null })),
-  JSON.parse(JSON.stringify({ ...secondLitigationReport, generatedAt: null })),
+  JSON.parse(JSON.stringify({ ...dataHandlingRecord, generatedAt: null })),
+  JSON.parse(JSON.stringify({ ...secondDataHandlingRecord, generatedAt: null })),
   "regenerating the report from the same source tree must produce identical derived facts",
 )
-for (const entry of litigationReport.fields) {
+for (const entry of dataHandlingRecord.fields) {
   switch (entry.consumptionStatus) {
     case "proven":
       assert.ok(entry.provenAccessSites.length > 0, `${entry.capability}.${entry.field}: "proven" must cite a real access site`)

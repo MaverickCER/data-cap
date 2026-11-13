@@ -19,23 +19,23 @@
         } catch (error) {}
       })()
     </script>
-    <title>data-cap — capability-owned data contracts</title>
+    <title>data-cap: capability-owned data contracts</title>
     <meta
       name="description"
-      content="Your application&#39;s data should have an owner. data-cap treats a piece of application data as one capability-owned contract, independent of whatever database, transport, framework, or state-management library is on the other end — and sits next to TanStack Query, Redux, or plain fetch, not instead of them."
+      content="Your application&#39;s data should have an owner. data-cap declares each piece of application data once, as a capability-owned contract, whatever database, transport, framework or state library sits underneath. It works next to TanStack Query, Redux or plain fetch, not instead of them."
     />
     <link rel="canonical" href="https://maverickcer.github.io/data-cap/" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://maverickcer.github.io/data-cap/" />
-    <meta property="og:title" content="data-cap — capability-owned data contracts" />
+    <meta property="og:title" content="data-cap: capability-owned data contracts" />
     <meta
       property="og:description"
-      content="Your application&#39;s data should have an owner. data-cap treats a piece of application data as one capability-owned contract, independent of whatever database, transport, framework, or state-management library is on the other end — and sits next to TanStack Query, Redux, or plain fetch, not instead of them."
+      content="Your application&#39;s data should have an owner. data-cap declares each piece of application data once, as a capability-owned contract, whatever database, transport, framework or state library sits underneath. It works next to TanStack Query, Redux or plain fetch, not instead of them."
     />
-    <meta name="twitter:title" content="data-cap — capability-owned data contracts" />
+    <meta name="twitter:title" content="data-cap: capability-owned data contracts" />
     <meta
       name="twitter:description"
-      content="Your application&#39;s data should have an owner. data-cap treats a piece of application data as one capability-owned contract, independent of whatever database, transport, framework, or state-management library is on the other end — and sits next to TanStack Query, Redux, or plain fetch, not instead of them."
+      content="Your application&#39;s data should have an owner. data-cap declares each piece of application data once, as a capability-owned contract, whatever database, transport, framework or state library sits underneath. It works next to TanStack Query, Redux or plain fetch, not instead of them."
     />
     <meta
       property="og:image"
@@ -92,9 +92,8 @@
             consumer.
           </p>
           <p class="hero-support">
-            data-cap treats a piece of data, with the getters, mutators and subscriptions that touch
-            it, as one capability-owned contract that every consumer reads the same synchronous
-            snapshot from.
+            A capability declares a piece of data with the getters, mutators and subscriptions that
+            touch it. Every consumer reads the same snapshot.
           </p>
           <p class="hero-outcome">
             Give every piece of application data one owner and one shared status vocabulary, without
@@ -132,10 +131,9 @@ npx data-cap init</code></pre>
           <p class="section-eyebrow">Why it exists</p>
           <h2 id="why-heading">Fetching and state libraries answer different questions.</h2>
           <p class="section-lede">
-            A fetching library dedupes requests. A state-management library gives you a store.
-            Neither answers which piece of data a component owns versus merely consumes, whether an
-            optimistic value will disagree with what other components expect, or which capability a
-            subscription&#39;s transport is shared with.
+            A fetching library dedupes requests, and a state library gives you a store. Neither says
+            which part of the application owns a piece of data. Neither says whether an optimistic
+            value will disagree with other components.
           </p>
           <div class="diagram">
             <p class="sr-only">
@@ -160,9 +158,8 @@ npx data-cap init</code></pre>
             </ol>
           </div>
           <p>
-            data-cap makes the agreement itself the artifact: a capability declares its fields and
-            the operations that touch them, and every consumer reads the same synchronously
-            available snapshot.
+            data-cap makes the agreement itself the artifact. A capability declares its fields and
+            operations, and every consumer reads the same synchronous snapshot.
           </p>
         </div>
       </section>
@@ -199,17 +196,16 @@ npx data-cap init</code></pre>
             </ol>
           </div>
           <p>
-            Neither path is the one way: pick per capability. Fields are readable synchronously from
-            the moment <code>buildData()</code> or <code>createData()</code> returns, with no
-            throw-until-ready gate, and <code>info</code> is mandatory on every
-            <code>DataState</code>, so consumers never special-case whether metadata exists yet.
+            Neither path is the one way: pick per capability. Fields are readable from the moment
+            <code>buildData()</code> or <code>createData()</code> returns. <code>info</code> is on
+            every <code>DataState</code>, so consumers never check whether metadata exists.
           </p>
         </div>
       </section>
       <section class="section" id="see-it" aria-labelledby="see-it-heading">
         <div class="container container--narrow">
           <p class="section-eyebrow">See it</p>
-          <h2 id="see-it-heading">Not a mockup: real output from this repository.</h2>
+          <h2 id="see-it-heading">Real output from this repository, not a mockup.</h2>
           <p class="section-lede">
             Run against
             <a href="https://github.com/maverickcer/data-cap/tree/main/examples/application"
@@ -235,14 +231,15 @@ npx data-cap init</code></pre>
           </p>
           <p>
             A manifest of every active capability, a documentation catalog, and a dependency and
-            ownership report, statically derived from real code, not hand-maintained.
+            ownership report, derived statically from the example&#39;s code. CI&#39;s examples job
+            compares this output with a fresh run.
           </p>
         </div>
       </section>
       <section class="section section--muted" id="guarantees" aria-labelledby="guarantees-heading">
         <div class="container">
-          <p class="section-eyebrow">Guarantees</p>
-          <h2 id="guarantees-heading">What is guaranteed, and where it stops.</h2>
+          <p class="section-eyebrow">What it holds to</p>
+          <h2 id="guarantees-heading">What it holds to, and where that stops.</h2>
           <p class="section-lede">
             Each claim states its scope and links to the document that defines it, so you can check
             the boundary before you rely on it.
@@ -250,11 +247,13 @@ npx data-cap init</code></pre>
           <div class="adoption-grid">
             <div class="adoption-card guarantee">
               <span class="adoption-card-title"
-                >Ownership is enforced by warning, not by throwing.</span
+                >Ownership is enforced by dropping the write and warning in development, not by
+                throwing.</span
               ><span class="adoption-card-desc"
-                ><strong>Scope:</strong> An unowned write is dropped and reported instead of
-                crashing the application. data-cap is not an authorization, encryption or compliance
-                system.</span
+                ><strong>Scope:</strong> An unowned write is dropped and reported in development,
+                instead of crashing the application. The warning never includes the value (tested
+                for a string value on the <code>createData</code> path). data-cap is not an
+                authorization or encryption system.</span
               ><a
                 class="external-link-note"
                 href="https://github.com/maverickcer/data-cap/blob/main/SECURITY.md"
@@ -264,9 +263,9 @@ npx data-cap init</code></pre>
             <div class="adoption-card guarantee">
               <span class="adoption-card-title">The build tool never executes your code.</span
               ><span class="adoption-card-desc"
-                ><strong>Scope:</strong> Discovered files are analyzed statically and never imported
-                or evaluated. This covers the build tooling only, not your application at
-                runtime.</span
+                ><strong>Scope:</strong> Discovered files are read through the TypeScript Compiler
+                API and never imported or evaluated. This covers the build tooling only, not your
+                application at runtime.</span
               ><a
                 class="external-link-note"
                 href="https://github.com/maverickcer/data-cap/blob/main/SECURITY.md"
@@ -277,9 +276,9 @@ npx data-cap init</code></pre>
               <span class="adoption-card-title"
                 >The two-module-system hazard is checked and documented.</span
               ><span class="adoption-card-desc"
-                ><strong>Scope:</strong> It applies when a dependency tree resolves the package
-                through both ESM and CommonJS, which creates two coordinator instances. The
-                documented behaviour is graceful degradation, not silent corruption.</span
+                ><strong>Scope:</strong> It applies when a dependency tree loads the package as both
+                ESM and CommonJS, which creates two coordinator instances. A test pins the result:
+                each stays correct, and dedup stops crossing between them.</span
               ><a
                 class="external-link-note"
                 href="https://github.com/maverickcer/data-cap/blob/main/SECURITY.md"
@@ -291,15 +290,12 @@ npx data-cap init</code></pre>
       </section>
       <section class="section" id="why-not-ci" aria-labelledby="why-not-ci-heading">
         <div class="container">
-          <p class="section-eyebrow">
-            Why not just TanStack Query, Redux, or manual fetch-and-state?
-          </p>
+          <p class="section-eyebrow">Why not TanStack Query, Redux, or manual fetch-and-state?</p>
           <h2 id="why-not-ci-heading">You keep all of them.</h2>
           <p class="section-lede">
-            data-cap doesn&#39;t replace your transport or your store. It adds the layer none of
-            them cover: one capability-owned contract that every consumer reads the same synchronous
-            snapshot from, plus a static-analysis pass that turns it into ownership and dependency
-            evidence.
+            data-cap does not replace your transport or your store. It adds one capability-owned
+            contract that every consumer reads. A static pass turns that contract into ownership and
+            dependency evidence.
           </p>
           <div class="table-scroll">
             <table class="comparison-table">
@@ -379,8 +375,8 @@ npx data-cap init</code></pre>
           <p class="section-eyebrow">For decision-makers</p>
           <h2 id="brief-heading">A one-page brief for your manager</h2>
           <p class="section-lede">
-            data-cap gives every piece of application data one owner and one shared status, so every
-            part of the application agrees on what the data is doing.
+            data-cap gives every piece of application data one owner and one shared status. Every
+            part of the application then agrees on what the data is doing.
           </p>
           <p>
             It answers what this is, why it matters, what it costs, what could go wrong and what is
@@ -393,12 +389,14 @@ npx data-cap init</code></pre>
       </section>
       <section class="section section--muted" id="proof" aria-labelledby="proof-heading">
         <div class="container">
-          <p class="section-eyebrow">Proof, not promises</p>
-          <h2 id="proof-heading">data-cap uses data-cap.</h2>
+          <p class="section-eyebrow">Check the claims</p>
+          <h2 id="proof-heading">
+            The guarantees below link to the document that states their limits.
+          </h2>
           <p class="section-lede">
-            The project is self-hosted and covered by end-to-end examples and independently
-            installed regression fixtures. The implementation, tests, architecture documentation and
-            decision records are the evidence behind everything on this page.
+            The implementation, tests, architecture documentation and decision records are the
+            evidence behind this page. Each example is a separate npm project that CI installs and
+            runs.
           </p>
           <div class="adoption-grid">
             <a
@@ -406,16 +404,16 @@ npx data-cap init</code></pre>
               href="https://github.com/maverickcer/data-cap/blob/main/GUIDE.md"
               ><span class="adoption-card-title">Guide</span
               ><span class="adoption-card-desc"
-                >Fields &amp; info, optimistic mutations, array identity, subscriptions, the
-                coordinator, cache &amp; retry, build tooling, and the CLI.</span
+                >One chapter per entry point: application data, helpers, build tooling and the CLI,
+                data flow, and the ESLint plugin.</span
               ><span class="external-link-note">Read the Guide ↗</span></a
             ><a
               class="adoption-card"
               href="https://github.com/maverickcer/data-cap/blob/main/specs/architecture.md"
               ><span class="adoption-card-title">Architecture</span
               ><span class="adoption-card-desc"
-                >The core invariants — one atomic snapshot per commit, one subscriber notification
-                only if changed, and why the build tool never executes discovered code.</span
+                >The core invariants: one atomic snapshot per commit, a subscriber notified only on
+                change, and a build tool that never executes discovered code.</span
               ><span class="external-link-note">Read architecture.md ↗</span></a
             ><a
               class="adoption-card"
@@ -430,19 +428,18 @@ npx data-cap init</code></pre>
               href="https://github.com/maverickcer/data-cap/blob/main/ADOPTION.md"
               ><span class="adoption-card-title">Adoption guide</span
               ><span class="adoption-card-desc"
-                >A decision-maker summary: security posture, bundle size, and versioning/LTS
-                stance.</span
+                >What adopting costs, what it needs, and what it refuses to do.</span
               ><span class="external-link-note">Read ADOPTION.md ↗</span></a
             ><a class="adoption-card" href="api/"
               ><span class="adoption-card-title">API reference</span
               ><span class="adoption-card-desc"
-                >Every exported symbol, generated from source so it cannot drift.</span
+                >Every exported symbol, generated from the source.</span
               ><span class="external-link-note">Read the API reference ↗</span></a
             ><a class="adoption-card" href="benchmarks/"
               ><span class="adoption-card-title">Benchmarks</span
               ><span class="adoption-card-desc"
-                >Runtime and build-time performance history, generated from committed measurements
-                so it cannot drift.</span
+                >Runtime and build-time performance history, rendered from committed
+                measurements.</span
               ><span class="external-link-note">View the benchmarks ↗</span></a
             >
           </div>

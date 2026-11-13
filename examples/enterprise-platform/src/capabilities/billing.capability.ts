@@ -1,8 +1,8 @@
 /**
  * One project's own invoices -- owned by finance-team. The capability this
- * whole tier's litigation-evidence report is scoped to: `disputeInvoice`
+ * whole tier's data-handling record is scoped to: `disputeInvoice`
  * marks a real invoice disputed, the exact concrete scenario
- * `reports/litigation-evidence.ts` proves "what billing data existed and
+ * `reports/data-handling-record.ts` records "what billing data existed and
  * how it was handled" for.
  *
  * `evidence.fields.invoices.dynamicAccess` (below) cites

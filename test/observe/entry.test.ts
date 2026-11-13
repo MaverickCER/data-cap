@@ -28,10 +28,18 @@ describe("data-cap/observe entry point", () => {
     ])
   })
 
-  it("is declared in package.json with both module formats and types", () => {
+  it("is declared in package.json with both module formats and types, for TypeScript 7 as well", () => {
     expect(manifest.exports["./observe"]).toEqual({
-      import: { types: "./dist/observe.d.ts", default: "./dist/observe.js" },
-      require: { types: "./dist/observe.d.cts", default: "./dist/observe.cjs" },
+      import: {
+        "types@>=7": "./dist/observe.ts7.d.ts",
+        types: "./dist/observe.d.ts",
+        default: "./dist/observe.js",
+      },
+      require: {
+        "types@>=7": "./dist/observe.ts7.d.cts",
+        types: "./dist/observe.d.cts",
+        default: "./dist/observe.cjs",
+      },
     })
   })
 

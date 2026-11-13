@@ -83,7 +83,7 @@ describe("OSCAL", () => {
     }
     assert.equal(validate(doc), true, JSON.stringify(validate.errors?.slice(0, 3)))
     const states = Object.fromEntries(doc["assessment-results"].results[0]!.findings.map((f) => [f.target["target-id"], f.target.status.state]))
-    assert.deepEqual(states, { "ac-4": "not-satisfied", "sc-28": "not-satisfied", "au-3": "satisfied" })
+    assert.deepEqual(states, { "ac-4_obj": "not-satisfied", "sc-28_obj": "not-satisfied", "au-3_obj": "satisfied" })
   })
 })
 

@@ -535,6 +535,9 @@ The default/example value for every field, declaring the capability's shape.
 
 ### CapabilityDocs
 
+Governance metadata for one capability, passed to `documentData`. Its keys are checked against the schema.
+Every value here is declared by the author: the build pass checks that it is present, never that it is true.
+
 #### Type Parameters
 
 | Type Parameter |

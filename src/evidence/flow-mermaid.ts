@@ -6,6 +6,7 @@
  * a legend node; an edge of a violated policy is thick and red.
  */
 
+import { flowEvidenceDisclaimer } from "./flow-disclaimer.js"
 import { nodeLabel } from "./flow-graph-view.js"
 import { edgeLabel, selectDiagram } from "./flow-diagram-selection.js"
 import type { DiagramInput, FlowDiagramOptions } from "./flow-diagram-selection.js"
@@ -32,6 +33,7 @@ function declare(id: string, node: FlowNode, label: string): string {
 }
 
 /** Renders a Mermaid flowchart, or `undefined` when no flow was computed. */
+
 export function renderFlowMermaid(
   evidence: DiagramInput,
   options: FlowDiagramOptions = {},
@@ -39,7 +41,7 @@ export function renderFlowMermaid(
   const selection = selectDiagram(evidence, options)
   if (selection === undefined) return undefined
   if (selection.missingField !== undefined) {
-    return `flowchart LR\n  none[${quote(`No field named ${selection.missingField} in this evidence`)}]\n`
+    return `%% ${flowEvidenceDisclaimer()}\nflowchart LR\n  none[${quote(`No field named ${selection.missingField} in this evidence`)}]\n`
   }
 
   // Keyed by `string | undefined` so an unknown with no subject simply finds no node.
@@ -52,7 +54,7 @@ export function renderFlowMermaid(
     return id
   }
 
-  const lines: string[] = ["flowchart LR"]
+  const lines: string[] = [`%% ${flowEvidenceDisclaimer()}`, "flowchart LR"]
   lines.push(
     `  %% Data flow -- ${selection.complete ? "complete" : "NOT complete: parts could not be followed"}`,
   )

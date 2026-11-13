@@ -17,6 +17,7 @@
  * Isomorphic and deterministic.
  */
 
+import { flowEvidenceDisclaimer } from "./flow-disclaimer.js"
 import type { EvidenceModel } from "../build/evidence-model.js"
 import { flowBoundaryKinds } from "../flow/flow-model.js"
 import type { FlowHandling } from "../flow/flow-model.js"
@@ -110,6 +111,7 @@ function nanos(iso: string): string {
 }
 
 /** Maps the observations to OTLP/JSON traces, or `undefined` when none were ingested. */
+
 export function observationsToOtlp(
   evidence: OtlpInput,
   options: OtlpOptions = {},
@@ -172,7 +174,12 @@ export function observationsToOtlp(
   return {
     resourceSpans: [
       {
-        resource: { attributes: [str("service.name", options.serviceName ?? "data-cap")] },
+        resource: {
+          attributes: [
+            str("service.name", options.serviceName ?? "data-cap"),
+            str("data_cap.disclaimer", flowEvidenceDisclaimer()),
+          ],
+        },
         scopeSpans: [
           { scope: { name: "data-cap", version: evidence.provenance.toolVersion }, spans },
         ],

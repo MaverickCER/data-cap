@@ -19,6 +19,7 @@ import { fileURLToPath } from "node:url"
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..")
 const cacheEntry = path.join(root, "dist/runtime/cache.js")
 const retryEntry = path.join(root, "dist/runtime/retry.js")
+const runtimeEntry = path.join(root, "dist/runtime/index.js")
 const distMissing = !existsSync(cacheEntry) || !existsSync(retryEntry)
 
 describe.skipIf(distMissing)("runtime/cache and runtime/retry tree-shake structurally", () => {
@@ -31,5 +32,14 @@ describe.skipIf(distMissing)("runtime/cache and runtime/retry tree-shake structu
   it("dist/runtime/retry.js never includes cache.ts's code", () => {
     const code = readFileSync(retryEntry, "utf8")
     expect(code).not.toContain("createDataCache")
+  })
+})
+
+describe.skipIf(!existsSync(runtimeEntry))("runtime does not carry the optional entries", () => {
+  it("dist/runtime/index.js includes neither cache.ts's nor retry.ts's code", () => {
+    const code = readFileSync(runtimeEntry, "utf8")
+    expect(code).not.toContain("createDataCache")
+    expect(code).not.toContain("withRetry")
+    expect(code).not.toContain("isStillDefault")
   })
 })

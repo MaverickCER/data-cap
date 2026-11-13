@@ -14,6 +14,8 @@ The part of a web `Response` or `Request` that `observeResponse` uses; both sati
 clone(): BodyReadable;
 ```
 
+A copy whose body can be read without consuming the original's.
+
 ###### Returns
 
 [`BodyReadable`](#bodyreadable)
@@ -23,6 +25,8 @@ clone(): BodyReadable;
 ```ts
 json(): Promise<unknown>;
 ```
+
+The body parsed as JSON.
 
 ###### Returns
 
@@ -170,6 +174,8 @@ Where events go. The package never provides one that does I/O.
 ```ts
 record(event): void;
 ```
+
+Receives one event. A throw here is caught; the observed code never sees it.
 
 ###### Parameters
 
@@ -443,14 +449,6 @@ An in-memory sink -- the only one this package provides.
 
 #### Returns
 
-```ts
-{
-  sink: ObservationSink;
-  events(): readonly ObservationEvent[];
-  skips(): readonly ObservationSkip[];
-}
-```
-
 ##### sink
 
 ```ts
@@ -463,6 +461,8 @@ readonly sink: ObservationSink;
 events(): readonly ObservationEvent[];
 ```
 
+Every event recorded so far, in order.
+
 ###### Returns
 
 readonly [`ObservationEvent`](#observationevent)[]
@@ -472,6 +472,8 @@ readonly [`ObservationEvent`](#observationevent)[]
 ```ts
 skips(): readonly ObservationSkip[];
 ```
+
+Every skip recorded so far: what the walker knowingly left out.
 
 ###### Returns
 

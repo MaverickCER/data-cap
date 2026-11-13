@@ -5,10 +5,12 @@
       "title": "Profile service: data-flow assessment",
       "last-modified": "2026-01-01T00:00:00.000Z",
       "version": "0.9.0",
-      "oscal-version": "1.1.2"
+      "oscal-version": "1.1.2",
+      "remarks": "Machine-generated engineering artifact assembled from statically-provable code facts and author-declared documentation. It can support a security, privacy, or compliance review. It does not itself establish compliance with any standard. Incomplete traces are recorded as unknown, never hidden; an absent flow is not evidence of no flow."
     },
     "import-ap": {
-      "href": "#data-cap-assessment-plan"
+      "href": "#data-cap-assessment-plan",
+      "remarks": "Placeholder: no assessment plan was supplied. Pass `assessmentPlan` to reference a real one; this document supports a review and establishes nothing by itself."
     },
     "results": [
       {
@@ -92,7 +94,7 @@
             "description": "data-cap data-flow rule userData/no-role-to-log as evidence for au-3.",
             "target": {
               "type": "objective-id",
-              "target-id": "au-3",
+              "target-id": "au-3_obj",
               "status": {
                 "state": "satisfied",
                 "reason": "pass",
@@ -111,7 +113,7 @@
             "description": "data-cap data-flow rule userData/no-password-to-client as evidence for sc-28.",
             "target": {
               "type": "objective-id",
-              "target-id": "sc-28",
+              "target-id": "sc-28_obj",
               "status": {
                 "state": "not-satisfied",
                 "reason": "fail",
@@ -130,7 +132,7 @@
             "description": "data-cap data-flow rule userData/no-password-to-client as evidence for ac-4.",
             "target": {
               "type": "objective-id",
-              "target-id": "ac-4",
+              "target-id": "ac-4_obj",
               "status": {
                 "state": "not-satisfied",
                 "reason": "fail",

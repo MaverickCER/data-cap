@@ -13,7 +13,7 @@
 //
 // Reads the already-generated `docs/data.evidence.json` via this example's
 // own shared `reports/evidence-cache.ts` (`getEvidence()`) -- the same
-// fingerprint-cached read `litigation-evidence.ts`/`audit-prep.ts` already
+// fingerprint-cached read `data-handling-record.ts`/`audit-prep.ts` already
 // use, rather than a second, independent cache implementation. The
 // Capability Model it carries already has every field's resolved
 // `sensitivity`/`purpose`/`legalBasis`/`dataResidency`/`auditRequired` plus
@@ -22,7 +22,7 @@
 // from -- nothing this generator needs requires a fresh discovery pass.
 //
 // Run via `npm run ropa` (also chained into `npm run reports`, alongside
-// the litigation-evidence and audit-prep reports -- see package.json).
+// the data-handling-record and audit-prep reports -- see package.json).
 import fs from "node:fs/promises"
 import path from "node:path"
 import { fileURLToPath } from "node:url"

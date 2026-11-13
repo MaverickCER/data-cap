@@ -651,7 +651,8 @@
         "writtenBy",
         "shape"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "description": "One top-level field of a capability, resolved from the inventory's shared model."
     },
     "FieldDocs": {
       "type": "object",

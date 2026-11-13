@@ -13,6 +13,7 @@
 
 import type { SourcePosition } from "./source-position.js"
 
+/** How a consuming file uses a capability: an import alone, a field read, or a call to a getter, mutator or subscription. */
 export type DependencyRelationship =
   | "imports" // consumer file imports the capability, no further resolved usage
   | "reads-field" // consumer reads a specific field path

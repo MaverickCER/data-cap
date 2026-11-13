@@ -1,7 +1,7 @@
 /**
  * Evidence-contract tests for `examples/enterprise-platform`'s three
  * consumer-authored report scripts (`reports/evidence-cache.ts`,
- * `reports/litigation-evidence.ts`, `reports/audit-prep.ts`) -- API-04.
+ * `reports/data-handling-record.ts`, `reports/audit-prep.ts`) -- API-04.
  *
  * Until now these had CLI wiring only: `npm run check` runs each script's own
  * `--check` mode and diffs its committed output byte-for-byte. That catches
@@ -9,7 +9,7 @@
  * improved" from "the report changed because it broke" -- regenerating the
  * golden makes both look identical. These tests assert the facts each report
  * exists to establish, so a change that quietly inverts one (a sensitive
- * field dropping out of the litigation report, a developer's dynamic-access
+ * field dropping out of the data-handling record, a developer's dynamic-access
  * citation no longer being honored, a finding losing its structured
  * location) fails here even after the golden is refreshed.
  *
@@ -85,7 +85,7 @@ interface ExpectedSourceLocation {
   readonly column: number
 }
 
-/** The eight declared governance properties every litigation row restates -- named, so a dropped one is a compile error here rather than a silently-missing table column. */
+/** The eight declared governance properties every data-handling record row restates -- named, so a dropped one is a compile error here rather than a silently-missing table column. */
 interface ExpectedDeclaredGovernance {
   readonly owner: string | undefined
   readonly sensitivity: string | undefined
@@ -97,7 +97,7 @@ interface ExpectedDeclaredGovernance {
   readonly retention: string | undefined
 }
 
-interface ExpectedLitigationField {
+interface ExpectedDataHandlingField {
   readonly capability: string
   readonly field: string
   readonly declared: ExpectedDeclaredGovernance
@@ -115,11 +115,11 @@ interface ExpectedLitigationField {
   }[]
 }
 
-interface ExpectedLitigationReport {
+interface ExpectedDataHandlingRecord {
   readonly disclaimer: string
   readonly generatedAt: string
   readonly scanSurface: { readonly scanned: readonly string[]; readonly notScanned: string }
-  readonly fields: readonly ExpectedLitigationField[]
+  readonly fields: readonly ExpectedDataHandlingField[]
 }
 
 interface ExpectedAuditReport {
@@ -159,8 +159,8 @@ interface EvidenceCacheModule {
   readonly COMPUTE_OPTIONS: { readonly evidence: string }
 }
 
-interface LitigationModule {
-  readonly generateLitigationEvidenceReport: () => Promise<ExpectedLitigationReport>
+interface DataHandlingRecordModule {
+  readonly generateDataHandlingRecord: () => Promise<ExpectedDataHandlingRecord>
 }
 
 interface AuditModule {
@@ -178,19 +178,19 @@ async function loadReportModule<TModule>(fileName: string): Promise<TModule> {
 let evidence: ExpectedEvidence
 let evidencePath: string
 let cacheEvidenceOption: string
-let litigation: ExpectedLitigationReport
+let record: ExpectedDataHandlingRecord
 let audit: ExpectedAuditReport
 
 describe.skipIf(!runnable)("example: enterprise-platform report scripts", () => {
   beforeAll(async () => {
     const cache = await loadReportModule<EvidenceCacheModule>("evidence-cache.ts")
-    const litigationModule = await loadReportModule<LitigationModule>("litigation-evidence.ts")
+    const dataHandlingRecordModule = await loadReportModule<DataHandlingRecordModule>("data-handling-record.ts")
     const auditModule = await loadReportModule<AuditModule>("audit-prep.ts")
 
     evidence = await cache.getEvidence()
     evidencePath = cache.EVIDENCE_PATH
     cacheEvidenceOption = cache.COMPUTE_OPTIONS.evidence
-    litigation = await litigationModule.generateLitigationEvidenceReport()
+    record = await dataHandlingRecordModule.generateDataHandlingRecord()
     audit = await auditModule.generateAuditPrepReport()
   }, 180000)
 
@@ -253,26 +253,26 @@ describe.skipIf(!runnable)("example: enterprise-platform report scripts", () => 
     })
   })
 
-  describe("reports/litigation-evidence.ts", () => {
+  describe("reports/data-handling-record.ts", () => {
     it("produces the documented top-level report shape", () => {
-      expect(Object.keys(litigation).sort()).toEqual([
+      expect(Object.keys(record).sort()).toEqual([
         "disclaimer",
         "fields",
         "generatedAt",
         "scanSurface",
       ])
-      expect(litigation.disclaimer).toContain("does not itself establish compliance")
-      expect(litigation.scanSurface.scanned).toContain("application source (src/**)")
-      expect(litigation.scanSurface.notScanned).toContain("all other dependencies")
+      expect(record.disclaimer).toContain("does not itself establish compliance")
+      expect(record.scanSurface.scanned).toContain("application source (src/**)")
+      expect(record.scanSurface.notScanned).toContain("all other dependencies")
     })
 
     it("is scoped to declared-sensitive fields only -- one row each, and nothing else", () => {
-      expect(litigation.fields.map((f) => `${f.capability}.${f.field}`).sort()).toEqual([
+      expect(record.fields.map((f) => `${f.capability}.${f.field}`).sort()).toEqual([
         "billingData.invoices",
         "identityData.currentUser",
         "projectsData.projects",
       ])
-      for (const entry of litigation.fields) {
+      for (const entry of record.fields) {
         expect(entry.declared.sensitivity).toBeDefined()
       }
     })
@@ -282,7 +282,7 @@ describe.skipIf(!runnable)("example: enterprise-platform report scripts", () => 
       // `evidence.fields.invoices.dynamicAccess` citation: the legacy
       // compliance-sync utility reads that field through a computed key
       // static analysis cannot attribute on its own.
-      const invoices = litigation.fields.find((f) => f.field === "invoices")
+      const invoices = record.fields.find((f) => f.field === "invoices")
       expect(invoices?.consumptionStatus).toBe("declared-dynamic")
       expect(invoices?.dynamicAccessCitations.length).toBeGreaterThan(0)
       expect(invoices?.dynamicAccessCitations[0]).toMatch(
@@ -296,7 +296,7 @@ describe.skipIf(!runnable)("example: enterprise-platform report scripts", () => 
     it("resolves an UNcited dynamically-accessed field to indeterminate, disclosing the candidate sites", () => {
       // `identityData.currentUser` is deliberately NOT cited -- a real,
       // undisclosed gap this report must surface rather than paper over.
-      const currentUser = litigation.fields.find((f) => f.field === "currentUser")
+      const currentUser = record.fields.find((f) => f.field === "currentUser")
       expect(currentUser?.consumptionStatus).toBe("indeterminate")
       expect(currentUser?.dynamicAccessCitations).toEqual([])
       expect(currentUser?.indeterminateSites.length).toBeGreaterThan(0)
@@ -314,7 +314,7 @@ describe.skipIf(!runnable)("example: enterprise-platform report scripts", () => 
       // reference this single-file scanner can't attribute to the `projects`
       // field by name, so it's `indeterminate`, not the false "no consumer
       // found" `unconsumed` claim this pass made before ADR 0060.
-      const projects = litigation.fields.find((f) => f.field === "projects")
+      const projects = record.fields.find((f) => f.field === "projects")
       expect(projects?.consumptionStatus).toBe("indeterminate")
       expect(projects?.indeterminateSites.length).toBeGreaterThan(0)
       for (const site of projects?.indeterminateSites ?? []) {
@@ -323,10 +323,10 @@ describe.skipIf(!runnable)("example: enterprise-platform report scripts", () => 
     })
 
     it("reports each field's own declared-handling stages, per writing operation", () => {
-      const invoices = litigation.fields.find((f) => f.field === "invoices")
+      const invoices = record.fields.find((f) => f.field === "invoices")
       expect(invoices?.handlingByOperation.length).toBeGreaterThan(0)
       // Every boundary `invoices` crosses declares encryption -- the fact a
-      // litigation reviewer is actually asking about.
+      // dispute reviewer is actually asking about.
       expect(invoices?.handlingByOperation.every((stage) => stage.handling === "encrypted")).toBe(
         true,
       )
@@ -338,7 +338,7 @@ describe.skipIf(!runnable)("example: enterprise-platform report scripts", () => 
     })
 
     it("carries every declared governance property through for each row", () => {
-      const invoices = litigation.fields.find((f) => f.field === "invoices")
+      const invoices = record.fields.find((f) => f.field === "invoices")
       expect(Object.keys(invoices?.declared ?? {}).sort()).toEqual([
         "auditRequired",
         "dataResidency",
@@ -455,11 +455,11 @@ describe.skipIf(!runnable)("example: enterprise-platform report scripts", () => 
     it("agree on the same capability set, rather than each re-deriving its own", () => {
       const fromEvidence = evidence.capability.capabilities.map((c) => c.exportName).sort()
       expect(audit.capabilities.map((c) => c.capability).sort()).toEqual(fromEvidence)
-      expect([...new Set(litigation.fields.map((f) => f.capability))].sort()).toEqual(fromEvidence)
+      expect([...new Set(record.fields.map((f) => f.capability))].sort()).toEqual(fromEvidence)
     })
 
     it("stamp an ISO-8601 generatedAt sourced from the Evidence Model's own provenance", () => {
-      for (const stamp of [litigation.generatedAt, audit.generatedAt]) {
+      for (const stamp of [record.generatedAt, audit.generatedAt]) {
         expect(stamp).toMatch(/^\d{4}-\d{2}-\d{2}T/)
         expect(Number.isNaN(Date.parse(stamp))).toBe(false)
       }

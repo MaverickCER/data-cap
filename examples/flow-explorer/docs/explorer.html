@@ -437,6 +437,8 @@ th { background: var(--panel); }
     <p>Everything the graph shows, as text.</p>
     <pre id="text-body"># Data flow
 
+&gt; Machine-generated engineering artifact assembled from statically-provable code facts and author-declared documentation. It can support a security, privacy, or compliance review. It does not itself establish compliance with any standard. Incomplete traces are recorded as unknown, never hidden; an absent flow is not evidence of no flow.
+
 Coverage: 5 function(s) analyzed, 1 unknown(s) -- not complete: parts of the program could not be followed, so a flow missing below is not proof that it does not exist.
 
 ## Status legend
@@ -1079,6 +1081,9 @@ Coverage: 5 function(s) analyzed, 1 unknown(s) -- not complete: parts of the pro
       ]
     };
   }
+  function flowEvidenceDisclaimer() {
+    return "Machine-generated engineering artifact assembled from statically-provable code facts and author-declared documentation. It can support a security, privacy, or compliance review. It does not itself establish compliance with any standard. Incomplete traces are recorded as unknown, never hidden; an absent flow is not evidence of no flow.";
+  }
   function unknownText(reason) {
     const text2 = {
       "dynamic-access": "a computed property key on tracked data",
@@ -1233,7 +1238,14 @@ Coverage: 5 function(s) analyzed, 1 unknown(s) -- not complete: parts of the pro
     if (view === void 0) return void 0;
     const level = Math.max(1, Math.min(4, options.headingLevel ?? 1));
     const h = (offset) => "#".repeat(level + offset);
-    const lines = [`${h(0)} Data flow`, "", coverageLine(view.coverage), ""];
+    const lines = [
+      `${h(0)} Data flow`,
+      "",
+      `> ${flowEvidenceDisclaimer()}`,
+      "",
+      coverageLine(view.coverage),
+      ""
+    ];
     const wantedField = options.field;
     const { fields, functions } = selectByField(view, wantedField);
     if (wantedField !== void 0 && fields.length === 0) {

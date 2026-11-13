@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest"
+import { flowEvidenceDisclaimer } from "../../src/evidence/flow-disclaimer.js"
 import { observationsFromOtlp, observationsToOtlp } from "../../src/evidence/flow-otel.js"
 import type { OtlpInput } from "../../src/evidence/flow-otel.js"
 import type { ObservationModel } from "../../src/flow/observation-model.js"
@@ -49,6 +50,12 @@ describe("observationsToOtlp exact output", () => {
                   "key": "service.name",
                   "value": {
                     "stringValue": "data-cap",
+                  },
+                },
+                {
+                  "key": "data_cap.disclaimer",
+                  "value": {
+                    "stringValue": "Machine-generated engineering artifact assembled from statically-provable code facts and author-declared documentation. It can support a security, privacy, or compliance review. It does not itself establish compliance with any standard. Incomplete traces are recorded as unknown, never hidden; an absent flow is not evidence of no flow.",
                   },
                 },
               ],
@@ -167,7 +174,10 @@ describe("observationsToOtlp exact output", () => {
       { serviceName: "checkout" },
     )
     expect(traces?.resourceSpans[0]?.resource).toEqual({
-      attributes: [{ key: "service.name", value: { stringValue: "checkout" } }],
+      attributes: [
+        { key: "service.name", value: { stringValue: "checkout" } },
+        { key: "data_cap.disclaimer", value: { stringValue: flowEvidenceDisclaimer() } },
+      ],
     })
     const span = traces?.resourceSpans[0]?.scopeSpans[0]?.spans[0]
     expect(span?.startTimeUnixNano).toBe("0")

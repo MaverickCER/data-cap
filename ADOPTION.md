@@ -1,112 +1,88 @@
 # Adoption guide
 
-A direct, honest assessment for evaluating `data-cap` for real adoption —
-what it solves, what it costs, and what's still an open question.
+You have to decide whether your team adopts `data-cap`. This page covers what it solves, what it costs, what it needs, and what it refuses to do. Each row names the check or the decision that holds it, and where that stops.
 
-## What problem this solves
+## What it solves
 
-Multiple consumers of the same piece of data (several components, a client
-and a server, several teams) tend to independently invent their own
-loading/error/status bookkeeping around it — a `userLoading` boolean here,
-a `userError` string there, each slightly different, none of them shared.
-`data-cap` gives every consumer of a capability the same typed
-`fields`/`info` shape, regardless of what actually fetches or mutates the
-underlying data (a REST call, a database query, a WebSocket event, or a
-mix of all three over a capability's lifetime).
+Several consumers of the same data each invent their own status bookkeeping: a `userLoading` boolean here, a `userError` string there. `data-cap` gives every consumer of a capability one typed `fields` and `info` shape. That holds whatever fetches the data underneath: a REST call, a database query, a socket event, or a mix.
 
-Most data-fetching/state tooling solves an adjacent but different problem.
-TanStack Query, SWR, RTK Query, and Apollo Client solve _fetching_ — request
-dedup, caching, refetch/invalidation policy. Redux, Zustand, Recoil, and
-Jotai solve _state distribution_ — getting a value from wherever it lives to
-wherever it's read, efficiently. `data-cap` solves neither of those; it
-solves _shape agreement_ — what does "this data, plus its current execution
-status" look like, so every consumer, regardless of which fetching/state
-tool produced it, reads the same `fields`/`info` structure instead of each
-inventing its own booleans. That's why it composes with all of the above
-rather than replacing any of them — see
-`test/integration/adoption-patterns/tanstack-query-integration/` and `test/integration/subscriptions/socket-io-subscription/`
-for two of them wired in directly.
+Fetching libraries (TanStack Query, SWR, RTK Query, Apollo) solve request dedup, caching and refetch policy. Stores (Redux, Zustand, Jotai) move values to where they are read. `data-cap` solves neither. It solves agreement on shape and status, and it records who owns each field. That is why it composes with those tools instead of replacing them; see [How it differs](README.md#how-it-differs).
 
-It is not a fetching library, a state manager, or a database abstraction —
-see the README's "Why not just use your existing data library?"
-section. It composes with your existing ones.
+## What it costs
 
-## Security & threat model
+- **A declaration per capability.** Each piece of data is declared once, with its fields, operations and, optionally, governance metadata. You adopt one capability at a time.
+- **A build step in CI.** The reports and the evidence file come from a static pass. `--check` fails the job when they are stale.
+- **Bundle size.** Every entry point has a gzip budget in `ci/size-budgets.mjs`, and the `verify` and `contract` jobs fail over it. Core is budgeted at 2 KB and `./runtime` at 8 KB. [PERFORMANCE.md](PERFORMANCE.md#bundle-size-budgets) has every budget. The budgets measure the ESM files only.
+- **Install size.** The package's one dependency is a TypeScript 6 compiler, bundled in the tarball. Only `./build` and the CLI load it. The `compiler-isolation` step of the `verify` job fails if a runtime entry can reach it.
+- **Optional pieces cost nothing until imported.** Cache and retry are separate entries. `test/runtime/tree-shaking.test.ts` checks that neither carries the other's code, and that the built `./runtime` contains neither.
 
-See [`SECURITY.md`](SECURITY.md) for the full policy. The short version:
-`data-cap` is not an authorization/encryption/compliance system; ownership
-enforcement at runtime is warn-not-throw (an unowned write is dropped, not
-a hard failure); build tooling is static-analysis-only (never executes a
-discovered file); and the dual-package hazard (two coordinator instances
-under mixed ESM/CJS resolution) is a checked, documented, gracefully-
-degrading risk class, not a silently unstated one.
+### Migration cost from what you have today
+
+Every [migration guide](specs/migrations/) is incremental and says when to keep what you have.
+
+| Coming from                                 | Guide                                                                      | In one line                                                                                 |
+| ------------------------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Manual `useState` and `useEffect` fetching  | [From manual fetch-and-state](specs/migrations/from-manual-fetch-state.md) | Replace scattered loading, error and data booleans with one typed `DataState`.              |
+| A Redux or Zustand global store             | [From a global store](specs/migrations/from-a-global-store.md)             | Keep the store for UI state; move server-derived data into capabilities.                    |
+| TanStack Query used directly                | [From TanStack Query alone](specs/migrations/from-tanstack-query-alone.md) | Keep TanStack Query for fetching and caching; let its results flow into a `data-cap` store. |
+| Apollo Client or a normalized GraphQL cache | [From Apollo Client](specs/migrations/from-apollo-client.md)               | Keep Apollo for the transport; capability fields become the shape components read.          |
+
+## What it needs
+
+- **Node.js 22 or later.** CI runs the tests on Node 22 and 24.
+- **TypeScript is optional.** The runtime works in plain JavaScript. The generator uses your TypeScript 5 or 6, or else the bundled TypeScript 6.
+- **`moduleResolution`** of `node16`, `nodenext` or `bundler` in a TypeScript project.
+- **npm** for full support. pnpm, Yarn 1 and Yarn Berry (node-modules linker) are tested for install and import only, in a job that does not block a merge. Plug'n'Play is unsupported.
+- **ESLint 8.57, 9 or 10 and `@typescript-eslint/utils` 8**, only for `data-cap/eslint-plugin`. ESLint 10 runs the unit tests and ESLint 9 a fixture; 8.57 is untested.
+
+### What installing it adds
+
+The runtime entry points import nothing. Generated from `package.json`:
+
+<!-- ipc:begin dependencies -->
+
+Installing `data-cap` installs 1 package directly, and whatever it depends on. It names 3 optional peers, which you install yourself when you use the part that needs them.
+
+| Package                    | Kind          | Range                              | Why                                                                                                                                                                                                              |
+| -------------------------- | ------------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@typescript/typescript6`  | dependency    | `^6.0.2`                           | The TypeScript 6 compiler the build entry parses with when the project's own TypeScript is 7 or missing. It is bundled inside the tarball. The `compiler-isolation` check fails if a runtime entry can reach it. |
+| `@typescript-eslint/utils` | optional peer | `^8.0.0`                           | Only for `data-cap/eslint-plugin`; projects linting TypeScript already have it through `typescript-eslint`.                                                                                                      |
+| `eslint`                   | optional peer | `^8.57.0 \|\| ^9.0.0 \|\| ^10.0.0` | Only for `data-cap/eslint-plugin`, which runs inside the project's own ESLint.                                                                                                                                   |
+| `typescript`               | optional peer | `^5.0.0 \|\| ^6.0.0 \|\| ^7.0.0`   | The project's own compiler, used by the build entry instead of `@typescript/typescript6` when it is version 5 or 6.                                                                                              |
+
+<!-- ipc:end dependencies -->
+
+## What it refuses to do
+
+| It does not                                      | Why, and what to do instead                                                                                                                                                                                          |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Fetch data or hold UI state                      | Your functions do the I/O; keep your fetching and state libraries.                                                                                                                                                   |
+| Authorize, encrypt or redact                     | A field in `fields` is not an access decision. `fields` and `info` print as plain objects ([SECURITY.md](SECURITY.md#application-responsibilities)).                                                                 |
+| Roll back a failed mutation or resolve conflicts | A failed optimistic update reverts because its pending transition is removed. Write any merge policy in your own processor ([ADR 0023](specs/decisions/0023-no-automatic-rollback-or-conflict-resolution.md)).       |
+| Run your code at build time                      | The build tool reads files through the TypeScript Compiler API and never imports or evaluates them ([SECURITY.md](SECURITY.md#build-time-security-model)).                                                           |
+| Follow data into packages                        | The flow scan reads your project only. A package call is recorded as an unknown unless you declare what it does.                                                                                                     |
+| Ship adapters for other libraries                | No TanStack Query, Socket.IO or React package ships ([ADR 0037](specs/decisions/0037-no-first-party-integration-packages.md)). Tested patterns live under `test/integration/`, in a job that does not block a merge. |
+| Validate field values                            | `shape` has structural guards only; a processor is where your validation goes ([ADR 0039](specs/decisions/0039-helpers-subpath-scope.md)).                                                                           |
+| Decide your regulatory classification            | `metadata` is an open bag you fill; `data-cap` never validates it. Its outputs can support a review; they do not establish compliance.                                                                               |
+
+## What it holds to
+
+| What it holds to                                                                                                 | Held by                                                                                      | Limit                                                                 |
+| ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| Fields are readable synchronously, with their defaults, from the moment `buildData()` or `createData()` returns. | `test/core/build.test.ts`, `test/runtime/capability.test.ts`                                 | Bun and Deno are smoke-tested in a job that does not block a merge.   |
+| Every `DataState` has `fields` and `info`, committed together as one snapshot.                                   | `test/core/patch.test.ts`, `test/runtime/store.test.ts`                                      | Tested through the store API; there is no concurrency stress test.    |
+| A write to a field the operation does not own is dropped, and the warning never includes the value.              | `test/core/ownership.test.ts`, `test/runtime/capability.test.ts`                             | The value check covers a string value on the `createData` path.       |
+| Every published snapshot is deep-frozen.                                                                         | `test/core/build.test.ts`, `test/core/patch.test.ts`                                         | `Map`, `Set` and `Date` can still be mutated through their methods.   |
+| Under mixed ESM and CommonJS loading, each of the two coordinators stays correct on its own.                     | `test/runtime/dual-package-hazard.test.ts`                                                   | Dedup does not cross between them. Tested on Node's two loaders only. |
+| `createData` is optional: `buildData` with `createDataStore` gives full manual control over the same primitives. | [ADR 0048](specs/decisions/0048-builddata-createdata-split-and-optional-operations-layer.md) | Pick per capability.                                                  |
 
 ## Versioning, stability, and long-term support
 
-Pre-`1.0` — see [`VERSIONING.md`](VERSIONING.md) for the three-tier
-Stable/Experimental/Private API classification. Before `1.0`, any minor
-release may change a Stable API; there is no LTS branch and no extended
-security-support window beyond the latest published `0.x` (see
-[`SECURITY.md`](SECURITY.md)'s "Supported versions"). This is the honest
-gap for an organization evaluating adoption at scale today.
+`data-cap` is below 1.0. [VERSIONING.md](VERSIONING.md) lists, per entry point, what is Stable, Experimental and Private. Before 1.0 a minor release may change a Stable API. There is no long-term-support branch: security fixes go to the latest published `0.x` only ([SECURITY.md](SECURITY.md#supported-versions)).
 
-Starting at the first `1.0` release, security fixes will be backported to
-the latest minor release of the previous major version for a minimum of six
-months after a new major version ships, per
-[ADR 0061](specs/decisions/0061-security-backport-window.md) — a forward
-commitment, not yet a proven track record. If the pre-`1.0` gap above is a
-blocker for your evaluation today, wait for a `1.0` release or track
-[`specs/decisions/`](specs/decisions/) for when it lands.
+From 1.0, security fixes will be backported to the previous major's latest minor for at least six months ([ADR 0061](specs/decisions/0061-security-backport-window.md)). That is a commitment about a future release line; it has not been exercised. If you need it today, wait for 1.0.
 
-## Bundle size and performance
+## Open questions
 
-Every consumer-facing entry point carries a hard gzip budget, enforced in
-CI (`ci/size-budgets.mjs`) — see [`PERFORMANCE.md`](PERFORMANCE.md) for
-current numbers and methodology. `core` and `helpers` are each single-digit
-KB gzipped; `runtime`'s cache/retry features are separate, independently
-tree-shaken entry points so importing `./runtime` alone never pays for
-either. `build` and `eslint-plugin` are Node-only, dev-time-only, and
-carry only a 999 KB ceiling (they never ship to a browser bundle).
-
-## Architectural guarantees worth knowing before you adopt
-
-| Guarantee                                                                                                                                                                                                                                                                                                         | Why it matters                                                                                               | ADR                                                                                          |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------- |
-| `fields` are always synchronously readable — no throw-until-ready gate. Every declared field has a real default from the moment `buildData()`/`createData()` returns.                                                                                                                                             | No initialization-race UI code (`if (!data) return null` guards, suspense boundaries just to read a default) | [ADR 0004](specs/decisions/0004-fields-always-synchronously-readable.md)                     |
-| `info` is mandatory, never optional — every `DataState` has the same shape, always, with no branching on whether metadata exists.                                                                                                                                                                                 | Consumers never special-case "metadata hasn't been allocated yet"                                            | [ADR 0007](specs/decisions/0007-datainfo-mandatory-not-optional.md)                          |
-| A built-in getter/mutator/subscription execution loop is available, but optional. `createData(schema)` owns dedup, per-operation status, optimistic mutation lifecycle, and `runGetters` concurrency; `buildData` + `createDataStore` gives full manual control instead — both compose the exact same primitives. | Pick the level of control per capability, not per app                                                        | [ADR 0048](specs/decisions/0048-builddata-createdata-split-and-optional-operations-layer.md) |
-| No first-party TanStack Query/Socket.IO adapter ships — full, tested reference patterns live in `examples/` instead.                                                                                                                                                                                              | No adapter package to track for breakage against upstream releases                                           | [ADR 0037](specs/decisions/0037-no-first-party-integration-packages.md)                      |
-| No automatic rollback or conflict resolution for optimistic mutations or concurrent same-field writes — the framework never guesses at a domain-specific policy; you implement one in your own processor if you need one.                                                                                         | No surprise "magic" merge/rollback behavior to reverse-engineer when it doesn't match your domain's needs    | [ADR 0023](specs/decisions/0023-no-automatic-rollback-or-conflict-resolution.md)             |
-
-## Migration cost from what you likely have today
-
-See [`specs/migrations/`](specs/migrations/) for guided, incremental paths.
-Every guide includes an explicit "when to keep what you have" section —
-migrating is not assumed to be the right call for every application.
-
-| Coming from                                 | Guide                                                                      | One-line take                                                                                                                                                          |
-| ------------------------------------------- | -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Manual `useState`/`useEffect` fetch triples | [From manual fetch-and-state](specs/migrations/from-manual-fetch-state.md) | Replace scattered loading/error/data booleans with one typed `DataState`; lowest-effort migration since there's no existing library to reconcile with.                 |
-| A Redux/Zustand-style global store          | [From a global store](specs/migrations/from-a-global-store.md)             | Keep the store for client-only UI state; move server-derived data into capability-owned contracts instead of store slices.                                             |
-| TanStack Query used directly                | [From TanStack Query alone](specs/migrations/from-tanstack-query-alone.md) | Keep TanStack Query doing fetching/caching/refetch policy; let its results flow into a `data-cap` `DataStore` for a consistent shape across every data source.         |
-| Apollo Client / a GraphQL-normalized cache  | [From Apollo Client](specs/migrations/from-apollo-client.md)               | Keep Apollo (or drop it) for the GraphQL transport itself; capability fields become the shape components actually read, instead of `useQuery`'s per-call result shape. |
-
-All four migrations are designed to be adopted one capability at a time —
-nothing requires a big-bang rewrite, and your existing fetching/caching/
-state-management tooling keeps doing what it already does underneath.
-
-## Questions this document doesn't answer
-
-- **What does a post-`1.0` backport/LTS policy look like?** Decided — see
-  "Versioning, stability, and long-term support" above and
-  [ADR 0061](specs/decisions/0061-security-backport-window.md).
-- **Is there a first-party adapter for [some other library]?** No, and
-  none are planned — see
-  [ADR 0037](specs/decisions/0037-no-first-party-integration-packages.md).
-  If your library of choice isn't TanStack Query or Socket.IO, the two
-  existing examples are still the closest reference pattern to adapt from.
-- **What are real-world production performance numbers?**
-  `benchmarks/performance-runtime`/`performance-buildtime`'s output is
-  highlighting-only micro-benchmark data (see
-  [`PERFORMANCE.md`](PERFORMANCE.md)), not a production-workload claim —
-  this package has no deployed-at-scale track record yet to cite.
+- **Production performance numbers:** none. The benchmarks measure the package's own primitives with simulated I/O ([PERFORMANCE.md](PERFORMANCE.md)). There is no deployed-at-scale record to cite.
+- **An adapter for another library:** none is planned. The TanStack Query and Socket.IO fixtures are the patterns to adapt.

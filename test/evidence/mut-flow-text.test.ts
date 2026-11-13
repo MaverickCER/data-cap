@@ -7,6 +7,7 @@ vi.mock("../../src/evidence/flow-graph-view.js", () => ({
 }))
 
 const { renderFlowText } = await import("../../src/evidence/flow-text.js")
+const { flowEvidenceDisclaimer } = await import("../../src/evidence/flow-disclaimer.js")
 
 type Loose = Record<string, unknown>
 
@@ -90,6 +91,8 @@ describe("renderFlowText (exact output)", () => {
     expect(renderFlowText(evidence())).toBe(
       [
         "# Data flow",
+        "",
+        `> ${flowEvidenceDisclaimer()}`,
         "",
         "Coverage: 3 function(s) analyzed -- complete.",
         "",
@@ -339,6 +342,8 @@ describe("renderFlowText (exact output)", () => {
     expect(renderFlowText(evidence())).toMatchInlineSnapshot(`
       "# Data flow
 
+      > Machine-generated engineering artifact assembled from statically-provable code facts and author-declared documentation. It can support a security, privacy, or compliance review. It does not itself establish compliance with any standard. Incomplete traces are recorded as unknown, never hidden; an absent flow is not evidence of no flow.
+
       Coverage: 3 function(s) analyzed -- complete.
 
       ## Status legend
@@ -435,6 +440,8 @@ describe("renderFlowText (exact output)", () => {
     expect(renderFlowText(evidence())).toMatchInlineSnapshot(`
       "# Data flow
 
+      > Machine-generated engineering artifact assembled from statically-provable code facts and author-declared documentation. It can support a security, privacy, or compliance review. It does not itself establish compliance with any standard. Incomplete traces are recorded as unknown, never hidden; an absent flow is not evidence of no flow.
+
       Coverage: 3 function(s) analyzed -- complete.
 
       ## Status legend
@@ -499,6 +506,8 @@ describe("renderFlowText (exact output)", () => {
     expect(renderFlowText(evidence())).toMatchInlineSnapshot(`
       "# Data flow
 
+      > Machine-generated engineering artifact assembled from statically-provable code facts and author-declared documentation. It can support a security, privacy, or compliance review. It does not itself establish compliance with any standard. Incomplete traces are recorded as unknown, never hidden; an absent flow is not evidence of no flow.
+
       Coverage: 3 function(s) analyzed -- complete.
 
       ## Status legend
@@ -551,6 +560,8 @@ describe("renderFlowText (exact output)", () => {
     ).toMatchInlineSnapshot(`
       "# Data flow
 
+      > Machine-generated engineering artifact assembled from statically-provable code facts and author-declared documentation. It can support a security, privacy, or compliance review. It does not itself establish compliance with any standard. Incomplete traces are recorded as unknown, never hidden; an absent flow is not evidence of no flow.
+
       Coverage: 3 function(s) analyzed -- complete.
 
       ## Status legend
@@ -577,6 +588,8 @@ describe("renderFlowText (exact output)", () => {
     `)
     expect(renderFlowText(evidence({ claims: [] }))).toMatchInlineSnapshot(`
       "# Data flow
+
+      > Machine-generated engineering artifact assembled from statically-provable code facts and author-declared documentation. It can support a security, privacy, or compliance review. It does not itself establish compliance with any standard. Incomplete traces are recorded as unknown, never hidden; an absent flow is not evidence of no flow.
 
       Coverage: 3 function(s) analyzed -- complete.
 
@@ -672,6 +685,8 @@ describe("renderFlowText (exact output)", () => {
     expect(text).toMatchInlineSnapshot(`
       "# Data flow
 
+      > Machine-generated engineering artifact assembled from statically-provable code facts and author-declared documentation. It can support a security, privacy, or compliance review. It does not itself establish compliance with any standard. Incomplete traces are recorded as unknown, never hidden; an absent flow is not evidence of no flow.
+
       Coverage: 3 function(s) analyzed -- complete.
 
       ## Status legend
@@ -746,7 +761,7 @@ describe("renderFlowText (exact output)", () => {
     `)
     view({ functions: [], fields: [field("w")] })
     expect(renderFlowText(evidence(), { field: "nope" })).toBe(
-      "# Data flow\n\nCoverage: 3 function(s) analyzed -- complete.\n\nNo field named nope in this evidence.\n",
+      `# Data flow\n\n> ${flowEvidenceDisclaimer()}\n\nCoverage: 3 function(s) analyzed -- complete.\n\nNo field named nope in this evidence.\n`,
     )
     expect(renderFlowText(evidence(), { field: "w" })).toContain("None.\n")
   })

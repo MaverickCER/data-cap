@@ -100,7 +100,7 @@ jobs:
     # The `suites`/`install-dirs` inputs below exist only in internal-package-contract commits that
     # include the generalized benchmark kit: bump this SHA to such a commit together with the
     # internal-package-contract devDependency pin, in the same pull request.
-    uses: MaverickCER/internal-package-contract/.github/workflows/benchmark-pr.yml@7a30931346dab8413c4ac4f89a606ebdf11be2ec # v0.16.0
+    uses: MaverickCER/internal-package-contract/.github/workflows/benchmark-pr.yml@e5b8d9eeac7d951a5ea0c7c02c2f761087f8148b # v0.18.0
     with:
       suites: |
         Runtime|benchmarks/performance-runtime|benchmarks/history/runtime.json
@@ -242,26 +242,37 @@ jobs:
           retention-days: 5
           if-no-files-found: error
 
-  # The org-wide governance gate: internal-package-contract's own 27 checks
+  # The org-wide governance gate: internal-package-contract's own 56 checks
   # (mutation, coverage, security-deps/secrets/socket, accessibility,
   # dead-code, docs, licenses, ...) run against this package for real, not
   # just declared as a devDependency. Node 24.x to match
   # internal-package-contract's own engines.node floor.
   contract:
-    needs: [verify, lint, mutation-shard]
+    needs: [verify, lint, mutation-shard, benchmark-pr]
     # Same reasoning as `verify`/`lint`'s own identical-shaped condition: GitHub's default
     # `success()` considers the *entire* transitive dependency graph, not just this job's direct
     # `needs` -- since `verify`/`lint` themselves depend on `benchmark-pr`, a skipped `benchmark-pr`
     # (every push-to-main run, every fork PR) still propagates through as "not success" here even
     # when `verify`/`lint` genuinely ran and passed, silently skipping `contract` itself. Confirmed
     # live: a real PR run where `verify`/`lint` both concluded "success" still skipped `contract`.
-    if: always() && (needs.verify.result == 'success' || needs.verify.result == 'skipped') && (needs.lint.result == 'success' || needs.lint.result == 'skipped')
+    # `verify` and `lint` are deliberately NOT in this condition: a skipped required check counts as
+    # passing on GitHub, so when they fail this job must run and FAIL (first step below), never skip.
+    if: always() && (needs.benchmark-pr.result == 'success' || needs.benchmark-pr.result == 'skipped')
     runs-on: ubuntu-latest
     permissions:
       contents: read
       # CodeScanning reads the repository's open alerts.
       security-events: read
     steps:
+      - name: verify and lint passed
+        if: needs.verify.result != 'success' || needs.lint.result != 'success'
+        env:
+          VERIFY: ${{ needs.verify.result }}
+          LINT: ${{ needs.lint.result }}
+        run: |
+          echo "::error::contract needs verify and lint to pass (verify=$VERIFY, lint=$LINT)"
+          exit 1
+
       # A skipped required check counts as passing, so a failed slice must FAIL this job, never skip it.
       - name: Every mutation slice passed
         if: needs.mutation-shard.result != 'success'
@@ -607,6 +618,62 @@ jobs:
           npm run typecheck
 
       - run: npx vitest run test/integration/
+
+  # The one status check the ruleset requires for every job above that is not `contract` or `lint`.
+  # GitHub cannot name a matrix job (`verify (22.x)`) as a required context and counts a skipped or
+  # cancelled job as passing, so this job runs `if: always()` and fails unless each job it needs
+  # finished `success`. `benchmark-pr` may skip: it runs only on same-repo pull requests by design.
+  # `verify-current` (Node current) stays informational. Add every new job to `needs`;
+  # test/ci-jobs.test.ts fails when one is missing.
+  required:
+    needs:
+      - benchmark-pr
+      - lint
+      - verify
+      - contract
+      - typescript-5
+      - typescript-compat
+      - cross-runtime
+      - examples
+      - integration-fixtures
+      - mutation-shard
+      - package-managers
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Every gate job succeeded
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: >-
+          node -e "const needs = JSON.parse(process.env.NEEDS);
+          const maySkip = new Set(['benchmark-pr']);
+          const bad = Object.entries(needs).filter(([id, n]) => !(n.result === 'success' || (maySkip.has(id) && n.result === 'skipped')));
+          if (bad.length > 0) {
+            console.error('::error::not green: ' + bad.map(([id, n]) => id + '=' + n.result).join(', '));
+            process.exit(1);
+          }"
+
+  # Installs the packed tarball with npm, pnpm, Yarn 1 and Yarn Berry (node-modules linker) and imports
+  # every entry point from it, as ESM and as CommonJS (scripts/package-managers-smoke.mjs). What is
+  # proven is exactly that: the tarball installs and resolves under those managers; nothing else about
+  # them is claimed. Yarn Plug'n'Play and pnpm's `pnp` node linker are documented as unsupported.
+  package-managers:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24.x
+      - run: corepack enable
+      - run: npm ci
+      - run: npm run build
+      - run: npm run package-managers
 
   badges:
     needs: [verify, lint, cross-runtime, contract]

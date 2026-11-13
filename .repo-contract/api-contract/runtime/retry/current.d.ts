@@ -31,6 +31,7 @@ export declare function isStillDefault(currentValue: unknown, declaredDefault: u
  * Ships as its own `./runtime/retry` entry point (see tsup.config.ts) for
  * the same structural tree-shaking guarantee `./runtime/cache` has.
  */
+/** Options for `withRetry`. Every field is optional; the defaults retry every error up to 3 times with capped backoff. */
 export declare interface RetryOptions {
     /** Maximum retry attempts after the initial call (not counting the first attempt itself). Defaults to 3. */
     readonly maxAttempts?: number;

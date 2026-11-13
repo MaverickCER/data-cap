@@ -7,21 +7,16 @@
 // @public
 export function createDataCache<TFields>(options?: DataCacheOptions): DataCache<TFields>;
 
-// @public (undocumented)
+// @public
 export interface DataCache<TFields> {
-    // (undocumented)
     clear(): void;
-    // (undocumented)
     delete(key: string): void;
-    // (undocumented)
     get(key: string): DataState<TFields> | undefined;
-    // (undocumented)
     set(key: string, state: DataState<TFields>): void;
-    // (undocumented)
     readonly size: number;
 }
 
-// @public (undocumented)
+// @public
 export interface DataCacheOptions {
     readonly maxEntries?: number;
 }

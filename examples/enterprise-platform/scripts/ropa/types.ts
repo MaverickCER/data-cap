@@ -73,8 +73,11 @@ export interface RopaFieldEntry {
   readonly recipientCategories: readonly string[]
   /**
    * Art. 30(1)(e) -- "where applicable, transfers of personal data to a
-   * third country... including... the documentation of suitable
-   * safeguards." Resolved from the field's own `docs.transferSafeguard`,
+   * third country or an international organisation, including the
+   * identification of that third country or international organisation and,
+   * in the case of transfers referred to in the second subparagraph of
+   * Article 49(1), the documentation of suitable safeguards." Only the
+   * safeguard is modeled; the destination is not (see the README). Resolved from the field's own `docs.transferSafeguard`,
    * falling back to the capability's own `docs.transferSafeguard` (the same
    * field-then-capability override `dataResidency` already uses) --
    * `"Not documented"` when neither declares one.

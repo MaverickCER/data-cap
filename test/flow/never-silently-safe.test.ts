@@ -2,10 +2,10 @@
  * The headline guarantee of the flow pass (ADR 0070, ADR 0071): it is never silently safe.
  *
  * A catalog of syntactic forms, each a tiny project whose code leaks exactly one field of `userData.user` to a sink
- * through that form. Every row says which of two outcomes the evidence must end in -- (A) the leak is followed to the
- * sink, with the sibling field not reported as leaked, or (B) the trace is reported incomplete through an unknown
- * that concerns the leaked field -- and the test fails on the third outcome, (C) a complete trace that misses the
- * leak. The table pins what is supported today: when reach improves, a row flips from B to A on purpose.
+ * through that form. Every row says which of three outcomes the evidence must end in -- (A) the leak is followed to the
+ * sink, with the sibling field not reported as leaked, (B) the trace is reported incomplete through an unknown
+ * that concerns the leaked field, or (W) the whole record is sent -- and the test fails on the fourth outcome, (C) a
+ * complete trace that misses the leak. The table pins what is supported today: when reach improves, a row flips from B to A on purpose.
  */
 import fc from "fast-check"
 import { afterAll, beforeAll, describe, expect, it } from "vitest"
@@ -17,8 +17,8 @@ import { catalog } from "../support/flow-catalog-forms.js"
 const forms = catalog()
 
 describe("the catalog", () => {
-  it("has at least sixty distinct forms across every group", () => {
-    expect(forms.length).toBeGreaterThanOrEqual(60)
+  it("has every form of the catalog: 343 across fourteen groups, as the guide says", () => {
+    expect(forms.length).toBe(343)
     expect(new Set(forms.map((form) => form.id)).size).toBe(forms.length)
     expect(new Set(forms.map((form) => form.group))).toEqual(
       new Set([

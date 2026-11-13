@@ -37,7 +37,6 @@ import type { SourcePosition } from "./source-position.js"
  */
 export const CAPABILITY_MODEL_SCHEMA_VERSION = 3
 
-/** One top-level field of a capability, resolved from the inventory's shared model. */
 /**
  * One resolved governance value plus its provenance (ADR 0057) -- the one path a
  * `FieldNode` consumer reads for a governed property, replacing what used to require
@@ -52,6 +51,7 @@ export interface ResolvedGovernanceValue<T> {
   readonly declaredOn: "field" | "capability" | undefined
 }
 
+/** One top-level field of a capability, resolved from the inventory's shared model. */
 export interface FieldNode {
   /** Top-level field key, as a single-element path (see the module doc comment on why granularity stops here). */
   readonly path: readonly string[]

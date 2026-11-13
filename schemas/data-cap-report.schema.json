@@ -719,7 +719,8 @@
         "calls-getter",
         "calls-mutator",
         "calls-subscription"
-      ]
+      ],
+      "description": "How a consuming file uses a capability: an import alone, a field read, or a call to a getter, mutator or subscription."
     },
     "ParseWarning": {
       "type": "object",
@@ -1513,7 +1514,8 @@
         "writtenBy",
         "shape"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "description": "One top-level field of a capability, resolved from the inventory's shared model."
     },
     "FieldDocs": {
       "type": "object",

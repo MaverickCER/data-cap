@@ -90,10 +90,8 @@ describe("Negative guarantee 25 -- a projection never mutates the evidence it re
   })
 
   it("every adapter, view, analysis and rule runs over deeply frozen evidence without throwing, and gives the same answer as over an unfrozen copy", () => {
-    const plain = everyProjection(JSON.parse(JSON.stringify(fixture.evidence)) as EvidenceModel)
-    const frozen = everyProjection(
-      deepFreeze(JSON.parse(JSON.stringify(fixture.evidence)) as EvidenceModel),
-    )
+    const plain = everyProjection(structuredClone(fixture.evidence))
+    const frozen = everyProjection(deepFreeze(structuredClone(fixture.evidence)))
     expect(frozen).toEqual(plain)
     for (const [name, output] of Object.entries(plain))
       expect(output.length, name).toBeGreaterThan(0)
