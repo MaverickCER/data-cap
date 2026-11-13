@@ -11,7 +11,7 @@
           "type": "application",
           "bom-ref": "data-cap-tool-68d1e6b7-d9b8-5631-8520-e1fe57bd1032",
           "name": "data-cap",
-          "version": "0.9.0"
+          "version": "0.10.0"
         }
       ]
     },
@@ -314,7 +314,7 @@
         "component": {
           "type": "application",
           "name": "data-cap",
-          "version": "0.9.0"
+          "version": "0.10.0"
         }
       },
       "timestamp": "2026-01-01T00:00:00.000Z",
@@ -329,7 +329,7 @@
         "component": {
           "type": "application",
           "name": "data-cap",
-          "version": "0.9.0"
+          "version": "0.10.0"
         }
       },
       "timestamp": "2026-01-01T00:00:00.000Z",
@@ -345,7 +345,7 @@
         "component": {
           "type": "application",
           "name": "data-cap",
-          "version": "0.9.0"
+          "version": "0.10.0"
         }
       },
       "timestamp": "2026-01-01T00:00:00.000Z",
@@ -360,7 +360,7 @@
         "component": {
           "type": "application",
           "name": "data-cap",
-          "version": "0.9.0"
+          "version": "0.10.0"
         }
       },
       "timestamp": "2026-01-01T00:00:00.000Z",
