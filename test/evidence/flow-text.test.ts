@@ -65,7 +65,7 @@ describe("renderFlowText (the accessible, textual equivalent of the graph)", () 
     const block = section("trackUser")
     expect(block).toContain("- Confidence: inferred")
     expect(block).toContain(
-      "- Not followed: app/track.ts:5:3 -- an unresolved call that receives tracked data",
+      "- Not followed: app/track.ts:5:3, an unresolved call that receives tracked data",
     )
   })
 
@@ -89,7 +89,7 @@ describe("renderFlowText (the accessible, textual equivalent of the graph)", () 
 
   it("lists every unknown with its location, so nothing is hidden", () => {
     expect(text).toContain("## What the analysis could not follow")
-    expect(text).toContain("- app/track.ts:5:3 -- an unresolved call that receives tracked data")
+    expect(text).toContain("- app/track.ts:5:3, an unresolved call that receives tracked data")
   })
 
   it("never prints a raw undefined or [object Object]", () => {

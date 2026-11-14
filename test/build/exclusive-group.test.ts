@@ -70,7 +70,7 @@ describe("checkExclusiveGroups", () => {
       family: "structural",
       severity: "error",
       message:
-        '"a" shares exclusiveGroup "user-backend" with 1 other active capability (b) -- only one member of a group should be active at once.',
+        '"a" shares exclusiveGroup "user-backend" with 1 other active capability (b). Only one member of a group should be active at once.',
       capability: { file: "/project/a.ts", exportName: "a" },
       position: { line: 3, column: 1 },
     })

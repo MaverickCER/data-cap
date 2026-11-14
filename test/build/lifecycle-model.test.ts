@@ -92,7 +92,7 @@ describe("buildLifecycleModel", () => {
       inventory([
         capability({
           fields: [
-            // "a.b" vs "ab" -- ordering only holds when joined with "."
+            // "a.b" vs "ab": ordering only holds when joined with "."
             { ...field("x", { removeBy: "2026-06-01" }), path: ["ab"] },
             field("plain"),
             { ...field("y", { deprecated: true }), path: ["a", "b"] },

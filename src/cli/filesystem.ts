@@ -7,20 +7,20 @@ import type { BuildDirent, BuildFileSystem, BuildStats } from "../build/types.js
  * `data-cap/node` entry point (`src/node/index.ts`) for a
  * consumer running the generators from their own Node build script.
  *
- * This is the deliberate injection boundary -- mirrors `repo-contract`'s own
+ * This is the deliberate injection boundary: mirrors `repo-contract`'s own
  * `repo-contract.config.ts` (`spawn: crossSpawn, env: process.env`): a
  * **library surface** (`./build`) must not acquire filesystem access
  * implicitly; an **executable-context** entry (this CLI, or `./node`)
  * constructs the adapter and passes it in. `src/cli/**` is the sanctioned
- * executable-source carve-out -- `node:fs` lives only here. See ADR 0058.
+ * executable-source carve-out: `node:fs` lives only here. See ADR 0058.
  *
  * A thin structural pass-through: each method delegates straight to
  * `node:fs/promises`, whose real `Dirent`/`Stats` already satisfy the
  * minimal {@link BuildFileSystem} `BuildDirent`/`BuildStats` shapes.
  *
  * Named `function` declarations, not an object of arrow properties, so each
- * delegation body is a per-call statement a mutation test can actually reach
- * -- an arrow assigned as a property is only evaluated once, at module load,
+ * delegation body is a per-call statement a mutation test can actually reach.
+ * An arrow assigned as a property is only evaluated once, at module load,
  * where Stryker's mutant switch can't flip it.
  */
 function readFile(path: string, encoding: "utf8"): Promise<string> {

@@ -55,7 +55,7 @@ function field(
   }
 }
 
-/** Provenance is required (OUT-06) -- a fixed, deterministic stamp every test below shares. */
+/** Provenance is required (OUT-06): a fixed, deterministic stamp every test below shares. */
 function provenance(overrides: Partial<EvidenceProvenance> = {}): EvidenceProvenance {
   return {
     generatedAt: "2026-01-01T00:00:00.000Z",
@@ -65,7 +65,7 @@ function provenance(overrides: Partial<EvidenceProvenance> = {}): EvidenceProven
   }
 }
 
-/** Lifecycle Model is a required input (EVD-05) -- a pure projection over whatever inventory the test built. */
+/** Lifecycle Model is a required input (EVD-05): a pure projection over whatever inventory the test built. */
 function lifecycleOf(capabilityInventory: CapabilityInventory): LifecycleModel {
   return buildLifecycleModel(capabilityInventory, 30, new Date("2026-01-01T00:00:00.000Z"))
 }

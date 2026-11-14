@@ -1,13 +1,13 @@
 /**
- * Renders the Markdown documentation catalog -- a projection of the
- * `CapabilityInventory`, never a source of truth. Pure -- no filesystem
+ * Renders the Markdown documentation catalog: a projection of the
+ * `CapabilityInventory`, never a source of truth. Pure: no filesystem
  * access.
  *
  * Every table draws a hard line the codebase's declared-vs-proven
  * invariant requires (`AGENTS.md`): `source`/`credentials`/`endpoints` are
  * labeled *declared* (author-asserted, never verified against the
  * operation's actual body); `protections`/`retention` are labeled
- * *documented* only -- "documented" is never rendered as "adequate,"
+ * *documented* only; "documented" is never rendered as "adequate,"
  * "correct," or "enforced." See ADR 0049.
  */
 
@@ -70,7 +70,7 @@ interface ConsumptionSite {
   readonly column: number
 }
 
-/** Every proven `reads-field` site for one field -- empty when none were found or `edges` wasn't supplied (`--docs` requested without `--ownership`/`--flow`, which is what actually runs the usage scan). */
+/** Every proven `reads-field` site for one field: empty when none were found or `edges` wasn't supplied (`--docs` requested without `--ownership`/`--flow`, which is what actually runs the usage scan). */
 function consumptionSitesFor(
   capability: CapabilityNode,
   field: FieldNode,
@@ -95,10 +95,10 @@ function consumptionSitesFor(
 }
 
 /**
- * Renders `sites` grouped by (display) path -- a lone site in a file renders
- * its exact `path:line:column`; two or more render `path (N sites)`, since
+ * Renders `sites` grouped by (display) path. A lone site in a file renders
+ * its exact `path:line:column`. Two or more render `path (N sites)`, since
  * the exact lines are already fully itemized in `OWNERSHIP.md`'s own
- * per-consumer table and repeating them densely here (one raw citation per
+ * per-consumer table. Repeating them densely here (one raw citation per
  * `<br/>`) makes a frequently-consumed field's cell an unscannable wall of
  * near-identical paths. Groups sort by (display) path for determinism;
  * citations within a group keep their original scan order (only visible
@@ -106,7 +106,7 @@ function consumptionSitesFor(
  */
 function renderConsumptionSites(sites: readonly ConsumptionSite[], root: string): string {
   // A non-empty tuple type so `group[0]` is a `ConsumptionSite`, never
-  // `ConsumptionSite | undefined` -- every group is seeded with its first site.
+  // `ConsumptionSite | undefined`: every group is seeded with its first site.
   const byPath = new Map<string, [ConsumptionSite, ...ConsumptionSite[]]>()
   for (const site of sites) {
     const key = displayPath(root, site.path)
@@ -134,8 +134,8 @@ function renderFieldsTable(
     const writers = field.writtenBy.map((w) => `\`${w.kind}:${w.name}\``).join(", ")
     const consumedAt = renderConsumptionSites(consumptionSitesFor(capability, field, edges), root)
     // Sensitivity reads the RESOLVED value (own, else inherited from the
-    // capability) -- matching the Sensitivity & Protections Review section
-    // below, and fixing a prior bug where this table silently rendered
+    // capability). That matches the Sensitivity & Protections Review section
+    // below. It also fixes a prior bug where this table silently rendered
     // blank for a field that inherits its capability's sensitivity with no
     // override of its own (ADR 0057).
     return `| \`${field.path.join(".")}\` | ${cell(field.docs?.description)} | ${cell(field.owner.value, "(unowned)")} | ${cell(field.sensitivity.value)} | ${cell(field.docs?.protections, "not documented")} | ${cell(field.docs?.retention, "not documented")} | ${cell(writers, "(none found)")} | ${cell(consumedAt, edges === undefined ? "(not scanned)" : "(none found)")} |`
@@ -151,7 +151,7 @@ function renderFieldsTable(
 
 function renderOperationsTable(
   operations: readonly OperationNode[],
-  title: string,
+  headingLine: string,
 ): string | undefined {
   if (operations.length === 0) return undefined
   const rows = operations.map((op) => {
@@ -165,7 +165,7 @@ function renderOperationsTable(
     return `| \`${op.name}\` | ${cell(op.docs?.description)} | ${cell(op.docs?.source)} | ${cell(op.docs?.credentials)} | ${cell(endpoints)} |`
   })
   return [
-    `#### ${title}`,
+    headingLine,
     "",
     "| Name | Description | Source (declared) | Credentials (declared) | Endpoints (declared) |",
     "| --- | --- | --- | --- | --- |",
@@ -181,9 +181,9 @@ function renderCapability(
   const sections = [
     renderCapabilitySummary(capability, root),
     renderFieldsTable(capability, edges, root),
-    renderOperationsTable(capability.getters, "Getters"),
-    renderOperationsTable(capability.mutators, "Mutators"),
-    renderOperationsTable(capability.subscriptions, "Subscriptions"),
+    renderOperationsTable(capability.getters, "#### Getters"),
+    renderOperationsTable(capability.mutators, "#### Mutators"),
+    renderOperationsTable(capability.subscriptions, "#### Subscriptions"),
   ].filter((section): section is string => section !== undefined)
   return sections.join("\n\n")
 }
@@ -254,9 +254,9 @@ function renderChangesSinceLastReport(changes: ManifestChangeReport | undefined)
  * and what is declared deprecated.
  *
  * Every cell is a *declared* fact restated, plus arithmetic on a declared
- * date -- nothing here is verified, nothing expires at runtime, and an
+ * date. Nothing here is verified, nothing expires at runtime, and an
  * already-past `expiresAt` means only "the author said this date, and it has
- * passed." Rendered from the Lifecycle Model rather than re-walking `docs`
+ * passed". Rendered from the Lifecycle Model rather than re-walking `docs`
  * so the catalog and the published `data.evidence.json` can never report a
  * different "12d remaining" for the same field.
  */
@@ -315,10 +315,10 @@ function renderLifecycleReport(lifecycle: LifecycleModel | undefined): string {
 /**
  * Renders the full Markdown documentation catalog. `root` is the discovery
  * root every rendered path displays relative to (see `display-path.ts`).
- * `changes` is optional -- omit it (or pass `undefined`) when there's no
- * previous snapshot to compare against. `edges` is likewise optional: it's
+ * `changes` is optional: omit it (or pass `undefined`) when there's no
+ * previous snapshot to compare against. `edges` is likewise optional. It's
  * only ever available when the caller also ran the (more expensive) usage
- * scan `--ownership`/`--flow` trigger -- `--docs` requested alone renders
+ * scan `--ownership`/`--flow` trigger. `--docs` requested alone renders
  * exactly as before, with the "Consumed at" column showing "(not scanned)"
  * rather than a false "(none found)". `evidencePath` names this same run's
  * own `--evidence` output, when it requested one, in the banner note.

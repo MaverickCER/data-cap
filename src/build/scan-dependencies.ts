@@ -1,8 +1,8 @@
 /**
  * Scans every discovered project file as a potential consumer of every
- * target capability -- the one pass in `build/` that legitimately reads
- * files beyond what `discover.ts`/`link.ts` already covered, since a
- * consumer can be any `.ts`/`.tsx` file in the project, not just ones that
+ * target capability. This is the one pass in `build/` that legitimately reads
+ * files beyond what `discover.ts`/`link.ts` already covered. A
+ * consumer can be any `.ts`/`.tsx` file in the project, not only ones that
  * themselves call `buildData`/`createData`. Reuses the exact same
  * specifier-resolution machinery `link.ts` uses (`resolveImportSpecifier`),
  * so a `fields` reference and a consumer's import are resolved identically.
@@ -31,13 +31,13 @@ import type { BuildFileSystem } from "./types.js"
 
 /** Options for `scanDependencies`. */
 export interface ScanDependenciesOptions {
-  /** The filesystem capability -- `./build` never imports `node:fs` (ADR 0058). */
+  /** The filesystem capability: `./build` never imports `node:fs` (ADR 0058). */
   readonly fs: BuildFileSystem
   /** Directory import specifiers resolve against. */
   readonly root: string
-  /** Explicit `tsconfig.json` path override, or `false` to disable alias resolution -- same meaning as `LinkOptions.tsconfig`. */
+  /** Explicit `tsconfig.json` path override, or `false` to disable alias resolution: same meaning as `LinkOptions.tsconfig`. */
   readonly tsconfig?: string | false | undefined
-  /** Explicit cross-package schema discovery allowlist -- see `resolve-package-schema.ts`. */
+  /** Explicit cross-package schema discovery allowlist: see `resolve-package-schema.ts`. */
   readonly packages?: readonly string[] | undefined
 }
 
@@ -47,20 +47,20 @@ export interface ScanDependenciesResult {
   readonly edges: readonly DependencyEdge[]
   /** Resolution warnings encountered during the scan, never blocking. */
   readonly warnings: readonly ParseWarning[]
-  /** Allow-listed package names whose own directory was actually walked and scanned as potential consumer source -- the honest "what was actually searched" boundary a "field is unconsumed" conclusion is scoped to (ADR 0053). A package listed in `options.packages` but not resolvable (see `warnings`) is never silently counted as scanned. */
+  /** Allow-listed package names whose own directory was actually walked and scanned as potential consumer source: the honest "what was actually searched" boundary a "field is unconsumed" conclusion is scoped to (ADR 0053). A package listed in `options.packages` but not resolvable (see `warnings`) is never silently counted as scanned. */
   readonly scannedPackages: readonly string[]
 }
 
 /**
  * Rewrites one freshly-scanned edge's two absolute paths into the
- * root-relative form every canonical model publishes (OUT-01). Applied once,
- * here, at the boundary where the scan hands its result back -- not inside
+ * root-relative form every canonical model publishes. Applied once,
+ * here, at the boundary where the scan hands its result back: not inside
  * `dependency-graph.ts`, which stays a pure absolute-in/absolute-out AST
  * pass with no notion of a discovery root.
  *
  * `to.capability.file` is converted with the same `displayPath` the
  * inventory used, so an edge's target key (`file#exportName`) still matches
- * `CapabilityNode.file` exactly -- every grouping in
+ * `CapabilityNode.file` exactly: every grouping in
  * `dependency-projections.ts`/`usage-report.ts`/`change-model.ts` depends on
  * that identity holding.
  */
@@ -110,12 +110,12 @@ export async function matchFileImports(
 ): Promise<readonly ImportBindingMatch[]> {
   const matches: ImportBindingMatch[] = []
   for (const binding of imports) {
-    if (binding.importedName === "default") continue // default imports aren't traced -- unresolvable without deeper analysis
+    if (binding.importedName === "default") continue // default imports aren't traced: unresolvable without deeper analysis
 
     const resolvedFile = await resolveImportSpecifier(file, binding.moduleSpecifier, context)
     // `.find` on the (small) target list rather than a keyed lookup so an
-    // unresolvable specifier (`resolvedFile === undefined`) simply matches no
-    // target -- no synthetic key, no guard. A namespace import (`importedName`
+    // unresolvable specifier (`resolvedFile === undefined`) matches no
+    // target: no synthetic key, no guard. A namespace import (`importedName`
     // is `"*"`) likewise matches nothing here, so it needs no special-casing.
     const resolvedTarget = targets.find(
       (candidate) =>
@@ -141,12 +141,12 @@ export async function matchFileImports(
 
 /**
  * Resolves `packages` to each package's own directory (reusing
- * `resolve-package-schema.ts`'s existing package-manifest resolution --
- * never a second, separate resolution mechanism), then walks each directory
- * exactly the way `discoverCapabilityFiles` walks the local `root`, so an
+ * `resolve-package-schema.ts`'s existing package-manifest resolution:
+ * never a second, separate resolution mechanism). It then walks each directory
+ * exactly the way `discoverCapabilityFiles` walks the local `root`. So an
  * allow-listed package's own source tree is scanned as potential *consumer*
- * source, not just resolved as one schema-declaring file. A package that
- * fails to resolve contributes nothing and is never counted as scanned --
+ * source, not only resolved as one schema-declaring file. A package that
+ * fails to resolve contributes nothing and is never counted as scanned:
  * its existing `resolveAllowlistedPackages` warning already explains why.
  */
 async function discoverPackageScanFiles(
@@ -221,12 +221,12 @@ export async function scanDependencies(
     try {
       sourceText = await options.fs.readFile(file, "utf8")
     } catch {
-      continue // unreadable file (permissions, race with deletion, ...) -- skip silently, matching discover.ts's own posture
+      continue // unreadable file (permissions, race with deletion, ...): skip silently, matching discover.ts's own posture
     }
     // data-cap's own generated output is never independent evidence of
     // consumption. The generated manifest imports every active capability by
     // construction, so counting it as a consumer would let a capability
-    // "prove" it is used purely because this tool re-exported it -- a report
+    // "prove" it is used purely because this tool re-exported it. That is a report
     // bootstrapping evidence from itself, and enough to silently suppress
     // every `ABANDONED_CAPABILITY` finding the moment `--location` points
     // anywhere inside the discovery `include`. Skipped by the same banner
@@ -245,8 +245,8 @@ export async function scanDependencies(
     const matches = await matchFileImports(file, imports, targets, targetsByName, context)
 
     // A capability's own declaring file never has an `import` statement for
-    // its own local export -- there's nothing for `matchFileImports` to find
-    // -- so a same-file read (`export const userData = createData(...)` then
+    // its own local export, so `matchFileImports` finds nothing there, and
+    // a same-file read (`export const userData = createData(...)` then
     // later `userData.getSnapshot()...` in the same file) would otherwise be
     // invisible to `scanFileForUsage` entirely. Kept as a separate list, not
     // merged into `matches`: unlike a real import, an unused self-declared

@@ -412,7 +412,7 @@
         "code": "UNCONSUMED_FIELD",
         "family": "usage",
         "severity": "warning",
-        "message": "Field \"todos\" on \"todoData\" is written but never statically read in the scanned project -- if it's genuinely unused, remove it; if something reads it dynamically or from outside the scanned root, add a dynamicAccess citation so this scan can account for it.",
+        "message": "Field \"todos\" on \"todoData\" is written but never statically read in the scanned project. If it's genuinely unused, remove it; if something reads it dynamically or from outside the scanned root, add a dynamicAccess citation so this scan can account for it.",
         "location": {
           "kind": "field",
           "capability": {
@@ -452,7 +452,7 @@
       },
       {
         "key": "mutator-concurrency",
-        "statement": "A mutator's response always commits, even if a newer call to the same operation started after it -- whichever call completes last in real time wins, deliberately unlike a getter's start-order discard.",
+        "statement": "A mutator's response always commits, even if a newer call to the same operation started after it: whichever call completes last in real time wins, deliberately unlike a getter's start-order discard.",
         "governingAdr": "0025",
         "module": "src/runtime/capability.ts"
       },
@@ -464,55 +464,55 @@
       },
       {
         "key": "subscription-disconnect-isolation",
-        "statement": "A subscription's own disconnect/teardown never mutates `fields` -- only an incoming event, processed through the operation's `processor`, can.",
+        "statement": "A subscription's own disconnect/teardown never mutates `fields`. Only an incoming event, processed through the operation's `processor`, can.",
         "governingAdr": "0029",
         "module": "src/runtime/coordinator.ts"
       },
       {
         "key": "coordinator-dedup-key",
-        "statement": "Concurrent calls share one in-flight execution only when both the called function's own identity and their canonicalized params match -- never structural/behavioral equality, and never merely the same operation name.",
+        "statement": "Concurrent calls share one in-flight execution only when both the called function's own identity and their canonicalized params match, never structural/behavioral equality, and never merely the same operation name.",
         "governingAdr": "0028",
         "module": "src/runtime/coordinator.ts"
       },
       {
         "key": "atomic-commit",
-        "statement": "`fields` and `info` are always committed and published as one atomic snapshot -- no code path may update them independently or in separate ticks; a consumer never observes a stale pairing of the two.",
+        "statement": "`fields` and `info` are always committed and published as one atomic snapshot. No code path may update them independently or in separate ticks; a consumer never observes a stale pairing of the two.",
         "governingAdr": "0008",
         "module": "src/runtime/store.ts"
       },
       {
         "key": "authoritative-pending-projection",
-        "statement": "Every observable state is `project(authoritativeState, pendingTransitions)`, recomputed fresh on every read, never cached -- authoritative and optimistic-pending state are stored separately and only ever folded together for observation.",
+        "statement": "Every observable state is `project(authoritativeState, pendingTransitions)`, recomputed fresh on every read, never cached. Authoritative and optimistic-pending state are stored separately and only ever folded together for observation.",
         "governingAdr": "0021",
         "module": "src/runtime/store.ts"
       },
       {
         "key": "no-automatic-rollback",
-        "statement": "A failed mutation never automatically reverts a previously-committed value and never invents conflict resolution between concurrent writers -- recovery is always the caller's own responsibility.",
+        "statement": "A failed mutation never automatically reverts a previously-committed value and never invents conflict resolution between concurrent writers. Recovery is always the caller's own responsibility.",
         "governingAdr": "0023",
         "module": "src/runtime/store.ts"
       },
       {
         "key": "data-status-state-machine",
-        "statement": "A field's `status` is one of exactly `idle`/`loading`/`success`/`error`/`retrying` -- `retrying` is reserved for a recovering-after-failure attempt, distinct from a field's first-ever `loading` attempt.",
+        "statement": "A field's `status` is one of exactly `idle`/`loading`/`success`/`error`/`retrying`. `retrying` is reserved for a recovering-after-failure attempt, distinct from a field's first-ever `loading` attempt.",
         "governingAdr": "0016",
         "module": "src/core/types.ts"
       },
       {
         "key": "data-error-latest-only",
-        "statement": "A field's `error` is always the single latest error from its establishing operation, never a history/array -- it clears on the next successful establishing operation unless a still-newer operation has since set a different one.",
+        "statement": "A field's `error` is always the single latest error from its establishing operation, never a history/array. It clears on the next successful establishing operation unless a still-newer operation has since set a different one.",
         "governingAdr": "0015",
         "module": "src/core/types.ts"
       },
       {
         "key": "cache-contract",
-        "statement": "The optional `./runtime/cache` module caches a complete `DataState` (`fields` + `info`) as one atomic unit, never `fields` alone and never a raw, unvalidated response -- a bounded, least-recently-used-eviction cache keyed by an opaque caller-computed string.",
+        "statement": "The optional `./runtime/cache` module caches a complete `DataState` (`fields` + `info`) as one atomic unit, never `fields` alone and never a raw, unvalidated response: a bounded, least-recently-used-eviction cache keyed by an opaque caller-computed string.",
         "governingAdr": "0035",
         "module": "src/runtime/cache.ts"
       },
       {
         "key": "retry-contract",
-        "statement": "The optional `./runtime/retry` module is opt-in and abort-aware: it never retries automatically, never retries past the caller's own `AbortSignal`, never exceeds `maxAttempts`, and never assumes a mutation is idempotent -- the caller's own `shouldRetry` predicate decides what's worth retrying.",
+        "statement": "The optional `./runtime/retry` module is opt-in and abort-aware: it never retries automatically, never retries past the caller's own `AbortSignal`, never exceeds `maxAttempts`, and never assumes a mutation is idempotent. The caller's own `shouldRetry` predicate decides what's worth retrying.",
         "governingAdr": "0036",
         "module": "src/runtime/retry.ts"
       }

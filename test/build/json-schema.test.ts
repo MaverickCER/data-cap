@@ -15,7 +15,7 @@ const distMissing = !existsSync(cliDist)
 
 describe("published JSON Schema: freshness", () => {
   // ts-json-schema-generator runs a real TypeScript program/type-check over
-  // src/cli/json.ts's whole type graph -- inherently slower than a typical
+  // src/cli/json.ts's whole type graph: inherently slower than a typical
   // unit test, and slow enough under v8 coverage instrumentation's overhead
   // to exceed vitest's default 5000ms test timeout.
   it("matches a fresh generation byte-for-byte (fails if committed but stale)", () => {
@@ -87,7 +87,7 @@ documentData({ fields: fields }, { owner: "payments-team", fields: { cardToken: 
 `,
       )
 
-      // No prior generation -- "missing" findings, checkResult.ok: false.
+      // No prior generation: "missing" findings, checkResult.ok: false.
       const payload = runCli([
         "--root",
         fixtureRoot,
@@ -104,7 +104,7 @@ documentData({ fields: fields }, { owner: "payments-team", fields: { cardToken: 
     })
 
     it("a real payload with a sensitive-boundary finding (via directly-called generateFlow -- no longer a CLI flag, ADR 0066) validates against the schema", async () => {
-      // --flow is no longer a CLI flag -- `result.flow` is always undefined
+      // --flow is no longer a CLI flag: `result.flow` is always undefined
       // from a real CLI run now, so this exercises the schema's tolerance
       // for that shape (still declared, per the library-level
       // GenerateDataArtifactsOptions/ReportResult, just unreachable through

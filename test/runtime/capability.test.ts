@@ -64,7 +64,7 @@ describe("operation parameter types are independent of field nullability", () =>
 
     // If params typing were (incorrectly) derived from the nullable `user`
     // field's InferFieldValue, this would be `{id: string} | null |
-    // undefined`. It's a plain, non-nullable `{id?: string}` instead --
+    // undefined`. It's a plain, non-nullable `{id?: string}` instead;
     // field nullability never leaks into operation parameter typing.
     expectTypeOf(capability.getUser)
       .parameter(0)
@@ -144,7 +144,7 @@ describe("getters", () => {
     })
 
     const call = capability.getUser()
-    // Deliberately not awaited at the call site -- attach a catch so the
+    // Deliberately not awaited at the call site: attach a catch so the
     // real rejection above doesn't surface as an unhandled rejection in
     // this test run, while still proving the promise really did reject.
     let rejected = false
@@ -163,10 +163,10 @@ describe("getters", () => {
       getters: {
         getUser: {
           execute: async () => ({ name: "Ada" }),
-          // Only owns `user`, but lies and also tries to write `post` --
+          // Only owns `user`, but lies and also tries to write `post`:
           // must be dropped, never applied, never thrown. A well-typed
           // processor can't do this at compile time (OwnedPatch narrows
-          // it) -- this simulates a processor that ignores its own type,
+          // it): this simulates a processor that ignores its own type,
           // proving the runtime boundary is real defense-in-depth, not
           // just a compile-time nicety.
           processor: (raw: { name: string }) =>
@@ -335,7 +335,7 @@ describe("mutators", () => {
     const firstCall = capability.updateEmail({ which: "first" })
     const secondCall = capability.updateEmail({ which: "second" })
 
-    // Both optimistic callbacks observed the ORIGINAL authoritative value --
+    // Both optimistic callbacks observed the ORIGINAL authoritative value:
     // the second never saw the first's still-pending optimistic email.
     expect(observedAtOptimisticTime).toEqual([
       "authoritative@example.com",
@@ -387,8 +387,8 @@ describe("mutators", () => {
 
     aDeferred.resolve(undefined)
     await countCall
-    // bumpCount settled -- its optimistic transition is gone, replaced by
-    // the real authoritative value -- renameThing's optimistic contribution
+    // bumpCount settled: its optimistic transition is gone, replaced by
+    // the real authoritative value. renameThing's optimistic contribution
     // is untouched.
     expect(capability.getSnapshot().fields.count).toBe(1)
     expect(capability.getSnapshot().fields.name).toBe("optimistic-name")
@@ -416,11 +416,11 @@ describe("mutators", () => {
     const call = capability.updateEmail()
     expect(capability.getSnapshot().fields.user.email).toBe("optimistic@example.com")
     // getAuthoritativeState() is unaffected by the still-pending optimistic
-    // transition -- only the projected getSnapshot() view reflects it.
+    // transition: only the projected getSnapshot() view reflects it.
     expect(capability.getAuthoritativeState().fields.user.email).toBe("authoritative@example.com")
 
     await expect(call).rejects.toThrow("validation failed")
-    // Reverted automatically -- back to authoritative, no special rollback path.
+    // Reverted automatically: back to authoritative, no special rollback path.
     expect(capability.getSnapshot().fields.user.email).toBe("authoritative@example.com")
     expect(capability.getSnapshot().info.user?.status).toBe("error")
   })
@@ -453,7 +453,7 @@ describe("mutators", () => {
     await bCall
     expect(capability.getSnapshot().fields.count).toBe(2)
 
-    // A completes LAST, even though it started FIRST -- its later commit wins.
+    // A completes LAST, even though it started FIRST: its later commit wins.
     aDeferred.resolve(undefined)
     await aCall
     expect(capability.getSnapshot().fields.count).toBe(1)
@@ -529,7 +529,7 @@ describe("subscriptions", () => {
 
   it("releasing a subscription commits this capability's OWN info as disconnected, even though acquireSubscription's fan-out never calls back a self-releasing consumer", () => {
     // The transport's own teardown here deliberately never calls
-    // `handlers.onStatusChange("disconnected")` -- proving the capability
+    // `handlers.onStatusChange("disconnected")`: proving the capability
     // commits its own disconnected status unconditionally on release,
     // rather than depending on a callback the coordinator structurally
     // cannot deliver to whichever consumer just released (it's already been
@@ -716,7 +716,7 @@ describe("operations snapshot", () => {
 
     await capability.getUser({ id: "1" })
     await capability.getUser({ id: "2" })
-    // Touch "1" again -- it should now be the most-recently-used entry,
+    // Touch "1" again: it should now be the most-recently-used entry,
     // not the least, despite being inserted first.
     await capability.getUser({ id: "1" })
     await capability.getUser({ id: "3" })
@@ -1244,7 +1244,7 @@ describe("non-canonicalizable params", () => {
     await capability.get({ fn: () => undefined })
     await capability.get({ fn: () => undefined })
     const ops = capability.getSnapshot().operations["get"] ?? {}
-    // Distinct, sequentially-numbered synthetic keys -- not one shared bucket.
+    // Distinct, sequentially-numbered synthetic keys: not one shared bucket.
     expect(Object.keys(ops)).toEqual(["~uncanonicalizable-1", "~uncanonicalizable-2"])
   })
 })
@@ -1320,7 +1320,7 @@ describe("mutation-hardening: remaining paths", () => {
       },
     })
     const call = capability.bump()
-    expect(capability.getSnapshot().fields.count).toBe(7) // unchanged -- no transition
+    expect(capability.getSnapshot().fields.count).toBe(7) // unchanged: no transition
     expect(capability.getSnapshot().info.count?.optimistic).toBeUndefined()
     gate.resolve({ v: 9 })
     await call
@@ -1439,8 +1439,8 @@ describe("mutation-hardening: stale-settle only touches operations", () => {
     older.resolve({ name: "stale" })
     await oldCall
 
-    // The stale settle changed only `operations` -- fields/info are untouched
-    // (same refs) -- but it still produced a new top-level snapshot and rang
+    // The stale settle changed only `operations` (fields/info keep the
+    // same refs), but it still produced a new top-level snapshot and rang
     // the capability listener.
     const afterStale = capability.getSnapshot()
     expect(notified).toBeGreaterThan(notifiedAfterNewer)

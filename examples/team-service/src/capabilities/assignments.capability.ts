@@ -1,5 +1,5 @@
 /**
- * "My assigned tasks" -- a small, standalone widget capability, owned by a
+ * "My assigned tasks": a small, standalone widget capability, owned by a
  * DIFFERENT team than `member.capability.ts`'s own platform team. Its
  * `getMyTasks` getter independently re-fetches the member directory
  * (`fetchMembersRemoteForAssignments`, `server/members.ts`) to resolve a
@@ -8,11 +8,11 @@
  *
  * This is deliberate, not an oversight this example forgot to fix: it's
  * exactly the realistic situation `checkDuplicateEndpoints` (ADR-pending;
- * see `src/build/structural-duplication.ts`) exists to catch -- two
+ * see `src/build/structural-duplication.ts`) exists to catch; two
  * capabilities, built by two different people who never coordinated, both
  * declaring an endpoint at the same `url`. The generated report (`docs/
  * OWNERSHIP.md`'s findings, or `docs/DATA.md`) flags this for a human to
- * decide whether it's worth consolidating into one composed call -- it
+ * decide whether it's worth consolidating into one composed call: it
  * never "fixes" it automatically, and never claims the two calls are
  * provably identical at runtime, only that both DECLARE the same URL.
  */
@@ -26,7 +26,7 @@ export interface AssignedTask {
   readonly memberName: string
 }
 
-// A tiny, separate "my tasks" projection -- standing in for a real backend
+// A tiny, separate "my tasks" projection: standing in for a real backend
 // endpoint that joins tasks to their assignee's name server-side, the same
 // way `project.capability.ts`'s own getter does client-side by composing
 // `memberData`. Two independent implementations of the same join.
@@ -80,8 +80,8 @@ documentData(assignmentsSchema, {
     getMyTasks: {
       description: "Fetches one member's own assigned tasks.",
       source: "assignments-api",
-      // Two declared endpoints: the assignments lookup itself, and --
-      // deliberately -- the SAME members-api url member.capability.ts's
+      // Two declared endpoints: the assignments lookup itself, and (
+      // deliberately) the SAME members-api url member.capability.ts's
       // own listMembers getter already declares. That match is exactly
       // what makes checkDuplicateEndpoints fire for real.
       endpoints: [

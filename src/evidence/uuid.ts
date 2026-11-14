@@ -1,16 +1,16 @@
 /**
  * Deterministic, name-based, RFC 4122 *shaped* identifiers for projections that
  * need a UUID (OSCAL requires one on almost every record). The same key always
- * yields the same identifier, so regenerating an artifact from unchanged
- * evidence produces an identical file and a diff shows only what changed.
+ * yields the same identifier. So regenerating an artifact from unchanged
+ * evidence produces an identical file, and a diff shows only what changed.
  *
- * This is not a cryptographic UUIDv5 (no SHA-1 namespace hashing): it is a
+ * This is not a cryptographic UUIDv5 (no SHA-1 namespace hashing). It is a
  * 128-bit non-cryptographic hash, with the version (5) and variant bits set so
  * the result is a well-formed name-based UUID. Nothing here is a secret or a
  * security boundary. Isomorphic: no `node:crypto`.
  */
 
-/** cyrb128 -- a small, well-distributed 128-bit string hash. */
+/** cyrb128: a small, well-distributed 128-bit string hash. */
 function hash128(text: string): readonly [number, number, number, number] {
   let h1 = 1779033703
   let h2 = 3144134277

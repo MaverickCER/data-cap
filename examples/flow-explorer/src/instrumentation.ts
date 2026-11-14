@@ -3,7 +3,7 @@
  *
  * `observedResponse` wraps the response object a handler writes to. When the
  * handler calls `json(body)` it records, with `data-cap/observe`, which KEYS of
- * the body went out at the `client-response` boundary -- names only, never the
+ * the body went out at the `client-response` boundary: names only, never the
  * values. The wrapper is told which capability field the body was built from
  * (`userData.user`), because only the application knows that; the static
  * analysis does not need to be told.
@@ -40,7 +40,7 @@ export async function recordScenario(): Promise<readonly ObservationEvent[]> {
   await userData.getUser({ id: "1" })
   profileHandler(observedResponse(memory.sink, "scenario:profile"))
   exportEverything(observedResponse(memory.sink, "scenario:debug-export"))
-  // The analytics SDK has no instrumented boundary, so nothing about it is observed -- and the evidence says so.
+  // The analytics SDK has no instrumented boundary, so nothing about it is observed: and the evidence says so.
   trackUser()
   return memory.events()
 }

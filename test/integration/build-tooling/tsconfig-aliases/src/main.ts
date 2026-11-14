@@ -1,10 +1,10 @@
 /**
  * Build-tooling pattern: `discoverCapabilityFiles`/`linkCapabilityFiles`
  * statically resolve a `buildData()`/`documentData()` call's `fields`
- * reference across files -- including through a `tsconfig.json` path
+ * reference across files; including through a `tsconfig.json` path
  * alias, exactly the way `tsc` itself would resolve `@schemas/user.js`.
- * Nothing here ever imports, requires, or evaluates `user-capability.ts`
- * -- only its AST is read.
+ * Nothing here ever imports, requires, or evaluates `user-capability.ts`:
+ * only its AST is read.
  */
 import assert from "node:assert/strict"
 import { writeFileSync } from "node:fs"

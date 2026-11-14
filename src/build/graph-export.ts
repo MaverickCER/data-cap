@@ -1,12 +1,12 @@
 /**
- * Graph-export reference projections (ADR 0050) -- DOT renderers over
+ * Graph-export reference projections (ADR 0050): DOT renderers over
  * Dependency Model and Ownership Model, answering the Capability/Data
  * Dependency Graph and Data Ownership Graph requests. Deliberately a fresh,
  * small renderer rather than a forced reuse of `flow-diagram.ts`'s private
- * `DiagramBuilder`: that class is Mermaid- and OWASP-data-flow-vocabulary-
+ * `DiagramBuilder`. That class is Mermaid- and OWASP-data-flow-vocabulary-
  * specific (external entities/data stores/trust boundaries built from
  * `FieldFlow`/`DataFlowEndpoint`), a different domain from a capability's
- * consumer graph or its ownership matrix -- generalizing it would have
+ * consumer graph or its ownership matrix. Generalizing it would have
  * meant bending an OWASP-shaped renderer to fit an unrelated graph, not
  * genuine reuse.
  */
@@ -23,10 +23,9 @@ function escapeDotLabel(text: string): string {
 /**
  * Renders Dependency Model as a DOT digraph: one node per capability, one
  * node per consuming file, edges labeled by relationship. `capabilities`
- * supplies the full capability list -- since `model.edges` alone can never
- * reveal a capability with zero edges, this is what lets a genuinely
- * unconsumed capability still appear as a node (see `groupEdgesByCapability`,
- * ADR 0056).
+ * supplies the full capability list. `model.edges` alone never shows a
+ * capability with zero edges, so this list is what puts an unconsumed
+ * capability in the graph (see `groupEdgesByCapability`, ADR 0056).
  */
 export function renderDependencyGraphDot(
   capabilities: readonly { readonly file: string; readonly exportName: string }[],
@@ -80,7 +79,7 @@ export function renderOwnershipGraphDot(model: OwnershipModel): string {
     const ownerKey = `owner:${entry.owner}`
     const ownerId = ids.idFor(ownerKey)
     // `UNOWNED` is itself the string `"(unowned)"`, so `entry.owner` already
-    // reads correctly for the unowned bucket -- no special-casing needed.
+    // reads correctly for the unowned bucket: no special-casing needed.
     nodeLines.push(
       `  "${ownerId}" [label="${escapeDotLabel(entry.owner)}", shape=box, peripheries=2];`,
     )

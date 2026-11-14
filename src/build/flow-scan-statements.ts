@@ -47,7 +47,7 @@ export function methods() {
         ts.isFunctionDeclaration(statement) && statement.body !== undefined
       for (const statement of list)
         if (declaresFunction(statement)) this.statement(frame, statement)
-      // Stryker disable next-line ConditionalExpression: equivalent -- a function declaration run again in the second pass is declared again under the same name, which changes nothing.
+      // Stryker disable next-line ConditionalExpression: equivalent: a function declaration run again in the second pass is declared again under the same name, which changes nothing.
       for (const statement of list)
         if (!declaresFunction(statement)) this.statement(frame, statement)
     },
@@ -137,12 +137,12 @@ export function methods() {
     },
 
     declarationStatement(this: FlowScan, frame: Frame, node: TS.Statement): void {
-      // Stryker disable next-line ConditionalExpression: equivalent -- only `export default function () {}` has no name, and the module's index declares that one; a statement inside a function always has its name. The check narrows the type.
+      // Stryker disable next-line ConditionalExpression: equivalent: only `export default function () {}` has no name, and the module's index declares that one; a statement inside a function always has its name. The check narrows the type.
       if (ts.isFunctionDeclaration(node) && node.name !== undefined && node.body !== undefined) {
         frame.env.set(node.name.text, this.functionValue(frame, node, node.name.text))
       } else if (
         ts.isClassDeclaration(node) &&
-        // Stryker disable next-line ConditionalExpression: equivalent -- only `export default class {}` has no name, and the module's index declares that one; a statement inside a function always has its name.
+        // Stryker disable next-line ConditionalExpression: equivalent: only `export default class {}` has no name, and the module's index declares that one; a statement inside a function always has its name.
         node.name !== undefined &&
         !hasModifier(node, ts.SyntaxKind.DeclareKeyword)
       ) {
@@ -228,7 +228,7 @@ export function methods() {
         declaration.initializer === undefined
           ? undefined
           : this.literalReader(frame)(declaration.initializer)
-      // Stryker disable next-line ConditionalExpression: equivalent -- a text of `undefined` recorded for a name reads back as no text, exactly as not recording one does.
+      // Stryker disable next-line ConditionalExpression: equivalent: a text of `undefined` recorded for a name reads back as no text, exactly as not recording one does.
       if (text !== undefined) env.setText(declaration.name.text, text)
     },
 
@@ -302,14 +302,14 @@ export function methods() {
     },
 
     /**
-     * Replaces every capability, and every capability `fields` object, inside `val` by the data of all its fields: they are
-     * lazy (a field is only read when asked for), so anything that takes the whole object -- a sink, an unresolved call
-     * (which can call `getSnapshot()` on a capability it is handed), a computed key -- gets every field, each read here.
+     * Replaces every capability, and every capability `fields` object, inside `val` by the data of all its fields. They
+     * are lazy (a field is only read when asked for). So anything that takes the whole object gets every field, each read
+     * here: a sink, an unresolved call (which can call `getSnapshot()` on a capability it is handed), or a computed key.
      */
     materialize(this: FlowScan, frame: Frame, given: Val, site: TS.Node): Val {
       // What a promise settles with is data that goes wherever the promise goes.
       const val = this.unwrapPromise(frame, given, site)
-      // Stryker disable next-line ConditionalExpression: equivalent -- a value that holds neither would be rebuilt below with the same properties and no capability to expand, so returning it early only avoids the copy.
+      // Stryker disable next-line ConditionalExpression: equivalent: a value that holds neither would be rebuilt below with the same properties and no capability to expand, so returning it early only avoids the copy.
       if (!holdsFields(val) && !holdsPromise(val)) return val
       const props = new Map<string, Val>()
       for (const [key, child] of val.props) props.set(key, this.materialize(frame, child, site))
@@ -447,7 +447,7 @@ export function methods() {
         if (frame.env.assign(name, value)) this.dirty = true
         return
       }
-      // Not a variable of this function or its scopes: an imported object lives in the module that exports it, anything else is a global.
+      // Not a variable of this function or its scopes. An imported object lives in the module that exports it, anything else is a global.
       const imported = this.resolveName(frame.fn.file, name)
       const home = imported === undefined ? undefined : this.homeOf(imported)
       if (home !== undefined) {
@@ -528,7 +528,7 @@ export function methods() {
       }
     },
 
-    /** `a.b.c = value`: stored under the variable `a` -- or reported, when the store reaches somewhere the analysis cannot follow. */
+    /** `a.b.c = value`: stored under the variable `a`; or reported, when the store reaches somewhere the analysis cannot follow. */
     assignMember(
       this: FlowScan,
       frame: Frame,

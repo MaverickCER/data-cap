@@ -14,7 +14,7 @@
  * over-approximate (the data may have been transformed or only partly
  * present), and becomes an `inferred` edge (ADR 0071).
  *
- * Pure -- no filesystem access, no AST.
+ * Pure: no filesystem access, no AST.
  */
 
 /** How an atom entered the function frame it is currently in. */
@@ -33,7 +33,7 @@ export interface Atom {
   readonly approx: boolean
   /** How the atom entered the current function frame. */
   readonly entry: AtomEntry
-  /** The path the atom had when it entered the frame -- what "discards" is measured against. */
+  /** The path the atom had when it entered the frame: what "discards" is measured against. */
   readonly entryPath: readonly string[]
   /** True when the data went through a package call the user declared a summary for: a modelled fact, never a proven one (ADR 0071). */
   readonly declared?: true
@@ -53,7 +53,7 @@ export interface Val {
   readonly fieldsOf?: string
   /** Set when the value is an instance of a project class (a key into the scan's class table). */
   readonly instance?: string
-  /** Set when the value is a project class itself -- its constructor and statics (a key into the scan's class table). */
+  /** Set when the value is a project class itself: its constructor and statics (a key into the scan's class table). */
   readonly classRef?: string
   /** On a value whose data is only read when asked for (a capability, its `fields`): a transformation touched it, so what is read from it is approximate. */
   readonly inexact?: true
@@ -82,7 +82,7 @@ export type NativeKind = "map" | "set" | "record"
 /** The value of an expression carrying no tracked data. */
 export const EMPTY_VAL: Val = { atoms: [], props: new Map() }
 
-// Stryker disable StringLiteral: static -- Stryker reports each of these module-load values as surviving, yet applying any one of them by hand fails `the keys the analysis keeps for itself`, which pins every one exactly (verified).
+// Stryker disable StringLiteral: static: Stryker reports each of these module-load values as surviving, yet applying any one of them by hand fails `the keys the analysis keeps for itself`, which pins every one exactly (verified).
 /** The allocation site of an object the analysis did not see made: a package export, the result of a call it could not follow. A store into it is a store it cannot trace. */
 export const OPAQUE_ALLOC = "?"
 
@@ -341,7 +341,7 @@ function mapAtoms(val: Val, change: (atom: Atom) => Atom): Val {
   return { ...val, atoms: val.atoms.map(change), props }
 }
 
-/** Marks every atom approximate -- and, on a value that has not produced its atoms yet, the atoms it will produce. */
+/** Marks every atom approximate. On a value that has not produced its atoms yet, it also marks the atoms it will produce. */
 export function approximate(val: Val): Val {
   const props = new Map<string, Val>()
   for (const [key, child] of val.props) props.set(key, approximate(child))

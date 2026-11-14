@@ -1,7 +1,7 @@
 /**
  * The one place the example runs data-cap: discovery, the flow pass, the
- * recorded observations. Everything else -- the explorer, the standards
- * exports, the checks -- reads the evidence this produces and nothing else.
+ * recorded observations. Everything else (the explorer, the standards
+ * exports, the checks) reads the evidence this produces and nothing else.
  *
  * `generatedAt` and `commit` are fixed on purpose. The evidence is committed and
  * `npm run check` diffs it byte for byte, so it must not change when the clock

@@ -1,9 +1,9 @@
 /**
  * Combines C5's ownership matrix with C6's proven `DependencyEdge`s into
- * the "Dependency & Ownership Report" -- and derives the findings only
+ * the "Dependency & Ownership Report": and derives the findings only
  * possible once real usage has been scanned (`ABANDONED_CAPABILITY`,
  * `UNCONSUMED_FIELD`, `UNRESOLVED_CONSUMER`, `INDETERMINATE_CONSUMER`).
- * Pure -- takes already-computed edges as input, no filesystem access.
+ * Pure: takes already-computed edges as input, no filesystem access.
  */
 
 import { displayPath } from "./display-path.js"
@@ -26,7 +26,7 @@ function capabilityKey(ref: { readonly file: string; readonly exportName: string
 
 /**
  * Indexes `edges` by the `capabilityKey` of the capability each one targets.
- * A capability with no edges is simply absent from the map -- callers get a
+ * A capability with no edges is absent from the map: callers get a
  * genuine miss for it, never an empty array masquerading as "looked up."
  */
 function indexEdgesByTargetCapability(
@@ -59,12 +59,12 @@ export function isFieldProvenRead(
 
 /**
  * @internal Every access on this capability that this pass genuinely cannot
- * attribute to one specific field -- a computed access, or a bare reference
- * that escaped this pass's local dataflow analysis (passed elsewhere,
- * spread, assigned, returned, handed to JSX as a prop -- ADR 0060), on the
- * capability itself (`imports` + indeterminate) or on `.fields` directly
- * (`reads-field` + indeterminate + no named field), and only where a source
- * position was captured.
+ * attribute to one specific field, and only where a source position was
+ * captured. Such an access is a computed access, or a bare reference that
+ * escaped this pass's local dataflow analysis by being passed elsewhere,
+ * spread, assigned, returned or handed to JSX as a prop (see ADR 0060).
+ * It sits on the capability itself (`imports` + indeterminate) or on
+ * `.fields` directly (`reads-field` + indeterminate + no named field).
  */
 export function collectIndeterminateSites(
   capabilityEdges: readonly DependencyEdge[],
@@ -83,7 +83,7 @@ export function collectIndeterminateSites(
 }
 
 /**
- * Derives every finding that requires a real usage scan -- as opposed to
+ * Derives every finding that requires a real usage scan: as opposed to
  * `static-rules.ts`'s findings, which need only the inventory. An
  * `ABANDONED_CAPABILITY` capability short-circuits its own field/consumer
  * findings: with zero edges, there is nothing further to characterize.
@@ -104,7 +104,7 @@ export function deriveUsageFindings(
         code: "ABANDONED_CAPABILITY",
         family: "usage",
         severity: "warning",
-        message: `"${capability.exportName}" is never imported anywhere in the scanned project -- if it's genuinely unused, remove it; if something imports it dynamically or from outside the scanned root, add a dynamicAccess citation so this scan can account for it.`,
+        message: `"${capability.exportName}" is never imported anywhere in the scanned project. If it's genuinely unused, remove it; if something imports it dynamically or from outside the scanned root, add a dynamicAccess citation so this scan can account for it.`,
         capability: ref,
       })
       continue
@@ -116,7 +116,7 @@ export function deriveUsageFindings(
           code: "UNRESOLVED_CONSUMER",
           family: "usage",
           severity: "info",
-          message: `"${edge.from}" appears to import "${capability.exportName}" by name, but the import specifier didn't resolve directly to its declaring file (possibly a barrel re-export) -- not fully traced.`,
+          message: `"${edge.from}" appears to import "${capability.exportName}" by name, but the import specifier didn't resolve directly to its declaring file (possibly a barrel re-export), so it is not fully traced.`,
           capability: ref,
           source: edge.from,
         })
@@ -125,7 +125,7 @@ export function deriveUsageFindings(
           code: "INDETERMINATE_CONSUMER",
           family: "usage",
           severity: "info",
-          message: `"${edge.from}" accesses "${capability.exportName}" using a dynamic/computed property, or in a way this scanner's local dataflow analysis can't follow (passed elsewhere, assigned to a new binding, spread, returned, or handed to JSX as a prop) -- can't be statically characterized (ADR 0060).`,
+          message: `"${edge.from}" accesses "${capability.exportName}" in a way this scanner's local dataflow analysis can't follow. The access uses a dynamic or computed property, or passes the value on (to a call, a new binding, a spread, a return or a JSX prop). It can't be statically characterized (ADR 0060).`,
           capability: ref,
           source: edge.from,
         })
@@ -133,30 +133,30 @@ export function deriveUsageFindings(
     }
 
     // Every access this pass genuinely can't attribute to one specific
-    // field -- a dynamic/computed access on the capability itself
+    // field. One kind is a dynamic/computed access on the capability itself
     // (`x[computed]`) or on `.fields`/`.getSnapshot().fields` directly
-    // (`x.fields[computed]`), or a bare reference to either that escaped
-    // this pass's local dataflow analysis entirely (passed elsewhere,
-    // spread, assigned to a new binding, returned, handed to JSX as a prop
-    // -- ADR 0060). Any of these could, for all this pass can tell, be
-    // targeting ANY currently-unproven field on this capability -- so an
+    // (`x.fields[computed]`). The other is a bare reference to either that
+    // escaped this pass's local dataflow analysis entirely (passed elsewhere,
+    // spread, assigned to a new binding, returned, handed to JSX as a prop:
+    // ADR 0060). Any of these could, for all this pass can tell, be
+    // targeting ANY currently-unproven field on this capability. So an
     // otherwise-"unconsumed" field here is genuinely uncertain, not
     // genuinely unused (see the five-state model in ADR 0052).
     const indeterminateSites = collectIndeterminateSites(capabilityEdges)
 
     for (const field of capability.fields) {
-      if (field.writtenBy.length === 0) continue // nothing claims to write it -- not this rule's concern
+      if (field.writtenBy.length === 0) continue // nothing claims to write it: not this rule's concern.
       const topLevelName = field.path[0]
-      if (topLevelName === undefined) continue // a field with no path segments has nothing to characterize
-      if (isFieldProvenRead(capabilityEdges, topLevelName)) continue // "proven" -- no finding
+      if (topLevelName === undefined) continue // a field with no path segments has nothing to characterize.
+      if (isFieldProvenRead(capabilityEdges, topLevelName)) continue // "proven": no finding.
 
       // A developer's own citation takes precedence over both "indeterminate"
-      // and "unconsumed" -- it's a stronger, specific claim than either
-      // "can't tell" or "nothing found." This fires on the citation's mere
-      // presence; whether it currently holds (the file still exists, hasn't
-      // visibly changed) is a *separate*, additional fact checked by
+      // and "unconsumed". (It's a stronger, specific claim than either
+      // "can't tell" or "nothing found.") This fires on the citation's mere
+      // presence. Whether it currently holds (the file still exists, hasn't
+      // visibly changed) is a *separate*, additional fact. It is checked by
       // `verifyDynamicAccessCitations` against a real filesystem + snapshot,
-      // never here -- this function stays pure (ADR 0053).
+      // never here: this function stays pure (ADR 0053).
       const dynamicAccessCitations =
         capability.docs?.evidence?.fields?.[topLevelName]?.dynamicAccess
       if (dynamicAccessCitations !== undefined && dynamicAccessCitations.length > 0) {
@@ -181,7 +181,7 @@ export function deriveUsageFindings(
           code: "FIELD_ACCESS_INDETERMINATE",
           family: "usage",
           severity: "info",
-          message: `Field "${field.path.join(".")}" on "${capability.exportName}" appears unused, but there are instances of dynamic/computed access, or a reference this scanner's local dataflow analysis can't follow, on this capability that can't be statically attributed to a specific field -- it may be one of them.`,
+          message: `Field "${field.path.join(".")}" on "${capability.exportName}" appears unused. But the capability has dynamic or computed accesses, or references this scanner's local dataflow analysis can't follow, that can't be attributed to one field. It may be one of them.`,
           capability: ref,
           field: field.path,
           ...(field.declarationPosition !== undefined
@@ -196,7 +196,7 @@ export function deriveUsageFindings(
         code: "UNCONSUMED_FIELD",
         family: "usage",
         severity: "warning",
-        message: `Field "${field.path.join(".")}" on "${capability.exportName}" is written but never statically read in the scanned project -- if it's genuinely unused, remove it; if something reads it dynamically or from outside the scanned root, add a dynamicAccess citation so this scan can account for it.`,
+        message: `Field "${field.path.join(".")}" on "${capability.exportName}" is written but never statically read in the scanned project. If it's genuinely unused, remove it; if something reads it dynamically or from outside the scanned root, add a dynamicAccess citation so this scan can account for it.`,
         capability: ref,
         field: field.path,
         ...(field.declarationPosition !== undefined ? { position: field.declarationPosition } : {}),
@@ -211,7 +211,7 @@ export function renderOwnershipMatrix(entries: readonly OwnershipMatrixEntry[]):
   if (entries.length === 0) return "_No capabilities discovered._"
   return entries
     .map((entry) => {
-      const lines = [`### ${entry.owner}`, ""] // `entry.owner` is already `UNOWNED` ("(unowned)") for the unowned bucket
+      const lines = [`### ${entry.owner}`, ""] // `entry.owner` is already `UNOWNED` ("(unowned)") for the unowned bucket.
       lines.push(
         `Capabilities: ${entry.capabilities.map((c) => `\`${c.exportName}\``).join(", ") || "_none_"}`,
       )
@@ -225,9 +225,9 @@ export function renderOwnershipMatrix(entries: readonly OwnershipMatrixEntry[]):
 
 /**
  * A file can declare more than one capability (e.g. two independent
- * `createData` capabilities in one `main.ts`), so "which capability's own
+ * `createData` capabilities in one `main.ts`). So "which capability's own
  * code produced this edge" is ambiguous from the file alone whenever more
- * than one capability shares it -- there's no per-capability source range
+ * than one capability shares it. There's no per-capability source range
  * tracked to disambiguate further. Rather than silently picking one (the
  * bug this replaces: a plain `Map<file, CapabilityNode>` overwrites down to
  * whichever capability happens to be declared last), every co-located
@@ -246,11 +246,11 @@ export function renderCapabilityDependencies(
   }
   const rows = edges.flatMap((edge) => {
     const from = capabilitiesByFile.get(edge.from)
-    if (from === undefined) return [] // consumer file declares no capability of its own
+    if (from === undefined) return [] // consumer file declares no capability of its own.
     // If the edge's target is itself one of the capabilities declared in
     // this same file, this is indistinguishable from that capability's own
     // self-usage (ordinary usage, already covered by the per-capability
-    // consumer table below) -- and even if it technically came from a
+    // consumer table below). Even if it technically came from a
     // sibling capability's own code, that can't be proven without per-
     // capability source-range tracking this pass doesn't have. Never
     // guessed at: excluded rather than mislabeled either way.
@@ -310,7 +310,7 @@ export function renderFindings(findings: readonly ReportFinding[]): string {
 
 /**
  * States exactly what "unconsumed"/"indeterminate" conclusions in this
- * report are scoped to -- an "unconsumed" finding is a claim about what was
+ * report are scoped to: an "unconsumed" finding is a claim about what was
  * actually searched, never an unbounded guarantee. Rendered only when
  * `scannedPackages` is non-empty: the zero-packages default (application
  * source only) is already the ambient assumption stated everywhere else in

@@ -49,7 +49,7 @@ describe("generateDataArtifacts", () => {
     const parsed = JSON.parse(snapshot) as ManifestSnapshot
     expect(parsed.capabilities).toHaveLength(1)
     // A capability with no dynamicAccess citations gets no `citationSnapshots`
-    // key at all -- not the key set to `undefined`.
+    // key at all: not the key set to `undefined`.
     expect("citationSnapshots" in result.manifest!.snapshot.capabilities[0]!).toBe(false)
   })
 
@@ -117,7 +117,7 @@ describe("generateDataArtifacts", () => {
     const docs = path.join(root, "generated", "CAPABILITIES.md")
     const evidence = path.join(root, "evidence.json")
 
-    // First run: no previous snapshot yet, so userCapability is "added" --
+    // First run: no previous snapshot yet, so userCapability is "added";
     // change-detection ran because of --evidence, not --location.
     const first = await generateDataArtifacts({
       fs: nodeBuildFs,
@@ -292,7 +292,7 @@ describe("generateDataArtifacts", () => {
         tsconfig: customPath,
       })
       // A nonexistent *explicit* tsconfig path warns (see
-      // loadTsconfigPaths's own isExplicit distinction) -- unlike the
+      // loadTsconfigPaths's own isExplicit distinction): unlike the
       // default auto-detect, which silently no-ops when tsconfig.json
       // simply isn't there. Getting this warning at all proves `tsconfig`
       // was actually forwarded, not silently dropped.
@@ -344,7 +344,7 @@ describe("generateDataArtifacts", () => {
     const docs = path.join(root, "generated", "CAPABILITIES.md")
 
     // F1: the usage scan always runs now, so --docs alone (no --ownership)
-    // already sees the real, proven consumption position -- never
+    // already sees the real, proven consumption position; never
     // "(not scanned)" any more.
     const docsOnly = await generateDataArtifacts({ fs: nodeBuildFs, root, tsconfig: false, docs })
     expect(docsOnly.documentation?.content).not.toContain("(not scanned)")
@@ -368,7 +368,7 @@ describe("generateDataArtifacts", () => {
     const result = await generateDataArtifacts({ fs: nodeBuildFs, root, tsconfig: false })
     expect(result.manifest).toBeUndefined()
     expect(result.documentation).toBeUndefined()
-    // F1: the usage scan always runs now, regardless of flags -- only its
+    // F1: the usage scan always runs now, regardless of flags; only its
     // report *file write* stays opt-in (gated on --ownership).
     expect(result.usage).toBeDefined()
     expect(result.usage.location).toBeUndefined()
@@ -391,10 +391,10 @@ describe("generateDataArtifacts", () => {
           `});`,
         ].join("\n"),
       )
-      // A real (bare-import) consumer -- without one, the capability itself
+      // A real (bare-import) consumer: without one, the capability itself
       // is "abandoned" and deriveUsageFindings short-circuits before it
       // ever reaches the per-field dynamicAccess check. Deliberately never
-      // reads `.fields.email` directly -- the field must stay unproven for
+      // reads `.fields.email` directly: the field must stay unproven for
       // this test to actually exercise the dynamicAccess precedence path.
       await writeFile(
         "consumer.ts",
@@ -403,7 +403,7 @@ describe("generateDataArtifacts", () => {
       const location = path.join(root, "generated", "manifest.ts")
       const ownership = path.join(root, "generated", "OWNERSHIP.md")
 
-      // Run 1: the citation is declared and its cited file exists -- fresh,
+      // Run 1: the citation is declared and its cited file exists; fresh,
       // no prior snapshot to compare against, so no staleness finding yet.
       const first = await generateDataArtifacts({
         fs: nodeBuildFs,
@@ -423,7 +423,7 @@ describe("generateDataArtifacts", () => {
       await writeFile("legacy.ts", "// this file has now changed\nconst x = 2;\n")
 
       // Run 2: same declared citation, but the previous run's recorded
-      // hash no longer matches -- the developer's own assertion can't be
+      // hash no longer matches; the developer's own assertion can't be
       // re-confirmed, and this must be a real, warning-severity finding.
       const second = await generateDataArtifacts({
         fs: nodeBuildFs,
@@ -440,7 +440,7 @@ describe("generateDataArtifacts", () => {
           field: ["email"],
         }),
       )
-      // FIELD_DYNAMIC_ACCESS_DECLARED still fires too -- it states what was
+      // FIELD_DYNAMIC_ACCESS_DECLARED still fires too: it states what was
       // asserted, independent of the assertion's own integrity check.
       expect(second.findings.some((f) => f.code === "FIELD_DYNAMIC_ACCESS_DECLARED")).toBe(true)
     })
@@ -511,7 +511,7 @@ describe("generateDataArtifacts", () => {
       await setupUnownedCapability()
       // F1: the usage scan always runs now, so a real consumer is needed
       // here to keep this capability from *also* tripping the
-      // ownership-scoped ABANDONED_CAPABILITY warning -- this test is
+      // ownership-scoped ABANDONED_CAPABILITY warning; this test is
       // specifically about static/docs-scoped findings staying unescalated,
       // not about ownership-scoped ones (see the dedicated
       // "--strict-ownership escalates ABANDONED_CAPABILITY" test below).
@@ -538,7 +538,7 @@ describe("generateDataArtifacts", () => {
         "b.ts",
         `export const b = createData({ fields: { x: "" } });\ndocumentData({ fields: { x: "" } }, { owner: "team" });`,
       )
-      // F1: the usage scan always runs now -- real consumers keep "a"/"b"
+      // F1: the usage scan always runs now; real consumers keep "a"/"b"
       // from also tripping ABANDONED_CAPABILITY (a warning `--strict` would
       // legitimately escalate), which would otherwise mask the one thing
       // this test actually checks: that an already-info finding stays info.
@@ -589,7 +589,7 @@ describe("generateDataArtifacts", () => {
     it("counts each finding under exactly one severity bucket (error/warning/info partition the whole list)", async () => {
       // Two unowned capabilities (a CAPABILITY_MISSING_OWNER warning each) that
       // also share a field shape (one DUPLICATE_FIELD_SHAPE_ACROSS_CAPABILITIES
-      // info) -- so the list spans two distinct severities.
+      // info): so the list spans two distinct severities.
       await writeFile("a.ts", `export const a = createData({ fields: { email: "" } });`)
       await writeFile("b.ts", `export const b = createData({ fields: { email: "" } });`)
       // No --location: also proves the `citationFindings` seed stays an empty
@@ -617,17 +617,17 @@ describe("generateDataArtifacts", () => {
       })
       expect(result.evidence.schemaVersion).toBe(EVIDENCE_MODEL_SCHEMA_VERSION)
       expect(result.evidence.capability.capabilities).toHaveLength(1)
-      // OUT-06: provenance is always stamped -- generatedAt + a real toolVersion.
+      // OUT-06: provenance is always stamped; generatedAt + a real toolVersion.
       expect(result.evidence.provenance.toolVersion).toBe(PACKAGE_VERSION)
       expect(result.evidence.provenance.generatedAt).toMatch(/^\d{4}-\d\d-\d\dT/)
       // Ownership/Finding/Runtime Contract/Dependency Model are all cheap
       // projections over already-in-memory data (F1: the usage scan always
-      // runs now) -- always populated, even though nothing here consumes
+      // runs now); always populated, even though nothing here consumes
       // `userCapability` (an empty `edges` array, not an absent model).
       // Change Model is populated whenever change-detection ran (F2:
       // `--location` alone is enough), and since a real Dependency Model is
       // always available now too, its own `blastRadius` is always populated
-      // alongside it -- just with an empty `consumers` list here.
+      // alongside it; just with an empty `consumers` list here.
       expect(result.evidence.ownership).toBeDefined()
       expect(result.evidence.finding).toBeDefined()
       expect(result.evidence.runtimeContract).toBeDefined()
@@ -668,9 +668,9 @@ describe("generateDataArtifacts", () => {
         ownership: path.join(root, "OWNERSHIP.md"),
       })
       expect(result.evidence.dependency?.edges).toHaveLength(1)
-      // First run against a fresh snapshot -- userCapability is "added",
+      // First run against a fresh snapshot: userCapability is "added",
       // so it shows up in Change Model's own blast-radius index.
-      // Root-relative capability key (OUT-01) -- never the absolute path.
+      // Root-relative capability key (OUT-01): never the absolute path.
       expect(result.evidence.change?.manifest.addedCapabilities).toContain("user.ts#userCapability")
       // OUT-04: the usage scan genuinely ran this time, so every flag is true.
       expect(result.evidence.computed).toEqual({
@@ -706,7 +706,7 @@ describe("generateDataArtifacts", () => {
       )
       const evidencePath = path.join(root, "evidence.json")
 
-      // Run 1: evidence-only -- no --location/--docs/--ownership/--flow at all.
+      // Run 1: evidence-only; no --location/--docs/--ownership/--flow at all.
       const first = await generateDataArtifacts({
         fs: nodeBuildFs,
         root,
@@ -720,7 +720,7 @@ describe("generateDataArtifacts", () => {
       // --ownership was never requested.
       expect(first.evidence.dependency?.edges.length).toBeGreaterThan(0)
       expect(first.evidence.computed.dependency).toBe(true)
-      // F2: a real manifest diff, even though --location never ran -- first
+      // F2: a real manifest diff, even though --location never ran; first
       // run, so userCapability shows up as added.
       expect(first.evidence.change?.manifest.addedCapabilities).toContain("user.ts#userCapability")
       expect(first.evidence.computed.change).toBe(true)
@@ -733,7 +733,7 @@ describe("generateDataArtifacts", () => {
       // The cited file changes underneath the citation.
       await writeFile("legacy.ts", "// this file has now changed\nconst x = 2;\n")
 
-      // Run 2: still evidence-only -- change-detection/citation-verification
+      // Run 2: still evidence-only; change-detection/citation-verification
       // must still fire without --location ever being requested.
       const second = await generateDataArtifacts({
         fs: nodeBuildFs,
@@ -745,7 +745,7 @@ describe("generateDataArtifacts", () => {
         expect.objectContaining({ code: "STALE_DYNAMIC_ACCESS_CITATION", severity: "warning" }),
       )
       // Nothing about the capability's own shape changed between the two
-      // runs -- only the cited file's content did.
+      // runs: only the cited file's content did.
       expect(second.evidence.change?.manifest.addedCapabilities).toEqual([])
       expect(second.evidence.change?.manifest.updatedCapabilities).toEqual([])
     })
@@ -1012,7 +1012,7 @@ describe("generateDataArtifacts", () => {
   // key is spread as `{ key: undefined }` or left absent entirely, every
   // consumer that later reads it does so through its own `!== undefined`
   // check (or a destructuring default), so the value each one sees is
-  // identical either way -- only the immediate call argument's own key
+  // identical either way; only the immediate call argument's own key
   // presence differs. That is only observable by inspecting the literal
   // object handed to the very next function in the pipeline, so these tests
   // spy on that function (letting the real implementation run underneath)
@@ -1163,7 +1163,7 @@ describe("generateDataArtifacts", () => {
         expect(Object.hasOwn(neither ?? {}, "change")).toBe(false)
 
         spy.mockClear()
-        // --location alone now drives `change` too (F2) -- no --ownership needed.
+        // --location alone now drives `change` too (F2): no --ownership needed.
         await generateDataArtifacts({
           fs: nodeBuildFs,
           root,
@@ -1176,7 +1176,7 @@ describe("generateDataArtifacts", () => {
 
         spy.mockClear()
         // --evidence alone (no --location/--ownership/--flow/--docs at all)
-        // drives `change` too now -- the whole point of F2.
+        // drives `change` too now: the whole point of F2.
         await generateDataArtifacts({
           fs: nodeBuildFs,
           root,

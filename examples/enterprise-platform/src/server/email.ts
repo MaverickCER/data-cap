@@ -1,6 +1,6 @@
 /**
  * Transactional email (Resend), with a console-log fallback when
- * `RESEND_API_KEY` isn't set -- keeps this example runnable (including its
+ * `RESEND_API_KEY` isn't set: keeps this example runnable (including its
  * headless golden-tested `npm start`) without a real API key, the same
  * convention every other example uses for "external" services (a simulated
  * fetch standing in for a real network call). A real deployment sets the

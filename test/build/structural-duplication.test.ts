@@ -106,7 +106,7 @@ describe("checkStructuralDuplication", () => {
         family: "structural",
         severity: "info",
         message:
-          '"email" is declared with the same shape in both "a" and "b" -- independent capabilities can legitimately duplicate a field; worth a look if that wasn\'t intentional.',
+          '"email" is declared with the same shape in both "a" and "b". Independent capabilities can legitimately duplicate a field; worth a look if that wasn\'t intentional.',
         capability: { file: "/project/a.ts", exportName: "a" },
         field: ["email"],
       },
@@ -336,7 +336,9 @@ describe("how many pair findings are listed", () => {
         }),
       ]),
     )
-    expect(findings.map((finding) => finding.message.replace(/ -- .*/, ""))).toEqual([
+    expect(
+      findings.map((finding) => finding.message.replace(/\. It may be a duplicate .*/, "")),
+    ).toEqual([
       `Endpoint "u1" is declared by both "a"'s getter "one" and "b"'s getter "x"`,
       `Endpoint "u1" is declared by both "a"'s getter "one" and "b"'s getter "z"`,
       `Endpoint "u2" is declared by both "a"'s getter "two" and "b"'s getter "y"`,
@@ -426,7 +428,7 @@ describe("checkDuplicateEndpoints", () => {
         family: "structural",
         severity: "info",
         message:
-          'Endpoint "https://x/u" is declared by both "a"\'s getter "getUser" and "b"\'s mutator "syncUser" -- possibly a duplicate network fetch across independently-declared capabilities; worth a look if that wasn\'t intentional.',
+          'Endpoint "https://x/u" is declared by both "a"\'s getter "getUser" and "b"\'s mutator "syncUser". It may be a duplicate network fetch across independently-declared capabilities; worth a look if that wasn\'t intentional.',
         capability: { file: "/p/a.ts", exportName: "a" },
         operation: "getUser",
       },

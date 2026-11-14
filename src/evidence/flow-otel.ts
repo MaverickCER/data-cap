@@ -1,18 +1,19 @@
 /**
- * OpenTelemetry mapping for runtime observations (ADR 0070, ADR 0072): the
- * Evidence Model's `observation` as OTLP/JSON traces, and the reverse -- the
- * `data_cap.*` attributes an instrumented service puts on its own spans, read
- * back as observation events. data-cap takes **no OpenTelemetry dependency**:
- * this is a plain-data mapping, so any exporter or collector can carry it.
+ * OpenTelemetry mapping for runtime observations (ADR 0070, ADR 0072). It
+ * maps the Evidence Model's `observation` to OTLP/JSON traces, and the
+ * reverse. In the reverse, the `data_cap.*` attributes an instrumented
+ * service puts on its own spans are read back as observation events.
+ * data-cap takes **no OpenTelemetry dependency**. This is a plain-data
+ * mapping, so any exporter or collector can carry it.
  *
  * What an OTel trace is evidence of matters. A span says the data crossed a
- * boundary in one execution; it does not prove that every static path is safe,
- * and it covers only the code that ran. The projection therefore emits one
- * span per aggregated observation (a summary, with the occurrence count), not
- * a timeline: observations carry no timestamps, so every span is stamped with
- * the evidence's generation instant. Names and paths only -- the reader takes
- * the documented `data_cap.*` attributes and nothing else, so a value that
- * happens to sit on a span can never be ingested.
+ * boundary in one execution. It does not prove that every static path is
+ * safe, and it covers only the code that ran. So the projection emits one span
+ * per aggregated observation (a summary, with the occurrence count), not a
+ * timeline. Observations carry no timestamps, so every span is stamped with
+ * the evidence's generation instant. It carries names and paths only. The
+ * reader takes the documented `data_cap.*` attributes and nothing else, so a
+ * value that happens to sit on a span can never be ingested.
  *
  * Isomorphic and deterministic.
  */
@@ -65,9 +66,9 @@ export interface OtlpOptions {
   /** `service.name` of the resource (default `data-cap`). */
   readonly serviceName?: string | undefined
   /**
-   * Also emit one root span per scope (`data_cap.scope.root = "true"`, spanning the scope's first..last seen when the
-   * scope carried times) and point each observation span of that scope at it with `parentSpanId`. Off by default so
-   * the flat output stays byte-identical. The reader skips roots without counting them.
+   * Also emit one root span per scope (`data_cap.scope.root = "true"`), and point each observation span of that scope
+   * at it with `parentSpanId`. The root spans the scope's first to last sighting when the scope carried times. Off by
+   * default so the flat output stays byte-identical. The reader skips roots without counting them.
    */
   readonly scopeRoots?: boolean | undefined
 }
@@ -255,8 +256,9 @@ function spanTime(span: Record<string, unknown>, key: string): number | "ignored
 }
 
 /**
- * Reads one span: its events (none when it carries no `data_cap.*` attribute, so it is not data-cap's),
- * `"root"` for a scope root (carries no observation), or `"skipped"` when it has some of the attributes but not a usable set.
+ * Reads one span. It returns the span's events, or none when it carries no `data_cap.*` attribute
+ * (it is not data-cap's). It returns `"root"` for a scope root, which carries no observation.
+ * It returns `"skipped"` when the span has some of the attributes but not a usable set.
  */
 function eventsOfSpan(span: Record<string, unknown>, max: number, trust: boolean): SpanRead {
   const handlings: readonly FlowHandling[] = [

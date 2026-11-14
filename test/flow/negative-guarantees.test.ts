@@ -130,7 +130,9 @@ describe("Negative guarantee 28 -- an unknown is never presented as complete", (
       expect(outputs["mermaid"]).toMatch(/NOT complete/)
       expect(outputs["graphView"]).toContain('"complete":false')
       for (const name of ["text", "dot", "mermaid"])
-        expect(outputs[name], name).not.toMatch(/-- complete[.;"]/)
+        expect(outputs[name], name).not.toMatch(
+          /; complete\.|Data flow: complete|Coverage: complete/,
+        )
       expect(evaluateEvidenceRules(fixture.evidence, { requireComplete: true }).ok).toBe(false)
     } finally {
       await fixture.cleanup()
@@ -144,8 +146,8 @@ describe("Negative guarantee 28 -- an unknown is never presented as complete", (
     })
     try {
       expect(fixture.evidence.flow?.coverage.complete).toBe(true)
-      expect(renderFlowText(fixture.evidence)).toMatch(/-- complete\./)
-      expect(renderFlowDot(fixture.evidence)).toMatch(/Data flow -- complete/)
+      expect(renderFlowText(fixture.evidence)).toMatch(/; complete\./)
+      expect(renderFlowDot(fixture.evidence)).toMatch(/Data flow: complete/)
       expect(evaluateEvidenceRules(fixture.evidence, { requireComplete: true }).ok).toBe(true)
     } finally {
       await fixture.cleanup()

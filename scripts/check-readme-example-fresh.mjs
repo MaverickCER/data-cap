@@ -16,7 +16,7 @@
 // is not installed, which keeps it safe in `npm run verify` on a checkout that never installed
 // the examples, while still biting in CI where they are.
 //
-// Dependency-free (Node builtins only) -- dev/CI tooling, never shipped.
+// Dependency-free (Node builtins only): dev/CI tooling, never shipped.
 
 import { execFileSync } from "node:child_process"
 import {

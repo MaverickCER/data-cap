@@ -26,6 +26,10 @@ Every export a consumer can import, by entry point, for version 0.10.0. Generate
 - `FieldOwnership` (typealias): `type FieldOwnership<T> = true | { [K in keyof T]?: T[K] extends readonly unknown[] ? true : T[K] extends object ? FieldOwnership<T[K]> : true; }`
 - `fields` (class): `class fields`
 - `FieldsShape` (typealias): `type FieldsShape = Record<string, any>`
+- `FlowBoundaryKind` (typealias): `type FlowBoundaryKind = DataFlowEndpointKind | "client-response" | "log"`
+- `FlowHandling` (typealias): `type FlowHandling = "plaintext" | "masked" | "redacted" | "hashed" | "encrypted"`
+- `FlowPolicyAppliesToDocs` (interface): `interface FlowPolicyAppliesToDocs`
+- `FlowPolicyDocs` (interface): `interface FlowPolicyDocs`
 - `GetterDefinition` (interface): `interface GetterDefinition<TFields, TParams, TRaw, TWrites extends FieldOwnership<TFields>>`
 - `InferFields` (typealias): `type InferFields<F extends FieldsShape> = { [K in keyof F]: InferFieldValue<F[K]>; }`
 - `InferFieldValue` (typealias): `type InferFieldValue<F> = F extends NullableMarker<infer Inner> ? InferFieldValue<Inner> | null : F extends OptionalMarker<infer Inner> ? InferFieldValue<Inner> | undefined : F extends readonly (infer Item)[] ? InferFieldValue<Item>[] : F extends Date | URL | RegExp ? F : F extends (...args: never[]) => unknown ? never : F extends object ? { [K in keyof F]: InferFieldValue<F[K]>; } : F`
@@ -89,23 +93,34 @@ Every export a consumer can import, by entry point, for version 0.10.0. Generate
 
 ## `data-cap/build`
 
+- `analyzeLeastData` (function): `function analyzeLeastData(input: LeastDataInput): LeastDataReport`
+- `analyzeRedundantTransforms` (function): `function analyzeRedundantTransforms(flow: FlowModel): RedundantTransform[]`
 - `BlastRadiusEntry` (interface): `interface BlastRadiusEntry`
 - `buildChangeModel` (function): `function buildChangeModel(manifest: ManifestChangeReport, capabilities: readonly ChangeModelCapability[], dependencyModel?: DependencyModel): ChangeModel`
 - `buildCitationSnapshots` (function): `function buildCitationSnapshots(inventory: CapabilityInventory, root: string, fs: BuildFileSystem): Promise<ReadonlyMap<string, Readonly<Record<string, readonly CitationSnapshotEntry[]>>>>`
+- `buildClaimsModel` (function): `function buildClaimsModel(inputs: ClaimsModelInputs): ClaimsModel`
+- `buildCycloneDxBom` (function): `function buildCycloneDxBom(evidence: CycloneDxInput, options?: CycloneDxOptions): CycloneDxBom | undefined`
 - `buildDependencyModel` (function): `function buildDependencyModel(edges: readonly DependencyEdge[]): DependencyModel`
 - `BuildDirent` (interface): `interface BuildDirent`
 - `buildEvidenceModel` (function): `function buildEvidenceModel(models: EvidenceModelInputs, provenance: EvidenceProvenance): EvidenceModel`
 - `BuildFileSystem` (interface): `interface BuildFileSystem`
 - `buildFindingModel` (function): `function buildFindingModel(findings: readonly ReportFinding[]): FindingModel`
 - `buildFlowGraph` (function): `function buildFlowGraph(inventory: CapabilityInventory, edges: readonly DependencyEdge[]): FlowGraph`
+- `buildFlowGraphView` (function): `function buildFlowGraphView(evidence: FlowGraphViewInput): FlowGraphView | undefined`
+- `buildFlowModel` (function): `function buildFlowModel(input: FlowModelInput): FlowModel`
 - `buildInventory` (function): `function buildInventory(linkResult: LinkResult): CapabilityInventory`
 - `buildLifecycleModel` (function): `function buildLifecycleModel(inventory: CapabilityInventory, expiringWithinDays: number, now: Date): LifecycleModel`
 - `buildManifestSnapshot` (function): `function buildManifestSnapshot(inventory: CapabilityInventory): ManifestSnapshot`
+- `buildObservationModel` (function): `function buildObservationModel(events: readonly ObservationEvent[], skips?: readonly ObservationSkip[]): ObservationModel`
 - `buildOpenApiSchemaArtifact` (function): `function buildOpenApiSchemaArtifact(inventory: CapabilityInventory, info: { readonly title: string; readonly version: string; }): OpenApiSchemaArtifact`
+- `buildOscalAssessmentResults` (function): `function buildOscalAssessmentResults(evidence: OscalInput, options: OscalOptions): OscalAssessmentResults | undefined`
 - `buildOwnershipMatrix` (function): `function buildOwnershipMatrix(inventory: CapabilityInventory): readonly OwnershipMatrixEntry[]`
 - `buildOwnershipModel` (function): `function buildOwnershipModel(inventory: CapabilityInventory): OwnershipModel`
+- `buildPolicyModel` (function): `function buildPolicyModel(flow: FlowModel, rules: readonly FlowPolicyRule[]): PolicyModel`
+- `buildProvDocument` (function): `function buildProvDocument(evidence: ProvInput): ProvDocument | undefined`
 - `buildRuntimeContractModel` (function): `function buildRuntimeContractModel(): RuntimeContractModel`
-- `buildSarifLog` (function): `function buildSarifLog(findingModel: FindingModel): SarifLog`
+- `buildSarifLog` (function): `function buildSarifLog(findingModel: FindingModel, options?: BuildSarifLogOptions): SarifLog`
+- `BuildSarifLogOptions` (interface): `interface BuildSarifLogOptions`
 - `BuildStats` (interface): `interface BuildStats`
 - `CAPABILITY_MODEL_SCHEMA_VERSION` (variable): `CAPABILITY_MODEL_SCHEMA_VERSION = 3`
 - `CapabilityInventory` (interface): `interface CapabilityInventory`
@@ -120,15 +135,27 @@ Every export a consumer can import, by entry point, for version 0.10.0. Generate
 - `checkOwnershipAndSensitivity` (function): `function checkOwnershipAndSensitivity(inventory: CapabilityInventory): readonly ReportFinding[]`
 - `checkStructuralDuplication` (function): `function checkStructuralDuplication(inventory: CapabilityInventory): readonly ReportFinding[]`
 - `CitationSnapshotEntry` (interface): `interface CitationSnapshotEntry extends SourceLocation`
+- `Claim` (interface): `interface Claim`
+- `ClaimKind` (typealias): `type ClaimKind = "field-reaches-boundary" | "field-sourced-from-boundary" | "policy-holds"`
+- `CLAIMS_MODEL_SCHEMA_VERSION` (variable): `CLAIMS_MODEL_SCHEMA_VERSION = 1`
+- `ClaimScope` (interface): `interface ClaimScope`
+- `ClaimsModel` (interface): `interface ClaimsModel`
+- `ClaimsModelInputs` (interface): `interface ClaimsModelInputs`
+- `ClaimsSummary` (typealias): `type ClaimsSummary = Readonly<Record<ClaimVerification, number>>`
+- `ClaimVerification` (typealias): `type ClaimVerification = "verified" | "inferred" | "unobserved" | "contradicted" | "observed-only" | "indeterminate"`
 - `ClassificationEntry` (interface): `interface ClassificationEntry`
+- `collectFlowPolicyRules` (function): `function collectFlowPolicyRules(inventory: CapabilityInventory): readonly FlowPolicyRule[]`
 - `ComplianceEntry` (interface): `interface ComplianceEntry`
 - `ComputedArtifacts` (interface): `interface ComputedArtifacts`
 - `computeDataArtifacts` (function): `function computeDataArtifacts(options: GenerateDataArtifactsOptions): Promise<ComputedArtifacts>`
 - `computeExpiringEntries` (function): `function computeExpiringEntries(inventory: CapabilityInventory, expiringWithinDays: number, now: Date): readonly ExpiringEntry[]`
 - `computeSourceFingerprint` (function): `function computeSourceFingerprint(options: ComputeSourceFingerprintOptions): Promise<string>`
 - `ComputeSourceFingerprintOptions` (interface): `interface ComputeSourceFingerprintOptions`
+- `CycloneDxBom` (interface): `interface CycloneDxBom`
+- `CycloneDxOptions` (interface): `interface CycloneDxOptions`
 - `DataProjectGenerationError` (class): `class DataProjectGenerationError extends DataCapError`
 - `DEFAULT_EXPIRING_WITHIN_DAYS` (variable): `DEFAULT_EXPIRING_WITHIN_DAYS = 30`
+- `DEFAULT_FLOW_SINKS` (variable): `DEFAULT_FLOW_SINKS: readonly FlowSinkPattern[]`
 - `DEFAULT_INCLUDE` (variable): `DEFAULT_INCLUDE: readonly string[]`
 - `defineEvidenceProjection` (function): `function defineEvidenceProjection<T extends Record<string, unknown>>(schema: EvidenceProjectionSchema<T>): EvidenceProjection<T>`
 - `DEPENDENCY_MODEL_SCHEMA_VERSION` (variable): `DEPENDENCY_MODEL_SCHEMA_VERSION = 3`
@@ -138,12 +165,15 @@ Every export a consumer can import, by entry point, for version 0.10.0. Generate
 - `DependencyModelConsumer` (interface): `interface DependencyModelConsumer`
 - `DependencyRelationship` (typealias): `type DependencyRelationship = "imports" | "reads-field" | "calls-getter" | "calls-mutator" | "calls-subscription"`
 - `deriveUsageFindings` (function): `function deriveUsageFindings(inventory: CapabilityInventory, edges: readonly DependencyEdge[]): readonly ReportFinding[]`
+- `diffFlow` (function): `function diffFlow(before: FlowModel, after: FlowModel): FlowDiff`
 - `diffManifestSnapshots` (function): `function diffManifestSnapshots(previous: ManifestSnapshot | undefined, current: ManifestSnapshot): ManifestChangeReport`
 - `discoverCapabilityFiles` (function): `function discoverCapabilityFiles(options: DiscoverOptions): Promise<string[]>`
 - `DiscoveredCapability` (interface): `interface DiscoveredCapability`
 - `DiscoverOptions` (interface): `interface DiscoverOptions`
+- `evaluateEvidenceRules` (function): `function evaluateEvidenceRules(evidence: EvidenceRulesInput, rules: EvidenceRules): EvidenceRulesResult`
 - `evaluateLiteral` (function): `function evaluateLiteral(node: TS.Expression): LiteralEvalResult`
-- `EVIDENCE_MODEL_SCHEMA_VERSION` (variable): `EVIDENCE_MODEL_SCHEMA_VERSION = 2`
+- `EVIDENCE_MODEL_SCHEMA_VERSION` (variable): `EVIDENCE_MODEL_SCHEMA_VERSION = 3`
+- `EVIDENCE_RULE_NAMES` (variable): `EVIDENCE_RULE_NAMES: readonly ["noPolicyViolations", "noIndeterminatePolicies", "maxContradictedClaims", "maxUnknowns", "requireComplete", "maxUnusedSensitivePaths", "maxWholeFieldToClient", "requireObservations", "minVerifiedClaims", "requireVerified", "maxRedundantTransforms", "maxObservationAgeDays"]`
 - `EvidenceComputedModels` (interface): `interface EvidenceComputedModels`
 - `evidenceDisclaimer` (function): `function evidenceDisclaimer(): string`
 - `EvidenceModel` (interface): `interface EvidenceModel`
@@ -153,16 +183,60 @@ Every export a consumer can import, by entry point, for version 0.10.0. Generate
 - `EvidenceProjectionSchema` (typealias): `type EvidenceProjectionSchema<T extends Record<string, unknown>> = { readonly [K in keyof T]: EvidenceProjector<T[K]>; }`
 - `EvidenceProjector` (typealias): `type EvidenceProjector<T> = (evidence: EvidenceModel) => T`
 - `EvidenceProvenance` (interface): `interface EvidenceProvenance`
+- `EvidenceRef` (interface): `interface EvidenceRef`
+- `EvidenceRefModel` (typealias): `type EvidenceRefModel = "flow" | "policy" | "observation"`
+- `EvidenceRules` (interface): `interface EvidenceRules`
+- `EvidenceRulesResult` (interface): `interface EvidenceRulesResult`
+- `EvidenceRuleViolation` (interface): `interface EvidenceRuleViolation`
 - `ExpiringEntry` (interface): `interface ExpiringEntry`
 - `FieldFlow` (interface): `interface FieldFlow`
 - `FieldNode` (interface): `interface FieldNode`
+- `filterFlow` (function): `function filterFlow(model: FlowModel, filter: FlowFilter): FlowView`
 - `FINDING_MODEL_SCHEMA_VERSION` (variable): `FINDING_MODEL_SCHEMA_VERSION = 2`
 - `FindingLocation` (typealias): `type FindingLocation = { readonly kind: "none"; } | { readonly kind: "capability"; readonly capability: FindingLocationCapability; readonly position?: SourcePosition; } | { readonly kind: "field"; readonly capability: FindingLocationCapability; readonly field: readonly string[]; readonly position?: SourcePosition; readonly indeterminateSites?: readonly SourceLocation[]; } | { readonly kind: "operation"; readonly capability: FindingLocationCapability; readonly operation: string; readonly position?: SourcePosition; } | { readonly kind: "consumer"; readonly capability: FindingLocationCapability; readonly source: string; }`
 - `FindingLocationCapability` (interface): `interface FindingLocationCapability`
 - `FindingModel` (interface): `interface FindingModel`
 - `findManifestExportCollisions` (function): `function findManifestExportCollisions(inventory: CapabilityInventory): ReadonlyMap<string, readonly string[]>`
 - `fingerprintPathFor` (function): `function fingerprintPathFor(evidencePath: string): string`
+- `FLOW_GRAPH_VIEW_VERSION` (variable): `FLOW_GRAPH_VIEW_VERSION = 1`
+- `FLOW_MODEL_SCHEMA_VERSION` (variable): `FLOW_MODEL_SCHEMA_VERSION = 1`
+- `flowAnalysisFindings` (function): `function flowAnalysisFindings(flow: FlowModel): ReportFinding[]`
+- `FlowBoundaryKind` (typealias): `type FlowBoundaryKind = DataFlowEndpointKind | "client-response" | "log"`
+- `FlowCoverage` (interface): `interface FlowCoverage`
+- `FlowDiagramOptions` (interface): `interface FlowDiagramOptions`
+- `FlowDiff` (interface): `interface FlowDiff`
+- `FlowEdge` (interface): `interface FlowEdge extends FlowEdgeInput`
+- `flowEdgeId` (function): `function flowEdgeId(kind: FlowEdgeKind, from: string, to: string, path: readonly string[] | undefined, status: FlowStatus, origin?: string): string`
+- `FlowEdgeInput` (interface): `interface FlowEdgeInput`
+- `FlowEdgeKind` (typealias): `type FlowEdgeKind = "reads" | "writes" | "transforms" | "discards" | "passes" | "returns" | "calls" | "crosses-boundary" | "side-effect"`
+- `FlowEdgeTag` (interface): `interface FlowEdgeTag extends FlowEdgeTagInput`
+- `FlowEdgeTagInput` (interface): `interface FlowEdgeTagInput`
+- `FlowFilter` (interface): `interface FlowFilter`
 - `FlowGraph` (interface): `interface FlowGraph`
+- `FlowGraphView` (interface): `interface FlowGraphView`
+- `FlowHandling` (typealias): `type FlowHandling = "plaintext" | "masked" | "redacted" | "hashed" | "encrypted"`
+- `FlowModel` (interface): `interface FlowModel`
+- `FlowModelError` (class): `class FlowModelError extends DataCapError`
+- `FlowModelInput` (interface): `interface FlowModelInput`
+- `FlowNode` (interface): `interface FlowNode extends FlowNodeInput`
+- `FlowNodeChange` (interface): `interface FlowNodeChange`
+- `flowNodeId` (function): `function flowNodeId(kind: FlowNodeKind, scope: string, name: string): string`
+- `FlowNodeInput` (interface): `interface FlowNodeInput`
+- `FlowNodeKind` (typealias): `type FlowNodeKind = "function" | "parameter" | "return" | "field" | "boundary"`
+- `FlowPolicyAppliesTo` (interface): `interface FlowPolicyAppliesTo`
+- `FlowPolicyRule` (interface): `interface FlowPolicyRule`
+- `FlowSinkPattern` (interface): `interface FlowSinkPattern`
+- `FlowStatus` (typealias): `type FlowStatus = "declared" | "static" | "observed" | "inferred" | "unknown"`
+- `FlowSummary` (typealias): `type FlowSummary = { readonly module: string; readonly export: string; } & ({ readonly effect: "pass-through"; readonly approximate?: true; } | { readonly effect: "returns-arg"; readonly arg: number; readonly approximate?: true; } | { readonly effect: "sink"; readonly boundary: FlowSinkPattern["boundary"]; readonly handling?: FlowHandling; } | { readonly effect: "sanitizes"; } | { readonly effect: "ignores"; })`
+- `FlowTextOptions` (interface): `interface FlowTextOptions`
+- `FlowTrace` (interface): `interface FlowTrace`
+- `FlowTraceDirection` (typealias): `type FlowTraceDirection = "upstream" | "downstream"`
+- `FlowTraceOptions` (interface): `interface FlowTraceOptions`
+- `FlowUnknown` (interface): `interface FlowUnknown extends FlowUnknownInput`
+- `FlowUnknownInput` (interface): `interface FlowUnknownInput`
+- `FlowUnknownReason` (typealias): `type FlowUnknownReason = "dynamic-access" | "unresolved-call" | "unresolved-import" | "unsupported-construct" | "missing-source" | "unanalyzed-function"`
+- `FlowVia` (typealias): `type FlowVia = "copy" | "serialize-roundtrip" | "forward" | "derive"`
+- `FlowView` (interface): `interface FlowView`
 - `generateDataArtifacts` (function): `function generateDataArtifacts(options: GenerateDataArtifactsOptions): Promise<ReportResult>`
 - `GenerateDataArtifactsOptions` (interface): `interface GenerateDataArtifactsOptions`
 - `generatedBanner` (function): `function generatedBanner(format?: "ts" | "markdown", regenerate?: string): string`
@@ -189,6 +263,11 @@ Every export a consumer can import, by entry point, for version 0.10.0. Generate
 - `ImportBindingMatch` (interface): `interface ImportBindingMatch`
 - `isGeneratedFile` (function): `function isGeneratedFile(content: string): boolean`
 - `JsonSchemaLike` (typealias): `type JsonSchemaLike = Record<string, unknown>`
+- `LeastDataCapability` (interface): `interface LeastDataCapability`
+- `leastDataFindings` (function): `function leastDataFindings(report: LeastDataReport): ReportFinding[]`
+- `LeastDataIndeterminate` (interface): `interface LeastDataIndeterminate`
+- `LeastDataInput` (interface): `interface LeastDataInput`
+- `LeastDataReport` (interface): `interface LeastDataReport`
 - `LIFECYCLE_MODEL_SCHEMA_VERSION` (variable): `LIFECYCLE_MODEL_SCHEMA_VERSION = 1`
 - `LifecycleModel` (interface): `interface LifecycleModel`
 - `LifecycleModelCapability` (interface): `interface LifecycleModelCapability`
@@ -204,51 +283,87 @@ Every export a consumer can import, by entry point, for version 0.10.0. Generate
 - `ManifestFieldDiff` (interface): `interface ManifestFieldDiff`
 - `ManifestSnapshot` (interface): `interface ManifestSnapshot`
 - `ManifestSnapshotCapability` (interface): `interface ManifestSnapshotCapability`
+- `MIN_FORWARDING_HOPS` (variable): `MIN_FORWARDING_HOPS = 3`
+- `OBSERVATION_MODEL_SCHEMA_VERSION` (variable): `OBSERVATION_MODEL_SCHEMA_VERSION = 1`
+- `Observation` (interface): `interface Observation`
+- `ObservationEvent` (interface): `interface ObservationEvent`
+- `ObservationModel` (interface): `interface ObservationModel`
+- `observationsFromOtlp` (function): `function observationsFromOtlp(payload: unknown, options?: OtlpReadOptions): OtlpReadResult`
+- `ObservationSink` (interface): `interface ObservationSink`
+- `observationsToOtlp` (function): `function observationsToOtlp(evidence: OtlpInput, options?: OtlpOptions): OtlpTraces | undefined`
+- `ObserveBoundaryInput` (interface): `interface ObserveBoundaryInput`
+- `ObservedBoundary` (interface): `interface ObservedBoundary`
+- `observedFlow` (function): `function observedFlow(flow: FlowModel, observation: ObservationModel, scope?: string): ObservedFlow`
+- `ObservedFlow` (interface): `interface ObservedFlow`
 - `OpenApiSchemaArtifact` (interface): `interface OpenApiSchemaArtifact`
 - `OperationNames` (interface): `interface OperationNames`
 - `OperationNode` (interface): `interface OperationNode`
 - `OperationPresenceByKind` (interface): `interface OperationPresenceByKind`
 - `OperationWritesByKind` (interface): `interface OperationWritesByKind`
+- `OscalAssessmentResults` (interface): `interface OscalAssessmentResults`
+- `OscalOptions` (interface): `interface OscalOptions`
+- `OtlpTraces` (interface): `interface OtlpTraces`
 - `OWNERSHIP_MODEL_SCHEMA_VERSION` (variable): `OWNERSHIP_MODEL_SCHEMA_VERSION = 2`
 - `OwnershipCapabilityRef` (interface): `interface OwnershipCapabilityRef`
 - `OwnershipFieldRef` (interface): `interface OwnershipFieldRef`
 - `OwnershipMatrixEntry` (interface): `interface OwnershipMatrixEntry`
 - `OwnershipModel` (interface): `interface OwnershipModel`
 - `parseCapabilityFile` (function): `function parseCapabilityFile(filePath: string, sourceText: string): ParseResult`
+- `parseEvidenceRules` (function): `function parseEvidenceRules(text: string): ParsedEvidenceRules`
 - `ParseResult` (interface): `interface ParseResult`
 - `ParseWarning` (interface): `interface ParseWarning`
+- `POLICY_MODEL_SCHEMA_VERSION` (variable): `POLICY_MODEL_SCHEMA_VERSION = 1`
+- `policyFindings` (function): `function policyFindings(policy: PolicyModel, flow: FlowModel): ReportFinding[]`
+- `PolicyIndeterminateReason` (typealias): `type PolicyIndeterminateReason = "rule-matches-nothing" | "trace-incomplete" | "handling-not-declared" | "boundary-kind-unknown"`
+- `PolicyModel` (interface): `interface PolicyModel`
+- `PolicyOutcome` (typealias): `type PolicyOutcome = "satisfied" | "violated" | "indeterminate"`
+- `PolicyResult` (interface): `interface PolicyResult`
+- `PolicySummary` (interface): `interface PolicySummary`
 - `positionOf` (function): `function positionOf(sourceFile: TS.SourceFile, node: TS.Node): SourcePosition`
 - `PrivacyEntry` (interface): `interface PrivacyEntry`
 - `projectAuditEvidence` (function): `function projectAuditEvidence(evidence: EvidenceModel): ProjectAuditEvidenceOutput`
 - `projectAuditEvidence` (namespace): `namespace projectAuditEvidence`
+- `ProjectAuditEvidenceOutput` (typealias): `type ProjectAuditEvidenceOutput = OutputOf<ReturnType<typeof projectAuditEvidenceSchema>>`
 - `projectClassificationEvidence` (function): `function projectClassificationEvidence(evidence: EvidenceModel): ProjectClassificationEvidenceOutput`
 - `projectClassificationEvidence` (namespace): `namespace projectClassificationEvidence`
+- `ProjectClassificationEvidenceOutput` (typealias): `type ProjectClassificationEvidenceOutput = OutputOf<ReturnType<typeof projectClassificationEvidenceSchema>>`
 - `projectComplianceEvidence` (function): `function projectComplianceEvidence(evidence: EvidenceModel): ProjectComplianceEvidenceOutput`
 - `projectComplianceEvidence` (namespace): `namespace projectComplianceEvidence`
+- `ProjectComplianceEvidenceOutput` (typealias): `type ProjectComplianceEvidenceOutput = OutputOf<ReturnType<typeof projectComplianceEvidenceSchema>>`
 - `projectFields` (function): `function projectFields(inventory: CapabilityInventory): readonly WithCapability<FieldNode>[]`
 - `projectGetters` (function): `function projectGetters(inventory: CapabilityInventory): readonly WithCapability<OperationNode>[]`
 - `projectMutators` (function): `function projectMutators(inventory: CapabilityInventory): readonly WithCapability<OperationNode>[]`
 - `projectOperationInventory` (function): `function projectOperationInventory(inventory: CapabilityInventory): readonly WithCapability<OperationNode>[]`
 - `projectPrivacyEvidence` (function): `function projectPrivacyEvidence(evidence: EvidenceModel): ProjectPrivacyEvidenceOutput`
 - `projectPrivacyEvidence` (namespace): `namespace projectPrivacyEvidence`
+- `ProjectPrivacyEvidenceOutput` (typealias): `type ProjectPrivacyEvidenceOutput = OutputOf<ReturnType<typeof projectPrivacyEvidenceSchema>>`
 - `projectRetentionEvidence` (function): `function projectRetentionEvidence(evidence: EvidenceModel): ProjectRetentionEvidenceOutput`
 - `projectRetentionEvidence` (namespace): `namespace projectRetentionEvidence`
+- `ProjectRetentionEvidenceOutput` (typealias): `type ProjectRetentionEvidenceOutput = OutputOf<ReturnType<typeof projectRetentionEvidenceSchema>>`
 - `projectSubscriptions` (function): `function projectSubscriptions(inventory: CapabilityInventory): readonly WithCapability<OperationNode>[]`
+- `ProvDocument` (interface): `interface ProvDocument`
 - `RawCreateDataCall` (interface): `interface RawCreateDataCall`
 - `RawDocumentDataCall` (interface): `interface RawDocumentDataCall`
 - `RawOperationPresence` (interface): `interface RawOperationPresence`
 - `RawOperationWrites` (interface): `interface RawOperationWrites`
+- `RedundantTransform` (interface): `interface RedundantTransform`
+- `redundantTransformFindings` (function): `function redundantTransformFindings(items: readonly RedundantTransform[], flow: FlowModel): ReportFinding[]`
+- `RedundantTransformKind` (typealias): `type RedundantTransformKind = "round-trip" | "forwarding-hop" | "dead-derivation"`
 - `RenamedField` (interface): `interface RenamedField`
 - `renderCapabilityDiagram` (function): `function renderCapabilityDiagram(capability: CapabilityNode, flows: readonly FieldFlow[], root: string): string`
 - `renderDependencyGraphDot` (function): `function renderDependencyGraphDot(capabilities: readonly { readonly file: string; readonly exportName: string; }[], model: DependencyModel): string`
 - `renderDocumentation` (function): `function renderDocumentation(inventory: CapabilityInventory, root: string, changes?: ManifestChangeReport, edges?: readonly DependencyEdge[], evidencePath?: string, lifecycle?: LifecycleModel): string`
+- `renderFlowCycloneDx` (function): `function renderFlowCycloneDx(evidence: CycloneDxInput, options?: CycloneDxOptions): string | undefined`
+- `renderFlowDot` (function): `function renderFlowDot(evidence: DiagramInput, options?: FlowDiagramOptions): string | undefined`
+- `renderFlowMermaid` (function): `function renderFlowMermaid(evidence: DiagramInput, options?: FlowDiagramOptions): string | undefined`
+- `renderFlowText` (function): `function renderFlowText(evidence: FlowGraphViewInput, options?: FlowTextOptions): string | undefined`
 - `renderManifest` (function): `function renderManifest(inventory: CapabilityInventory, outputPath: string, root: string): string`
 - `renderOverviewDiagram` (function): `function renderOverviewDiagram(capabilities: readonly CapabilityNode[], flows: readonly FieldFlow[], root: string): string`
 - `renderOwnershipGraphDot` (function): `function renderOwnershipGraphDot(model: OwnershipModel): string`
 - `renderSensitivityDiagram` (function): `function renderSensitivityDiagram(level: string, capabilities: readonly CapabilityNode[], flows: readonly FieldFlow[], root: string): string`
 - `renderUsageReport` (function): `function renderUsageReport(inventory: CapabilityInventory, edges: readonly DependencyEdge[], root: string, scannedPackages?: readonly string[], evidencePath?: string): string`
 - `ReportFinding` (interface): `interface ReportFinding`
-- `ReportFindingCode` (typealias): `type ReportFindingCode = "CAPABILITY_MISSING_OWNER" | "SENSITIVE_CAPABILITY_MISSING_PROTECTIONS" | "SENSITIVE_FIELD_MISSING_PROTECTIONS" | "SENSITIVE_FIELD_MISSING_PURPOSE" | "SENSITIVE_FIELD_MISSING_LEGAL_BASIS" | "AUDIT_REQUIRED_WITHOUT_OWNER" | "NONSTANDARD_SENSITIVITY_LEVEL" | "EXCLUSIVE_GROUP_VIOLATION" | "MANIFEST_EXPORT_NAME_COLLISION" | "DUPLICATE_FIELD_SHAPE_ACROSS_CAPABILITIES" | "DUPLICATE_ENDPOINT_ACROSS_CAPABILITIES" | "ABANDONED_CAPABILITY" | "UNCONSUMED_FIELD" | "FIELD_ACCESS_INDETERMINATE" | "FIELD_DYNAMIC_ACCESS_DECLARED" | "MISSING_DYNAMIC_ACCESS_CITATION" | "STALE_DYNAMIC_ACCESS_CITATION" | "UNRESOLVED_CONSUMER" | "INDETERMINATE_CONSUMER" | "SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY" | "SENSITIVE_FIELD_ENDPOINT_MISSING_HANDLING"`
+- `ReportFindingCode` (typealias): `type ReportFindingCode = "CAPABILITY_MISSING_OWNER" | "SENSITIVE_CAPABILITY_MISSING_PROTECTIONS" | "SENSITIVE_FIELD_MISSING_PROTECTIONS" | "SENSITIVE_FIELD_MISSING_PURPOSE" | "SENSITIVE_FIELD_MISSING_LEGAL_BASIS" | "AUDIT_REQUIRED_WITHOUT_OWNER" | "NONSTANDARD_SENSITIVITY_LEVEL" | "EXCLUSIVE_GROUP_VIOLATION" | "MANIFEST_EXPORT_NAME_COLLISION" | "DUPLICATE_FIELD_SHAPE_ACROSS_CAPABILITIES" | "DUPLICATE_ENDPOINT_ACROSS_CAPABILITIES" | "ABANDONED_CAPABILITY" | "UNCONSUMED_FIELD" | "FIELD_ACCESS_INDETERMINATE" | "FIELD_DYNAMIC_ACCESS_DECLARED" | "MISSING_DYNAMIC_ACCESS_CITATION" | "STALE_DYNAMIC_ACCESS_CITATION" | "UNRESOLVED_CONSUMER" | "INDETERMINATE_CONSUMER" | "SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY" | "SENSITIVE_FIELD_ENDPOINT_MISSING_HANDLING" | "LEAST_DATA_UNUSED_PATH" | "LEAST_DATA_UNUSED_SENSITIVE_PATH" | "LEAST_DATA_WHOLE_FIELD_TO_CLIENT" | "LEAST_DATA_ANALYSIS_INDETERMINATE" | "LEAST_DATA_REDUNDANT_TRANSFORM" | "FLOW_POLICY_VIOLATED" | "FLOW_POLICY_INDETERMINATE" | "FLOW_ANALYSIS_INCOMPLETE"`
 - `ReportFindingFamily` (typealias): `type ReportFindingFamily = "governance" | "structural" | "usage" | "citation" | "flow"`
 - `ReportResult` (interface): `interface ReportResult`
 - `ReportSeverity` (typealias): `type ReportSeverity = "info" | "warning" | "error"`
@@ -262,12 +377,19 @@ Every export a consumer can import, by entry point, for version 0.10.0. Generate
 - `ScanDependenciesOptions` (interface): `interface ScanDependenciesOptions`
 - `ScanDependenciesResult` (interface): `interface ScanDependenciesResult`
 - `scanFileForUsage` (function): `function scanFileForUsage(sourceFile: TS.SourceFile, fromFile: string, matches: readonly ImportBindingMatch[]): readonly DependencyEdge[]`
+- `scanFlow` (function): `function scanFlow(options: ScanFlowOptions): Promise<ScanFlowResult>`
+- `ScanFlowOptions` (interface): `interface ScanFlowOptions`
+- `ScanFlowResult` (interface): `interface ScanFlowResult`
 - `ScanTarget` (interface): `interface ScanTarget`
 - `SchemaRef` (typealias): `type SchemaRef = { readonly kind: "literal"; readonly node: TS.ObjectLiteralExpression; } | { readonly kind: "identifier"; readonly name: string; } | { readonly kind: "unresolvable"; readonly reason: string; }`
 - `SourceLocation` (interface): `interface SourceLocation extends SourcePosition`
 - `SourcePosition` (interface): `interface SourcePosition`
-- `UNOWNED` (variable): `UNOWNED: string`
+- `traceFlow` (function): `function traceFlow(model: FlowModel, start: string, direction: FlowTraceDirection, options?: FlowTraceOptions): FlowTrace`
+- `traceFlowBetween` (function): `function traceFlowBetween(model: FlowModel, start: string, target: string, options?: FlowTraceOptions): FlowTrace`
+- `UNOWNED` (variable): `UNOWNED: "(unowned)"`
+- `UnusedPath` (interface): `interface UnusedPath`
 - `verifyDynamicAccessCitations` (function): `function verifyDynamicAccessCitations(inventory: CapabilityInventory, previousSnapshot: ManifestSnapshot | undefined, root: string, fs: BuildFileSystem): Promise<readonly ReportFinding[]>`
+- `WholeFieldToClient` (interface): `interface WholeFieldToClient`
 - `WithCapability` (interface): `interface WithCapability<T>`
 - `writeEvidenceFingerprint` (function): `function writeEvidenceFingerprint(evidencePath: string, fingerprint: string, fs: BuildFileSystem): Promise<void>`
 
@@ -277,23 +399,138 @@ Every export a consumer can import, by entry point, for version 0.10.0. Generate
 
 ## `data-cap/evidence`
 
+- `analyzeLeastData` (function): `function analyzeLeastData(input: LeastDataInput): LeastDataReport`
+- `analyzeRedundantTransforms` (function): `function analyzeRedundantTransforms(flow: FlowModel): RedundantTransform[]`
+- `buildCycloneDxBom` (function): `function buildCycloneDxBom(evidence: CycloneDxInput, options?: CycloneDxOptions): CycloneDxBom | undefined`
+- `buildFlowGraphView` (function): `function buildFlowGraphView(evidence: FlowGraphViewInput): FlowGraphView | undefined`
+- `buildOscalAssessmentResults` (function): `function buildOscalAssessmentResults(evidence: OscalInput, options: OscalOptions): OscalAssessmentResults | undefined`
+- `buildProvDocument` (function): `function buildProvDocument(evidence: ProvInput): ProvDocument | undefined`
+- `Claim` (interface): `interface Claim`
+- `ClaimsModel` (interface): `interface ClaimsModel`
+- `ClaimVerification` (typealias): `type ClaimVerification = "verified" | "inferred" | "unobserved" | "contradicted" | "observed-only" | "indeterminate"`
+- `CycloneDxAnnotation` (interface): `interface CycloneDxAnnotation`
+- `CycloneDxBom` (interface): `interface CycloneDxBom`
+- `CycloneDxData` (interface): `interface CycloneDxData`
+- `CycloneDxInput` (typealias): `type CycloneDxInput = Pick<EvidenceModel, "flow" | "policy" | "claims" | "observation" | "provenance" | "capability">`
+- `CycloneDxOptions` (interface): `interface CycloneDxOptions`
+- `CycloneDxProperty` (interface): `interface CycloneDxProperty`
+- `CycloneDxService` (interface): `interface CycloneDxService`
 - `defineEvidenceProjection` (function): `function defineEvidenceProjection<T extends Record<string, unknown>>(schema: EvidenceProjectionSchema<T>): EvidenceProjection<T>`
+- `DiagramInput` (typealias): `type DiagramInput = Pick<EvidenceModel, "flow" | "policy">`
+- `diffFlow` (function): `function diffFlow(before: FlowModel, after: FlowModel): FlowDiff`
+- `evaluateEvidenceRules` (function): `function evaluateEvidenceRules(evidence: EvidenceRulesInput, rules: EvidenceRules): EvidenceRulesResult`
+- `EVIDENCE_RULE_NAMES` (variable): `EVIDENCE_RULE_NAMES: readonly ["noPolicyViolations", "noIndeterminatePolicies", "maxContradictedClaims", "maxUnknowns", "requireComplete", "maxUnusedSensitivePaths", "maxWholeFieldToClient", "requireObservations", "minVerifiedClaims", "requireVerified", "maxRedundantTransforms", "maxObservationAgeDays"]`
 - `EvidenceModel` (interface): `interface EvidenceModel`
 - `EvidenceProjection` (interface): `interface EvidenceProjection<T extends Record<string, unknown>>`
 - `EvidenceProjectionResult` (interface): `interface EvidenceProjectionResult<T extends Record<string, unknown>>`
 - `EvidenceProjectionSchema` (typealias): `type EvidenceProjectionSchema<T extends Record<string, unknown>> = { readonly [K in keyof T]: EvidenceProjector<T[K]>; }`
 - `EvidenceProjector` (typealias): `type EvidenceProjector<T> = (evidence: EvidenceModel) => T`
 - `EvidenceProvenance` (interface): `interface EvidenceProvenance`
+- `EvidenceRef` (interface): `interface EvidenceRef`
+- `EvidenceRules` (interface): `interface EvidenceRules`
+- `EvidenceRulesInput` (typealias): `type EvidenceRulesInput = Pick<EvidenceModel, "capability" | "flow" | "policy" | "claims" | "observation" | "computed" | "provenance">`
+- `EvidenceRulesResult` (interface): `interface EvidenceRulesResult`
+- `EvidenceRuleViolation` (interface): `interface EvidenceRuleViolation`
+- `FieldDestination` (interface): `interface FieldDestination`
+- `FieldView` (interface): `interface FieldView`
+- `filterFlow` (function): `function filterFlow(model: FlowModel, filter: FlowFilter): FlowView`
+- `FLOW_GRAPH_VIEW_VERSION` (variable): `FLOW_GRAPH_VIEW_VERSION = 1`
+- `FlowBoundaryKind` (typealias): `type FlowBoundaryKind = DataFlowEndpointKind | "client-response" | "log"`
+- `FlowCoverage` (interface): `interface FlowCoverage`
+- `FlowDiagramOptions` (interface): `interface FlowDiagramOptions`
+- `FlowDiff` (interface): `interface FlowDiff`
+- `FlowEdge` (interface): `interface FlowEdge extends FlowEdgeInput`
+- `flowEdgeId` (function): `function flowEdgeId(kind: FlowEdgeKind, from: string, to: string, path: readonly string[] | undefined, status: FlowStatus, origin?: string): string`
+- `FlowEdgeKind` (typealias): `type FlowEdgeKind = "reads" | "writes" | "transforms" | "discards" | "passes" | "returns" | "calls" | "crosses-boundary" | "side-effect"`
+- `FlowEdgeTag` (interface): `interface FlowEdgeTag extends FlowEdgeTagInput`
+- `FlowEdgeTagInput` (interface): `interface FlowEdgeTagInput`
+- `FlowFilter` (interface): `interface FlowFilter`
+- `FlowGraphView` (interface): `interface FlowGraphView`
+- `FlowGraphViewInput` (typealias): `type FlowGraphViewInput = Pick<EvidenceModel, "flow" | "claims">`
+- `FlowHandling` (typealias): `type FlowHandling = "plaintext" | "masked" | "redacted" | "hashed" | "encrypted"`
+- `FlowModel` (interface): `interface FlowModel`
+- `FlowNode` (interface): `interface FlowNode extends FlowNodeInput`
+- `FlowNodeChange` (interface): `interface FlowNodeChange`
+- `flowNodeId` (function): `function flowNodeId(kind: FlowNodeKind, scope: string, name: string): string`
+- `FlowNodeKind` (typealias): `type FlowNodeKind = "function" | "parameter" | "return" | "field" | "boundary"`
+- `FlowStatus` (typealias): `type FlowStatus = "declared" | "static" | "observed" | "inferred" | "unknown"`
+- `FlowTextOptions` (interface): `interface FlowTextOptions`
+- `FlowTrace` (interface): `interface FlowTrace`
+- `FlowTraceDirection` (typealias): `type FlowTraceDirection = "upstream" | "downstream"`
+- `FlowTraceOptions` (interface): `interface FlowTraceOptions`
+- `FlowUnknown` (interface): `interface FlowUnknown extends FlowUnknownInput`
+- `FlowUnknownReason` (typealias): `type FlowUnknownReason = "dynamic-access" | "unresolved-call" | "unresolved-import" | "unsupported-construct" | "missing-source" | "unanalyzed-function"`
+- `FlowVia` (typealias): `type FlowVia = "copy" | "serialize-roundtrip" | "forward" | "derive"`
+- `FlowView` (interface): `interface FlowView`
+- `FunctionDiscard` (interface): `interface FunctionDiscard`
+- `FunctionEffect` (interface): `interface FunctionEffect`
+- `FunctionForward` (interface): `interface FunctionForward`
+- `FunctionRead` (interface): `interface FunctionRead`
+- `FunctionView` (interface): `interface FunctionView`
+- `leastDataFindings` (function): `function leastDataFindings(report: LeastDataReport): ReportFinding[]`
+- `LeastDataIndeterminate` (interface): `interface LeastDataIndeterminate`
+- `LeastDataReport` (interface): `interface LeastDataReport`
+- `MIN_FORWARDING_HOPS` (variable): `MIN_FORWARDING_HOPS = 3`
+- `NodeRef` (interface): `interface NodeRef`
+- `Observation` (interface): `interface Observation`
+- `ObservationModel` (interface): `interface ObservationModel`
+- `observationsFromOtlp` (function): `function observationsFromOtlp(payload: unknown, options?: OtlpReadOptions): OtlpReadResult`
+- `observationsToOtlp` (function): `function observationsToOtlp(evidence: OtlpInput, options?: OtlpOptions): OtlpTraces | undefined`
+- `observedFlow` (function): `function observedFlow(flow: FlowModel, observation: ObservationModel, scope?: string): ObservedFlow`
+- `ObservedFlow` (interface): `interface ObservedFlow`
+- `OscalAssessmentResults` (interface): `interface OscalAssessmentResults`
+- `OscalInput` (typealias): `type OscalInput = Pick<EvidenceModel, "flow" | "policy" | "claims" | "provenance">`
+- `OscalOptions` (interface): `interface OscalOptions`
+- `OtlpAttribute` (interface): `interface OtlpAttribute`
+- `OtlpInput` (typealias): `type OtlpInput = Pick<EvidenceModel, "observation" | "provenance">`
+- `OtlpOptions` (interface): `interface OtlpOptions`
+- `OtlpReadOptions` (interface): `interface OtlpReadOptions`
+- `OtlpReadResult` (interface): `interface OtlpReadResult`
+- `OtlpSpan` (interface): `interface OtlpSpan`
+- `OtlpTraces` (interface): `interface OtlpTraces`
+- `OtlpValue` (typealias): `type OtlpValue = { readonly stringValue: string; } | { readonly intValue: string; }`
+- `ParsedEvidenceRules` (typealias): `type ParsedEvidenceRules = { readonly ok: true; readonly rules: EvidenceRules; } | { readonly ok: false; readonly errors: readonly string[]; }`
+- `parseEvidenceRules` (function): `function parseEvidenceRules(text: string): ParsedEvidenceRules`
+- `PolicyModel` (interface): `interface PolicyModel`
+- `PolicyOutcome` (typealias): `type PolicyOutcome = "satisfied" | "violated" | "indeterminate"`
+- `PolicyResult` (interface): `interface PolicyResult`
+- `ProvDocument` (interface): `interface ProvDocument`
+- `ProvInput` (typealias): `type ProvInput = Pick<EvidenceModel, "flow" | "claims" | "observation" | "provenance">`
+- `RedundantTransform` (interface): `interface RedundantTransform`
+- `redundantTransformFindings` (function): `function redundantTransformFindings(items: readonly RedundantTransform[], flow: FlowModel): ReportFinding[]`
+- `RedundantTransformKind` (typealias): `type RedundantTransformKind = "round-trip" | "forwarding-hop" | "dead-derivation"`
+- `renderFlowCycloneDx` (function): `function renderFlowCycloneDx(evidence: CycloneDxInput, options?: CycloneDxOptions): string | undefined`
+- `renderFlowDot` (function): `function renderFlowDot(evidence: DiagramInput, options?: FlowDiagramOptions): string | undefined`
+- `renderFlowMermaid` (function): `function renderFlowMermaid(evidence: DiagramInput, options?: FlowDiagramOptions): string | undefined`
+- `renderFlowText` (function): `function renderFlowText(evidence: FlowGraphViewInput, options?: FlowTextOptions): string | undefined`
+- `StatusLegendEntry` (interface): `interface StatusLegendEntry`
+- `traceFlow` (function): `function traceFlow(model: FlowModel, start: string, direction: FlowTraceDirection, options?: FlowTraceOptions): FlowTrace`
+- `traceFlowBetween` (function): `function traceFlowBetween(model: FlowModel, start: string, target: string, options?: FlowTraceOptions): FlowTrace`
+- `UnusedPath` (interface): `interface UnusedPath`
+- `ViewEdge` (interface): `interface ViewEdge`
+- `ViewNode` (interface): `interface ViewNode`
+- `WholeFieldToClient` (interface): `interface WholeFieldToClient`
 
 ## `data-cap/observe`
 
-- `createMemorySink` (function): `function createMemorySink(): { readonly sink: ObservationSink; events(): readonly ObservationEvent[]; }`
+- `BodyReadable` (interface): `interface BodyReadable`
+- `createMemorySink` (function): `function createMemorySink(): { readonly sink: ObservationSink; events(): readonly ObservationEvent[]; skips(): readonly ObservationSkip[]; }`
 - `fieldPathName` (function): `function fieldPathName(capability: string, path: readonly string[]): string`
+- `instrumentBoundary` (function): `function instrumentBoundary(target: object, method: string, context: InstrumentContext, sink: ObservationSink): () => void`
+- `InstrumentContext` (interface): `interface InstrumentContext extends ObserveValueContext`
+- `InstrumentObserve` (typealias): `type InstrumentObserve = "args" | "result" | "both"`
 - `ObservationEvent` (interface): `interface ObservationEvent`
 - `ObservationSink` (interface): `interface ObservationSink`
+- `ObservationSkip` (interface): `interface ObservationSkip`
+- `ObservationSkipReason` (typealias): `type ObservationSkipReason = "dotted-key" | "max-depth" | "max-nodes" | "cycle"`
 - `observeBoundary` (function): `function observeBoundary(sink: ObservationSink, input: ObserveBoundaryInput): number`
 - `ObserveBoundaryInput` (interface): `interface ObserveBoundaryInput`
 - `ObservedBoundary` (interface): `interface ObservedBoundary`
+- `observeResponse` (function): `function observeResponse<T extends BodyReadable>(sink: ObservationSink, context: ObserveValueContext, response: T, options?: ObserveValueOptions): T`
+- `observeSink` (function): `function observeSink(sink: ObservationSink, context: InstrumentContext): <T>(value: T) => T`
+- `observeValue` (function): `function observeValue<T>(sink: ObservationSink, context: ObserveValueContext, value: T, options?: ObserveValueOptions): T`
+- `ObserveValueContext` (interface): `interface ObserveValueContext`
+- `ObserveValueOptions` (interface): `interface ObserveValueOptions`
 
 ## `data-cap/eslint-plugin`
 

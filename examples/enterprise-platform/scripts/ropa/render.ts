@@ -1,4 +1,4 @@
-// The default Markdown renderer for a `RopaModel` -- NOT the only possible
+// The default Markdown renderer for a `RopaModel`: NOT the only possible
 // one. `build-model.ts` is the real seam: an org that wants a different
 // shape (a CSV for a DPA submission, a row per personal-data category
 // instead of per capability, an HTML page) renders `RopaModel` however it
@@ -6,12 +6,12 @@
 // a reader can see exactly what a GDPR Art. 30(1) processing-activity
 // register can look like end to end.
 //
-// There is no single official ROPA template GDPR itself prescribes -- Art.
+// There is no single official ROPA template GDPR itself prescribes: Art.
 // 30(1) states the 7 required *items* (a)-(g), never a reporting format. The
 // two-tier layout below (a summary table, one row per processing activity;
 // then a per-activity detail section, one sub-table per field) is styled
 // after the EDPB/ICO's own published ROPA guidance and templates, which use
-// this same "register + detail" shape -- but the exact columns and their
+// this same "register + detail" shape: but the exact columns and their
 // order are this generator's own judgment call, not a reproduction of any
 // single mandated layout. See this directory's README for the full
 // accounting of which of the 7 items are direct, partial, or newly-added.
@@ -20,8 +20,8 @@ import type { RopaModel, RopaRecord } from "./types.js"
 const DISCLAIMER =
   "This document is a generated illustration of GDPR Article 30(1) record-of-processing-activities " +
   "(ROPA) content, produced from data-cap's own declared governance metadata. It is not legal advice, " +
-  "not a compliance certification, and not a substitute for your organization's own Art. 30 review -- " +
-  "see this generator's own README (scripts/ropa/README.md) for exactly which of the 7 required items " +
+  "not a compliance certification, and not a substitute for your organization's own Art. 30 review. " +
+  "See this generator's own README (scripts/ropa/README.md) for exactly which of the 7 required items " +
   "below are direct schema fields, which are partial/approximate mappings, and which require your own " +
   "input before this document is published externally."
 
@@ -117,7 +117,7 @@ function renderRecordDetail(record: RopaRecord): string[] {
 }
 
 /**
- * Renders a `RopaModel` as a Markdown document -- the default shape
+ * Renders a `RopaModel` as a Markdown document: the default shape
  * `run.ts` writes to `docs/ROPA.md`. See this file's own header comment for
  * why this exact layout is a judgment call, not a GDPR-mandated one.
  */
@@ -139,11 +139,11 @@ export function renderRopa(model: RopaModel): string {
     return lines.join("\n")
   }
 
-  lines.push("## Processing activities -- summary")
+  lines.push("## Processing activities: summary")
   lines.push("")
   lines.push(...renderSummaryTable(model.records))
 
-  lines.push("## Processing activities -- detail")
+  lines.push("## Processing activities: detail")
   lines.push("")
   for (const record of model.records) {
     lines.push(...renderRecordDetail(record))

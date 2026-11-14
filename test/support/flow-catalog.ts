@@ -9,7 +9,7 @@ import type { Harness } from "../build/mut-flow-scan-harness.js"
  *
  * - `A` followed: the trace of the leaked field reaches a sink boundary, is complete, and the other field's trace does not.
  * - `B` honest unknown: the leaked field's trace is reported incomplete (and the unknown concerns that field).
- * - `W` whole record: complete, and both fields reach the sink -- right for a form that really sends the whole record.
+ * - `W` whole record: complete, and both fields reach the sink; right for a form that really sends the whole record.
  * - `C` silently safe or wrong: a complete trace that misses the leak.
  */
 export type FormClass = "A" | "B" | "C" | "W"

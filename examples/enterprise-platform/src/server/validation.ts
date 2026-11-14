@@ -1,5 +1,5 @@
 /**
- * Request validation (Zod) -- the second service data-cap deliberately has
+ * Request validation (Zod): the second service data-cap deliberately has
  * no opinion about: `data-cap`'s own `helpers/shape.ts` guards are
  * structural type checks over already-typed values, never a per-field
  * validator vocabulary (ADR 0039). Real request bodies get validated here,

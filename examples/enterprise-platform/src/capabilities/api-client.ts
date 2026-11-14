@@ -1,5 +1,5 @@
 /**
- * The one place `matters.capability.ts` reaches across the network --
+ * The one place `matters.capability.ts` reaches across the network:
  * isomorphic by construction: the exact same code runs in the browser
  * (`npm run dev`) and in `main-headless.ts`'s real Node process, talking to
  * the real HTTP surface `server/http-handler.ts` implements. `credentials:

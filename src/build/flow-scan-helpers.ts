@@ -237,11 +237,11 @@ export class Env {
     this.vars.set(name, val)
     this.texts.delete(name)
   }
-  /** Records that the `const` just bound to `name` here holds this string, whatever it is used as later. */
+  /** Records that the `const` bound to `name` here holds this string, whatever it is used as later. */
   setText(name: string, text: string): void {
     this.texts.set(name, text)
   }
-  /** The string `name` is a constant for -- looked up in the scope that declares it, so a shadowing variable hides it. */
+  /** The string `name` is a constant for: looked up in the scope that declares it, so a shadowing variable hides it. */
   textOf(name: string): string | undefined {
     if (this.vars.has(name)) return this.texts.get(name)
     return this.parent?.textOf(name)
@@ -265,7 +265,7 @@ export class Env {
       this.vars.set(name, merged)
       this.texts.delete(name)
       if (!shared || !this.persistent) return false
-      // Stryker disable next-line ConditionalExpression: equivalent -- a write reaches this scope as `shared` only because it has the name, so `existing` is never undefined then; the check only satisfies the type checker.
+      // Stryker disable next-line ConditionalExpression: equivalent: a write reaches this scope as `shared` only because it has the name, so `existing` is never undefined then; the check only satisfies the type checker.
       return existing !== undefined && signatureOf(existing) !== signatureOf(merged)
     }
     return parent.assignFrom(name, val, shared || this.boundary)
@@ -300,7 +300,7 @@ export function keyOf(name: TS.PropertyName | TS.BindingName): string | undefine
   return undefined
 }
 
-/** An object-shaped sample value -- not null, not an array, not a scalar. */
+/** An object-shaped sample value: not null, not an array, not a scalar. */
 export function isShapeObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value)
 }
@@ -344,7 +344,7 @@ export function memberName(name: TS.PropertyName): string | undefined {
   return keyOf(name)
 }
 
-/** The key an object literal stores a getter or setter under -- one no property of that object can have. */
+/** The key an object literal stores a getter or setter under: one no property of that object can have. */
 export function accessorKey(kind: "get" | "set", key: string): string {
   return `\u0000${kind}:${key}`
 }
@@ -363,7 +363,7 @@ export function holdsPromise(val: Val): boolean {
   return handlesOf(val, PROMISE_HANDLE).length > 0 || [...val.props.values()].some(holdsPromise)
 }
 
-/** The property a promise value keeps what it was rejected with under -- a name no property of any object can have. */
+/** The property a promise value keeps what it was rejected with under: a name no property of any object can have. */
 export function rejectedKey(): string {
   return "\u0000rejected"
 }

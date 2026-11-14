@@ -2,7 +2,7 @@
  * Pure queries over the Flow Model (ADR 0070): trace a field upstream to its
  * sources or downstream to its destinations, filter by field/function/
  * classification/status, and diff two revisions' models. Every result states
- * whether it is complete (ADR 0071) -- a trace crossing an `unknown` fact, or
+ * whether it is complete (ADR 0071): a trace crossing an `unknown` fact, or
  * a filtered view, is never presented as the whole story.
  *
  * Operates on `EvidenceModel["flow"]`; wrap in `defineEvidenceProjection` to
@@ -20,7 +20,7 @@ import type {
   FlowUnknown,
 } from "./flow-model.js"
 
-/** Edge kinds that move data. `calls` is control flow and `discards` records data deliberately not forwarded -- neither is followed. */
+/** Edge kinds that move data. `calls` is control flow and `discards` records data deliberately not forwarded: neither is followed. */
 function isDataEdgeKind(kind: FlowEdgeKind): boolean {
   const dataEdgeKinds: readonly FlowEdgeKind[] = [
     "reads",
@@ -116,12 +116,12 @@ export function flowIndex(model: FlowModel): FlowIndex {
       pushTo(outgoing, edge.from, edge)
       pushTo(incoming, edge.to, edge)
     }
-    // Stryker disable next-line ConditionalExpression: equivalent -- `byOrigin` is only read by an origin, never by `undefined`, so an edge without one adds an entry nothing looks up.
+    // Stryker disable next-line ConditionalExpression: equivalent: `byOrigin` is only read by an origin, never by `undefined`, so an edge without one adds an entry nothing looks up.
     if (edge.origin !== undefined) pushTo(byOrigin, edge.origin, edge)
   }
   const unknownsBySubject = new Map<string, IndexedUnknown[]>()
   for (const [position, unknown] of model.unknowns.entries()) {
-    // Stryker disable next-line ConditionalExpression: equivalent -- `unknownsBySubject` is only read by a node id, never by `undefined`, so an unknown without a subject adds an entry nothing looks up.
+    // Stryker disable next-line ConditionalExpression: equivalent: `unknownsBySubject` is only read by a node id, never by `undefined`, so an unknown without a subject adds an entry nothing looks up.
     if (unknown.subject !== undefined) {
       pushTo(unknownsBySubject, unknown.subject, { unknown, position })
     }
@@ -159,7 +159,7 @@ function unknownsAt(index: FlowIndex, ids: ReadonlySet<string>): FlowUnknown[] {
 /**
  * Breadth-first walk of data edges downstream from `start`. When `origin` is
  * given only edges carrying that field's data (or no origin at all) are
- * followed -- a helper shared by two fields must not make each reach the
+ * followed: a helper shared by two fields must not make each reach the
  * other's destinations. `visited` is iterated while it grows, so every node is
  * expanded once and the walk ends on any graph, cycles included.
  */

@@ -178,7 +178,7 @@
   },
   "kind": "Package",
   "canonicalReference": "data-cap!",
-  "docComment": "",
+  "docComment": "/**\n * `data-cap/runtime`: `createData` turns a capability schema into one store every consumer reads,\n * with request dedup, per-field status and optimistic mutations. The store, coordinator and abort\n * helpers it composes are exported for manual control.\n *\n * @packageDocumentation\n */\n",
   "name": "data-cap",
   "preserveMemberOrder": false,
   "members": [
@@ -191,7 +191,7 @@
         {
           "kind": "Interface",
           "canonicalReference": "data-cap!CapabilityDescriptor:interface",
-          "docComment": "/**\n * Static, non-reactive operation metadata -- returned by `.describe()`, distinct from the live `operations` snapshot key. See requirement O (build tooling/ESLint/devtools discoverability).\n */\n",
+          "docComment": "/**\n * Static, non-reactive operation metadata: returned by `.describe()`, distinct from the live `operations` snapshot key. See requirement O (build tooling/ESLint/devtools discoverability).\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -414,7 +414,7 @@
         {
           "kind": "Interface",
           "canonicalReference": "data-cap!Coordinator:interface",
-          "docComment": "/**\n * An isolated coordination domain for dedup and shared subscriptions -- see `createCoordinator`/`defaultCoordinator`.\n */\n",
+          "docComment": "/**\n * An isolated coordination domain for dedup and shared subscriptions: see `createCoordinator`/`defaultCoordinator`.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -429,7 +429,7 @@
             {
               "kind": "MethodSignature",
               "canonicalReference": "data-cap!Coordinator#acquireSubscription:member(1)",
-              "docComment": "/**\n * Acquires a shared subscription for `subscribeFn`. The first acquirer\n * establishes the transport; later acquirers with the same function\n * identity reuse it and immediately learn its current status. Returns a\n * release function -- the transport tears down only once every acquirer\n * has released.\n */\n",
+              "docComment": "/**\n * Acquires a shared subscription for `subscribeFn`. The first acquirer\n * establishes the transport; later acquirers with the same function\n * identity reuse it and immediately learn its current status. Returns a\n * release function: the transport tears down only once every acquirer\n * has released.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -513,7 +513,7 @@
             {
               "kind": "MethodSignature",
               "canonicalReference": "data-cap!Coordinator#dedupe:member(1)",
-              "docComment": "/**\n * Deduplicates concurrent calls to `fn` (by its own identity) with\n * canonically-equal `params`. Non-canonicalizable params (or a\n * non-canonicalizable-adjacent failure) simply never dedupe -- `fn` runs\n * fresh every time, never throwing and never silently colliding two\n * unrelated calls onto one shared promise.\n *\n * Each caller's own `signal` only affects THEIR OWN wait -- aborting it\n * rejects this call's returned promise without affecting the shared\n * underlying execution or any other caller sharing it.\n */\n",
+              "docComment": "/**\n * Deduplicates concurrent calls to `fn` (by its own identity) with\n * canonically-equal `params`. Non-canonicalizable params (or a\n * non-canonicalizable-adjacent failure) never dedupe: `fn` runs\n * fresh every time, never throwing and never silently colliding two\n * unrelated calls onto one shared promise.\n *\n * Each caller's own `signal` only affects THEIR OWN wait: aborting it\n * rejects this call's returned promise without affecting the shared\n * underlying execution or any other caller sharing it.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -641,7 +641,7 @@
         {
           "kind": "Function",
           "canonicalReference": "data-cap!createCoordinator:function(1)",
-          "docComment": "/**\n * Creates a fresh, isolated `Coordinator` -- an independent dedup/shared-subscription domain, e.g. per-tenant on a server (ADR 0027).\n */\n",
+          "docComment": "/**\n * Creates a fresh, isolated `Coordinator`: an independent dedup/shared-subscription domain, e.g. per-tenant on a server (ADR 0027).\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -670,7 +670,7 @@
         {
           "kind": "Function",
           "canonicalReference": "data-cap!createData:function(1)",
-          "docComment": "/**\n * Declares a capability's field contract AND, optionally, the getters/\n * mutators/subscriptions that acquire, mutate, and continuously observe it\n * -- the batteries-included counterpart to `buildData` + hand-wired\n * `createDataStore`/`coordinator` calls. Internally: exactly one\n * `buildData` call, exactly one `createDataStore` instance, and the given\n * (or default) `Coordinator` -- see the module doc comment.\n *\n * A schema with no `getters`/`mutators`/`subscriptions` at all still works,\n * returning a fully valid capability with zero bound operation methods --\n * the direct one-call equivalent of `createDataStore(buildData({fields}))`.\n */\n",
+          "docComment": "/**\n * Declares a capability: its fields and, optionally, the getters, mutators\n * and subscriptions that load, change and watch them. Returns the one store\n * every consumer reads. It is the one-call counterpart to `buildData` plus\n * hand-wired `createDataStore` and `coordinator` calls. Internally it makes\n * one `buildData` call and one `createDataStore` instance, and uses the given\n * (or default) `Coordinator`.\n *\n * A schema with no `getters`/`mutators`/`subscriptions` at all still works,\n * returning a fully valid capability with zero bound operation methods:\n * the direct one-call equivalent of `createDataStore(buildData({fields}))`.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -787,7 +787,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!CreateDataOptions#coordinator:member",
-              "docComment": "/**\n * Overrides `defaultCoordinator` -- an explicit, isolated coordination domain (ADR 0027), e.g. per-tenant on a server.\n */\n",
+              "docComment": "/**\n * Overrides `defaultCoordinator`: an explicit, isolated coordination domain (ADR 0027), e.g. per-tenant on a server.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -815,7 +815,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!CreateDataOptions#maxOperationHistory:member",
-              "docComment": "/**\n * Bounds how many distinct canonicalized-params entries are retained per\n * operation in the reactive `operations` snapshot (an LRU cap -- an\n * operation called with many different params over a session, e.g.\n * search-as-you-type, would otherwise grow this unboundedly). Defaults to\n * 50.\n */\n",
+              "docComment": "/**\n * Bounds how many distinct canonicalized-params entries each operation keeps\n * in the reactive `operations` snapshot. It is an LRU cap: without it, an\n * operation called with many params over a session (search-as-you-type) would\n * grow without bound. Defaults to 50.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -845,7 +845,7 @@
         {
           "kind": "Function",
           "canonicalReference": "data-cap!createDataStore:function(1)",
-          "docComment": "/**\n * Creates a standalone `DataStoreController`, seeded with `initialState` -- the manual-control building block `createData` composes over.\n */\n",
+          "docComment": "/**\n * Creates a standalone `DataStoreController`, seeded with `initialState`: the manual-control building block `createData` composes over.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -1033,7 +1033,7 @@
         {
           "kind": "Interface",
           "canonicalReference": "data-cap!DataCapabilitySnapshot:interface",
-          "docComment": "/**\n * A strict superset of `DataState<TFields>` -- every existing `DataStore` consumer (`useSyncExternalStore`, etc.) still works unchanged reading `.fields`/`.info` off it.\n */\n",
+          "docComment": "/**\n * A strict superset of `DataState<TFields>`: every existing `DataStore` consumer (`useSyncExternalStore`, etc.) still works unchanged reading `.fields`/`.info` off it.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -1074,7 +1074,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!DataCapabilitySnapshot#operations:member",
-              "docComment": "/**\n * Every operation's current execution state -- see `OperationsSnapshot`.\n */\n",
+              "docComment": "/**\n * Every operation's current execution state: see `OperationsSnapshot`.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -1110,7 +1110,7 @@
         {
           "kind": "Class",
           "canonicalReference": "data-cap!DataCapError:class",
-          "docComment": "/**\n * Throw-based error hierarchy with a stable `code` discriminant, preferred\n * over `instanceof` for programmatic handling across bundling boundaries\n * (mirrors env-cap's own `EnvValidationError`/`EnvNotReadyError` convention).\n *\n * Invariant: no error here ever embeds a raw or processed field value in its\n * message -- only field paths (key names), which are never sensitive.\n */\n",
+          "docComment": "/**\n * Throw-based error hierarchy with a stable `code` discriminant, preferred\n * over `instanceof` for programmatic handling across bundling boundaries\n * (mirrors env-cap's own `EnvValidationError`/`EnvNotReadyError` convention).\n *\n * Invariant: no error here ever embeds a raw or processed field value in its\n * message; only field paths (key names), which are never sensitive.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -1135,7 +1135,7 @@
             {
               "kind": "Property",
               "canonicalReference": "data-cap!DataCapError#code:member",
-              "docComment": "/**\n * Stable, programmatic discriminant -- prefer this over `instanceof` across bundling boundaries.\n */\n",
+              "docComment": "/**\n * Stable, programmatic discriminant: prefer this over `instanceof` across bundling boundaries.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -1483,7 +1483,7 @@
         {
           "kind": "Class",
           "canonicalReference": "data-cap!InvalidFieldDefaultError:class",
-          "docComment": "/**\n * Thrown synchronously by `buildData()`/`documentData()` when a declared\n * field default is structurally invalid: a function value (functions are\n * never valid field data) or a cyclic reference (a value that contains\n * itself, directly or transitively).\n */\n",
+          "docComment": "/**\n * Thrown synchronously by `buildData()`/`documentData()` when a declared field default is\n * structurally invalid. That is a function value (functions are never valid field data), or a value\n * that contains itself, directly or transitively.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -1627,7 +1627,7 @@
         {
           "kind": "Interface",
           "canonicalReference": "data-cap!OperationDescriptor:interface",
-          "docComment": "/**\n * Static, per-operation metadata -- one entry within a `CapabilityDescriptor`.\n */\n",
+          "docComment": "/**\n * Static, per-operation metadata: one entry within a `CapabilityDescriptor`.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -1873,7 +1873,7 @@
         {
           "kind": "Interface",
           "canonicalReference": "data-cap!OperationState:interface",
-          "docComment": "/**\n * One operation's current execution state, keyed by canonicalized params in `operations`. Distinct from `info.<field>` -- see the module doc comment.\n */\n",
+          "docComment": "/**\n * One operation's current execution state, keyed by canonicalized params in `operations`. Distinct from `info.<field>`: see the module doc comment.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -2056,7 +2056,7 @@
         {
           "kind": "Function",
           "canonicalReference": "data-cap!rejectOnAbort:function(1)",
-          "docComment": "/**\n * Wraps `promise` so it rejects immediately if `signal` aborts. Never\n * affects `promise` itself -- does not cancel or otherwise influence any\n * underlying shared work (see coordinator.ts: a caller giving up on waiting\n * is not the same as the shared execution being cancelled for every caller).\n */\n",
+          "docComment": "/**\n * Wraps `promise` so it rejects immediately if `signal` aborts. Never affects\n * `promise` itself, and never cancels the shared work behind it. A caller that\n * stops waiting does not cancel the shared execution for every other caller\n * (see coordinator.ts).\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -2235,7 +2235,7 @@
         {
           "kind": "Interface",
           "canonicalReference": "data-cap!SubscriptionHandlers:interface",
-          "docComment": "/**\n * Handlers a coordinator-managed subscription drives -- see `SubscriptionEventHandlers`, the same shape without a bound `params`.\n */\n",
+          "docComment": "/**\n * Handlers a coordinator-managed subscription drives: see `SubscriptionEventHandlers`, the same shape without a bound `params`.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -2329,7 +2329,7 @@
         {
           "kind": "Class",
           "canonicalReference": "data-cap!UnknownGetterError:class",
-          "docComment": "/**\n * Thrown by `createData`'s `runGetters` when asked to run a getter name\n * that was never declared on the schema -- a caller/typo bug, not a data\n * failure (a genuine getter failure surfaces as a per-operation\n * `{status: \"error\"}` outcome instead, never a thrown rejection here).\n */\n",
+          "docComment": "/**\n * Thrown by `createData`'s `runGetters` when asked to run a getter name\n * that was never declared on the schema. That is a caller/typo bug, not a\n * data failure. A genuine getter failure surfaces as a per-operation\n * `{status: \"error\"}` outcome instead, never a thrown rejection here.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",

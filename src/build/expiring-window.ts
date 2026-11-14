@@ -7,5 +7,8 @@
  * and read by the generator would close a cycle.
  */
 
-/** How many days out counts as "expiring soon" when a caller doesn't say -- 30, matching env-cap's own `DEFAULT_EXPIRING_WITHIN_DAYS` so a team running both packages gets one answer to "what's expiring soon," not two. */
+/**
+ * How many days out counts as "expiring soon" when a caller does not say: 30. It matches env-cap's
+ * `DEFAULT_EXPIRING_WITHIN_DAYS`, so both packages give one answer.
+ */
 export const DEFAULT_EXPIRING_WITHIN_DAYS = 30

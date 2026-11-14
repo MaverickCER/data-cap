@@ -10,7 +10,7 @@ import { examplesRoot, isInstalled } from "./support.js"
  * The false-positive guard for redundant transformations (ADR 0075): the repository's four consumer examples are real
  * application source written without this rule in mind, so a noisy rule would show here. Today none of them has a needless
  * round trip, a chain of three wrappers or a derivation nobody reads, and the one copy the scan notices is a single
- * copy of data that was not itself a copy -- information, not a finding. A change that makes this list grow is either a
+ * copy of data that was not itself a copy: information, not a finding. A change that makes this list grow is either a
  * real discovery (update the pin and read the example) or a rule that has become noisy.
  */
 const NAMES = ["enterprise-platform", "nextjs-app", "team-service", "application"] as const

@@ -1,8 +1,8 @@
 # Examples
 
-Five standalone npm projects, each depending on the root package through `"data-cap": "file:../.."`. npm installs a `file:` dependency as a symlink to the directory, not as a packed copy. So each example runs against whatever `npm run build` at the repository root last produced. After a source change, run `npm run build` again; installed examples pick it up without reinstalling.
+Five standalone npm projects, each depending on the root package through `"data-cap": "file:../.."`. A `file:` dependency is installed by npm as a symlink to the directory, not as a packed copy. So each example runs against whatever `npm run build` at the repository root last produced. After a source change, run `npm run build` again; installed examples pick it up without reinstalling.
 
-`npm ci` at the root does **not** install these. CI's `examples` job does, one at a time, after building the root package. That job does not block a merge.
+`npm ci` at the root does **not** install these. CI's `examples` job does, one at a time, after building the root package. `required` waits for that job, so a failure blocks a merge.
 
 ## Three questions, three places to look
 
@@ -25,7 +25,11 @@ The first three examples are the same kind of work-management system at three sc
 
 Tier 2 is Tier 1 once a second developer and a second capability join. Tier 3 is Tier 2 once that team's service becomes one of several departments' services. `team-service`'s "project" concept is `enterprise-platform`'s `projectsData`, now one capability among several. Each tier keeps what the previous tier used and adds only what its scale needs.
 
-Tier 4 is not the next chapter of that story. It takes the evidence file any of the others produces and shows what can be built outside the package: an explorer drawn with a devDependency renderer, every standards export, and the end-to-end test of the data-flow analysis.
+Tier 4 is not the next chapter of that story. It takes the evidence file any of the others produces. It shows what can be built outside the package:
+
+- an explorer drawn with a devDependency renderer;
+- every standards export;
+- the end-to-end test of the data-flow analysis.
 
 The fifth project, [`nextjs-app/`](https://github.com/MaverickCER/data-cap/tree/main/examples/nextjs-app), is a framework integration, described [below](#framework-integration).
 
@@ -86,11 +90,11 @@ npm start
 
 `npm start` exits 0 and its last line is `<name>: all assertions passed`; the Next.js example starts a server instead. `npm run check` exits 0 when the committed `docs/` matches a fresh run, and 1 with a list of stale files when it does not. Each example's README lists its own commands and the line to look for.
 
-CI's `examples` job runs `npm ci` and `npm run typecheck` in Tiers 1 to 4. `test/examples/` then runs `npm start` and `npm run check` in each, and also `npm test` in `flow-explorer`. In `nextjs-app` it runs `npm run build`. That job does not block a merge.
+CI's `examples` job runs `npm ci` and `npm run typecheck` in Tiers 1 to 4. `test/examples/` then runs `npm start` and `npm run check` in each, and also `npm test` in `flow-explorer`. In `nextjs-app` it runs `npm run build`. `required` waits for that job, so a failure blocks a merge.
 
 ## Client vs. server
 
-`data-cap` does not depend on a framework or environment. The same `buildData` and `createDataStore` pair, or `createData`, runs in a browser talking to a REST API and in a Node server talking to a database. `application/` and `team-service/` are client-side, with a simulated network. `enterprise-platform/` is a running server with an embedded MongoDB, because Tier 3 shows `data-cap` inside a full service.
+`data-cap` does not depend on a framework or environment. The same `buildData` and `createDataStore` pair, or `createData`, runs in a browser talking to a REST API. It also runs in a Node server talking to a database. `application/` and `team-service/` are client-side, with a simulated network. `enterprise-platform/` is a running server with an embedded MongoDB, because Tier 3 shows `data-cap` inside a full service.
 
 ## Index
 

@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://maverickcer.github.io/data-cap/schema/change-model.schema.json",
   "title": "data-cap Change Model",
-  "description": "Canonical, versioned manifest diff plus an optional blast-radius index (see ADR 0050). Generated from src/build/change-model.ts's ChangeModel type -- never hand-authored.",
+  "description": "Canonical, versioned manifest diff plus an optional blast-radius index (see ADR 0050). Generated from src/build/change-model.ts's ChangeModel type. Never hand-authored.",
   "$ref": "#/definitions/ChangeModel",
   "definitions": {
     "ChangeModel": {
@@ -15,14 +15,14 @@
         },
         "manifest": {
           "$ref": "#/definitions/ManifestChangeReport",
-          "description": "The underlying manifest diff -- see `diffManifestSnapshots`."
+          "description": "The underlying manifest diff: see `diffManifestSnapshots`."
         },
         "blastRadius": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/BlastRadiusEntry"
           },
-          "description": "One entry per added/updated capability, or `undefined` when no `DependencyModel` was supplied -- an optional layer, matching `--ownership`/`--flow`'s existing opt-in cost model (the usage scan isn't free)."
+          "description": "One entry per added/updated capability, or `undefined` when no `DependencyModel` was supplied: an optional layer, matching `--ownership`/`--flow`'s existing opt-in cost model (the usage scan isn't free)."
         },
         "renamedFields": {
           "type": "array",
@@ -89,7 +89,7 @@
         },
         "fields": {
           "$ref": "#/definitions/ManifestFieldDiff",
-          "description": "The same field-level diff `changes` describes in prose, as data (EVD-05). Added so `ChangeModel`'s rename correlation has something to match against without re-parsing a human-readable sentence -- a report deriving structure back out of its own prose is exactly the kind of fragility this codebase avoids. `changes` is unaffected and still reads the same."
+          "description": "The same field-level diff `changes` describes in prose, as data. It gives `ChangeModel`'s rename correlation a value to match, so no report has to parse structure back out of its own prose. `changes` is unaffected and still reads the same."
         }
       },
       "required": [
@@ -130,7 +130,7 @@
       "properties": {
         "capability": {
           "type": "string",
-          "description": "The capability key (`file#exportName`) -- matches `ManifestChangeReport`'s own key convention."
+          "description": "The capability key (`file#exportName`): matches `ManifestChangeReport`'s own key convention."
         },
         "consumers": {
           "type": "array",
@@ -152,15 +152,15 @@
       "properties": {
         "capability": {
           "type": "string",
-          "description": "The owning capability's key (`file#exportName`) -- a rename never crosses capabilities."
+          "description": "The owning capability's key (`file#exportName`): a rename never crosses capabilities."
         },
         "previousName": {
           "type": "string",
-          "description": "The field's name before the rename -- matches a `removed` entry in that capability's own field diff."
+          "description": "The field's name before the rename: matches a `removed` entry in that capability's own field diff."
         },
         "currentName": {
           "type": "string",
-          "description": "The field's name after the rename -- matches an `added` entry in the same diff."
+          "description": "The field's name after the rename: matches an `added` entry in the same diff."
         }
       },
       "required": [
@@ -169,7 +169,7 @@
         "currentName"
       ],
       "additionalProperties": false,
-      "description": "One added-field/removed-field pair correlated into a single rename via the current declaration's `renamedFrom` (EVD-05)."
+      "description": "One added-field/removed-field pair correlated into a single rename via the current declaration's `renamedFrom`."
     }
   }
 }

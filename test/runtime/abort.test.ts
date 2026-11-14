@@ -83,7 +83,7 @@ describe("rejectOnAbort", () => {
 
   it("still produces a sensible AbortError when the signal aborts with no explicit reason", async () => {
     // Node's own AbortController.abort() (no args) already populates
-    // `signal.reason` with its own DOMException -- abortReason()'s
+    // `signal.reason` with its own DOMException: abortReason()'s
     // `?? new DOMException(...)` fallback only exists for a signal.reason
     // that's genuinely undefined, which isn't reachable through Node's
     // public AbortController API, only defensively guarded against.

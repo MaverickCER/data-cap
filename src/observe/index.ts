@@ -1,9 +1,16 @@
 /**
+ * `data-cap/observe` (Experimental): record which field names cross a boundary at runtime, never
+ * their values, into a sink you supply. Pass the recording to `data-cap --observations`.
+ *
+ * @packageDocumentation
+ */
+
+/**
  * `data-cap`'s runtime-observation entry point (`data-cap/observe`, ADR 0072).
  *
  * Records which fields were seen crossing which boundary, into a
  * caller-supplied sink. Deliberately tiny and isomorphic: no `node:fs`, no
- * `typescript`, no build module, no timers, no global hooks -- it never opens
+ * `typescript`, no build module, no timers, no global hooks; it never opens
  * a file, socket or connection of its own. An event carries a scope id, a
  * boundary, and a field *name*; it never carries a field value, and any key
  * outside that shape is dropped on the way in.
@@ -42,7 +49,7 @@ export interface ObservationEvent {
   /** Caller-supplied id of the execution or test the event was seen in. */
   readonly scope: string
   readonly boundary: ObservedBoundary
-  /** Capability-qualified dotted field path, for example `userData.user.email` -- the same naming the static Flow Model uses for field nodes. */
+  /** Capability-qualified dotted field path, for example `userData.user.email`: the same naming the static Flow Model uses for field nodes. */
   readonly field: string
   /** Declared handling of the value at this crossing, when the caller knows it. */
   readonly handling?: FlowHandling
@@ -109,7 +116,7 @@ function isPath(path: unknown): path is readonly string[] {
   return Array.isArray(path) && path.length > 0 && path.every(isName)
 }
 
-// Stryker disable all: equivalent -- an absent clock, a clock that throws and the catch's own `return` all give `undefined` here: calling `undefined` throws, and the catch turns that into the same `undefined`.
+// Stryker disable all: equivalent: an absent clock, a clock that throws and the catch's own `return` all give `undefined` here: calling `undefined` throws, and the catch turns that into the same `undefined`.
 function stamp(clock: (() => number) | undefined): number | undefined {
   if (clock === undefined) return undefined
   try {
@@ -152,7 +159,7 @@ export function observeBoundary(sink: ObservationSink, input: ObserveBoundaryInp
   return recorded
 }
 
-/** An in-memory sink -- the only one this package provides. */
+/** An in-memory sink: the only one this package provides. */
 export function createMemorySink(): {
   readonly sink: ObservationSink
   /** Every event recorded so far, in order. */
@@ -280,7 +287,7 @@ function walkValue(
     return
   }
   state.visited += 1
-  // Stryker disable all: unreachable -- `walkChildren` stops at `maxNodes` before it walks another node, so `visited` never passes it; the bound only turns a walk that lost that stop into a failure the caller's catch swallows, instead of a walk through an enormous value.
+  // Stryker disable all: unreachable: `walkChildren` stops at `maxNodes` before it walks another node, so `visited` never passes it; the bound only turns a walk that lost that stop into a failure the caller's catch swallows, instead of a walk through an enormous value.
   /* v8 ignore next 3 -- unreachable: an earlier guard keeps this check from ever being true; it only turns a lost bound into a failure instead of a hang */
   if (state.visited > state.maxNodes) {
     throw new Error("the walk passed its node bound")
@@ -307,13 +314,13 @@ function reportSkips(
     return
   for (const { reason, path } of state.skips.values()) {
     try {
-      // Stryker disable next-line OptionalChaining: equivalent -- calling an absent `onSkip` throws, and the catch below ignores a throwing callback.
+      // Stryker disable next-line OptionalChaining: equivalent: calling an absent `onSkip` throws, and the catch below ignores a throwing callback.
       onSkip?.(reason, path)
     } catch {
       // A throwing callback is ignored.
     }
     try {
-      // Stryker disable next-line OptionalChaining: equivalent -- calling an absent `sink.skip` throws, and the catch below ignores a throwing sink.
+      // Stryker disable next-line OptionalChaining: equivalent: calling an absent `sink.skip` throws, and the catch below ignores a throwing sink.
       sink.skip?.({
         scope: context.scope,
         boundary: { kind: context.boundary.kind, name: context.boundary.name },
@@ -327,13 +334,15 @@ function reportSkips(
 }
 
 /**
- * Walks any JSON-like `value` and records the field path of every object and leaf it contains -- names and paths
- * only, never a value -- through `observeBoundary`, then returns `value` itself so it can wrap a call
- * (`res.json(observeValue(sink, ctx, body))`). Array elements (and, with `collections`, Map values and Set members)
+ * Walks any JSON-like `value` and records, through `observeBoundary`, the field path of every
+ * object and leaf in it: names and paths, never a value. It returns `value` itself, so it can wrap
+ * a call (`res.json(observeValue(sink, ctx, body))`). Array elements (and, with `collections`, Map
+ * values and Set members)
  * collapse into the Flow Model's element marker `[]`. Functions, symbols and `undefined` are ignored; getters are
  * never run; cycles are not re-entered; depth and visited-value count are bounded. The root itself is not a field
- * (a root primitive records nothing); keys that are empty or contain a dot cannot be path segments (the Flow Model names a path by joining segments with a
- * dot, so there is no reversible spelling) and are skipped -- but never silently: every skip (`dotted-key`, `max-depth`,
+ * (a root primitive records nothing). Keys that are empty or contain a dot cannot be path segments (the Flow Model
+ * names a path by joining segments with a dot, so there is no reversible spelling). They are skipped, but never
+ * silently. Every skip (`dotted-key`, `max-depth`,
  * `max-nodes`, `cycle`) is reported to `options.onSkip` and to `sink.skip`. Never throws.
  */
 export function observeValue<T>(
@@ -370,7 +379,7 @@ export interface BodyReadable {
 }
 
 function isBodyReadable(value: unknown): value is BodyReadable {
-  // Stryker disable next-line ConditionalExpression,LogicalOperator,BooleanLiteral: equivalent for this line -- a primitive or `null` is either refused here or makes `Reflect.get` throw, which the caller's catch swallows, and observing one records nothing either way.
+  // Stryker disable next-line ConditionalExpression,LogicalOperator,BooleanLiteral: equivalent for this line: a primitive or `null` is either refused here or makes `Reflect.get` throw, which the caller's catch swallows, and observing one records nothing either way.
   if (typeof value !== "object" || value === null) return false
   return (
     typeof Reflect.get(value, "clone") === "function" &&
@@ -442,10 +451,11 @@ export function observeSink(sink: ObservationSink, context: InstrumentContext): 
 }
 
 /**
- * Wraps `target[method]` so its first argument (`observe: "args"`, the default), its result (`"result"`: a returned
- * `Response` is observed by clone, a native promise by its resolved value) or both are observed (`observeValue`) on
- * every call, which then goes through with its `this`, arguments and result untouched. Returns a restore function (a no-op if someone else has since
- * replaced the method). Throws a `TypeError` at set-up when `target[method]` is not a function.
+ * Wraps `target[method]` so every call is observed with `observeValue`. `observe: "args"` (the
+ * default) observes the first argument, `"result"` the result, and `"both"` both. A returned
+ * `Response` is observed through a clone, a native promise through its resolved value. The call
+ * then goes through with its `this`, arguments and result untouched. Returns a restore function
+ * (a no-op if someone else has since replaced the method). Throws a `TypeError` at set-up when `target[method]` is not a function.
  */
 export function instrumentBoundary(
   target: object,

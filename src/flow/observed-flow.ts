@@ -1,13 +1,13 @@
 /**
  * The part of the flow that was actually witnessed (ADR 0070): for each
- * observation -- a field name seen at a boundary in an execution -- the routes
+ * observation (a field name seen at a boundary in an execution) the routes
  * the static flow offers from that field (that path of it) to that boundary.
  * Filtering by execution is this function with a `scope`; with none it is
  * everything any execution saw.
  *
  * An observation the static flow does not explain (no route from that field to
- * that boundary, or one of them is unknown to the flow) is returned, not hidden:
- * it is exactly the kind of fact a claim reports as `contradicted` or
+ * that boundary, or one of them is unknown to the flow) is returned, not hidden.
+ * It is exactly the kind of fact a claim reports as `contradicted` or
  * `observed-only`.
  *
  * Pure: a function of the Flow Model and the Observation Model.
@@ -39,7 +39,7 @@ function candidateFields(
   observed: string,
 ): FlowNode[] {
   return nameAndAncestors(observed).flatMap((name) => {
-    // Stryker disable next-line ArrayDeclaration: equivalent -- a stand-in node has no name, so no observation is inside it and it adds nothing.
+    // Stryker disable next-line ArrayDeclaration: equivalent: a stand-in node has no name, so no observation is inside it and it adds nothing.
     return fieldsByName.get(name) ?? []
   })
 }
@@ -74,7 +74,7 @@ export function observedFlow(
     if (scope !== undefined && item.scope !== scope) continue
     const fields = candidateFields(fieldsByName, item.field).flatMap((node) => {
       const path = subpathWithin(node.name, item.field)
-      // Stryker disable next-line ConditionalExpression,ArrayDeclaration: equivalent -- the candidates are the observed name and its ancestors, so each one contains it and `path` is always found.
+      // Stryker disable next-line ConditionalExpression,ArrayDeclaration: equivalent: the candidates are the observed name and its ancestors, so each one contains it and `path` is always found.
       return path === undefined ? [] : [{ field: node, path }]
     })
     const named = boundariesByName.get(item.boundary.name)

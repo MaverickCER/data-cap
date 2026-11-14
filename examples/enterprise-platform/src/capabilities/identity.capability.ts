@@ -1,9 +1,9 @@
 /**
- * The current user's own profile -- owned by platform-security, since
+ * The current user's own profile: owned by platform-security, since
  * "who's signed in and what can they do" is an org-wide concern, not any
  * one department's own. Registration/login themselves happen via a raw
  * `fetch` in `main-headless.ts`, the same way establishing a session isn't
- * itself "application data" in any of this session's three examples --
+ * itself "application data" in any of this session's three examples:
  * `identityData` is what every OTHER capability implicitly depends on once
  * a session exists, fetched here for real display use (e.g. "signed in as").
  */
@@ -48,11 +48,11 @@ documentData(identitySchema, {
       protections: "Session-authenticated access only; TLS in transit; password never leaves the server.",
       purpose: "Authorizing access to every other capability in this platform.",
       auditRequired: true,
-      // GDPR Art. 30(1)(c) -- staff members are the data subjects here.
+      // GDPR Art. 30(1)(c): staff members are the data subjects here.
       // `recipientCategories`/`transferSafeguard` are deliberately left
       // undeclared: this data never leaves platform-security's own
       // single-region (`dataResidency: "us"`, below) systems, so there is
-      // no external recipient or cross-border transfer to document --
+      // no external recipient or cross-border transfer to document;
       // `docs/ROPA.md` reports both as "Not documented" for this field,
       // which is the honest state, not a gap in this generator.
       dataSubjectCategory: "staff members",

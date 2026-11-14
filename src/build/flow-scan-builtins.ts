@@ -84,7 +84,7 @@ export function methods() {
     newSet(this: FlowScan, frame: Frame, node: TS.NewExpression): Val {
       const source = node.arguments?.[0]
       return setVal(
-        // Stryker disable next-line ConditionalExpression: equivalent -- with no source, the expression reads as an empty value, and iterating an empty value gives an empty value.
+        // Stryker disable next-line ConditionalExpression: equivalent: with no source, the expression reads as an empty value, and iterating an empty value gives an empty value.
         source === undefined ? EMPTY_VAL : this.iterate(frame, this.expr(frame, source), node),
       )
     },
@@ -106,7 +106,7 @@ export function methods() {
       ])
       // What the executor throws rejects the promise.
       const thrown = frame.thrown.splice(raised)
-      // Stryker disable next-line ConditionalExpression,EqualityOperator: equivalent -- rejecting with an empty value records a rejection no reader tells from none.
+      // Stryker disable next-line ConditionalExpression,EqualityOperator: equivalent: rejecting with an empty value records a rejection no reader tells from none.
       if (thrown.length > 0) this.settle(frame, node, id, "rejected", mergeVals(...thrown))
       return handle
     },
@@ -114,7 +114,7 @@ export function methods() {
     promiseSlot(this: FlowScan, id: string): PromiseSlot {
       const known = this.promiseSlots.get(id)
       if (known !== undefined) return known
-      // Stryker disable next-line BooleanLiteral: equivalent -- a slot nobody has read yet, marked read, only makes the first settle run one more round, which finds the same facts.
+      // Stryker disable next-line BooleanLiteral: equivalent: a slot nobody has read yet, marked read, only makes the first settle run one more round, which finds the same facts.
       const slot: PromiseSlot = { resolved: new Map(), rejected: new Map(), read: false }
       this.promiseSlots.set(id, slot)
       return slot
@@ -135,7 +135,7 @@ export function methods() {
       if (!list.has(key)) {
         list.set(key, { from: frame.fn.key, val: value })
         // Whoever awaited it before saw less than it holds now.
-        // Stryker disable next-line ConditionalExpression: equivalent -- marking a round dirty when nobody has read the slot only runs one more round, which finds the same facts.
+        // Stryker disable next-line ConditionalExpression: equivalent: marking a round dirty when nobody has read the slot only runs one more round, which finds the same facts.
         if (slot.read) this.dirty = true
       }
       this.sink(frame, value, { kind: "return" }, node)
@@ -153,13 +153,13 @@ export function methods() {
           withEntry(settlement.val, { kind: "return", from: settlement.from })
         parts.push(...[...slot.resolved.values()].map(back))
         const rejected = [...slot.rejected.values()].map(back)
-        // Stryker disable next-line ConditionalExpression,EqualityOperator: equivalent -- an empty rejection recorded for a promise nothing rejected reads the same as none.
+        // Stryker disable next-line ConditionalExpression,EqualityOperator: equivalent: an empty rejection recorded for a promise nothing rejected reads the same as none.
         if (rejected.length > 0)
           parts.push({ ...EMPTY_VAL, props: new Map([[rejectedKey(), mergeVals(...rejected)]]) })
       }
       const result = mergeVals(...parts)
       // The data comes to this function from whichever function settled the promise, as a value it was returned.
-      // Stryker disable next-line CallExpression: equivalent -- `touch` reads every part of the result on the next line, which records the same entries.
+      // Stryker disable next-line CallExpression: equivalent: `touch` reads every part of the result on the next line, which records the same entries.
       this.noteEntry(frame.fn, result)
       this.touch(frame.fn, result, site)
       return result
@@ -239,7 +239,7 @@ export function methods() {
       args: readonly Val[],
     ): Val | undefined {
       const [target, key] = node.arguments
-      // Stryker disable next-line ConditionalExpression: equivalent -- arguments are positional, so a missing first one means the second is missing too and the next test ends it; the check only narrows the type.
+      // Stryker disable next-line ConditionalExpression: equivalent: arguments are positional, so a missing first one means the second is missing too and the next test ends it; the check only narrows the type.
       if (target === undefined || key === undefined) return undefined
       if (name === "get") return this.readKey(frame, node, args[0] ?? EMPTY_VAL, key)
       if (name === "getOwnPropertyDescriptor")
@@ -278,7 +278,7 @@ export function methods() {
       const given = Array.from({ length: arity }, () =>
         this.accessMember(frame, list, ELEMENT_KEY, node),
       )
-      // Stryker disable next-line ArrayDeclaration: equivalent -- the expressions of the arguments are only where a callee's stores are written back to, and a list given as a value has none.
+      // Stryker disable next-line ArrayDeclaration: equivalent: the expressions of the arguments are only where a callee's stores are written back to, and a list given as a value has none.
       return this.construct(frame, node, target, given, [])
     },
 
@@ -294,12 +294,12 @@ export function methods() {
         { caller: frame, site: node },
         target,
         spread,
-        // Stryker disable next-line ConditionalExpression: equivalent -- an undefined `this` reads the same as none.
+        // Stryker disable next-line ConditionalExpression: equivalent: an undefined `this` reads the same as none.
         args[1] === undefined ? {} : { thisVal: args[1] },
       )
     },
 
-    /** `Object.create(proto, descriptors)`: an object that answers to everything `proto` holds -- its methods, its data, its class. */
+    /** `Object.create(proto, descriptors)`: an object that answers to everything `proto` holds; its methods, its data, its class. */
     objectCreate(this: FlowScan, frame: Frame, node: TS.CallExpression, args: readonly Val[]): Val {
       const [proto, descriptors] = args
       // A property defined through a descriptor holds the descriptor's value under a name chosen at run time.
@@ -359,7 +359,7 @@ export function methods() {
             mapVal(args[0] ?? EMPTY_VAL, args[1] ?? EMPTY_VAL),
             args,
           )
-        // Stryker disable next-line StringLiteral: equivalent -- a `has` that falls through is answered as the predicate it is, with no data.
+        // Stryker disable next-line StringLiteral: equivalent: a `has` that falls through is answered as the predicate it is, with no data.
         case "has":
         case "delete":
         case "clear":
@@ -398,7 +398,7 @@ export function methods() {
             setVal(args[0] ?? EMPTY_VAL),
             args,
           )
-        // Stryker disable next-line StringLiteral: equivalent -- a `has` that falls through is answered as the predicate it is, with no data.
+        // Stryker disable next-line StringLiteral: equivalent: a `has` that falls through is answered as the predicate it is, with no data.
         case "has":
         case "delete":
         case "clear":
@@ -453,9 +453,9 @@ export function methods() {
     /** `Array.prototype.m.call(self, ...)`: the call `self.m(...)`. */
     prototypeCall(this: FlowScan, frame: Frame, node: TS.CallExpression, method: string): Val {
       const [self, ...rest] = node.arguments
-      // Stryker disable next-line ConditionalExpression: equivalent -- with no first argument there is nothing to evaluate, and the expression of none reads as the empty value.
+      // Stryker disable next-line ConditionalExpression: equivalent: with no first argument there is nothing to evaluate, and the expression of none reads as the empty value.
       const receiver = self === undefined ? EMPTY_VAL : this.expr(frame, self)
-      // Stryker disable next-line ObjectLiteral: equivalent -- the method name travels as its own argument, so the name inside the callee is only read to report a call that is not followed, which carries the same data.
+      // Stryker disable next-line ObjectLiteral: equivalent: the method name travels as its own argument, so the name inside the callee is only read to report a call that is not followed, which carries the same data.
       const callee: MemberCallee = { expression: self ?? node.expression, name: { text: method } }
       return this.valueMethodCall(frame, node, callee, receiver, method, rest)
     },

@@ -1,17 +1,17 @@
 /**
- * `data-cap`'s Change Model (ADR 0050) -- wraps `manifest-snapshot.ts`'s
+ * `data-cap`'s Change Model (ADR 0050). It wraps `manifest-snapshot.ts`'s
  * already-versioned, already-persisted `ManifestChangeReport`, adding one
  * genuinely new thing: a blast-radius index answering "if this capability's
- * shape changed, which in-repo files are known to consume it right now."
- * Computed by combining the diff (`addedCapabilities`/`updatedCapabilities`)
- * with `dependency-projections.ts`'s `groupEdgesByCapability` (ADR 0056) --
+ * shape changed, which in-repo files are known to consume it right now".
+ * It is computed by combining the diff (`addedCapabilities`/`updatedCapabilities`)
+ * with `dependency-projections.ts`'s `groupEdgesByCapability` (ADR 0056),
  * never re-scanning.
  *
  * Blast radius only ever covers capabilities present in the *current*
- * inventory (`addedCapabilities` and `updatedCapabilities`): a
+ * inventory (`addedCapabilities` and `updatedCapabilities`). A
  * `removedCapabilities` entry has no corresponding Dependency Model row to
- * look up, since it's no longer part of what was just discovered/scanned --
- * its prior consumers were never captured in the snapshot, and inventing
+ * look up, since it's no longer part of what this run discovered/scanned.
+ * Its prior consumers were never captured in the snapshot, and inventing
  * them would misrepresent this as more than it is.
  */
 
@@ -20,26 +20,26 @@ import { groupEdgesByCapability } from "./dependency-projections.js"
 import type { ManifestChangeReport } from "./manifest-snapshot.js"
 
 /**
- * Bump only when a reader could misinterpret the shape -- same discipline
+ * Bump only when a reader could misinterpret the shape: same discipline
  * every other model's schema-version constant already documents. Bumped
- * 1 -> 2: every capability key is now built from a root-relative `file`
- * (OUT-01), and `renamedFields` was added (EVD-05).
+ * 1 -> 2: every capability key is now built from a root-relative `file`,
+ * and `renamedFields` was added.
  */
 export const CHANGE_MODEL_SCHEMA_VERSION = 2
 
-/** One added-field/removed-field pair correlated into a single rename via the current declaration's `renamedFrom` (EVD-05). */
+/** One added-field/removed-field pair correlated into a single rename via the current declaration's `renamedFrom`. */
 export interface RenamedField {
-  /** The owning capability's key (`file#exportName`) -- a rename never crosses capabilities. */
+  /** The owning capability's key (`file#exportName`): a rename never crosses capabilities. */
   readonly capability: string
-  /** The field's name before the rename -- matches a `removed` entry in that capability's own field diff. */
+  /** The field's name before the rename: matches a `removed` entry in that capability's own field diff. */
   readonly previousName: string
-  /** The field's name after the rename -- matches an `added` entry in the same diff. */
+  /** The field's name after the rename: matches an `added` entry in the same diff. */
   readonly currentName: string
 }
 
 /** One changed capability's known current consumers. */
 export interface BlastRadiusEntry {
-  /** The capability key (`file#exportName`) -- matches `ManifestChangeReport`'s own key convention. */
+  /** The capability key (`file#exportName`): matches `ManifestChangeReport`'s own key convention. */
   readonly capability: string
   /** Distinct consuming files known (from Dependency Model) to depend on this capability right now, sorted. */
   readonly consumers: readonly string[]
@@ -49,9 +49,9 @@ export interface BlastRadiusEntry {
 export interface ChangeModel {
   /** Always `CHANGE_MODEL_SCHEMA_VERSION`. */
   readonly schemaVersion: typeof CHANGE_MODEL_SCHEMA_VERSION
-  /** The underlying manifest diff -- see `diffManifestSnapshots`. */
+  /** The underlying manifest diff: see `diffManifestSnapshots`. */
   readonly manifest: ManifestChangeReport
-  /** One entry per added/updated capability, or `undefined` when no `DependencyModel` was supplied -- an optional layer, matching `--ownership`/`--flow`'s existing opt-in cost model (the usage scan isn't free). */
+  /** One entry per added/updated capability, or `undefined` when no `DependencyModel` was supplied: an optional layer, matching `--ownership`/`--flow`'s existing opt-in cost model (the usage scan isn't free). */
   readonly blastRadius: readonly BlastRadiusEntry[] | undefined
   /**
    * Every added-field/removed-field pair this run's currently-declared
@@ -59,7 +59,7 @@ export interface ChangeModel {
    * capability key then current name.
    *
    * @remarks
-   * Only ever populated from an *authored* `FieldDocs.renamedFrom` -- never
+   * Only ever populated from an *authored* `FieldDocs.renamedFrom`: never
    * guessed from name similarity, which is the same "prove it, never infer
    * it" rule `AGENTS.md` invariant 11 applies to every other derived fact
    * here. An additive view, not a filter: `manifest.updatedCapabilities`'s
@@ -67,11 +67,10 @@ export interface ChangeModel {
    * halves separately, so a consumer that doesn't know about this field
    * loses nothing.
    *
-   * Field-level only. `CapabilityDocs` deliberately has no `renamedFrom`
-   * (see `core/document.ts`), so there is no `renamedCapabilities` -- a
-   * capability-level rename has no authored field to correlate from, and
-   * guessing one from a moved file would be exactly the inference this
-   * model refuses to make.
+   * Field-level only. `CapabilityDocs` has no `renamedFrom` (see
+   * `core/document.ts`), so there is no `renamedCapabilities`. A
+   * capability-level rename has no authored field to correlate from, and this
+   * model never guesses one from a moved file.
    */
   readonly renamedFields: readonly RenamedField[]
 }
@@ -90,7 +89,7 @@ export interface ChangeModelCapability {
  * Correlates each capability's added/removed field pair into one rename,
  * gated entirely on the *current* declaration's `renamedFrom`.
  *
- * Both halves must actually be present in this run's diff: a `renamedFrom`
+ * Both halves must actually be present in this run's diff. A `renamedFrom`
  * naming a field that was never removed (a stale annotation left behind
  * after the rename already landed in an earlier run) correlates nothing, and
  * neither does one whose own field isn't newly added. That keeps this a
@@ -112,7 +111,7 @@ function buildRenamedFields(
     if (diff === undefined) continue
 
     // Drive off the diff's own newly-added field names (each a real `string`),
-    // then look back to the declaring field for its `renamedFrom` -- so the
+    // then look back to the declaring field for its `renamedFrom`: so the
     // only condition left is "the previous name was also removed this run".
     for (const currentName of diff.added) {
       const declaringField = (capability.fields ?? []).find((f) => f.path[0] === currentName)
@@ -153,7 +152,7 @@ function buildBlastRadius(
 
 /**
  * Projects a manifest diff (optionally combined with the current run's
- * Dependency Model) into `data-cap`'s Change Model. Pure -- takes
+ * Dependency Model) into `data-cap`'s Change Model. Pure: takes
  * already-computed inputs, no filesystem access. `capabilities` is only
  * consulted when `dependencyModel` is supplied (it's what
  * `groupEdgesByCapability` needs to find a changed capability's current

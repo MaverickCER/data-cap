@@ -54,13 +54,13 @@ describe("the control part-id pattern", () => {
       f.target["target-id"],
     ])
     expect(findings.sort()).toEqual([
-      ["r -- a_b_obj", "objective-id", "a_b_obj_obj"],
-      ["r -- ac-4", "objective-id", "ac-4_obj"],
-      ["r -- ac-4_obj", "objective-id", "ac-4_obj"],
-      ["r -- ac-4_objx", "objective-id", "ac-4_objx_obj"],
-      ["r -- ac-4_smt", "statement-id", "ac-4_smt"],
-      ["r -- ac-4_smt.a", "statement-id", "ac-4_smt.a"],
-      ["r -- ac-4_smt.ab", "statement-id", "ac-4_smt.ab"],
+      ["r: a_b_obj", "objective-id", "a_b_obj_obj"],
+      ["r: ac-4", "objective-id", "ac-4_obj"],
+      ["r: ac-4_obj", "objective-id", "ac-4_obj"],
+      ["r: ac-4_objx", "objective-id", "ac-4_objx_obj"],
+      ["r: ac-4_smt", "statement-id", "ac-4_smt"],
+      ["r: ac-4_smt.a", "statement-id", "ac-4_smt.a"],
+      ["r: ac-4_smt.ab", "statement-id", "ac-4_smt.ab"],
     ])
     const reviewed = result["reviewed-controls"]["control-selections"][0]?.[
       "include-controls"

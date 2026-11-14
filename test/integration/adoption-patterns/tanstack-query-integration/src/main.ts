@@ -1,5 +1,5 @@
 /**
- * Client-side pattern: data-cap ships no `./tanstack` adapter -- this is
+ * Client-side pattern: data-cap ships no `./tanstack` adapter; this is
  * the wiring an application writes itself. TanStack Query owns fetching,
  * in-flight request dedup, and time-based caching (its own core
  * competency); its settled results flow into a data-cap `DataStore`, so
@@ -46,16 +46,16 @@ async function runGetUser(queryClient: QueryClient): Promise<void> {
   }
 }
 
-// -- TanStack Query's own in-flight dedup: two concurrent fetchQuery calls
+// TanStack Query's own in-flight dedup: two concurrent fetchQuery calls
 // for the same key share one underlying queryFn call, mirroring what
-// coordinator.dedupe does for data-cap's own standalone wiring. --
+// coordinator.dedupe does for data-cap's own standalone wiring.
 const queryClient = new QueryClient()
 await Promise.all([runGetUser(queryClient), runGetUser(queryClient)])
 assert.equal(fetchCallCount, 1, "two concurrent identical queries dedupe onto one fetchUser call")
 assert.equal(store.getSnapshot().fields.user.name, "Ada Lovelace")
 assert.equal(store.getSnapshot().info.user?.source, "tanstack-query")
 
-// -- Default staleTime is 0: a later, sequential call refetches -- --
+// Default staleTime is 0: a later, sequential call refetches.
 fetchCallCount = 0
 await runGetUser(queryClient)
 assert.equal(
@@ -64,7 +64,7 @@ assert.equal(
   "with the default staleTime, a later call refetches rather than reusing cache",
 )
 
-// -- An explicit staleTime keeps a later call from refetching at all -- --
+// An explicit staleTime keeps a later call from refetching at all.
 fetchCallCount = 0
 const cachingQueryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: Number.POSITIVE_INFINITY } },

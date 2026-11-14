@@ -9,7 +9,7 @@
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 645.9)">
 <title>data&#45;flow</title>
 <polygon fill="white" stroke="none" points="-4,4 -4,-645.9 2302.8,-645.9 2302.8,4 -4,4"/>
-<text xml:space="preserve" text-anchor="middle" x="1149.4" y="-625.3" font-family="Times,serif" font-size="14.00">Data flow &#45;&#45; NOT complete: parts could not be followed, so a missing flow is not proof of absence</text>
+<text xml:space="preserve" text-anchor="middle" x="1149.4" y="-625.3" font-family="Times,serif" font-size="14.00">Data flow: NOT complete (parts could not be followed, so a missing flow is not proof of absence)</text>
 <!-- n0 -->
 <g id="boundary:boundary#postgres:users" class="node">
 <title>n0</title>

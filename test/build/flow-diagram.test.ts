@@ -39,7 +39,7 @@ function flow(overrides: Partial<FieldFlow> = {}): FieldFlow {
   }
 }
 
-/** Wraps a bare `DataFlowEndpoint` with a declaring operation -- most tests here don't care which specific operation, just that the endpoint/field/consumer chain renders correctly. */
+/** Wraps a bare `DataFlowEndpoint` with a declaring operation: most tests here don't care which specific operation, just that the endpoint/field/consumer chain renders correctly. */
 function declared(
   endpoint: DataFlowEndpoint,
   operation: FieldFlowEndpoint["operation"] = { kind: "getter", name: "getUser" },
@@ -552,7 +552,7 @@ describe("flow-diagram -- exact Mermaid output", () => {
 
   it("renders renderOverviewDiagram exactly", () => {
     expect(overview()).toMatchInlineSnapshot(`
-      "%% System overview -- declared endpoints and proven consumers per capability
+      "%% System overview: declared endpoints and proven consumers per capability
       flowchart TB
         subgraph boundary["Trust Boundary (proven, in-repo)"]
           n0(["userCapability"])
@@ -775,7 +775,7 @@ describe("flow-diagram -- exact Mermaid output", () => {
       [
         flow({
           capability: { file: "/project/src/user.ts", exportName: "userCapability" },
-          // joins to "getter:getUser" -- identical to the operation node's key tail
+          // joins to "getter:getUser"; identical to the operation node's key tail
           field: ["getter:getUser"],
           declaredOrigins: [
             declared(

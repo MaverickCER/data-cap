@@ -1,36 +1,35 @@
 /**
  * Field default helpers.
  *
- * `fields.nullable`/`fields.optional` are thin markers recognized only during
- * `buildData`'s schema-authoring walk (see build.ts) -- they never leak
- * into the resolved `fields` object. The runtime default they produce is
- * always `null`/`undefined` respectively, regardless of what `inner` holds;
- * `inner` exists purely so the underlying type can be inferred (see
- * `InferFieldValue` in types.ts).
+ * `fields.nullable` and `fields.optional` are thin markers recognized only during
+ * `buildData`'s schema-authoring walk (see build.ts): they never leak
+ * into the resolved `fields` object. Their runtime default is always `null`
+ * and `undefined` respectively, whatever `inner` holds. `inner` exists only
+ * so the underlying type can be inferred (see `InferFieldValue` in types.ts).
  *
- * `FIELD_MARKER`/`isFieldMarker` are internal plumbing, not part of the
- * public field-access API -- data-cap's field system never requires a symbol
- * to read a field's value, only to recognize these two authoring-time
- * helpers while building the initial defaults tree.
+ * `FIELD_MARKER` and `isFieldMarker` are internal plumbing, not part of the
+ * public field-access API. data-cap's field system never needs a symbol to
+ * read a field's value. It needs one only to recognize these two
+ * authoring-time helpers while building the initial defaults tree.
  *
  * `Symbol.for(...)` (the global symbol registry), not a bare `Symbol(...)`,
- * is load-bearing here -- `core` and `runtime` are separate tsup entries,
- * each independently bundled, so a bare `Symbol()` would create a genuinely
+ * is load-bearing here. `core` and `runtime` are separate tsup entries,
+ * each independently bundled. So a bare `Symbol()` would create a genuinely
  * different symbol identity in each bundle's own inlined copy of this
  * module. The runtime's `createData` (runtime/capability.ts) calls core's
  * `resolveOperationPatch` against a schema built with core's own
- * `fields.nullable`/`fields.optional` -- both bundles must recognize the
- * *same* marker identity for that ownership walk to work at all, even
- * though no ESM/CJS dual-package resolution is involved (contrast with
+ * `fields.nullable`/`fields.optional`. Both bundles must recognize the
+ * *same* marker identity for that ownership walk to work at all. That holds
+ * even though no ESM/CJS dual-package resolution is involved. Contrast with
  * ADR 0041's `defaultCoordinator` case, which tolerates duplication via
- * graceful degradation -- a duplicated `FIELD_MARKER` doesn't degrade
- * gracefully, it silently misclassifies every marker as a plain object and
- * corrupts ownership resolution, so the global registry is required here,
- * not merely convenient).
+ * graceful degradation. A duplicated `FIELD_MARKER` doesn't degrade
+ * gracefully. It silently misclassifies every marker as a plain object and
+ * corrupts ownership resolution. So the global registry is required here,
+ * not merely convenient.
  */
 
 // `Symbol.for` registers the marker globally, so two copies of this module (a duplicated install) still
-// recognize each other's markers. The key is read through a function so it can be checked directly.
+// recognize each other's markers. The key is read through a function. Tests check it directly.
 /** @internal Exported for direct unit coverage. */
 export function fieldMarkerKey(): string {
   return "data-cap.field-marker"
@@ -38,19 +37,19 @@ export function fieldMarkerKey(): string {
 
 export const FIELD_MARKER: unique symbol = Symbol.for(fieldMarkerKey())
 
-/** Produced by `fields.nullable(...)` -- recognized only during `buildData`'s schema-authoring walk; the resolved runtime default is always `null`. */
+/** Produced by `fields.nullable(...)`: recognized only during `buildData`'s schema-authoring walk; the resolved runtime default is always `null`. */
 export interface NullableMarker<T> {
-  /** Internal marker discriminant -- see the module doc comment. */
+  /** Internal marker discriminant: see the module doc comment. */
   readonly [FIELD_MARKER]: "nullable"
-  /** The declared inner default, kept only so the underlying type can be inferred -- never the resolved runtime value. */
+  /** The declared inner default, kept only so the underlying type can be inferred: never the resolved runtime value. */
   readonly inner: T
 }
 
-/** Produced by `fields.optional(...)` -- recognized only during `buildData`'s schema-authoring walk; the resolved runtime default is always `undefined`. */
+/** Produced by `fields.optional(...)`: recognized only during `buildData`'s schema-authoring walk; the resolved runtime default is always `undefined`. */
 export interface OptionalMarker<T> {
-  /** Internal marker discriminant -- see the module doc comment. */
+  /** Internal marker discriminant: see the module doc comment. */
   readonly [FIELD_MARKER]: "optional"
-  /** The declared inner default, kept only so the underlying type can be inferred -- never the resolved runtime value. */
+  /** The declared inner default, kept only so the underlying type can be inferred: never the resolved runtime value. */
   readonly inner: T
 }
 

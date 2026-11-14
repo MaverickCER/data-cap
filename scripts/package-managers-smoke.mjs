@@ -42,7 +42,7 @@ function run(command, args, cwd, env = {}) {
 }
 
 // An entry such as an ESLint plugin needs the package's peer dependencies to load, so the consumer
-// installs them too, at the ranges the package declares -- as a real consumer of that entry would.
+// installs them too, at the ranges the package declares: as a real consumer of that entry would.
 const peers = Object.entries(manifest.peerDependencies ?? {}).map(
   ([peer, range]) => `${peer}@${range}`,
 )

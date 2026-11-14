@@ -6,7 +6,7 @@
 
 # Data Flow Diagram & Security Data-Flow Review
 
-This report cannot trace data *through* a third-party system once it reaches an external-service/api endpoint -- what that system does with it afterward is unknowable to a static scan of one repository. It does not assign a regulatory classification, since that's jurisdiction-specific; record it in a capability's `metadata` instead (see `specs/decisions/0049-capability-metadata-vocabulary.md`).
+This report cannot trace data *through* a third-party system once it reaches an external-service/api endpoint. What that system does with it afterward is unknowable to a static scan of one repository. It does not assign a regulatory classification, since that's jurisdiction-specific; record it in a capability's `metadata` instead (see `specs/decisions/0049-capability-metadata-vocabulary.md`).
 
 ## Security Data-Flow Review
 
@@ -16,25 +16,25 @@ _None._
 
 ### Warnings
 
-- **SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY**: Field "invoices" on "billingData" is sensitivity "confidential" and has a declared endpoint crossing an external-service/api/queue boundary -- verify this is intentional and adequately protected.
-- **SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY**: Field "currentUser" on "identityData" is sensitivity "confidential" and has a declared endpoint crossing an external-service/api/queue boundary -- verify this is intentional and adequately protected.
-- **SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY**: Field "projects" on "projectsData" is sensitivity "internal" and has a declared endpoint crossing an external-service/api/queue boundary -- verify this is intentional and adequately protected.
+- **SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY**: Field "invoices" on "billingData" is sensitivity "confidential" and has a declared endpoint crossing an external-service/api/queue boundary. Verify this is intentional and adequately protected.
+- **SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY**: Field "currentUser" on "identityData" is sensitivity "confidential" and has a declared endpoint crossing an external-service/api/queue boundary. Verify this is intentional and adequately protected.
+- **SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY**: Field "projects" on "projectsData" is sensitivity "internal" and has a declared endpoint crossing an external-service/api/queue boundary. Verify this is intentional and adequately protected.
 
 ### Informational
 
-- **INDETERMINATE_CONSUMER**: "src/components/BillingPanel.tsx" accesses "billingData" using a dynamic/computed property, or in a way this scanner's local dataflow analysis can't follow (passed elsewhere, assigned to a new binding, spread, returned, or handed to JSX as a prop) -- can't be statically characterized (ADR 0060).
-- **INDETERMINATE_CONSUMER**: "src/server/legacy-compliance-sync.ts" accesses "billingData" using a dynamic/computed property, or in a way this scanner's local dataflow analysis can't follow (passed elsewhere, assigned to a new binding, spread, returned, or handed to JSX as a prop) -- can't be statically characterized (ADR 0060).
+- **INDETERMINATE_CONSUMER**: "src/components/BillingPanel.tsx" accesses "billingData" in a way this scanner's local dataflow analysis can't follow. The access uses a dynamic or computed property, or passes the value on (to a call, a new binding, a spread, a return or a JSX prop). It can't be statically characterized (ADR 0060).
+- **INDETERMINATE_CONSUMER**: "src/server/legacy-compliance-sync.ts" accesses "billingData" in a way this scanner's local dataflow analysis can't follow. The access uses a dynamic or computed property, or passes the value on (to a call, a new binding, a spread, a return or a JSX prop). It can't be statically characterized (ADR 0060).
 - **FIELD_DYNAMIC_ACCESS_DECLARED**: Per developers, this data point is dynamically accessed at src/server/legacy-compliance-sync.ts:26:19.
-- **INDETERMINATE_CONSUMER**: "src/routes.tsx" accesses "identityData" using a dynamic/computed property, or in a way this scanner's local dataflow analysis can't follow (passed elsewhere, assigned to a new binding, spread, returned, or handed to JSX as a prop) -- can't be statically characterized (ADR 0060).
-- **INDETERMINATE_CONSUMER**: "src/server/legacy-compliance-sync.ts" accesses "identityData" using a dynamic/computed property, or in a way this scanner's local dataflow analysis can't follow (passed elsewhere, assigned to a new binding, spread, returned, or handed to JSX as a prop) -- can't be statically characterized (ADR 0060).
-- **FIELD_ACCESS_INDETERMINATE**: Field "currentUser" on "identityData" appears unused, but there are instances of dynamic/computed access, or a reference this scanner's local dataflow analysis can't follow, on this capability that can't be statically attributed to a specific field -- it may be one of them.
-- **INDETERMINATE_CONSUMER**: "src/components/ProjectsPanel.tsx" accesses "projectsData" using a dynamic/computed property, or in a way this scanner's local dataflow analysis can't follow (passed elsewhere, assigned to a new binding, spread, returned, or handed to JSX as a prop) -- can't be statically characterized (ADR 0060).
-- **FIELD_ACCESS_INDETERMINATE**: Field "projects" on "projectsData" appears unused, but there are instances of dynamic/computed access, or a reference this scanner's local dataflow analysis can't follow, on this capability that can't be statically attributed to a specific field -- it may be one of them.
+- **INDETERMINATE_CONSUMER**: "src/routes.tsx" accesses "identityData" in a way this scanner's local dataflow analysis can't follow. The access uses a dynamic or computed property, or passes the value on (to a call, a new binding, a spread, a return or a JSX prop). It can't be statically characterized (ADR 0060).
+- **INDETERMINATE_CONSUMER**: "src/server/legacy-compliance-sync.ts" accesses "identityData" in a way this scanner's local dataflow analysis can't follow. The access uses a dynamic or computed property, or passes the value on (to a call, a new binding, a spread, a return or a JSX prop). It can't be statically characterized (ADR 0060).
+- **FIELD_ACCESS_INDETERMINATE**: Field "currentUser" on "identityData" appears unused. But the capability has dynamic or computed accesses, or references this scanner's local dataflow analysis can't follow, that can't be attributed to one field. It may be one of them.
+- **INDETERMINATE_CONSUMER**: "src/components/ProjectsPanel.tsx" accesses "projectsData" in a way this scanner's local dataflow analysis can't follow. The access uses a dynamic or computed property, or passes the value on (to a call, a new binding, a spread, a return or a JSX prop). It can't be statically characterized (ADR 0060).
+- **FIELD_ACCESS_INDETERMINATE**: Field "projects" on "projectsData" appears unused. But the capability has dynamic or computed accesses, or references this scanner's local dataflow analysis can't follow, that can't be attributed to one field. It may be one of them.
 
 ## System overview diagram
 
 ```mermaid
-%% System overview -- declared endpoints and proven consumers per capability
+%% System overview: declared endpoints and proven consumers per capability
 flowchart TB
   subgraph boundary["Trust Boundary (proven, in-repo)"]
     n0(["billingData"])

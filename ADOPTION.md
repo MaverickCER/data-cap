@@ -4,15 +4,17 @@ You have to decide whether your team adopts `data-cap`. This page covers what it
 
 ## What it solves
 
-Several consumers of the same data each invent their own status bookkeeping: a `userLoading` boolean here, a `userError` string there. `data-cap` gives every consumer of a capability one typed `fields` and `info` shape. That holds whatever fetches the data underneath: a REST call, a database query, a socket event, or a mix.
+Teams lose track of who owns a piece of data, how it may be handled and what reads it, and the page that documents it falls behind the code. `data-cap` records the owner and the handling in each capability. Lint rules and the build pass check the code against them, and the documentation is generated from the code.
 
-Fetching libraries (TanStack Query, SWR, RTK Query, Apollo) solve request dedup, caching and refetch policy. Stores (Redux, Zustand, Jotai) move values to where they are read. `data-cap` solves neither. It solves agreement on shape and status, and it records who owns each field. That is why it composes with those tools instead of replacing them; see [How it differs](README.md#how-it-differs).
+Components that read the same data also invent their own status bookkeeping: a `userLoading` boolean here, a `userError` string there. `data-cap` gives every component one typed `fields` and `info` shape per capability. That holds whatever fetches the data underneath: a REST call, a database query, a socket event, or a mix.
+
+Fetching libraries (TanStack Query, SWR, RTK Query, Apollo) solve request dedup, caching and refetch policy. Stores (Redux, Zustand, Jotai) move values to where they are read. `data-cap` solves neither. It solves agreement on ownership, handling, shape and status. That is why it composes with those tools instead of replacing them; see [How it differs](README.md#how-it-differs).
 
 ## What it costs
 
 - **A declaration per capability.** Each piece of data is declared once, with its fields, operations and, optionally, governance metadata. You adopt one capability at a time.
-- **A build step in CI.** The reports and the evidence file come from a static pass. `--check` fails the job when they are stale.
-- **Bundle size.** Every entry point has a gzip budget in `ci/size-budgets.mjs`, and the `verify` and `contract` jobs fail over it. Core is budgeted at 2 KB and `./runtime` at 8 KB. [PERFORMANCE.md](PERFORMANCE.md#bundle-size-budgets) has every budget. The budgets measure the ESM files only.
+- **A build step in CI.** The reports and the evidence file come from a static pass. `node scripts/generate-data.mjs --check`, scaffolded by `data-cap init`, fails when a report is stale. `data-cap --check` exits 1 when the evidence file is.
+- **Bundle size.** Every entry point has a gzip budget in `ci/size-budgets.mjs`, and the `verify` and `contract` jobs fail over it. Core is budgeted at 2 KB and `./runtime` at 8 KB. `./build`, `./eslint-plugin` and the CLI have a 999 KB ceiling that only catches runaway growth. [PERFORMANCE.md](PERFORMANCE.md#bundle-size-budgets) has every budget. The budgets measure the ESM files only.
 - **Install size.** The package's one dependency is a TypeScript 6 compiler, bundled in the tarball. Only `./build` and the CLI load it. The `compiler-isolation` step of the `verify` job fails if a runtime entry can reach it.
 - **Optional pieces cost nothing until imported.** Cache and retry are separate entries. `test/runtime/tree-shaking.test.ts` checks that neither carries the other's code, and that the built `./runtime` contains neither.
 
@@ -32,7 +34,7 @@ Every [migration guide](specs/migrations/) is incremental and says when to keep 
 - **Node.js 22 or later.** CI runs the tests on Node 22 and 24.
 - **TypeScript is optional.** The runtime works in plain JavaScript. The generator uses your TypeScript 5 or 6, or else the bundled TypeScript 6.
 - **`moduleResolution`** of `node16`, `nodenext` or `bundler` in a TypeScript project.
-- **npm** for full support. pnpm, Yarn 1 and Yarn Berry (node-modules linker) are tested for install and import only, in a job that does not block a merge. Plug'n'Play is unsupported.
+- **npm** for full support. pnpm, Yarn 1 and Yarn Berry (node-modules linker) are tested for install and import only, in a job `required` waits for. Plug'n'Play is unsupported.
 - **ESLint 8.57, 9 or 10 and `@typescript-eslint/utils` 8**, only for `data-cap/eslint-plugin`. ESLint 10 runs the unit tests and ESLint 9 a fixture; 8.57 is untested.
 
 ### What installing it adds
@@ -54,22 +56,22 @@ Installing `data-cap` installs 1 package directly, and whatever it depends on. I
 
 ## What it refuses to do
 
-| It does not                                      | Why, and what to do instead                                                                                                                                                                                          |
-| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Fetch data or hold UI state                      | Your functions do the I/O; keep your fetching and state libraries.                                                                                                                                                   |
-| Authorize, encrypt or redact                     | A field in `fields` is not an access decision. `fields` and `info` print as plain objects ([SECURITY.md](SECURITY.md#application-responsibilities)).                                                                 |
-| Roll back a failed mutation or resolve conflicts | A failed optimistic update reverts because its pending transition is removed. Write any merge policy in your own processor ([ADR 0023](specs/decisions/0023-no-automatic-rollback-or-conflict-resolution.md)).       |
-| Run your code at build time                      | The build tool reads files through the TypeScript Compiler API and never imports or evaluates them ([SECURITY.md](SECURITY.md#build-time-security-model)).                                                           |
-| Follow data into packages                        | The flow scan reads your project only. A package call is recorded as an unknown unless you declare what it does.                                                                                                     |
-| Ship adapters for other libraries                | No TanStack Query, Socket.IO or React package ships ([ADR 0037](specs/decisions/0037-no-first-party-integration-packages.md)). Tested patterns live under `test/integration/`, in a job that does not block a merge. |
-| Validate field values                            | `shape` has structural guards only; a processor is where your validation goes ([ADR 0039](specs/decisions/0039-helpers-subpath-scope.md)).                                                                           |
-| Decide your regulatory classification            | `metadata` is an open bag you fill; `data-cap` never validates it. Its outputs can support a review; they do not establish compliance.                                                                               |
+| It does not                                      | Why, and what to do instead                                                                                                                                                                                    |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Fetch data or hold UI state                      | Your functions do the I/O; keep your fetching and state libraries.                                                                                                                                             |
+| Authorize, encrypt or redact                     | A field in `fields` is not an access decision. `fields` and `info` print as plain objects ([SECURITY.md](SECURITY.md#application-responsibilities)).                                                           |
+| Roll back a failed mutation or resolve conflicts | A failed optimistic update reverts because its pending transition is removed. Write any merge policy in your own processor ([ADR 0023](specs/decisions/0023-no-automatic-rollback-or-conflict-resolution.md)). |
+| Run your code at build time                      | The build tool reads files through the TypeScript Compiler API and never imports or evaluates them ([SECURITY.md](SECURITY.md#build-time-security-model)).                                                     |
+| Follow data into packages                        | The flow scan reads your project only. A package call is recorded as an unknown unless you declare what it does.                                                                                               |
+| Ship adapters for other libraries                | No TanStack Query, Socket.IO or React package ships ([ADR 0037](specs/decisions/0037-no-first-party-integration-packages.md)). Tested patterns live under `test/integration/`, in a job `required` waits for.  |
+| Validate field values                            | `shape` has structural guards only; a processor is where your validation goes ([ADR 0039](specs/decisions/0039-helpers-subpath-scope.md)).                                                                     |
+| Decide your regulatory classification            | `metadata` is an open bag you fill; `data-cap` never validates it. Its outputs can support a review; they do not establish compliance.                                                                         |
 
 ## What it holds to
 
 | What it holds to                                                                                                 | Held by                                                                                      | Limit                                                                 |
 | ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| Fields are readable synchronously, with their defaults, from the moment `buildData()` or `createData()` returns. | `test/core/build.test.ts`, `test/runtime/capability.test.ts`                                 | Bun and Deno are smoke-tested in a job that does not block a merge.   |
+| Fields are readable synchronously, with their defaults, from the moment `buildData()` or `createData()` returns. | `test/core/build.test.ts`, `test/runtime/capability.test.ts`                                 | Bun and Deno are smoke-tested in a job `required` waits for.          |
 | Every `DataState` has `fields` and `info`, committed together as one snapshot.                                   | `test/core/patch.test.ts`, `test/runtime/store.test.ts`                                      | Tested through the store API; there is no concurrency stress test.    |
 | A write to a field the operation does not own is dropped, and the warning never includes the value.              | `test/core/ownership.test.ts`, `test/runtime/capability.test.ts`                             | The value check covers a string value on the `createData` path.       |
 | Every published snapshot is deep-frozen.                                                                         | `test/core/build.test.ts`, `test/core/patch.test.ts`                                         | `Map`, `Set` and `Date` can still be mutated through their methods.   |

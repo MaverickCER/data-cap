@@ -1,9 +1,9 @@
 /**
- * The org-wide project directory -- every department's own projects, in one
+ * The org-wide project directory: every department's own projects, in one
  * list. Owned by engineering-ops. This is the same "project" concept
  * `examples/team-service/`'s own `project.capability.ts` tracks for one
  * team; here it's every team's, which is exactly the scale-up this tier
- * exists to demonstrate -- multiple departments, each with their own
+ * exists to demonstrate: multiple departments, each with their own
  * capabilities (`billing.capability.ts` is finance's own), all
  * independently analyzable together.
  */

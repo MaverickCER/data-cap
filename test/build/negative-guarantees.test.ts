@@ -1,6 +1,6 @@
 /**
  * The consolidated "never" checklist for this session's Parts 1-3 (see the
- * approved plan's own "Negative guarantees for Parts 1-3" section) -- the
+ * approved plan's own "Negative guarantees for Parts 1-3" section): the
  * same convention ADR 0047 established for this codebase's own hard
  * invariants, extended rather than reinvented. Each guarantee below gets
  * its own test here, not just an assertion in a planning document. Filled
@@ -8,7 +8,7 @@
  * 2A/2B/3's own modules and are added alongside those parts.
  *
  * Guarantee 6 (the enterprise-platform evidence projection is deterministic
- * and fully source-backed) is NOT a test in this file -- `examples/` is a
+ * and fully source-backed) is NOT a test in this file: `examples/` is a
  * separate npm project this suite can't import from (its own
  * `node_modules`, not installed by the root `npm ci`; see
  * `test/examples/support.ts`'s own header comment). It's verified for real
@@ -21,7 +21,7 @@
  * other regression would.
  *
  * Guarantee 7 (schema/model changes are intentional pre-1.0 changes, not
- * compatibility hazards) is a process guarantee, not a unit-testable one --
+ * compatibility hazards) is a process guarantee, not a unit-testable one:
  * evidenced by the in-place breaking renames made throughout this session
  * (`DependencyEdge.line` -> `position`, `FieldDocs`'s index-signature
  * removal, etc.), never a compatibility shim or a deprecated-alias path.
@@ -47,7 +47,7 @@ import type { CapabilityInventory, CapabilityNode } from "../../src/build/invent
 import type { DependencyEdge } from "../../src/build/dependency-types.js"
 import { nodeBuildFs } from "../support/build-filesystem.js"
 
-/** `root` is what `buildInventory` relativizes each capability's `file` against (OUT-01) -- every fixture below declares its files under `/project`. */
+/** `root` is what `buildInventory` relativizes each capability's `file` against (OUT-01): every fixture below declares its files under `/project`. */
 function linkResult(capabilities: readonly DiscoveredCapability[]): LinkResult {
   return { root: "/project", capabilities, warnings: [] }
 }
@@ -213,7 +213,7 @@ describe('Negative guarantee 2 -- UNCONSUMED_FIELD never regresses into "probabl
     return {
       relationship: "imports",
       from: "consumer.ts",
-      // Root-relative, matching what `buildInventory` publishes (OUT-01) --
+      // Root-relative, matching what `buildInventory` publishes (OUT-01):
       // an absolute `file` here would silently fail to correlate with the
       // inventory's own capability key.
       to: { capability: { file: "user.ts", exportName: "userCapability" } },
@@ -238,7 +238,7 @@ describe('Negative guarantee 2 -- UNCONSUMED_FIELD never regresses into "probabl
   it("UNCONSUMED_FIELD's message text carries the five-state model's own wording, plus an explicit fix", () => {
     const findings = deriveUsageFindings(inventory([capability()]), [edge()])
     expect(findings.find((f) => f.code === "UNCONSUMED_FIELD")?.message).toBe(
-      'Field "email" on "userCapability" is written but never statically read in the scanned project -- if it\'s genuinely unused, remove it; if something reads it dynamically or from outside the scanned root, add a dynamicAccess citation so this scan can account for it.',
+      'Field "email" on "userCapability" is written but never statically read in the scanned project. If it\'s genuinely unused, remove it; if something reads it dynamically or from outside the scanned root, add a dynamicAccess citation so this scan can account for it.',
     )
   })
 })
@@ -309,7 +309,7 @@ describe("Negative guarantee 4 -- a dynamicAccess citation existing and hash-mat
     const edge: DependencyEdge = {
       relationship: "imports",
       from: "consumer.ts",
-      // Root-relative, matching what `buildInventory` publishes (OUT-01) --
+      // Root-relative, matching what `buildInventory` publishes (OUT-01):
       // an absolute `file` here would silently fail to correlate with the
       // inventory's own capability key.
       to: { capability: { file: "user.ts", exportName: "userCapability" } },
@@ -324,11 +324,11 @@ describe("Negative guarantee 4 -- a dynamicAccess citation existing and hash-mat
   })
 
   it("verifyDynamicAccessCitations never claims a passing check proves the described access, only that the citation itself currently checks out", async () => {
-    // A passing check (matching hash) produces NO finding at all -- see
+    // A passing check (matching hash) produces NO finding at all: see
     // citation-verification.test.ts's own dedicated coverage of this. The
     // guarantee here is about the FAILURE-path messages: even reporting
     // that a citation is missing/stale never phrases it as "the access was
-    // never proven" -- it stays scoped to the citation's own integrity.
+    // never proven"; it stays scoped to the citation's own integrity.
     const findings = await verifyDynamicAccessCitations(
       buildInventory({
         root: "/project",
@@ -430,7 +430,7 @@ describe("Negative guarantee 8 -- a declared endpoint `handling` is never presen
     })
     const { findings } = buildFlowGraph(inventory([withHandling]), [])
     // SENSITIVE_FIELD_ENDPOINT_MISSING_HANDLING must not fire once handling
-    // is declared -- but nothing else should appear in its place claiming
+    // is declared: but nothing else should appear in its place claiming
     // the encryption itself was checked; the boundary-crossing finding
     // (which fires regardless of handling, since it's about the crossing
     // existing at all) is the only one left, and its own message is
@@ -480,13 +480,13 @@ describe("Negative guarantee 9 -- documentData's compile-time operation-name che
 
   // The exact schema shape test/core/document.test.ts's own compile-time
   // test ("documenting a getter/mutator/subscription name is checked
-  // against the real schema...") uses -- `getUser`/`updateEmail` are the
+  // against the real schema...") uses: `getUser`/`updateEmail` are the
   // only real operation names; `getPost`/`deleteUser` are the same two
   // names that test proves `@ts-expect-error` rejects at compile time.
   // Both layers read from the identical schema object once the shared-
   // schema pattern is used (`documentData(userSchema, docs)`), so what
   // link.ts accepts/rejects here is the same acceptance surface TypeScript's
-  // own `keyof` enforces there -- this test is that pairing's build-time
+  // own `keyof` enforces there: this test is that pairing's build-time
   // half, over source text describing the identical schema.
   const schemaSource = [
     "const userSchema = {",

@@ -1,6 +1,6 @@
 /**
  * AbortSignal composition utilities. The runtime always composes an internal
- * signal from developer-provided ones rather than replacing them outright --
+ * signal from developer-provided ones rather than replacing them outright:
  * see specs/architecture.md.
  */
 
@@ -32,15 +32,15 @@ export function composeSignals(signals: readonly AbortSignal[]): AbortSignal {
 }
 
 /**
- * Wraps `promise` so it rejects immediately if `signal` aborts. Never
- * affects `promise` itself -- does not cancel or otherwise influence any
- * underlying shared work (see coordinator.ts: a caller giving up on waiting
- * is not the same as the shared execution being cancelled for every caller).
+ * Wraps `promise` so it rejects immediately if `signal` aborts. Never affects
+ * `promise` itself, and never cancels the shared work behind it. A caller that
+ * stops waiting does not cancel the shared execution for every other caller
+ * (see coordinator.ts).
  */
 export function rejectOnAbort<T>(promise: Promise<T>, signal: AbortSignal): Promise<T> {
   if (signal.aborted) {
     // AbortController.abort(reason) accepts any value by spec, and callers
-    // commonly read `signal.reason` back directly -- force-wrapping a
+    // commonly read `signal.reason` back directly: force-wrapping a
     // non-Error reason here would silently obscure whatever the developer
     // actually passed.
     // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- rejects with the caller's own abort reason, which may be any value
@@ -59,8 +59,8 @@ export function rejectOnAbort<T>(promise: Promise<T>, signal: AbortSignal): Prom
       },
       (error: unknown) => {
         signal.removeEventListener("abort", onAbort)
-        // Re-propagates whatever `promise` itself rejected with, verbatim --
-        // a promise may reject with any value, not only an Error.
+        // Re-propagates whatever `promise` itself rejected with, verbatim.
+        // A promise may reject with any value, not only an Error.
         // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- a promise may reject with any value, and this re-propagates it verbatim
         reject(error)
       },

@@ -207,7 +207,7 @@ describe("buildFlowGraph -- field flow assembly", () => {
       inventory([
         capability({
           fields: [field({ path: [] })],
-          // A getter that writes top-level `email` -- it must NOT be picked up
+          // A getter that writes top-level `email`: it must NOT be picked up
           // for the empty-path field, so the `fieldName !== undefined` guard is
           // load-bearing.
           getters: [
@@ -613,7 +613,7 @@ describe("buildFlowGraph -- exact finding messages", () => {
   // A field with a nested path and two un-handled boundary-crossing endpoints,
   // so `field.join(".")`, the `String(undeclared.length)` count, and every
   // literal fragment of both message templates (and `family`) are pinned. The
-  // graph is built inside each test on purpose -- a describe-scoped fixture
+  // graph is built inside each test on purpose: a describe-scoped fixture
   // runs before any test and mutation coverage can't then attribute it.
   function boundaryGraph() {
     return buildFlowGraph(
@@ -650,7 +650,7 @@ describe("buildFlowGraph -- exact finding messages", () => {
     )
     expect(finding?.family).toBe("flow")
     expect(finding?.message).toBe(
-      'Field "contact.email" on "userCapability" is sensitivity "confidential" and has a declared endpoint crossing an external-service/api/queue boundary -- verify this is intentional and adequately protected.',
+      'Field "contact.email" on "userCapability" is sensitivity "confidential" and has a declared endpoint crossing an external-service/api/queue boundary. Verify this is intentional and adequately protected.',
     )
   })
 
@@ -660,7 +660,7 @@ describe("buildFlowGraph -- exact finding messages", () => {
     )
     expect(finding?.family).toBe("flow")
     expect(finding?.message).toBe(
-      'Field "contact.email" on "userCapability" is sensitivity "confidential" and has 2 declared boundary-crossing endpoint(s) with no declared "handling" -- state how this field\'s data is protected at each crossing (plaintext/masked/redacted/hashed/encrypted).',
+      'Field "contact.email" on "userCapability" is sensitivity "confidential" and has 2 declared boundary-crossing endpoint(s) with no declared "handling". State how this field\'s data is protected at each crossing (plaintext/masked/redacted/hashed/encrypted).',
     )
   })
 })

@@ -1,32 +1,32 @@
 // Regenerates src/generated/data.manifest.ts, docs/DATA.md, docs/OWNERSHIP.md,
-// docs/flow/, and docs/data.evidence.json -- what a single
+// docs/flow/, and docs/data.evidence.json: what a single
 // `data-cap --location --docs --ownership --flow --evidence` invocation
 // used to write for this example, before the first four flags were removed
 // from the CLI surface (see
 // specs/decisions/0066-cli-restricted-to-runtime-and-evidence-output.md).
 // None of the manifest/docs/ownership/flow artifacts has a real *runtime*
-// consumer -- nothing in this app `import`s the generated manifest, or
-// reads the Markdown/Mermaid artifacts, the way a real consumer would -- so
+// consumer (nothing in this app `import`s the generated manifest, or
+// reads the Markdown/Mermaid artifacts, the way a real consumer would) so
 // generating them is application-level code now, not a CLI concern.
 //
-// Calls `generateDataArtifacts()` directly from `data-cap/build` -- the same
+// Calls `generateDataArtifacts()` directly from `data-cap/build`: the same
 // orchestrator the removed CLI flags called internally (it composes
 // `generateManifest`/`generateDocumentation`/`generateUsage`/`generateFlow`,
 // all still fully exported and individually callable, over one shared
 // discover -> link -> inventory -> scan pass), just invoked directly here
 // instead of through argv parsing. Run via `npm run docs` (see
-// package.json), chained after a `data-cap --evidence` CLI step -- the one
+// package.json), chained after a `data-cap --evidence` CLI step: the one
 // CLI-surviving flag, kept as a real, standalone smoke test that it still
 // works on its own.
 //
 // `evidence` IS included below, even though the CLI step immediately before
 // this script already wrote docs/data.evidence.json: that CLI-only run never
-// sets `location`/`flow` (it can't -- those flags are gone), so its own
+// sets `location`/`flow` (it can't; those flags are gone), so its own
 // Evidence Model's `finding.findings` is missing the
 // `MANIFEST_EXPORT_NAME_COLLISION`/`SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY`
 // finding kinds those two passes contribute. This run recomputes the fuller
 // Evidence Model (every pass requested at once, exactly like the old single
-// CLI call did) and overwrites the CLI step's thinner one -- the version
+// CLI call did) and overwrites the CLI step's thinner one: the version
 // that ends up committed is the complete one. `scripts/generate-docs/check.ts`
 // verifies against this same, fuller option set.
 import path from "node:path"
@@ -51,7 +51,7 @@ console.log(
   `[generate-docs] wrote ${path.relative(root, result.manifest?.location ?? "")} (${String(result.manifest?.snapshot.capabilities.length ?? 0)} active capability(ies)), ${path.relative(root, result.documentation?.location ?? "")}, ${path.relative(root, result.usage.location ?? "")}${result.flow ? `, ${String(result.flow.files.length)} flow file(s),` : ""} and docs/data.evidence.json.`,
 )
 
-// Mirrors the removed CLI's own `writeFindings()` -- the same, real
+// Mirrors the removed CLI's own `writeFindings()`: the same, real
 // governance signal (e.g. SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY) a single
 // `data-cap --location --docs --ownership --flow` invocation used to print,
 // now surfaced by this script instead.

@@ -1,12 +1,12 @@
 /**
- * One project's own invoices -- owned by finance-team. The capability this
+ * One project's own invoices: owned by finance-team. The capability this
  * whole tier's data-handling record is scoped to: `disputeInvoice`
  * marks a real invoice disputed, the exact concrete scenario
  * `reports/data-handling-record.ts` records "what billing data existed and
  * how it was handled" for.
  *
  * `evidence.fields.invoices.dynamicAccess` (below) cites
- * `server/legacy-compliance-sync.ts:26:19` -- a pre-existing utility that
+ * `server/legacy-compliance-sync.ts:26:19`: a pre-existing utility that
  * reads `invoices` via a runtime-computed field name, exactly the kind of
  * access `src/build/dependency-graph.ts` can prove happens but can't
  * statically attribute to one field (ADR 0052/0053). The audit-prep report
@@ -35,7 +35,7 @@ interface InvoiceSseHandlers {
 
 /**
  * Real SSE over `fetch`'s own streaming response body, not the browser's
- * native `EventSource` -- deliberately, so the exact same code subscribes
+ * native `EventSource`: deliberately, so the exact same code subscribes
  * for real from both the browser (`npm run dev`) and this capability's
  * `main-headless.ts` consumer. `EventSource` also can't attach a custom
  * `Cookie` header, which Node's side of this capability needs.
@@ -79,8 +79,8 @@ function subscribeToInvoicesSse(
         }
       }
     } catch {
-      // Aborted (normal, on unsubscribe) or a genuine network failure --
-      // either way, the connection is no longer live.
+      // Aborted (normal, on unsubscribe) or a genuine network failure.
+      // Either way, the connection is no longer live.
     } finally {
       handlers.onStatusChange("disconnected")
     }
@@ -139,7 +139,7 @@ const billingSchema = {
         invoices: result,
       }),
       writes: { invoices: true },
-      // Cast inline, not annotated directly -- createData's own generic
+      // Cast inline, not annotated directly: createData's own generic
       // inference widens an individual operation definition while checking
       // it against DataSchema's own bound, which would otherwise conflict
       // with a narrower parameter annotation here (a contravariant
@@ -177,13 +177,13 @@ const billingSchema = {
     },
   },
   subscriptions: {
-    // Writes `invoices` (array-typed), not a nullable scalar -- unlike
+    // Writes `invoices` (array-typed), not a nullable scalar: unlike
     // `examples/team-service/`'s own `subscribeToProject` (which writes the
     // nullable `project` field specifically so `.info.project?.subscription`
     // is meaningful). `DataInfo<T>` for an array field is keyed per item
     // identity, not one flat `FieldInfo` (see this repo's own runtime
     // types), so `.info.invoices?.subscription` would type-check but read
-    // back `undefined` at runtime -- consumers below (`BillingPanel.tsx`,
+    // back `undefined` at runtime: consumers below (`BillingPanel.tsx`,
     // `main-headless.ts`) deliberately never read it; `main-headless.ts`
     // instead proves the subscription's real dedup against the server's own
     // `subscriberCountFor()`.
@@ -217,17 +217,17 @@ documentData(billingSchema, {
       // Overrides the capability's own single-region `dataResidency: "us"`
       // (above) for this field specifically (see `src/core/document.ts`'s
       // `FieldDocs.dataResidency`, which accepts `string | readonly
-      // string[]`) -- clients billed on `invoices` aren't all US-based, and
+      // string[]`). Clients billed on `invoices` aren't all US-based, and
       // some jurisdictions' recordkeeping rules require an invoice to also
       // be retrievable from within the client's own region.
       dataResidency: ["us", "eu"],
-      // GDPR Art. 30(1)(e) -- the declared safeguard for moving this field's
+      // GDPR Art. 30(1)(e): the declared safeguard for moving this field's
       // data between the two jurisdictions `dataResidency` (above) permits
       // it to be stored in.
       transferSafeguard: "EU Standard Contractual Clauses",
-      // GDPR Art. 30(1)(c)/(d) -- clients are the data subjects; invoice
+      // GDPR Art. 30(1)(c)/(d) (clients are the data subjects; invoice
       // data is disclosed to a payment processor (to collect payment) and,
-      // where legally required, a tax authority -- always explicitly
+      // where legally required, a tax authority) always explicitly
       // declared here, never inferred from data-cap's own dependency graph
       // (see `src/core/document.ts`'s own doc comment on `recipientCategories`).
       dataSubjectCategory: "clients",
@@ -306,7 +306,7 @@ documentData(billingSchema, {
   },
   // A pre-existing utility (server/legacy-compliance-sync.ts) predates this
   // capability's own documentation and reads `invoices` via a runtime-
-  // computed field name -- data-cap can't statically resolve which field
+  // computed field name: data-cap can't statically resolve which field
   // that is (ADR 0052's field-level indeterminate-access disclosure). This
   // citation records a developer's own confirmation of exactly where, so
   // the generated evidence report can say "declared-dynamic," not just

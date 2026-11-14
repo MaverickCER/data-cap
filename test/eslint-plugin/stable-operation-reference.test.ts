@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest"
 import { stableOperationReference } from "../../src/eslint-plugin/stable-operation-reference.js"
 
 // RuleTester's own `run()` registers cases via Mocha-style global
-// `describe`/`it` by default -- vitest doesn't inject those as true globals,
+// `describe`/`it` by default: vitest doesn't inject those as true globals,
 // so without this, vitest reports "No test suite found in file". Wiring
 // RuleTester's documented static describe/it setters to vitest's own imports
 // is the supported way to integrate it with a non-Mocha runner.
@@ -14,8 +14,8 @@ RuleTester.it = it
 const ruleTester = new RuleTester({ languageOptions: { ecmaVersion: 2022, sourceType: "module" } })
 
 // `stableOperationReference` is built via `@typescript-eslint/utils`'s
-// `RuleCreator`, whose generated type is structurally stricter than -- and
-// not assignable to -- plain `eslint`'s own `Rule.RuleModule` type
+// `RuleCreator`, whose generated type is structurally stricter than (and
+// not assignable to) plain `eslint`'s own `Rule.RuleModule` type
 // `RuleTester.run()` expects. Both describe the same rule shape at runtime;
 // a narrow cast avoids pulling in `@typescript-eslint/rule-tester` as a
 // second, dedicated test dependency just to align the types.
@@ -24,7 +24,7 @@ ruleTester.run(
   stableOperationReference as unknown as Rule.RuleModule,
   {
     valid: [
-      // A reference to a stable, module-level function -- exactly the sharable case.
+      // A reference to a stable, module-level function: exactly the sharable case.
       {
         code: `
         function getUser() {}
@@ -37,7 +37,7 @@ ruleTester.run(
         createData({ getters: { getUser: { execute: getUser } } });
       `,
       },
-      // Imported bindings are module singletons -- as stable as a local
+      // Imported bindings are module singletons: as stable as a local
       // module-level declaration.
       {
         code: `
@@ -52,7 +52,7 @@ ruleTester.run(
         createData({ getters: { getUser: { execute } } });
       `,
       },
-      // A namespace-qualified call to createData -- still recognized, still valid when stable.
+      // A namespace-qualified call to createData: still recognized, still valid when stable.
       {
         code: `
         function subscribeToUser() {}
@@ -60,7 +60,7 @@ ruleTester.run(
       `,
       },
       // A block at module top level only ever runs once, at module
-      // evaluation -- never inside a function -- so it's still stable.
+      // evaluation (never inside a function) so it's still stable.
       {
         code: `
         {
@@ -70,7 +70,7 @@ ruleTester.run(
       `,
       },
       // An identifier scope analysis can't resolve (no declaration anywhere
-      // in the file) can't be proven unstable either -- this rule only flags
+      // in the file) can't be proven unstable either: this rule only flags
       // what it can positively show is recreated per call.
       {
         code: `createData({ getters: { getUser: { execute: getUser } } });`,
@@ -78,7 +78,7 @@ ruleTester.run(
       // execute/subscribe outside a createData() call are none of this rule's business.
       { code: `const config = { execute: () => {} };` },
       { code: `someOtherFunction({ execute: () => {} });` },
-      // The createData depth counter must return to 0 on exit -- an inline
+      // The createData depth counter must return to 0 on exit: an inline
       // `execute` *after* a (valid) createData call is still not this rule's
       // business.
       {
@@ -98,7 +98,7 @@ ruleTester.run(
       // An unrelated key inside createData() is not this rule's concern.
       { code: `createData({ fields: { onLoad: () => {} } });` },
       // A CallExpression/MemberExpression value is outside what this rule
-      // tries to statically prove stable or unstable -- deliberately left
+      // tries to statically prove stable or unstable: deliberately left
       // alone rather than guessed at.
       {
         code: `createData({ getters: { getUser: { execute: makeGetUser() } } });`,
@@ -130,7 +130,7 @@ ruleTester.run(
         code: `createData({ getters: { getUser: { "execute": () => {} } } });`,
         errors: [{ messageId: "inlineFunctionLiteral", data: { key: "execute" } }],
       },
-      // Two independent offenses in one call -- both reported.
+      // Two independent offenses in one call: both reported.
       {
         code: `createData({ getters: { getUser: { execute: () => {} } }, subscriptions: { s: { subscribe: () => {} } } });`,
         errors: [
@@ -148,7 +148,7 @@ ruleTester.run(
         errors: [{ messageId: "inlineFunctionLiteral", data: { key: "execute" } }],
       },
       // A non-createData call nested inside createData must not decrement the
-      // depth on its own exit -- a later sibling offense is still flagged.
+      // depth on its own exit: a later sibling offense is still flagged.
       {
         code: `
         createData({ getters: {
@@ -163,7 +163,7 @@ ruleTester.run(
         code: `createData({ mutators: { updateUser: { execute: () => {}, optimizer: () => ({}) } } });`,
         errors: [{ messageId: "inlineFunctionLiteral", data: { key: "execute" } }],
       },
-      // Declared inside a factory function -- a fresh identity every time the
+      // Declared inside a factory function: a fresh identity every time the
       // factory runs, even though it "looks" like a stable named reference.
       {
         code: `
@@ -184,7 +184,7 @@ ruleTester.run(
       `,
         errors: [{ messageId: "recreatedPerCall", data: { key: "execute", name: "getUser" } }],
       },
-      // A parameter is never guaranteed stable -- the caller may pass a
+      // A parameter is never guaranteed stable: the caller may pass a
       // fresh function on every invocation.
       {
         code: `

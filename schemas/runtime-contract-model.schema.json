@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://maverickcer.github.io/data-cap/schema/runtime-contract-model.schema.json",
   "title": "data-cap Runtime Contract Model",
-  "description": "Canonical, versioned, package-level (not per-project) description of data-cap's own documented execution guarantees (see ADR 0050). Generated from src/build/runtime-contract-model.ts's RuntimeContractModel type -- never hand-authored.",
+  "description": "Canonical, versioned, package-level (not per-project) description of data-cap's own documented execution guarantees (see ADR 0050). Generated from src/build/runtime-contract-model.ts's RuntimeContractModel type. Never hand-authored.",
   "$ref": "#/definitions/RuntimeContractModel",
   "definitions": {
     "RuntimeContractModel": {
@@ -15,7 +15,7 @@
         },
         "packageVersion": {
           "type": "string",
-          "description": "The `data-cap` package version this model describes -- read from `package.json`, the same way `cli/json.ts`'s `TOOL_VERSION` is."
+          "description": "The `data-cap` package version this model describes: read from `package.json`, the same way `cli/json.ts`'s `TOOL_VERSION` is."
         },
         "policies": {
           "type": "array",
@@ -46,7 +46,7 @@
         },
         "governingAdr": {
           "type": "string",
-          "description": "The ADR number (e.g. `\"0024\"`) that governs this fact -- always a real file under `specs/decisions/`."
+          "description": "The ADR number (e.g. `\"0024\"`) that governs this fact: always a real file under `specs/decisions/`."
         },
         "module": {
           "type": "string",

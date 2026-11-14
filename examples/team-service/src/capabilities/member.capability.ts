@@ -1,12 +1,12 @@
 /**
- * The team member directory -- owned by the platform team, since "who's on
+ * The team member directory: owned by the platform team, since "who's on
  * the team" is a cross-project concern, not any one project's own. Cached
  * (`runtime/cache`): the directory rarely changes within a session, so a
  * remount should never re-fetch it.
  *
  * `project.capability.ts` composes with this capability directly (imports
  * `memberData`, calls `memberData.listMembers(...)`) to resolve task
- * assignee names -- an ordinary cross-file call through application code,
+ * assignee names: an ordinary cross-file call through application code,
  * needing no data-cap composition primitive, and fully traceable by
  * data-cap's own dependency scan as a real `calls-getter` edge from one
  * capability's file to another's (see this example's own generated
@@ -57,7 +57,7 @@ documentData(memberSchema, {
   fields: {
     // A field's own `owner` overrides the capability's ("platform-team",
     // above) for that field specifically (see `src/core/document.ts`'s
-    // `FieldDocs.owner`) -- demonstrated for real here: platform-team owns
+    // `FieldDocs.owner`). Demonstrated for real here: platform-team owns
     // the directory *capability* (making "who's on the team" resolvable
     // cross-project), but each `Member` record carries `email`, so
     // identity-team owns this specific field's own governance.

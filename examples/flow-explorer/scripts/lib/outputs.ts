@@ -1,7 +1,7 @@
 /**
  * Every file the example produces, computed in memory from the one pipeline run.
  * `build.ts` writes them; `check.ts` diffs them against what is committed. Each
- * is a projection of the evidence file -- none of them reads a source file.
+ * is a projection of the evidence file: none of them reads a source file.
  */
 import { instance } from "@viz-js/viz"
 import {

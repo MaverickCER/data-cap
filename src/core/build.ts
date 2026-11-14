@@ -3,33 +3,29 @@ import { resolveFieldDefaults } from "./schema.js"
 import type { BuildDataConfig, DataInfo, DataState, FieldsShape, InferFields } from "./types.js"
 
 /**
- * The synchronous `{fields, info}` state `buildData` returns -- structurally
- * just `DataState<InferFields<TFields>>`, not a distinct shape. This alias
- * exists so `buildData`'s own signature reads as "the shape `buildData`
- * specifically returns," which is more informative at that one call site
- * than a bare `DataState` would be; every other consumer should keep using
+ * The synchronous `{fields, info}` state `buildData` returns: structurally
+ * `DataState<InferFields<TFields>>`, not a distinct shape. This alias makes `buildData`'s own
+ * signature read as "the shape `buildData` returns". Every other consumer should keep using
  * `DataState` directly.
  */
 export type BuiltData<TFields extends FieldsShape> = DataState<InferFields<TFields>>
 
 /**
- * Declares a schema's field contract. `data.fields` is synchronously readable
- * the instant this returns -- populated with declared defaults -- there is no
- * throw-until-ready gate (a deliberate divergence from `@maverickcer/env-cap`'s
- * `createEnv`; see specs/architecture.md).
+ * Declares a schema's fields and returns their state. `data.fields` is readable
+ * synchronously the instant this returns, holding the declared defaults. There is
+ * no throw-until-ready gate, unlike `@maverickcer/env-cap`'s `createEnv` (see
+ * specs/architecture.md).
  *
- * `buildData` is the low-level, pure/synchronous primitive: `config` only ever
- * reads `fields` (a `getters`/`mutators`/`subscriptions` section on the same
- * object, if present, is simply ignored here -- that's what the batteries-
- * included `createData` from `data-cap/runtime` is for). `data.
- * info` is present (mandatory, never optional) but starts empty: nothing has
- * executed yet, so there is nothing to report metadata for.
+ * `buildData` is the low-level, pure and synchronous primitive: it reads only
+ * `config.fields`. It ignores a `getters`, `mutators` or `subscriptions` section
+ * on the same object; `createData` from `data-cap/runtime` runs those.
+ * `data.info` is always present but starts empty. Nothing has
+ * executed yet, so there is no metadata to report.
  *
  * @remarks
- * Throws synchronously, at call time, for a structurally invalid field
- * default (a function value, or a cyclic reference) -- this is a
- * schema-authoring mistake the developer must fix, not a runtime condition
- * to warn-and-continue past.
+ * Throws synchronously, at call time, for a structurally invalid field default: a function value,
+ * or a cyclic reference. That is a schema-authoring mistake to fix, not a runtime condition to warn
+ * past.
  */
 export function buildData<TFields extends FieldsShape>(
   config: BuildDataConfig<TFields>,

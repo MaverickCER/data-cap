@@ -1,13 +1,13 @@
 /**
  * Deterministic CI rules evaluated over the one Evidence Model (ADR 0070):
  * the gate between "the analysis ran" and "the build may proceed". A rule set
- * is plain JSON; the evaluator is a pure function of the evidence, so the same
- * evidence and rules always give the same verdict, anywhere.
+ * is plain JSON. The evaluator is a pure function of the evidence, so the
+ * same evidence and rules always give the same verdict, anywhere.
  *
  * Two principles shape it.
  *
  * - **A gate must fail closed.** A rule that needs analysis which did not run
- *   (no flow, no policy, no observations) is a violation that says so -- never
+ *   (no flow, no policy, no observations) is a violation that says so: never
  *   a pass. A check that succeeds because its input is missing is not a check.
  * - **A misspelled rule must not silently pass.** An unknown key, a wrong type
  *   or an empty rule set is rejected by name when the rules are parsed.
@@ -41,7 +41,7 @@ export interface EvidenceRules {
   readonly requireObservations?: boolean
   /** At least this many claims are verified (static or declared, corroborated by an observation). */
   readonly minVerifiedClaims?: number
-  /** Each named policy rule (by id) has every one of its claims verified -- held statically and corroborated at runtime. */
+  /** Each named policy rule (by id) has every one of its claims verified: held statically and corroborated at runtime. */
   readonly requireVerified?: readonly string[]
   /**
    * Every verified claim was last observed no more than this many days before the evidence was generated
@@ -108,7 +108,10 @@ const COUNT_RULES: ReadonlySet<string> = new Set([
   "maxRedundantTransforms",
 ])
 
-/** One `name: setting` pair of a rules file: its value when it is a valid setting of a known rule, else the reason it is not. */
+/**
+ * Reads one `name: setting` pair of a rules file. It returns the value when it is a valid setting
+ * of a known rule, and otherwise the reason it is not.
+ */
 function readRuleSetting(
   name: string,
   setting: unknown,

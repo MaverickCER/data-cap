@@ -26,7 +26,7 @@ Build the package first: `npm run build` at the repository root. Then, in this d
 
 `npm start` is headless. It starts an embedded MongoDB (`mongodb-memory-server`) and an HTTP and SSE server in the same process. It then runs `node:assert/strict` checks against the built `data-cap`, generates both reports and exercises the CI guard. A failed assertion exits 1. `npm run check` exits 1 and lists each stale file.
 
-CI's `examples` job runs `npm run typecheck` here, then `npm start` and `npm run check` through `test/examples/enterprise-platform.test.ts`. `test/examples/enterprise-platform-reports.test.ts` and `enterprise-platform-ropa.test.ts` test the report scripts in the same job. `npm run guard` and `npm run dev` are not run in CI. That job does not block a merge.
+CI's `examples` job runs `npm run typecheck` here, then `npm start` and `npm run check` through `test/examples/enterprise-platform.test.ts`. `test/examples/enterprise-platform-reports.test.ts` and `enterprise-platform-ropa.test.ts` test the report scripts in the same job. `npm run guard` and `npm run dev` are not run in CI. `required` waits for that job, so a failure blocks a merge.
 
 `npm run dev` starts the interactive TanStack Start app, with the same HTTP and SSE handler as Vite middleware. Register an account, open a project, issue an invoice and dispute it to see the live SSE sync.
 

@@ -86,7 +86,7 @@ function blockedBy(
 
 /** Code-unit order. Only ever called on distinct strings: the callers compare de-duplicated keys, ids and paths. */
 function compareText(a: string, b: string): number {
-  // Stryker disable next-line EqualityOperator: equivalent -- the strings are never equal, so `<` and `<=` order them the same.
+  // Stryker disable next-line EqualityOperator: equivalent: the strings are never equal, so `<` and `<=` order them the same.
   return a < b ? -1 : 1
 }
 
@@ -106,7 +106,7 @@ function compareTransforms(a: RedundantTransform, b: RedundantTransform): number
   return compareText(sortKey(a).join("\u0000"), sortKey(b).join("\u0000"))
 }
 
-// ----- tagged transformations ------------------------------------------------------------------------------------
+// Section: tagged transformations.
 
 /** What kind a tag makes its place, or `undefined` when it makes it nothing (a single copy of something that was not a copy). */
 function kindOfTag(tag: FlowEdgeTag): RedundantTransformKind | undefined {
@@ -127,7 +127,7 @@ interface TagGroup {
 /** The tags that count, grouped by the place and the field they are about. */
 function groupTags(flow: FlowModel, edgesById: ReadonlyMap<string, FlowEdge>): TagGroup[] {
   const groups = new Map<string, TagGroup>()
-  // Stryker disable next-line ArrayDeclaration: equivalent -- a placeholder tag names no edge, so it is skipped.
+  // Stryker disable next-line ArrayDeclaration: equivalent: a placeholder tag names no edge, so it is skipped.
   for (const tag of flow.edgeTags ?? []) {
     const edge = edgesById.get(tag.edge)
     const kind = kindOfTag(tag)
@@ -171,7 +171,7 @@ function uniquePaths(paths: readonly (readonly string[])[]): (readonly string[])
   return [...unique.entries()].sort(([a], [b]) => compareText(a, b)).map(([, path]) => path)
 }
 
-// ----- forwarding chains ------------------------------------------------------------------------------------------
+// Section: forwarding chains.
 
 /** The edges that carry one path of one field. */
 interface Carriers {
@@ -186,7 +186,7 @@ function carriersOf(flow: FlowModel): Carriers[] {
   for (const edge of flow.edges) {
     if (edge.kind === "calls") continue
     const { origin } = edge
-    // Stryker disable next-line ConditionalExpression,BlockStatement: equivalent -- carriers without an origin form chains of no field, which `forwardingTransforms` drops.
+    // Stryker disable next-line ConditionalExpression,BlockStatement: equivalent: carriers without an origin form chains of no field, which `forwardingTransforms` drops.
     if (origin === undefined) continue
     const key = `${origin}\u0000${pathKey(edge.path)}`
     const group = groups.get(key)
@@ -218,9 +218,10 @@ interface Forwarder {
 }
 
 /**
- * The function `fn` as a forwarder of what `carriers` carry, or `undefined` when it does anything else with it: reads it
- * without receiving it, hands it to anyone but one callee, sends, transforms, drops or returns anything but what the
- * callee returned, hands it on as anything but `static` (a transformed copy), or is not sure (an `unknown` edge).
+ * The function `fn` as a forwarder of what `carriers` carry, or `undefined` when it does anything else with it. It does
+ * something else when it reads it without receiving it, hands it to anyone but one callee, sends, transforms, drops or
+ * returns anything but what the callee returned. It also does something else when it hands it on as anything but
+ * `static` (a transformed copy), or is not sure (an `unknown` edge).
  */
 function forwarderOf(
   fn: string,
@@ -309,7 +310,7 @@ function chainsOf(forwarders: ReadonlyMap<string, Forwarder>): Chain[] {
       step = forwarders.get(step.next)
     ) {
       seen.add(step.fn)
-      // Stryker disable all: unreachable -- `seen` keeps every step distinct, so a chain is never longer than the forwarders; the bound only turns a walk that lost its cycle check into a failure instead of a hang.
+      // Stryker disable all: unreachable: `seen` keeps every step distinct, so a chain is never longer than the forwarders; the bound only turns a walk that lost its cycle check into a failure instead of a hang.
       /* v8 ignore next 3 -- unreachable: an earlier guard keeps this check from ever being true; it only turns a lost bound into a failure instead of a hang */
       if (steps.length >= forwarders.size) {
         throw new Error("a forwarding chain is longer than the forwarders it is made of")
@@ -368,7 +369,7 @@ function forwardingTransforms(
   return found
 }
 
-// ----- the analysis -----------------------------------------------------------------------------------------------
+// Section: the analysis.
 
 /**
  * Finds the redundant transformations in a Flow Model, in a fixed order (by place, then kind). A model without
@@ -383,7 +384,7 @@ export function analyzeRedundantTransforms(flow: FlowModel): RedundantTransform[
   ].sort(compareTransforms)
 }
 
-// ----- findings ---------------------------------------------------------------------------------------------------
+// Section: findings.
 
 function pathsText(paths: readonly (readonly string[])[]): string {
   return paths.map((path) => (path.length === 0 ? "(whole)" : path.join("."))).join(", ")

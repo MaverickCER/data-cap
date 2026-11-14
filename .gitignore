@@ -5,25 +5,21 @@ coverage
 api-docs
 # The rendered HTML API reference is generated fresh in CI's Pages deploy
 # job (never committed). The Markdown API report (docs/api-report/) IS
-# committed and drift-checked -- see internal-package-contract tool api-report.
+# committed and drift-checked by `internal-package-contract tool api-report`.
 docs/api
-# Same "generated fresh in CI's Pages deploy job, never committed" treatment
-# as docs/api above -- built by internal-package-contract's shared
-# scripts/benchmark/render-page.mjs from the committed benchmarks/history/
-# JSON, which IS committed (see .github/workflows/ci.yml's deploy job).
+# Generated fresh in CI's Pages deploy job and never committed, like docs/api.
+# internal-package-contract's scripts/benchmark/render-page.mjs builds it from
+# the committed benchmarks/history/ JSON (see the deploy job in ci.yml).
 docs/benchmarks
 
-# Ephemeral, fully re-derivable from dist/.dts/ on every `npm run contract` run -- one
-# subdirectory per ApiContract target (core/, runtime/, helpers/, build/, eslint-plugin/ -- see
-# internal-package-contract's own scripts/api-contract/targets.ts), each target's own baseline.* is
-# the only committed state. Mirrors internal-package-contract's own repo-contract's identical entry.
-.repo-contract/api-contract/*/current.api.md
-.repo-contract/api-contract/*/current.api.json
-.repo-contract/api-contract/*/current.d.ts
+# ApiContract rewrites each target's current.* files from dist/ on every `npm run contract`.
+# Only the baseline.* files are committed. Targets nest (runtime/cache/, runtime/retry/),
+# so the pattern uses `**` to reach every depth.
+.repo-contract/api-contract/**/current.*
 benchmarks/performance-runtime/fixtures
 benchmarks/performance-buildtime/fixtures
 # Written on the fly by test/build/json-schema.test.ts and left behind for
-# post-mortem inspection -- a transient fixture project, never source.
+# post-mortem inspection: a transient fixture project, never source.
 test/build/fixtures-json-schema
 *.log
 .DS_Store
@@ -47,12 +43,12 @@ GEMINI.md
 .tabnine
 
 # Evidence-cache sidecars (`evidence-cache.ts`'s `<evidence-path>.fingerprint`)
-# are a local, machine-specific cache key, never a committed golden artifact --
-# see src/build/evidence-cache.ts.
+# are a local, machine-specific cache key, never a committed golden artifact.
+# See src/build/evidence-cache.ts.
 *.fingerprint
 
 # Contract tooling transient output (repo-contract / internal-package-contract).
-# Anchored to root -- unanchored `reports` also matched (and hid from git)
+# Anchored to root: unanchored `reports` also matched (and hid from git)
 # examples/enterprise-platform/reports/, which is real example source.
 .stryker-tmp
 /reports

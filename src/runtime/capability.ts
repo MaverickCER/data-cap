@@ -1,7 +1,7 @@
 /**
  * The batteries-included, optional operations layer.
  * `createData(schema)` composes `buildData` + `createDataStore` + a
- * `Coordinator` -- nothing here is a new primitive; it's an orchestration
+ * `Coordinator`: nothing here is a new primitive; it's an orchestration
  * layer over the existing Stable ones. Applications that want full manual
  * control keep using `buildData`/`createDataStore`/`coordinator` directly
  * (see `test/integration/runtime-core/basic-standalone/`); this module is for applications that
@@ -11,7 +11,7 @@
  * See specs/decisions/0048-builddata-createdata-split-and-optional-operations-layer.md
  * for the full rationale, including why this ships as a new module rather
  * than folded into `buildData` itself (core must stay synchronous/
- * stateless -- nothing here is pure).
+ * stateless: nothing here is pure).
  */
 
 import { buildData } from "../core/build.js"
@@ -42,19 +42,18 @@ import { createDataStore } from "./store.js"
 
 /** Options for {@link createData}. */
 export interface CreateDataOptions {
-  /** Overrides `defaultCoordinator` -- an explicit, isolated coordination domain (ADR 0027), e.g. per-tenant on a server. */
+  /** Overrides `defaultCoordinator`: an explicit, isolated coordination domain (ADR 0027), e.g. per-tenant on a server. */
   readonly coordinator?: Coordinator
   /**
-   * Bounds how many distinct canonicalized-params entries are retained per
-   * operation in the reactive `operations` snapshot (an LRU cap -- an
-   * operation called with many different params over a session, e.g.
-   * search-as-you-type, would otherwise grow this unboundedly). Defaults to
-   * 50.
+   * Bounds how many distinct canonicalized-params entries each operation keeps
+   * in the reactive `operations` snapshot. It is an LRU cap: without it, an
+   * operation called with many params over a session (search-as-you-type) would
+   * grow without bound. Defaults to 50.
    */
   readonly maxOperationHistory?: number
 }
 
-/** One operation's current execution state, keyed by canonicalized params in `operations`. Distinct from `info.<field>` -- see the module doc comment. */
+/** One operation's current execution state, keyed by canonicalized params in `operations`. Distinct from `info.<field>`: see the module doc comment. */
 export interface OperationState {
   /** This call's current lifecycle status. */
   readonly status?: DataStatus
@@ -73,9 +72,9 @@ export interface OperationState {
 /** Every operation's current `OperationState`, keyed by operation name then canonicalized params. */
 export type OperationsSnapshot = Readonly<Record<string, Readonly<Record<string, OperationState>>>>
 
-/** A strict superset of `DataState<TFields>` -- every existing `DataStore` consumer (`useSyncExternalStore`, etc.) still works unchanged reading `.fields`/`.info` off it. */
+/** A strict superset of `DataState<TFields>`: every existing `DataStore` consumer (`useSyncExternalStore`, etc.) still works unchanged reading `.fields`/`.info` off it. */
 export interface DataCapabilitySnapshot<TFields> extends DataState<TFields> {
-  /** Every operation's current execution state -- see `OperationsSnapshot`. */
+  /** Every operation's current execution state: see `OperationsSnapshot`. */
   readonly operations: OperationsSnapshot
 }
 
@@ -94,7 +93,7 @@ export type OperationOutcome<T> =
       readonly error: DataError
     }
 
-/** Static, per-operation metadata -- one entry within a `CapabilityDescriptor`. */
+/** Static, per-operation metadata: one entry within a `CapabilityDescriptor`. */
 export interface OperationDescriptor {
   /** Which kind of operation this is. */
   readonly kind: "getter" | "mutator" | "subscription"
@@ -107,7 +106,7 @@ export interface OperationDescriptor {
   readonly hasOptimistic: boolean
 }
 
-/** Static, non-reactive operation metadata -- returned by `.describe()`, distinct from the live `operations` snapshot key. See requirement O (build tooling/ESLint/devtools discoverability). */
+/** Static, non-reactive operation metadata: returned by `.describe()`, distinct from the live `operations` snapshot key. See requirement O (build tooling/ESLint/devtools discoverability). */
 export interface CapabilityDescriptor {
   /** Every declared getter, by name. */
   readonly getters: Readonly<Record<string, OperationDescriptor>>
@@ -120,7 +119,7 @@ export interface CapabilityDescriptor {
 /**
  * Normalizes one schema section (`TSchema["getters"]`/`"mutators"`/
  * `"subscriptions"`, always possibly `undefined` when a schema declares
- * none) to a concrete, possibly-empty record type -- never about value-level
+ * none) to a concrete, possibly-empty record type: never about value-level
  * nullability. `keyof Record<string, never>` is `string`, but no real value
  * is ever assignable to `never`, so a schema with no getters at all still
  * produces zero `CapabilityGetterMethods` keys, not a type error.
@@ -246,7 +245,7 @@ function identityProcessor(raw: unknown): unknown {
   return raw
 }
 
-/** @internal True in every environment except an explicit production `NODE_ENV` -- isomorphic-safe (no bare `process` reference in an environment that lacks it). Exported for direct unit coverage. */
+/** @internal True in every environment except an explicit production `NODE_ENV`: isomorphic-safe (no bare `process` reference in an environment that lacks it). Exported for direct unit coverage. */
 export function isDevMode(): boolean {
   const proc = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process
   return proc?.env?.["NODE_ENV"] !== "production"
@@ -254,11 +253,11 @@ export function isDevMode(): boolean {
 
 /** @internal Exported for direct unit coverage. */
 export function warnFieldErrors(fieldErrors: ReadonlyMap<string, DataError>): void {
-  if (!isDevMode()) return // the loop below is itself a no-op for an empty map
+  if (!isDevMode()) return // The loop below is itself a no-op for an empty map.
   for (const dataError of fieldErrors.values()) {
     // When `error` is the `Error` ownership.ts's own `fieldError()` always
-    // constructs, `.message` already encodes {operation, path, reason} --
-    // never the offending value itself -- exactly the shape ADR 0005
+    // constructs, `.message` already encodes {operation, path, reason}
+    // (never the offending value itself). That is exactly the shape ADR 0005
     // requires. Falls back to a plain string conversion for the (currently
     // unreachable, but not type-guaranteed) case of a non-Error value.
     const { error } = dataError
@@ -266,7 +265,7 @@ export function warnFieldErrors(fieldErrors: ReadonlyMap<string, DataError>): vo
   }
 }
 
-/** @internal Builds an info patch mirroring `ownership`'s shape, placing `fieldInfo` at every `true` leaf -- e.g. `{user: {email: true}}` + a FieldInfo produces `{user: {email: <FieldInfo>}}`, never at `user` itself. Exported for direct unit coverage. */
+/** @internal Builds an info patch mirroring `ownership`'s shape, placing `fieldInfo` at every `true` leaf: e.g. `{user: {email: true}}` + a FieldInfo produces `{user: {email: <FieldInfo>}}`, never at `user` itself. Exported for direct unit coverage. */
 export function buildInfoPatch(
   ownership: AnyOwnership | undefined,
   fieldInfo: Record<string, unknown>,
@@ -285,7 +284,7 @@ export function buildInfoPatch(
 export function mergeParams(defaultParams: unknown, partial: unknown): unknown {
   // `patchInto` already handles both degenerate cases: an `undefined` patch
   // returns `prev` verbatim, and an `undefined`/primitive `prev` is replaced
-  // outright by the patch -- so no separate short-circuits are needed here.
+  // outright by the patch; so no separate short-circuits are needed here.
   return patchInto(defaultParams, partial as never)
 }
 
@@ -294,15 +293,15 @@ export function mergeParams(defaultParams: unknown, partial: unknown): unknown {
 /* -------------------------------------------------------------------------- */
 
 /**
- * Declares a capability's field contract AND, optionally, the getters/
- * mutators/subscriptions that acquire, mutate, and continuously observe it
- * -- the batteries-included counterpart to `buildData` + hand-wired
- * `createDataStore`/`coordinator` calls. Internally: exactly one
- * `buildData` call, exactly one `createDataStore` instance, and the given
- * (or default) `Coordinator` -- see the module doc comment.
+ * Declares a capability: its fields and, optionally, the getters, mutators
+ * and subscriptions that load, change and watch them. Returns the one store
+ * every consumer reads. It is the one-call counterpart to `buildData` plus
+ * hand-wired `createDataStore` and `coordinator` calls. Internally it makes
+ * one `buildData` call and one `createDataStore` instance, and uses the given
+ * (or default) `Coordinator`.
  *
  * A schema with no `getters`/`mutators`/`subscriptions` at all still works,
- * returning a fully valid capability with zero bound operation methods --
+ * returning a fully valid capability with zero bound operation methods:
  * the direct one-call equivalent of `createDataStore(buildData({fields}))`.
  */
 export function createData<TSchema extends DataSchema<FieldsShape>>(
@@ -388,7 +387,7 @@ export function createData<TSchema extends DataSchema<FieldsShape>>(
     const key = canonicalize(params)
     if (key !== undefined) return key
     // Non-canonicalizable params degrade to a per-call synthetic key rather
-    // than colliding under one shared bucket -- mirrors coordinator.dedupe's
+    // than colliding under one shared bucket: mirrors coordinator.dedupe's
     // own documented non-canonicalizable-params fallback. The prefix can
     // never collide with a real canonicalize() output, whose atoms always
     // start with a single tag letter immediately followed by a digit.
@@ -397,12 +396,12 @@ export function createData<TSchema extends DataSchema<FieldsShape>>(
 
   /**
    * The identical per-call setup every getter and mutator runs before its own
-   * divergent logic: merge params, derive the operation key, wire an abort
-   * controller, publish `loading` operation state, and commit the field-level
-   * `loading` info patch (always unconditional -- a freshly-started call is
-   * never stale, and this is visible even when no `optimistic` callback exists).
+   * divergent logic. It merges params, derives the operation key, wires an abort
+   * controller, publishes `loading` operation state, and commits the field-level
+   * `loading` info patch. That commit is always unconditional: a freshly-started call is
+   * never stale, and this is visible even when no `optimistic` callback exists.
    * `writes` is the operation's own ownership (`def.writes` for a getter;
-   * `def.writes ?? true` for a mutator -- ADR 0011).
+   * `def.writes ?? true` for a mutator, per ADR 0011).
    */
   function beginOperationCall(
     name: string,
@@ -417,7 +416,7 @@ export function createData<TSchema extends DataSchema<FieldsShape>>(
   } {
     const effectiveParams = mergeParams(paramsDef, partialParams)
     const key = computeOperationKey(effectiveParams)
-    // A local controller that is never aborted here -- its only job is to mint a
+    // A local controller that is never aborted here: its only job is to mint a
     // fresh signal that only `callerSignal` (if any) can cancel.
     const controller = new AbortController()
     const signal =
@@ -454,13 +453,13 @@ export function createData<TSchema extends DataSchema<FieldsShape>>(
 
   for (const [name, def] of Object.entries(getterDefs)) {
     // Stable dispatch closure, built ONCE per (capability instance,
-    // operation name), never per call -- this, not the raw schema-authored
-    // `execute` reference, is what coordinator.dedupe actually keys on, so
+    // operation name), never per call. This, not the raw schema-authored
+    // `execute` reference, is what coordinator.dedupe actually keys on. So
     // the dedup domain is inherently (this instance x this operation x
     // canonicalized params), never bare function identity.
     const dispatch = (params: unknown, signal: AbortSignal): Promise<unknown> =>
       def.execute(params, signal)
-    // Per-getter-identity start token -- ADR 0024's stale-response discard,
+    // Per-getter-identity start token: ADR 0024's stale-response discard,
     // scoped to the FIELD-level commit only (never to this call's own
     // per-params `operations` entry, which always reflects its own true
     // outcome regardless of sibling calls). A fresh object per call; only the
@@ -540,7 +539,7 @@ export function createData<TSchema extends DataSchema<FieldsShape>>(
 
       let transitionId: symbol | undefined
       if (def.optimistic !== undefined) {
-        // Authoritative state ONLY, never the visible/projected state -- a
+        // Authoritative state ONLY, never the visible/projected state: a
         // second concurrent optimistic transition must never compute
         // against a first transition's still-pending, unconfirmed value.
         const optimisticPatch = def.optimistic(store.getAuthoritativeState(), effectiveParams)
@@ -565,7 +564,7 @@ export function createData<TSchema extends DataSchema<FieldsShape>>(
         warnFieldErrors(fieldErrors)
 
         // Mutators never discard by start sequence (ADR 0025, deliberately
-        // unlike getters) -- whichever commit runs last, in real time,
+        // unlike getters): whichever commit runs last, in real time,
         // wins, regardless of start order.
         store.commitAuthoritative(
           acceptedPatch,
@@ -590,7 +589,7 @@ export function createData<TSchema extends DataSchema<FieldsShape>>(
         setOperationState(name, key, { status: "error", error: dataError, settledAt: Date.now() })
         throw error
       } finally {
-        // No rollback code path -- removing the pending transition is the entire mechanism (ADR 0023);
+        // No rollback code path: removing the pending transition is the entire mechanism (ADR 0023);
         // the visible value reverts on its own because project() no longer folds a transition that no
         // longer exists. An operation with no optimistic update never created one.
         if (transitionId !== undefined) store.removePendingTransition(transitionId)
@@ -603,7 +602,7 @@ export function createData<TSchema extends DataSchema<FieldsShape>>(
   const subscriptionMethods: Record<string, (params?: unknown) => () => void> = {}
 
   for (const [name, def] of Object.entries(subscriptionDefs)) {
-    // Memoized per canonicalized params -- two calls with the same params
+    // Memoized per canonicalized params: two calls with the same params
     // reuse the same closure reference (shares a transport via
     // acquireSubscription's own identity-based mechanism); different params
     // get different closures (independent transports). Never changes
@@ -660,12 +659,12 @@ export function createData<TSchema extends DataSchema<FieldsShape>>(
       // `acquireSubscription`'s release removes this consumer from the
       // shared transport's fan-out BEFORE any teardown-triggered
       // onStatusChange("disconnected") fires (so a still-attached sibling
-      // consumer, if any, is the one that would normally hear it) -- a
+      // consumer, if any, is the one that would normally hear it). A
       // capability that releases its own subscription would otherwise never
       // learn its OWN status became "disconnected". This capability's own
       // subscription lifecycle is independent of whether the underlying
       // transport actually tears down (another consumer may still be
-      // attached, per ADR 0026) -- from this capability's own perspective,
+      // attached, per ADR 0026): from this capability's own perspective,
       // once it releases, it is disconnected, unconditionally.
       return () => {
         release()
@@ -717,7 +716,7 @@ export function createData<TSchema extends DataSchema<FieldsShape>>(
         writes: def.writes,
         hasProcessor: def.processor !== undefined,
         // `optimistic` is only ever declared on a mutator; a getter/
-        // subscription def simply never carries the key.
+        // subscription def never carries the key.
         hasOptimistic: def.optimistic !== undefined,
       }
     }

@@ -1,24 +1,24 @@
 /**
- * The headless, golden-tested entry point -- `npm start`. Runs the entire
+ * The headless, golden-tested entry point: `npm start`. Runs the entire
  * real service (MongoDB via `mongodb-memory-server`, the HTTP+SSE server,
- * every `createData` capability) in one Node process, no browser, no Vite
- * -- the same "real assertions against the actual built package, plus
+ * every `createData` capability) in one Node process, no browser, no Vite:
+ * the same "real assertions against the actual built package, plus
  * committed, regeneratable documentation/reports" discipline every other
  * example in this repository follows (see `examples/README.md`). `npm run
  * dev` (additive, not exercised here) boots the real TanStack Start app for
  * interactive, browser-based verification instead.
  *
  * The story: Atlas, an internal work-management platform three
- * departments actually use -- engineering-ops opens a project
+ * departments actually use; engineering-ops opens a project
  * (`projectsData`, owned by engineering-ops), finance issues and manages
  * its invoices (`billingData`, owned by finance-team, `confidential`), and
  * platform-security's own `identityData` is what every department implicitly
  * depends on once a session exists. A client disputes an invoice; this
  * script proves, the same way a real incident review would, exactly what
  * billing data existed and how it was declared to be handled at every
- * endpoint it crossed -- via `reports/data-handling-record.ts` -- and rolls
+ * endpoint it crossed: via `reports/data-handling-record.ts`: and rolls
  * up governance-declaration completeness across all three departments' own
- * capabilities -- via `reports/audit-prep.ts`. A final section proves the
+ * capabilities: via `reports/audit-prep.ts`. A final section proves the
  * CI-configuration guard these two reports depend on (`data-cap --strict-
  * docs`/`--strict-flow`) genuinely blocks a real gap, not just a synthetic
  * demo unrelated to how the flags actually behave.
@@ -61,9 +61,9 @@ const address = server.address()
 if (address === null || typeof address === "string") throw new Error("server did not bind a port")
 setBaseUrl(`http://127.0.0.1:${String(address.port)}`)
 
-// -- Seed the platform's first admin account directly -- self-registration --
-// -- (/api/register) always grants "member", the same way a real deployment --
-// -- never lets a public sign-up endpoint grant admin access to itself. -- //
+// Seed the platform's first admin account directly. Self-registration
+// (/api/register) always grants "member", the same way a real deployment
+// never lets a public sign-up endpoint grant admin access to itself.
 await seedUser({
   email: "admin@atlas.example.com",
   name: "Ada Admin",
@@ -80,19 +80,19 @@ const setCookieHeader = loginResponse.headers.get("set-cookie")
 assert.ok(setCookieHeader, "login must issue a session cookie")
 setSessionCookie(setCookieHeader.split(";")[0])
 
-// -- identityData: what every other capability implicitly depends on once -- //
-// -- a session exists. -- //
+// identityData: what every other capability implicitly depends on once
+// a session exists.
 await identityData.getCurrentUser()
 assert.equal(identityData.getSnapshot().fields.currentUser?.email, "admin@atlas.example.com")
 assert.equal(identityData.getSnapshot().fields.currentUser?.role, "admin")
 
-// -- projectsData: engineering-ops opens a project every department below -- //
-// -- can see. -- //
+// projectsData: engineering-ops opens a project every department below
+// can see.
 await projectsData.createProject({ name: "Atlas Platform Migration", department: "engineering" })
 assert.equal(projectsData.getSnapshot().fields.projects.length, 1)
 const projectId = projectsData.getSnapshot().fields.projects[0]!.id
 
-// -- billingData: finance-team issues invoices against the project. -- //
+// billingData: finance-team issues invoices against the project.
 await billingData.listInvoices({ projectId })
 assert.equal(billingData.getSnapshot().fields.invoices.length, 0)
 await billingData.createInvoice({ projectId, clientName: "Initech", amountCents: 250_000 })
@@ -101,11 +101,11 @@ assert.equal(billingData.getSnapshot().fields.invoices.length, 2)
 const firstInvoice = billingData.getSnapshot().fields.invoices[0]!
 const secondInvoice = billingData.getSnapshot().fields.invoices[1]!
 
-// -- Two views subscribing to the same project's invoices share one real -- //
-// -- SSE connection -- proven against the server's own subscriber count, -- //
-// -- not client-side `.info` (see `billing.capability.ts`'s own comment on -- //
-// -- why an array field's own `.info.invoices?.subscription` can't be -- //
-// -- trusted). -- //
+// Two views subscribing to the same project's invoices share one real
+// SSE connection: proven against the server's own subscriber count,
+// not client-side `.info` (see `billing.capability.ts`'s own comment on
+// why an array field's own `.info.invoices?.subscription` can't be
+// trusted).
 assert.equal(subscriberCountFor(projectId), 0)
 const releaseViewA = billingData.subscribeToInvoices({ projectId })
 const releaseViewB = billingData.subscribeToInvoices({ projectId })
@@ -116,8 +116,8 @@ assert.equal(
   "two subscribers to the same capability share one real SSE connection",
 )
 
-// -- Marking an invoice paid completes optimistically, before the request -- //
-// -- settles, then confirms against the real response. -- //
+// Marking an invoice paid completes optimistically, before the request
+// settles, then confirms against the real response.
 const payPromise = billingData.markInvoicePaid({ projectId, invoiceId: firstInvoice.id })
 assert.equal(
   billingData.getSnapshot().fields.invoices.find((i) => i.id === firstInvoice.id)?.status,
@@ -131,9 +131,9 @@ assert.equal(
   "confirmed by the real response too",
 )
 
-// -- The mutator's own response already updated `invoices` -- the live SSE -- //
-// -- push (from the same change) independently confirms the same state -- //
-// -- arrived over the subscription too. -- //
+// The mutator's own response already updated `invoices`: the live SSE
+// push (from the same change) independently confirms the same state
+// arrived over the subscription too.
 await sleep(30)
 assert.equal(
   billingData.getSnapshot().fields.invoices.find((i) => i.id === firstInvoice.id)?.status,
@@ -146,25 +146,25 @@ releaseViewB()
 await sleep(10)
 assert.equal(subscriberCountFor(projectId), 0, "unsubscribing both releases the real connection")
 
-// -- Disputing an invoice -- the concrete scenario `reports/data-handling- -- //
-// -- record.ts` is scoped to. Sends the (console-fallback) email and -- //
-// -- pushes a live update, same as any other mutator. -- //
+// Disputing an invoice: the concrete scenario `reports/data-handling-
+// record.ts` is scoped to. Sends the (console-fallback) email and
+// pushes a live update, same as any other mutator.
 await billingData.disputeInvoice({ projectId, invoiceId: secondInvoice.id })
 assert.equal(
   billingData.getSnapshot().fields.invoices.find((i) => i.id === secondInvoice.id)?.status,
   "disputed",
 )
 
-// -- The legacy dynamic-access utility (documented via billing -- //
-// -- .capability.ts's own evidence.fields.invoices.dynamicAccess citation, -- //
-// -- and deliberately NOT cited for identityData.currentUser) still runs -- //
-// -- cleanly against the real, current capability state either way. -- //
+// The legacy dynamic-access utility (documented via billing
+// .capability.ts's own evidence.fields.invoices.dynamicAccess citation,
+// and deliberately NOT cited for identityData.currentUser) still runs
+// cleanly against the real, current capability state either way.
 auditCurrentFields()
 
 // =========================================================================
-// Data-handling record -- the actual point of this tier. Generated
+// Data-handling record: the actual point of this tier. Generated
 // against this same source tree: `invoices` resolves to "declared-dynamic"
-// (the citation above); `currentUser` resolves to "indeterminate" -- a
+// (the citation above); `currentUser` resolves to "indeterminate"; a
 // real, undisclosed gap this script does NOT paper over.
 // =========================================================================
 const dataHandlingRecord = await generateDataHandlingRecord()
@@ -199,7 +199,7 @@ assert.ok(currentUserEntry.indeterminateSites.length > 0)
 // Negative guarantee (see test/build/negative-guarantees.test.ts's own
 // header comment): the report is deterministic given the same source tree,
 // and every field entry's claimed status is backed by the one evidence
-// source that status actually means -- never a status claimed with nothing
+// source that status actually means; never a status claimed with nothing
 // behind it. This can't run as a root-level unit test (examples/ is a
 // separate npm project data-cap's own test suite can't import from), so it
 // runs here instead, for real, on every `npm start`.
@@ -241,7 +241,7 @@ for (const entry of dataHandlingRecord.fields) {
 }
 
 // =========================================================================
-// Audit-prep report -- the governance-completeness rollup across all three
+// Audit-prep report: the governance-completeness rollup across all three
 // departments' own capabilities.
 // =========================================================================
 const auditReport = await generateAuditPrepReport()
@@ -258,11 +258,10 @@ assert.match(
 )
 
 // =========================================================================
-// CI-configuration guard -- proves `--strict-docs`/`--strict-flow` genuinely
-// block a real gap, against a small synthetic fixture built just for this
-// (the real capabilities above are already fully documented, so running the
-// same flags against them proves nothing was silently broken, not that the
-// flags themselves work -- this section proves the flags work).
+// CI-configuration guard: proves `--strict-docs`/`--strict-flow` block a
+// real gap, using a small synthetic fixture built for this section. The real
+// capabilities above are already fully documented, so running the same
+// flags against them proves only that nothing broke, not that the flags work.
 // =========================================================================
 const guardFixtureDir = await mkdtemp(path.join(tmpdir(), "data-cap-guard-demo-"))
 try {

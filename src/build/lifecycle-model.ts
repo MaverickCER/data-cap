@@ -1,5 +1,5 @@
 /**
- * `data-cap`'s Lifecycle Model (EVD-05) -- every capability and field's
+ * `data-cap`'s Lifecycle Model: every capability and field's
  * declared lifecycle data (expiry, deprecation, removal deadline, rename
  * correlation), projected into one canonical, versioned shape, plus the
  * "expiring soon" view a documentation pass and a CI gate both want.
@@ -12,14 +12,14 @@
  *   way every other model here does. A `LifecycleModelField` therefore
  *   carries `path`, not `key`.
  * - Paths. `file` is root-relative, carried through verbatim from
- *   `CapabilityNode.file` (OUT-01) rather than converted here -- unlike
+ *   `CapabilityNode.file` rather than converted here, unlike
  *   env-cap's version, which takes a `root` and relativizes as it goes,
  *   because its own `DiscoveredContract.file` is still absolute at that
  *   point. `buildLifecycleModel` needs no `root` for exactly that reason.
  *
  * Every fact here is **declared, never verified**: nothing expires at
  * runtime, nothing is deleted on a `removeBy`, and a `renamedFrom` is only
- * ever an authored value -- never inferred from name similarity. What this
+ * ever an authored value; never inferred from name similarity. What this
  * model adds over reading `docs` directly is a single, sorted, versioned
  * place to read it from, and the date arithmetic (`daysRemaining`) done
  * once against one shared `now`.
@@ -27,12 +27,12 @@
 
 import type { CapabilityInventory, CapabilityNode, FieldNode } from "./inventory.js"
 
-/** Bump only when a reader could misinterpret the shape -- same discipline every other model's schema-version constant already documents. */
+/** Bump only when a reader could misinterpret the shape: same discipline every other model's schema-version constant already documents. */
 export const LIFECYCLE_MODEL_SCHEMA_VERSION = 1
 
 /** One field's declared lifecycle data. Only fields with at least one of these set appear in the model at all. */
 export interface LifecycleModelField {
-  /** The field's path within its capability -- `readonly string[]`, matching every other model's field addressing (never a flat key string). */
+  /** The field's path within its capability: `readonly string[]`, matching every other model's field addressing (never a flat key string). */
   readonly path: readonly string[]
   /** Declared ISO-8601 expiry, unparsed and uninterpreted here. */
   readonly expiresAt: string | undefined
@@ -40,17 +40,17 @@ export interface LifecycleModelField {
   readonly deprecated: boolean | undefined
   /** Why it's deprecated, when stated. */
   readonly deprecatedReason: string | undefined
-  /** Declared ISO-8601 removal deadline -- field-level only (see `core/document.ts`). */
+  /** Declared ISO-8601 removal deadline: field-level only (see `core/document.ts`). */
   readonly removeBy: string | undefined
-  /** The field's previous name, when authored -- what `ChangeModel.renamedFields` correlates against. */
+  /** The field's previous name, when authored: what `ChangeModel.renamedFields` correlates against. */
   readonly renamedFrom: string | undefined
-  /** Declared retention policy -- a policy statement, deliberately independent of `expiresAt`'s temporal constraint (a field can be retained long after its source credential expires, and vice versa). */
+  /** Declared retention policy: a policy statement, deliberately independent of `expiresAt`'s temporal constraint (a field can be retained long after its source credential expires, and vice versa). */
   readonly retention: string | undefined
 }
 
 /** One capability's declared lifecycle data, plus every lifecycle-bearing field under it. */
 export interface LifecycleModelCapability {
-  /** Root-relative POSIX path -- carried through verbatim from `CapabilityNode.file`. */
+  /** Root-relative POSIX path: carried through verbatim from `CapabilityNode.file`. */
   readonly file: string
   /** The binding name the capability is exported as. */
   readonly exportName: string
@@ -62,7 +62,7 @@ export interface LifecycleModelCapability {
   readonly deprecatedReason: string | undefined
   /** Declared retention policy at the capability level. */
   readonly retention: string | undefined
-  /** Only fields with at least one lifecycle field set, sorted by path -- same "only what's relevant" scope the rendered report uses. */
+  /** Only fields with at least one lifecycle field set, sorted by path: same "only what's relevant" scope the rendered report uses. */
   readonly fields: readonly LifecycleModelField[]
 }
 
@@ -98,7 +98,7 @@ export interface LifecycleModel {
  * reported as expired: `expiresAt` is author-declared free text that nothing
  * validates at declaration time, and treating `"soon"` as an expiry would
  * manufacture a finding out of a typo. The value still appears verbatim on
- * the model's own `expiresAt`, so it is visible -- just never counted as a
+ * the model's own `expiresAt`, so it is visible, but never counted as a
  * date.
  */
 function parseIsoDate(value: string): Date | undefined {
@@ -147,13 +147,13 @@ function capabilityHasLifecycleData(capability: CapabilityNode): boolean {
 /**
  * Every capability- or field-level `expiresAt` within `expiringWithinDays`
  * of `now`, sorted soonest-first. Exported because a documentation pass, a
- * CI gate, and the Lifecycle Model itself all want the identical rule -- and
+ * CI gate, and the Lifecycle Model itself all want the identical rule: and
  * "what counts as expiring soon" drifting between them would be exactly the
  * kind of two-sources-of-truth bug this codebase avoids elsewhere.
  *
  * A field's own `expiresAt` is read from its declared `docs`, not from a
- * capability-inherited value: unlike `owner`/`sensitivity`, an expiry is a
- * statement about one specific thing's validity, and silently inheriting it
+ * capability-inherited value. Unlike `owner`/`sensitivity`, an expiry is a
+ * statement about one specific thing's validity. Silently inheriting it
  * would report every field of an expiring capability as separately expiring.
  * The capability's own entry already covers that case, once.
  */
@@ -224,16 +224,14 @@ export function computeExpiringEntries(
 }
 
 /**
- * Projects `inventory` into `data-cap`'s Lifecycle Model. Pure -- a
- * projection over an already-built inventory, never a second scan, which is
- * why `EvidenceModel` can populate `lifecycle` unconditionally alongside
- * `capability` rather than gating it on an opt-in pass the way
- * `dependency`/`ownership` are gated on a usage scan.
+ * Projects `inventory` into `data-cap`'s Lifecycle Model. Pure: a projection
+ * over an already-built inventory, never a second scan. So `EvidenceModel`
+ * always fills `lifecycle` next to `capability`, with no opt-in pass like the
+ * usage scan behind `dependency` and `ownership`.
  *
- * `now` is a parameter, never `new Date()` read in here: every time-
- * sensitive computation in one run must agree on the same instant, and a
- * caller-supplied clock is also what makes this testable without freezing
- * time globally.
+ * `now` is a parameter, never `new Date()` read in here. Every time-sensitive
+ * computation in one run must agree on the same instant, and a caller-supplied
+ * clock keeps this testable.
  */
 export function buildLifecycleModel(
   inventory: CapabilityInventory,

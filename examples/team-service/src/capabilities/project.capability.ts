@@ -1,12 +1,12 @@
 /**
- * One project's own metadata and case tasks -- owned by the project team.
+ * One project's own metadata and case tasks: owned by the project team.
  * `getProject`'s own `execute` composes with `member.capability.ts`
  * directly: it calls `memberData.listMembers(...)` to resolve each task's
  * `assigneeId` into a real name, rather than this "backend" (`server/
  * projects.ts`) joining across the member directory itself (a real backend
  * wouldn't join across service boundaries either). This is ordinary
- * cross-file application code -- no data-cap composition primitive exists
- * or is needed -- and it stays fully analyzable: `memberData` being a real,
+ * cross-file application code (no data-cap composition primitive exists
+ * or is needed) and it stays fully analyzable: `memberData` being a real,
  * proven dependency of `projectData` shows up in this example's own
  * generated `docs/OWNERSHIP.md`.
  */
@@ -82,7 +82,7 @@ const projectSchema = {
       },
       processor: (result: Task[]): { tasks: Task[] } => ({ tasks: result }),
       writes: { tasks: true },
-      // Cast inline, not annotated directly -- createData's own generic
+      // Cast inline, not annotated directly: createData's own generic
       // inference widens an individual operation definition while checking
       // it against DataSchema's own bound, which would otherwise conflict
       // with a narrower parameter annotation here (a contravariant

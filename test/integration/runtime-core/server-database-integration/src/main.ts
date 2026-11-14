@@ -1,14 +1,14 @@
 /**
  * SERVER-side pattern: a Node backend service keeping state read from (and
  * written back to) a database. `queryUserById`/`updateUserEmail` below
- * stand in for real driver calls (`pg`, `mysql2`, an ORM) -- swap them for
+ * stand in for real driver calls (`pg`, `mysql2`, an ORM): swap them for
  * real queries and everything else here is unchanged. See
  * basic-standalone/ for the equivalent CLIENT-side pattern (a getter backed
  * by a network fetch instead of a database query).
  *
  * Unlike a client showing an optimistic value before the server confirms it
  * (see optimistic-mutation-concurrency/), a server process IS the source of
- * truth -- there is nothing to be optimistic about, so the mutator here
+ * truth: there is nothing to be optimistic about, so the mutator here
  * commits directly via `commitAuthoritative`, with no pending transition.
  */
 import assert from "node:assert/strict"
@@ -24,7 +24,7 @@ interface UserRow {
   readonly role: string
 }
 
-// Simulated database table -- an in-memory stand-in for real persistent
+// Simulated database table: an in-memory stand-in for real persistent
 // rows. Every value here (and every value returned by the two functions
 // below) is a plain JSON object, exactly like a real driver would hand back.
 const usersTable: UserRow[] = [
@@ -53,7 +53,7 @@ async function updateUserEmail(id: string, email: string, signal: AbortSignal): 
 }
 
 // Exported (unused by anything else in this standalone script) so
-// data-cap's own build tooling can discover it -- see the "Generated
+// data-cap's own build tooling can discover it: see the "Generated
 // reports" section in this example's README.
 export const capability = buildData({
   fields: {
@@ -62,16 +62,16 @@ export const capability = buildData({
 })
 
 // Only one buildData()/documentData() pair exists in this file, so
-// correlation happens by the "unambiguous single pair" rule -- no shared
+// correlation happens by the "unambiguous single pair" rule: no shared
 // `fields` identifier is required (contrast with
 // examples/capability-operations/, which has two pairs and needs one).
 //
 // No `getters`/`mutators` section here: `buildData` (unlike `createData`)
-// has no operations layer at all -- this capability's reads/writes are
+// has no operations layer at all; this capability's reads/writes are
 // wired by hand below (runGetUser/runUpdateUserEmail), so there is no real
 // getter/mutator for a documented one to correlate with. Documenting a
 // getter/mutator name that doesn't exist on the actual schema would be
-// silently dropped by the catalog renderer (nothing to attach it to) --
+// silently dropped by the catalog renderer (nothing to attach it to):
 // worse, it would misrepresent what this capability actually declares.
 documentData(
   { fields: { user: { id: "", name: "", email: "", role: "member" } } },
@@ -143,7 +143,7 @@ const afterUpdate = store.getSnapshot()
 assert.equal(afterUpdate.fields.user.email, "grace.hopper@example.com")
 assert.equal(afterUpdate.info.user?.source, "updateUserEmail")
 // The mutator's own commit really did land in the database, not just the
-// in-memory DataState -- the server-side pattern's whole point.
+// in-memory DataState: the server-side pattern's whole point.
 assert.equal(usersTable[0]?.email, "grace.hopper@example.com")
 
 unsubscribe()

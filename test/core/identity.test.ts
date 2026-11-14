@@ -200,7 +200,7 @@ describe("reconcileArrayInfo", () => {
 
   it("makes a fresh entry for an untouched identity when there is no previous info map at all", () => {
     const { info } = reconcileArrayInfo<{ id: string }, { fresh: boolean }>(
-      undefined, // no prior info -- the `prevInfo !== undefined` guard is load-bearing
+      undefined, // no prior info: the `prevInfo !== undefined` guard is load-bearing
       [{ id: "1" }, { id: "2" }],
       ["id"],
       new Set(), // nothing touched

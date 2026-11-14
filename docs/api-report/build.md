@@ -1,5 +1,9 @@
 # build
 
+`data-cap/build` (Node only): reads capability files without running them, and generates the
+manifest, documentation catalog, ownership report and Evidence Model. `generateDataArtifacts`
+writes them; `checkArtifacts` reports which are stale.
+
 ## Classes
 
 ### DataProjectGenerationError
@@ -9,7 +13,7 @@ over `instanceof` for programmatic handling across bundling boundaries
 (mirrors env-cap's own `EnvValidationError`/`EnvNotReadyError` convention).
 
 Invariant: no error here ever embeds a raw or processed field value in its
-message -- only field paths (key names), which are never sensitive.
+message; only field paths (key names), which are never sensitive.
 
 #### Extends
 
@@ -55,7 +59,7 @@ cause?: unknown;
 readonly code: "DATA_CAP_PROJECT_GENERATION_FAILED" = "DATA_CAP_PROJECT_GENERATION_FAILED";
 ```
 
-Stable, programmatic discriminant -- prefer this over `instanceof` across bundling boundaries.
+Stable, programmatic discriminant: prefer this over `instanceof` across bundling boundaries.
 
 ###### Overrides
 
@@ -67,7 +71,7 @@ Stable, programmatic discriminant -- prefer this over `instanceof` across bundli
 readonly findings: readonly ReportFinding[];
 ```
 
-Every finding from the run (not just the blocking ones), for a caller that wants the full picture.
+Every finding from the run (not only the blocking ones), for a caller that wants the full picture.
 
 ##### message
 
@@ -261,7 +265,7 @@ cause?: unknown;
 readonly code: "DATA_CAP_FLOW_MODEL_INVALID" = "DATA_CAP_FLOW_MODEL_INVALID";
 ```
 
-Stable, programmatic discriminant -- prefer this over `instanceof` across bundling boundaries.
+Stable, programmatic discriminant: prefer this over `instanceof` across bundling boundaries.
 
 ###### Overrides
 
@@ -423,7 +427,7 @@ One changed capability's known current consumers.
 readonly capability: string;
 ```
 
-The capability key (`file#exportName`) -- matches `ManifestChangeReport`'s own key convention.
+The capability key (`file#exportName`): matches `ManifestChangeReport`'s own key convention.
 
 ##### consumers
 
@@ -437,7 +441,7 @@ Distinct consuming files known (from Dependency Model) to depend on this capabil
 
 ### BuildDirent
 
-One directory entry from [BuildFileSystem.readdir](#readdir) -- the subset of Node's `Dirent` the build code reads.
+One directory entry from [BuildFileSystem.readdir](#readdir): the subset of Node's `Dirent` the build code reads.
 
 #### Properties
 
@@ -625,7 +629,7 @@ The Flow Model that findings' flow evidence refers to; without it findings keep 
 
 ### BuildStats
 
-A path's stat info from [BuildFileSystem.stat](#stat) -- the subset of Node's `Stats` the build code reads.
+A path's stat info from [BuildFileSystem.stat](#stat): the subset of Node's `Stats` the build code reads.
 
 #### Properties
 
@@ -647,20 +651,18 @@ Same contract as Node's `Stats.isFile()`.
 readonly size: number;
 ```
 
-Size in bytes -- read by the package-schema resolver to enforce a size ceiling.
+Size in bytes: read by the package-schema resolver to enforce a size ceiling.
 
 ***
 
 ### CapabilityInventory
 
-The one authoritative model every report generator reads from -- see
+The one authoritative model every report generator reads from: see
 `buildInventory`. This type IS `data-cap`'s Capability Model (ADR 0050),
 not a separate thing that produces one: `CAPABILITY_MODEL_SCHEMA_VERSION`
-above versions this exact interface. ADR 0050 deliberately kept the
-`CapabilityInventory`/`buildInventory` names rather than introducing a
-`CapabilityModel`/`buildCapabilityModel` wrapper, since this type was
-already the intended public model before that ADR existed -- a rename
-would duplicate an already-correct, already-public shape for no gain. A
+above versions this exact interface. ADR 0050 kept the `CapabilityInventory`
+and `buildInventory` names rather than add a `CapabilityModel` wrapper. This
+type was already the public model, so a rename would only duplicate it. A
 canonical, versioned, JSON-serializable projection of every discovered
 capability's fields and operations, active or not.
 
@@ -688,7 +690,7 @@ Always `CAPABILITY_MODEL_SCHEMA_VERSION`.
 readonly warnings: readonly ParseWarning[];
 ```
 
-Parse/link warnings carried through from the discovery/linking pass that produced this inventory, each `file` root-relative like every other path this model publishes (OUT-01).
+Parse/link warnings carried through from the discovery/linking pass that produced this inventory, each `file` root-relative like every other path this model publishes.
 
 ***
 
@@ -712,7 +714,7 @@ Defaults to `true` when `docs.active` is absent.
 readonly declarationPosition: SourcePosition;
 ```
 
-Position of this capability's own `buildData`/`createData` call site -- always available (ADR 0052).
+Position of this capability's own `buildData`/`createData` call site: always available (ADR 0052).
 
 ##### docs
 
@@ -720,10 +722,10 @@ Position of this capability's own `buildData`/`createData` call site -- always a
 readonly docs: LooseCapabilityDocs | undefined;
 ```
 
-This capability's own declared documentation, if any -- the single path for
-`owner`/`sensitivity`/`purpose`/`legalBasis`/`dataResidency`/`auditRequired`
-(ADR 0057): a capability has nothing above it to resolve against, so a separate
-top-level "resolved" property would only ever duplicate `docs.X` verbatim.
+This capability's own declared documentation, if any. It is the single path for
+`owner`, `sensitivity`, `purpose`, `legalBasis`, `dataResidency` and
+`auditRequired` (ADR 0057). A capability has nothing above it to resolve against,
+so a separate "resolved" property would only copy `docs.X`.
 
 ##### exclusiveGroup
 
@@ -755,9 +757,9 @@ Every declared field.
 readonly file: string;
 ```
 
-Root-relative POSIX path of the file declaring this capability -- the
+Root-relative POSIX path of the file declaring this capability: the
 one place an absolute discovery path is converted for publication
-(OUT-01, see `display-path.ts`). Every downstream model that carries a
+(see `display-path.ts`). Every downstream model that carries a
 capability's `file` (Ownership, Finding, Dependency, Manifest Snapshot)
 copies this value rather than re-deriving it, so there is exactly one
 conversion point. Re-derive a real path with `absolutePathFrom(root,
@@ -777,7 +779,7 @@ Every declared getter.
 readonly kind: "buildData" | "createData";
 ```
 
-`"buildData"` or `"createData"` -- which call form declared this capability.
+`"buildData"` or `"createData"`: which call form declared this capability.
 
 ##### mutators
 
@@ -809,7 +811,7 @@ Every declared subscription.
 readonly blastRadius: readonly BlastRadiusEntry[] | undefined;
 ```
 
-One entry per added/updated capability, or `undefined` when no `DependencyModel` was supplied -- an optional layer, matching `--ownership`/`--flow`'s existing opt-in cost model (the usage scan isn't free).
+One entry per added/updated capability, or `undefined` when no `DependencyModel` was supplied: an optional layer, matching `--ownership`/`--flow`'s existing opt-in cost model (the usage scan isn't free).
 
 ##### manifest
 
@@ -817,7 +819,7 @@ One entry per added/updated capability, or `undefined` when no `DependencyModel`
 readonly manifest: ManifestChangeReport;
 ```
 
-The underlying manifest diff -- see `diffManifestSnapshots`.
+The underlying manifest diff: see `diffManifestSnapshots`.
 
 ##### renamedFields
 
@@ -831,7 +833,7 @@ capability key then current name.
 
 ###### Remarks
 
-Only ever populated from an *authored* `FieldDocs.renamedFrom` -- never
+Only ever populated from an *authored* `FieldDocs.renamedFrom`: never
 guessed from name similarity, which is the same "prove it, never infer
 it" rule `AGENTS.md` invariant 11 applies to every other derived fact
 here. An additive view, not a filter: `manifest.updatedCapabilities`'s
@@ -839,11 +841,10 @@ own `fields.added`/`fields.removed` still list a correlated rename's two
 halves separately, so a consumer that doesn't know about this field
 loses nothing.
 
-Field-level only. `CapabilityDocs` deliberately has no `renamedFrom`
-(see `core/document.ts`), so there is no `renamedCapabilities` -- a
-capability-level rename has no authored field to correlate from, and
-guessing one from a moved file would be exactly the inference this
-model refuses to make.
+Field-level only. `CapabilityDocs` has no `renamedFrom` (see
+`core/document.ts`), so there is no `renamedCapabilities`. A
+capability-level rename has no authored field to correlate from, and this
+model never guesses one from a moved file.
 
 ##### schemaVersion
 
@@ -888,7 +889,7 @@ readonly file: string;
 
 ### CheckArtifactsResult
 
-What `checkArtifacts` found -- the full computed report, plus which of its artifacts are stale on disk.
+What `checkArtifacts` found: the full computed report, plus which of its artifacts are stale on disk.
 
 #### Properties
 
@@ -912,7 +913,7 @@ Paths that are missing or whose on-disk content doesn't match what this run woul
 
 ### CitationSnapshotEntry
 
-One `dynamicAccess` citation's integrity snapshot -- see `ManifestSnapshotCapability.citationSnapshots`.
+One `dynamicAccess` citation's integrity snapshot: see `ManifestSnapshotCapability.citationSnapshots`.
 
 #### Extends
 
@@ -946,7 +947,7 @@ readonly file: string;
 readonly hash: string;
 ```
 
-Whole-file SHA-256 (hex) of the cited file's content, at the moment this citation was last confirmed to exist. An integrity signal only -- "this file hasn't visibly changed since the citation was written" -- never proof the citation's own underlying claim is semantically correct (see ADR 0053).
+Whole-file SHA-256 (hex) of the cited file's content, at the moment this citation was last confirmed to exist. An integrity signal only ("this file hasn't visibly changed since the citation was written") never proof the citation's own underlying claim is semantically correct (see ADR 0053).
 
 ##### line
 
@@ -1096,7 +1097,7 @@ readonly metadata: Readonly<Record<string, unknown>>;
 
 ### ComputedArtifacts
 
-Files this run would write, computed but not yet written -- shared between `generateDataArtifacts` (writes when nothing blocks) and `checkArtifacts` (never writes, only diffs).
+Files this run would write, computed but not yet written: shared between `generateDataArtifacts` (writes when nothing blocks) and `checkArtifacts` (never writes, only diffs).
 
 #### Properties
 
@@ -1141,7 +1142,7 @@ Discovery exclusion globs.
 readonly extra?: string;
 ```
 
-Anything beyond the source files that changes what the evidence contains -- see `evidenceOptionsKey` in the same file. Absent leaves the fingerprint exactly as it always was.
+Anything beyond the source files that changes what the evidence contains: see `evidenceOptionsKey` in the same file. Absent leaves the fingerprint exactly as it always was.
 
 ##### fs
 
@@ -1149,7 +1150,7 @@ Anything beyond the source files that changes what the evidence contains -- see 
 readonly fs: BuildFileSystem;
 ```
 
-The filesystem capability -- `./build` never imports `node:fs` (ADR 0058).
+The filesystem capability: `./build` never imports `node:fs` (ADR 0058).
 
 ##### include?
 
@@ -1173,7 +1174,7 @@ Allow-listed package names whose own resolved schema files also feed the fingerp
 readonly root: string;
 ```
 
-Directory discovery resolves against -- same meaning as `GenerateDataArtifactsOptions.root`.
+Directory discovery resolves against: same meaning as `GenerateDataArtifactsOptions.root`.
 
 ***
 
@@ -1182,7 +1183,7 @@ Directory discovery resolves against -- same meaning as `GenerateDataArtifactsOp
 A statically-proven connection from one consuming file to a capability
 (or a specific field/operation on it). Unlike the declared metadata in
 `core/document.ts` (`source`, `credentials`, `endpoints`), every
-`DependencyEdge` is derived by AST analysis, never author-declared -- see
+`DependencyEdge` is derived by AST analysis, never author-declared: see
 `AGENTS.md`'s declared-vs-proven invariant. Produced by the usage-scan
 pass (`scan-dependencies.ts`), not by this module.
 
@@ -1194,7 +1195,7 @@ pass (`scan-dependencies.ts`), not by this module.
 readonly from: string;
 ```
 
-The consuming file, as a root-relative POSIX path (OUT-01, see `display-path.ts`).
+The consuming file, as a root-relative POSIX path (see `display-path.ts`).
 
 ##### position
 
@@ -1202,7 +1203,7 @@ The consuming file, as a root-relative POSIX path (OUT-01, see `display-path.ts`
 readonly position: SourcePosition | undefined;
 ```
 
-Position of the access site in `from` (file already known via `from`), when this edge originates from a specific identifier reference (every relationship except the file-level `"imports"` fallback edge scan-dependencies.ts synthesizes for a consumer with no further resolved usage).
+Position of the access site in `from` (file already known via `from`). Set when this edge originates from a specific identifier reference. That is every relationship except the file-level `"imports"` fallback edge scan-dependencies.ts synthesizes for a consumer with no further resolved usage.
 
 ##### relationship
 
@@ -1210,7 +1211,7 @@ Position of the access site in `from` (file already known via `from`), when this
 readonly relationship: DependencyRelationship;
 ```
 
-Which kind of connection this is -- see `DependencyRelationship`.
+Which kind of connection this is: see `DependencyRelationship`.
 
 ##### resolution
 
@@ -1218,7 +1219,7 @@ Which kind of connection this is -- see `DependencyRelationship`.
 readonly resolution: "resolved" | "unresolved-consumer" | "indeterminate";
 ```
 
-Whether the consumer reference itself was unambiguously resolved -- see the usage-scan pass for what each value means.
+Whether the consumer reference itself was unambiguously resolved: see the usage-scan pass for what each value means.
 
 ##### to
 
@@ -1260,7 +1261,7 @@ The binding name the capability is exported as.
 readonly file: string;
 ```
 
-Root-relative POSIX path of the file declaring the capability -- the same value `CapabilityNode.file` publishes.
+Root-relative POSIX path of the file declaring the capability: the same value `CapabilityNode.file` publishes.
 
 ###### field?
 
@@ -1292,7 +1293,7 @@ The specific operation name being called, when `relationship` is `"calls-getter"
 readonly edges: readonly DependencyEdge[];
 ```
 
-Every proven edge, unindexed -- same array `scanDependencies` produced.
+Every proven edge, unindexed: same array `scanDependencies` produced.
 
 ##### schemaVersion
 
@@ -1383,7 +1384,7 @@ One `buildData`/`createData` capability, linked with its correlated `documentDat
 readonly declarationPosition: SourcePosition;
 ```
 
-Position of this capability's own `buildData`/`createData` call site -- always available.
+Position of this capability's own `buildData`/`createData` call site: always available.
 
 ##### docs
 
@@ -1391,7 +1392,7 @@ Position of this capability's own `buildData`/`createData` call site -- always a
 readonly docs: LooseCapabilityDocs | undefined;
 ```
 
-Statically-extracted governance metadata from the correlated `documentData()` call, if any -- `undefined` when `documentedBy` is `undefined`, or when its `docs` argument wasn't an inline object literal.
+Statically-extracted governance metadata from the correlated `documentData()` call, if any: `undefined` when `documentedBy` is `undefined`, or when its `docs` argument wasn't an inline object literal.
 
 ##### documentedBy
 
@@ -1443,7 +1444,7 @@ readonly fieldPositions:
   | undefined;
 ```
 
-Position of each top-level field's own key, keyed by field name -- only when `fields` was an inline object literal in this file (see `parse.ts`'s `extractFieldPositions`); `undefined` when identifier-resolved across a file boundary.
+Position of each top-level field's own key, keyed by field name: only when `fields` was an inline object literal in this file (see `parse.ts`'s `extractFieldPositions`); `undefined` when identifier-resolved across a file boundary.
 
 ##### fieldsShape
 
@@ -1467,7 +1468,7 @@ Absolute path of the file declaring this capability.
 readonly kind: "buildData" | "createData";
 ```
 
-`"buildData"` or `"createData"` -- which call form declared this capability.
+`"buildData"` or `"createData"`: which call form declared this capability.
 
 ##### operationNames
 
@@ -1475,7 +1476,7 @@ readonly kind: "buildData" | "createData";
 readonly operationNames: OperationNames | undefined;
 ```
 
-Static getter/mutator/subscription names (never their function bodies) -- only ever populated for a `createData()` call; `undefined` for `buildData()`, which has no operations section.
+Static getter/mutator/subscription names (never their function bodies): only ever populated for a `createData()` call; `undefined` for `buildData()`, which has no operations section.
 
 ##### operationPresence
 
@@ -1483,7 +1484,7 @@ Static getter/mutator/subscription names (never their function bodies) -- only e
 readonly operationPresence: OperationPresenceByKind | undefined;
 ```
 
-Static `processor`/`optimistic` key-presence facts, keyed the same way as `operationNames` -- `undefined` under the same condition.
+Static `processor`/`optimistic` key-presence facts, keyed the same way as `operationNames`: `undefined` under the same condition.
 
 ##### operationWrites
 
@@ -1491,7 +1492,7 @@ Static `processor`/`optimistic` key-presence facts, keyed the same way as `opera
 readonly operationWrites: OperationWritesByKind | undefined;
 ```
 
-Static `writes` field-ownership shapes, keyed the same way as `operationNames` -- `undefined` under the same condition.
+Static `writes` field-ownership shapes, keyed the same way as `operationNames`: `undefined` under the same condition.
 
 ***
 
@@ -1515,7 +1516,7 @@ Glob patterns (relative to `root`) that prune a file or directory regardless of 
 readonly fs: BuildFileSystem;
 ```
 
-The filesystem capability -- `./build` never imports `node:fs` (ADR 0058).
+The filesystem capability: `./build` never imports `node:fs` (ADR 0058).
 
 ##### include?
 
@@ -1537,13 +1538,12 @@ Directory to walk.
 
 ### EvidenceComputedModels
 
-Which project-varying sub-models this particular run actually computed
-(OUT-04).
+Which project-varying sub-models this particular run actually computed.
 
 Without this, a persisted `data.evidence.json` is ambiguous in exactly the
-way a governance artifact must never be: an absent `dependency` could mean
+way a governance artifact must never be. An absent `dependency` could mean
 "nothing in this project depends on anything" (a real, reportable finding)
-or "this run never scanned for dependencies" (no finding at all, just an
+or "this run never scanned for dependencies" (no finding at all, only an
 un-run pass). Those are opposite conclusions and the JSON looked identical
 either way.
 
@@ -1553,13 +1553,12 @@ the usage scan is the expensive pass here, and `--docs` alone is supposed
 to stay cheap. So instead of forcing every run to pay for a full
 dependency scan, each sub-model's presence is stated explicitly.
 
-`capability`, `lifecycle`, and `runtimeContract` have no flag -- they are
+`capability`, `lifecycle`, and `runtimeContract` have no flag: they are
 always populated by construction, so a flag could only ever read `true`.
 
 A pass that ran and found nothing is `true` with an empty result, never
-`false`: "we looked and found none" is a genuine finding, and collapsing
-it into "we didn't look" is precisely the confusion this field exists to
-prevent.
+`false`. "We looked and found none" is a real finding, and this field keeps
+it apart from "we did not look".
 
 #### Properties
 
@@ -1577,7 +1576,7 @@ Whether a manifest diff was available and produced a Change Model this run.
 readonly claims: boolean;
 ```
 
-Whether claims were derived this run -- true exactly when `flow` was computed.
+Whether claims were derived this run: true exactly when `flow` was computed.
 
 ##### dependency
 
@@ -1631,7 +1630,7 @@ Whether policy rules were evaluated and produced a Policy Model this run.
 
 ### EvidenceModelInputs
 
-The project-varying models Evidence Model composes -- `capability` and `lifecycle` are required; the rest depend on which passes actually ran.
+The project-varying models Evidence Model composes: `capability` and `lifecycle` are required; the rest depend on which passes actually ran.
 
 #### Properties
 
@@ -1641,7 +1640,7 @@ The project-varying models Evidence Model composes -- `capability` and `lifecycl
 readonly capability: CapabilityInventory;
 ```
 
-Capability Model -- the base every other model is derived from or indexed against.
+Capability Model: the base every other model is derived from or indexed against.
 
 ##### change?
 
@@ -1682,9 +1681,9 @@ readonly lifecycle: LifecycleModel;
 ```
 
 Lifecycle Model. Required alongside `capability`, not optional like
-`dependency`/`ownership`: it is a pure projection over the inventory
+`dependency`/`ownership`. It is a pure projection over the inventory
 (`buildLifecycleModel`), so any caller holding a `capability` can always
-produce one -- there is no scenario where a caller legitimately
+produce one. There is no scenario where a caller legitimately
 "doesn't have" it the way it might not have run a usage scan. Only the
 `expiringWithinDays`/`now` window is a caller choice, and that changes
 the contents, never the availability.
@@ -1765,7 +1764,7 @@ Root-relative POSIX path of the declaring file.
 
 ### FieldFlow
 
-One field's declared origins/destinations and proven in-repo consumers -- the data-flow-diagram/security-review model's atomic unit.
+One field's declared origins/destinations and proven in-repo consumers: the data-flow-diagram/security-review model's atomic unit.
 
 #### Properties
 
@@ -1834,7 +1833,7 @@ readonly provenConsumers: readonly DependencyEdge[];
 readonly sensitivity: string | undefined;
 ```
 
-Resolved: the field's own declared sensitivity, else the capability's -- mirrors `owner`'s inheritance (ADR 0049).
+Resolved: the field's own declared sensitivity, else the capability's; mirrors `owner`'s inheritance (ADR 0049).
 
 ***
 
@@ -1850,7 +1849,7 @@ One top-level field of a capability, resolved from the inventory's shared model.
 readonly auditRequired: ResolvedGovernanceValue<boolean>;
 ```
 
-Resolved: the field's own `docs.auditRequired`, else the capability's `auditRequired` -- same inheritance rule (ADR 0051, ADR 0057).
+Resolved: the field's own `docs.auditRequired`, else the capability's `auditRequired`; same inheritance rule (ADR 0051, ADR 0057).
 
 ##### dataResidency
 
@@ -1858,7 +1857,7 @@ Resolved: the field's own `docs.auditRequired`, else the capability's `auditRequ
 readonly dataResidency: ResolvedGovernanceValue<string | readonly string[]>;
 ```
 
-Resolved: the field's own `docs.dataResidency`, else the capability's `dataResidency` -- same inheritance rule. The declared permitted-storage jurisdiction(s), not an observed fact (ADR 0051, ADR 0057).
+Resolved: the field's own `docs.dataResidency`, else the capability's `dataResidency`; same inheritance rule. The declared permitted-storage jurisdiction(s), not an observed fact (ADR 0051, ADR 0057).
 
 ##### declarationPosition
 
@@ -1866,7 +1865,7 @@ Resolved: the field's own `docs.dataResidency`, else the capability's `dataResid
 readonly declarationPosition: SourcePosition | undefined;
 ```
 
-Position of this field's own key in the `fields` object literal -- only when `fields` was resolved as an inline literal in this file; `undefined` when identifier-resolved across a file boundary this pass doesn't retain AST access to (never guessed at -- ADR 0052).
+Position of this field's own key in the `fields` object literal. Set only when `fields` was resolved as an inline literal in this file. It is `undefined` when identifier-resolved across a file boundary this pass doesn't retain AST access to (never guessed at; ADR 0052).
 
 ##### docs
 
@@ -1874,7 +1873,7 @@ Position of this field's own key in the `fields` object literal -- only when `fi
 readonly docs: FieldDocs | undefined;
 ```
 
-This field's own declared documentation, if any -- `description`/`protections`/`retention`/`metadata` have no resolution concept and live only here; for the six governed properties below, prefer `.value`/`.declaredOn` over reading this object directly (ADR 0057).
+This field's own declared documentation, if any: `description`/`protections`/`retention`/`metadata` have no resolution concept and live only here; for the six governed properties below, prefer `.value`/`.declaredOn` over reading this object directly (ADR 0057).
 
 ##### legalBasis
 
@@ -1882,7 +1881,7 @@ This field's own declared documentation, if any -- `description`/`protections`/`
 readonly legalBasis: ResolvedGovernanceValue<string>;
 ```
 
-Resolved: the field's own `docs.legalBasis`, else the capability's `legalBasis` -- same inheritance rule. A declared fact, never a legal determination (ADR 0051, ADR 0057).
+Resolved: the field's own `docs.legalBasis`, else the capability's `legalBasis`; same inheritance rule. A declared fact, never a legal determination (ADR 0051, ADR 0057).
 
 ##### owner
 
@@ -1906,7 +1905,7 @@ Top-level field key, as a single-element path (see the module doc comment on why
 readonly purpose: ResolvedGovernanceValue<string>;
 ```
 
-Resolved: the field's own `docs.purpose`, else the capability's `purpose` -- same inheritance rule as `owner`/`sensitivity` (ADR 0051, ADR 0057). Declared only, never verified.
+Resolved: the field's own `docs.purpose`, else the capability's `purpose`; same inheritance rule as `owner`/`sensitivity` (ADR 0051, ADR 0057). Declared only, never verified.
 
 ##### sensitivity
 
@@ -1914,7 +1913,7 @@ Resolved: the field's own `docs.purpose`, else the capability's `purpose` -- sam
 readonly sensitivity: ResolvedGovernanceValue<string>;
 ```
 
-Resolved: the field's own `docs.sensitivity`, else the capability's `sensitivity` -- same inheritance rule as `owner` (ADR 0049, ADR 0050, ADR 0057).
+Resolved: the field's own `docs.sensitivity`, else the capability's `sensitivity`; same inheritance rule as `owner` (ADR 0049, ADR 0050, ADR 0057).
 
 ##### shape
 
@@ -1922,7 +1921,7 @@ Resolved: the field's own `docs.sensitivity`, else the capability's `sensitivity
 readonly shape: unknown;
 ```
 
-The field's literal-evaluated declared default -- structural comparison only (e.g. `structural-duplication.ts`), never a runtime value.
+The field's literal-evaluated declared default: structural comparison only (e.g. `structural-duplication.ts`), never a runtime value.
 
 ##### writtenBy
 
@@ -1939,7 +1938,7 @@ Every getter/mutator/subscription whose statically-extracted `writes` shape clai
 
 ### FindingLocationCapability
 
-A finding's capability locator -- shared by every `FindingLocation` variant except `"none"`.
+A finding's capability locator: shared by every `FindingLocation` variant except `"none"`.
 
 #### Properties
 
@@ -1957,7 +1956,7 @@ The binding name the capability is exported as.
 readonly file: string;
 ```
 
-Root-relative POSIX path of the file declaring the capability -- carried through verbatim from `CapabilityNode.file` (see `display-path.ts`).
+Root-relative POSIX path of the file declaring the capability: carried through verbatim from `CapabilityNode.file` (see `display-path.ts`).
 
 ***
 
@@ -1987,7 +1986,7 @@ Always `FINDING_MODEL_SCHEMA_VERSION`.
 
 ### FlowEdgeInput
 
-One edge as a producer supplies it -- the id is derived, never supplied.
+One edge as a producer supplies it: the id is derived, never supplied.
 
 #### Extended by
 
@@ -2009,7 +2008,7 @@ Id of the source node.
 readonly handling?: FlowHandling;
 ```
 
-The data-safety state of the value at this hop, when declared or established -- policy evaluation reads it at boundary crossings.
+The data-safety state of the value at this hop, when declared or established: policy evaluation reads it at boundary crossings.
 
 ##### kind
 
@@ -2121,7 +2120,7 @@ readonly unknowns: readonly FlowUnknownInput[];
 
 ### FlowNodeInput
 
-One node as a producer supplies it -- the id is derived, never supplied.
+One node as a producer supplies it: the id is derived, never supplied.
 
 #### Extended by
 
@@ -2143,7 +2142,7 @@ What kind of boundary this is; only meaningful (and required by policy evaluatio
 readonly classification?: string;
 ```
 
-Declared or inherited sensitivity classification, when known -- carried verbatim, never inferred here.
+Declared or inherited sensitivity classification, when known: carried verbatim, never inferred here.
 
 ##### kind
 
@@ -2349,7 +2348,7 @@ readonly data?: readonly FlowUnknownData[];
 ```
 
 The tracked data that entered the part of the program that could not be
-followed. Absent means "unknown which data" -- every trace that reaches
+followed. Absent means "unknown which data": every trace that reaches
 the subject must treat itself as incomplete. Present, it lets a trace of
 a different field or an unrelated path stay complete: an opaque call that
 only ever saw `email` says nothing about where `passwordHash` went.
@@ -2402,7 +2401,7 @@ Options for `computeDataArtifacts`/`generateDataArtifacts`/`checkArtifacts`.
 readonly commit?: string;
 ```
 
-The commit SHA this run's evidence was generated against, stamped onto `EvidenceModel.provenance.commit`. Caller-supplied only -- `data-cap` never shells out to `git` itself, so omitting this records a stated absence, never a guess.
+The commit SHA this run's evidence was generated against, stamped onto `EvidenceModel.provenance.commit`. Caller-supplied only: `data-cap` never shells out to `git` itself, so omitting this records a stated absence, never a guess.
 
 ##### docs?
 
@@ -2418,7 +2417,7 @@ Output path for the Markdown documentation catalog.
 readonly evidence?: string;
 ```
 
-Output path for the composed Evidence Model (ADR 0050), as JSON -- see `ReportResult.evidence`, which is always computed regardless of this option; this only controls whether it's additionally written to disk.
+Output path for the composed Evidence Model (ADR 0050), as JSON: see `ReportResult.evidence`, which is always computed regardless of this option; this only controls whether it's additionally written to disk.
 
 ##### exclude?
 
@@ -2479,7 +2478,7 @@ What calls into packages do, declared by the project (`FlowSummary`): without on
 readonly fs: BuildFileSystem;
 ```
 
-The filesystem capability, shared across every requested pass -- `./build` never imports `node:fs` (ADR 0058).
+The filesystem capability, shared across every requested pass: `./build` never imports `node:fs` (ADR 0058).
 
 ##### generatedAt?
 
@@ -2539,7 +2538,7 @@ Output path for the Dependency & Ownership report.
 readonly packages?: readonly string[];
 ```
 
-Explicit cross-package schema discovery allowlist -- see `resolve-package-schema.ts`.
+Explicit cross-package schema discovery allowlist: see `resolve-package-schema.ts`.
 
 ##### root
 
@@ -2579,7 +2578,7 @@ Escalate every `flow`-family `warning` to `error`: `SENSITIVE_DATA_CROSSES_EXTER
 readonly strictOwnership?: boolean;
 ```
 
-Escalate proven usage findings (abandoned capabilities, unconsumed owned fields) to `error` -- never escalates unresolved-consumer or indeterminate findings.
+Escalate proven usage findings (abandoned capabilities, unconsumed owned fields) to `error`: never escalates unresolved-consumer or indeterminate findings.
 
 ##### tsconfig?
 
@@ -2587,7 +2586,7 @@ Escalate proven usage findings (abandoned capabilities, unconsumed owned fields)
 readonly tsconfig?: string | false;
 ```
 
-Explicit `tsconfig.json` path override, or `false` to disable alias resolution -- see `LinkOptions.tsconfig`.
+Explicit `tsconfig.json` path override, or `false` to disable alias resolution: see `LinkOptions.tsconfig`.
 
 ***
 
@@ -2611,7 +2610,7 @@ Manifest changes since the last report, rendered as a "changes since last report
 readonly edges?: readonly DependencyEdge[];
 ```
 
-Proven usage edges, when the caller already ran the usage scan (`--ownership`/`--flow`) -- renders exact `file:line:column` consumption sites per field when supplied. Omit when no usage scan ran; the catalog still renders, just without that column populated.
+Proven usage edges, when the caller already ran the usage scan (`--ownership`/`--flow`): renders exact `file:line:column` consumption sites per field when supplied. Omit when no usage scan ran; the catalog still renders, without that column populated.
 
 ##### evidencePath?
 
@@ -2619,7 +2618,7 @@ Proven usage edges, when the caller already ran the usage scan (`--ownership`/`-
 readonly evidencePath?: string;
 ```
 
-This same run's own `--evidence` output path, when requested -- named in the generated banner's Evidence Model note.
+This same run's own `--evidence` output path, when requested: named in the generated banner's Evidence Model note.
 
 ##### expiringWithinDays?
 
@@ -2637,10 +2636,9 @@ env-cap's own default.
 readonly generatedAt?: Date;
 ```
 
-The instant `daysRemaining` is measured from. Defaults to the wall clock
-at call time; `generateDataArtifacts` passes its own single run-wide
-instant, so the catalog and the published Evidence Model can never
-report a different "12d remaining" for the same field.
+The instant `daysRemaining` is measured from. Defaults to the wall clock at
+call time. `generateDataArtifacts` passes one run-wide instant, so the
+catalog and the Evidence Model report the same "12d remaining" for a field.
 
 ##### inventory
 
@@ -2736,7 +2734,7 @@ Options for `generateFlow`.
 readonly additionalFindings?: readonly ReportFinding[];
 ```
 
-Findings from other passes (C2's static rules, C6's usage scan) to fold into the Security Data-Flow Review -- optional, so `--flow` alone still produces a meaningful review of just its own findings.
+Findings from other passes (the static rules, the usage scan) to fold into the Security Data-Flow Review. Optional: `--flow` alone still produces a meaningful review of its own findings.
 
 ##### edges
 
@@ -2752,7 +2750,7 @@ Proven consumer edges from a usage scan, used to derive in-repo flow paths.
 readonly evidencePath?: string;
 ```
 
-This same run's own `--evidence` output path, when requested -- named in the generated banner's Evidence Model note.
+This same run's own `--evidence` output path, when requested: named in the generated banner's Evidence Model note.
 
 ##### inventory
 
@@ -2800,7 +2798,7 @@ Every generated file in the set.
 readonly findings: readonly ReportFinding[];
 ```
 
-This pass's own findings only (`SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY`) -- `additionalFindings` are folded into the rendered review but not echoed back here, so a caller aggregating findings across every generator never double-counts them.
+This pass's own findings only (`SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY`): `additionalFindings` are folded into the rendered review but not echoed back here, so a caller aggregating findings across every generator never double-counts them.
 
 ##### location
 
@@ -2824,7 +2822,7 @@ Options for `generateManifest`.
 readonly changes: ManifestChangeReport;
 ```
 
-`snapshot` diffed against whatever snapshot preceded it -- see `diffManifestSnapshots`. Also computed by the caller; an all-added report on a first run.
+`snapshot` diffed against whatever snapshot preceded it: see `diffManifestSnapshots`. Also computed by the caller; an all-added report on a first run.
 
 ##### inventory
 
@@ -2840,7 +2838,7 @@ The inventory to render the manifest from.
 readonly location: string;
 ```
 
-Where the manifest `.ts` file will be written -- used to compute relative import specifiers, not written to here.
+Where the manifest `.ts` file will be written: used to compute relative import specifiers, not written to here.
 
 ##### root
 
@@ -2848,7 +2846,7 @@ Where the manifest `.ts` file will be written -- used to compute relative import
 readonly root: string;
 ```
 
-Discovery root every `CapabilityNode.file` is relative to (OUT-01) -- needed to lift each capability back to a real absolute path before computing its import specifier from `location`'s own directory.
+Discovery root every `CapabilityNode.file` is relative to: needed to lift each capability back to a real absolute path before computing its import specifier from `location`'s own directory.
 
 ##### snapshot
 
@@ -2856,7 +2854,7 @@ Discovery root every `CapabilityNode.file` is relative to (OUT-01) -- needed to 
 readonly snapshot: ManifestSnapshot;
 ```
 
-This run's own snapshot of `inventory` -- see `buildManifestSnapshot`. Computed by the caller, once, shared with whatever else in the same run needs it (e.g. citation-verification's own baseline).
+This run's own snapshot of `inventory`: see `buildManifestSnapshot`. Computed by the caller, once, shared with whatever else in the same run needs it (e.g. citation-verification's own baseline).
 
 ***
 
@@ -2904,7 +2902,7 @@ Where this manifest is intended to be written.
 readonly snapshot: ManifestSnapshot;
 ```
 
-The current inventory's snapshot -- persist this to enable "changes since last report" on the next run.
+The current inventory's snapshot: persist this to enable "changes since last report" on the next run.
 
 ***
 
@@ -2920,7 +2918,7 @@ Options for `generateUsage`.
 readonly evidencePath?: string;
 ```
 
-This same run's own `--evidence` output path, when requested -- named in the generated banner's Evidence Model note.
+This same run's own `--evidence` output path, when requested: named in the generated banner's Evidence Model note.
 
 ##### files
 
@@ -2928,7 +2926,7 @@ This same run's own `--evidence` output path, when requested -- named in the gen
 readonly files: readonly string[];
 ```
 
-Every project file to scan as a potential consumer -- typically the same file list `discoverCapabilityFiles` produced, since a consumer need not itself declare a capability.
+Every project file to scan as a potential consumer: typically the same file list `discoverCapabilityFiles` produced, since a consumer need not itself declare a capability.
 
 ##### inventory
 
@@ -2952,7 +2950,7 @@ Output path for the rendered Dependency & Ownership report, or `undefined` when 
 readonly scan: ScanDependenciesOptions;
 ```
 
-Passed through to `scanDependencies` -- root/tsconfig/packages for import-specifier resolution. `scan.root` also doubles as the discovery root every rendered path in the report displays relative to.
+Passed through to `scanDependencies`: root/tsconfig/packages for import-specifier resolution. `scan.root` also doubles as the discovery root every rendered path in the report displays relative to.
 
 ***
 
@@ -2992,7 +2990,7 @@ Ownership/usage findings derived from `edges` (e.g. `ABANDONED_CAPABILITY`).
 readonly location: string | undefined;
 ```
 
-Where this report is intended to be written, or `undefined` when the caller requested only the scan results -- see `GenerateUsageOptions.location`.
+Where this report is intended to be written, or `undefined` when the caller requested only the scan results: see `GenerateUsageOptions.location`.
 
 ##### warnings
 
@@ -3006,17 +3004,15 @@ Parse/resolution warnings from the scan, never blocking.
 
 ### GetEvidenceModelOptions
 
-Options for [getEvidenceModel](#getevidencemodel) -- every `computeDataArtifacts()`
+Options for [getEvidenceModel](#getevidencemodel): every `computeDataArtifacts()`
 option, with `evidence` narrowed to required.
 
 Deliberately reuses `evidence` rather than introducing a separate
-`location` for "where the cached artifact lives": that path and the path a
+`location` for "where the cached artifact lives". That path and the path a
 real run writes its Evidence Model to are the same file by definition, and
-two option names for one file could disagree. (`location` was already
-taken by the *manifest* output path on the base options -- reusing it here
-would have quietly meant two different things depending on which function
-read it.) Required, because there is no honest default `data-cap` could
-guess at for where a project keeps this.
+two option names for one file could disagree. (On the base options,
+`location` already names the *manifest* output path.) Required, because no
+default could say where a project keeps this file.
 
 #### Extends
 
@@ -3030,7 +3026,7 @@ guess at for where a project keeps this.
 readonly commit?: string;
 ```
 
-The commit SHA this run's evidence was generated against, stamped onto `EvidenceModel.provenance.commit`. Caller-supplied only -- `data-cap` never shells out to `git` itself, so omitting this records a stated absence, never a guess.
+The commit SHA this run's evidence was generated against, stamped onto `EvidenceModel.provenance.commit`. Caller-supplied only: `data-cap` never shells out to `git` itself, so omitting this records a stated absence, never a guess.
 
 ###### Inherited from
 
@@ -3143,7 +3139,7 @@ What calls into packages do, declared by the project (`FlowSummary`): without on
 readonly fs: BuildFileSystem;
 ```
 
-The filesystem capability, shared across every requested pass -- `./build` never imports `node:fs` (ADR 0058).
+The filesystem capability, shared across every requested pass: `./build` never imports `node:fs` (ADR 0058).
 
 ###### Inherited from
 
@@ -3231,7 +3227,7 @@ Output path for the Dependency & Ownership report.
 readonly packages?: readonly string[];
 ```
 
-Explicit cross-package schema discovery allowlist -- see `resolve-package-schema.ts`.
+Explicit cross-package schema discovery allowlist: see `resolve-package-schema.ts`.
 
 ###### Inherited from
 
@@ -3291,7 +3287,7 @@ Escalate every `flow`-family `warning` to `error`: `SENSITIVE_DATA_CROSSES_EXTER
 readonly strictOwnership?: boolean;
 ```
 
-Escalate proven usage findings (abandoned capabilities, unconsumed owned fields) to `error` -- never escalates unresolved-consumer or indeterminate findings.
+Escalate proven usage findings (abandoned capabilities, unconsumed owned fields) to `error`: never escalates unresolved-consumer or indeterminate findings.
 
 ###### Inherited from
 
@@ -3303,7 +3299,7 @@ Escalate proven usage findings (abandoned capabilities, unconsumed owned fields)
 readonly tsconfig?: string | false;
 ```
 
-Explicit `tsconfig.json` path override, or `false` to disable alias resolution -- see `LinkOptions.tsconfig`.
+Explicit `tsconfig.json` path override, or `false` to disable alias resolution: see `LinkOptions.tsconfig`.
 
 ###### Inherited from
 
@@ -3323,7 +3319,7 @@ The result of [getEvidenceModel](#getevidencemodel).
 readonly evidence: EvidenceModel;
 ```
 
-The Evidence Model -- read from the cached artifact on a hit, freshly computed on a miss. Identical in shape either way.
+The Evidence Model: read from the cached artifact on a hit, freshly computed on a miss. Identical in shape either way.
 
 ##### missReason
 
@@ -3331,7 +3327,7 @@ The Evidence Model -- read from the cached artifact on a hit, freshly computed o
 readonly missReason: string | undefined;
 ```
 
-Set only when `source === "miss"` -- why the cache wasn't trusted, for a caller that wants to log it. Never a silent fallback.
+Set only when `source === "miss"`: why the cache wasn't trusted, for a caller that wants to log it. Never a silent fallback.
 
 ##### source
 
@@ -3339,7 +3335,7 @@ Set only when `source === "miss"` -- why the cache wasn't trusted, for a caller 
 readonly source: "hit" | "miss";
 ```
 
-`"hit"` -- the persisted artifact's fingerprint matched current source; read from disk, no recompute. `"miss"` -- a real `computeDataArtifacts()` call ran.
+`"hit"`: the persisted artifact's fingerprint matched current source; read from disk, no recompute. `"miss"`: a real `computeDataArtifacts()` call ran.
 
 ***
 
@@ -3371,7 +3367,7 @@ The name this binding is referenced by within the file (`Y` above).
 readonly moduleSpecifier: string;
 ```
 
-The specifier exactly as written (`"..."` above) -- unresolved, relative or bare.
+The specifier exactly as written (`"..."` above): unresolved, relative or bare.
 
 ***
 
@@ -3395,7 +3391,7 @@ The name this binding is referenced by within the consuming file.
 readonly resolution: "resolved" | "unresolved-consumer";
 ```
 
-`"unresolved-consumer"` when the match came from a same-name heuristic (the import specifier didn't resolve directly to the target's own file -- e.g. a barrel re-export) rather than a directly-resolved import.
+`"unresolved-consumer"` when the match came from a same-name heuristic (the import specifier didn't resolve directly to the target's own file: e.g. a barrel re-export) rather than a directly-resolved import.
 
 ##### target
 
@@ -3429,7 +3425,7 @@ readonly file: string;
 
 ### LeastDataInput
 
-What `analyzeLeastData` reads -- the same fields of the Evidence Model a projection over it would.
+What `analyzeLeastData` reads: the same fields of the Evidence Model a projection over it would.
 
 #### Properties
 
@@ -3523,7 +3519,7 @@ The binding name the capability is exported as.
 readonly fields: readonly LifecycleModelField[];
 ```
 
-Only fields with at least one lifecycle field set, sorted by path -- same "only what's relevant" scope the rendered report uses.
+Only fields with at least one lifecycle field set, sorted by path: same "only what's relevant" scope the rendered report uses.
 
 ##### file
 
@@ -3531,7 +3527,7 @@ Only fields with at least one lifecycle field set, sorted by path -- same "only 
 readonly file: string;
 ```
 
-Root-relative POSIX path -- carried through verbatim from `CapabilityNode.file`.
+Root-relative POSIX path: carried through verbatim from `CapabilityNode.file`.
 
 ##### retention
 
@@ -3579,7 +3575,7 @@ Declared ISO-8601 expiry, unparsed and uninterpreted here.
 readonly path: readonly string[];
 ```
 
-The field's path within its capability -- `readonly string[]`, matching every other model's field addressing (never a flat key string).
+The field's path within its capability: `readonly string[]`, matching every other model's field addressing (never a flat key string).
 
 ##### removeBy
 
@@ -3587,7 +3583,7 @@ The field's path within its capability -- `readonly string[]`, matching every ot
 readonly removeBy: string | undefined;
 ```
 
-Declared ISO-8601 removal deadline -- field-level only (see `core/document.ts`).
+Declared ISO-8601 removal deadline: field-level only (see `core/document.ts`).
 
 ##### renamedFrom
 
@@ -3595,7 +3591,7 @@ Declared ISO-8601 removal deadline -- field-level only (see `core/document.ts`).
 readonly renamedFrom: string | undefined;
 ```
 
-The field's previous name, when authored -- what `ChangeModel.renamedFields` correlates against.
+The field's previous name, when authored: what `ChangeModel.renamedFields` correlates against.
 
 ##### retention
 
@@ -3603,7 +3599,7 @@ The field's previous name, when authored -- what `ChangeModel.renamedFields` cor
 readonly retention: string | undefined;
 ```
 
-Declared retention policy -- a policy statement, deliberately independent of `expiresAt`'s temporal constraint (a field can be retained long after its source credential expires, and vice versa).
+Declared retention policy: a policy statement, deliberately independent of `expiresAt`'s temporal constraint (a field can be retained long after its source credential expires, and vice versa).
 
 ***
 
@@ -3619,7 +3615,7 @@ Options for `linkCapabilityFiles`.
 readonly fs: BuildFileSystem;
 ```
 
-The filesystem capability -- `./build` never imports `node:fs` (ADR 0058).
+The filesystem capability: `./build` never imports `node:fs` (ADR 0058).
 
 ##### packages?
 
@@ -3627,7 +3623,7 @@ The filesystem capability -- `./build` never imports `node:fs` (ADR 0058).
 readonly packages?: readonly string[];
 ```
 
-Explicit cross-package schema discovery allowlist -- see `resolve-package-schema.ts`.
+Explicit cross-package schema discovery allowlist: see `resolve-package-schema.ts`.
 
 ##### root
 
@@ -3659,7 +3655,7 @@ Every capability discovered and linked across the project, plus every warning en
 readonly capabilities: readonly DiscoveredCapability[];
 ```
 
-Every discovered, linked capability -- each `file` still ABSOLUTE here, since linking itself does real filesystem work. Relativized once, at model construction, by `buildInventory`.
+Every discovered, linked capability: each `file` still ABSOLUTE here, since linking itself does real filesystem work. Relativized once, at model construction, by `buildInventory`.
 
 ##### root
 
@@ -3667,10 +3663,9 @@ Every discovered, linked capability -- each `file` still ABSOLUTE here, since li
 readonly root: string;
 ```
 
-The discovery root this result was produced against (`LinkOptions.root`),
-carried through so `buildInventory` can publish every `file` root-relative
-without a second, separately-supplied copy of the same fact that could
-disagree with the one linking actually used (OUT-01; see
+The discovery root this result was produced against (`LinkOptions.root`).
+`buildInventory` uses it to publish every `file` root-relative, so no second
+copy of the root can disagree with the one linking used (see
 `display-path.ts`).
 
 ##### warnings
@@ -3711,12 +3706,10 @@ Human-readable description of each individual change (e.g. `"owner changed from 
 readonly fields: ManifestFieldDiff;
 ```
 
-The same field-level diff `changes` describes in prose, as data (EVD-05).
-Added so `ChangeModel`'s rename correlation has something to match
-against without re-parsing a human-readable sentence -- a report
-deriving structure back out of its own prose is exactly the kind of
-fragility this codebase avoids. `changes` is unaffected and still reads
-the same.
+The same field-level diff `changes` describes in prose, as data. It gives
+`ChangeModel`'s rename correlation a value to match, so no report has to
+parse structure back out of its own prose. `changes` is unaffected and
+still reads the same.
 
 ***
 
@@ -3778,7 +3771,7 @@ Field names present in the previous snapshot but not now, sorted.
 
 ### ManifestSnapshot
 
-A persisted, JSON-serializable snapshot of the inventory at one point in time -- see `buildManifestSnapshot`.
+A persisted, JSON-serializable snapshot of the inventory at one point in time: see `buildManifestSnapshot`.
 
 #### Properties
 
@@ -3796,13 +3789,13 @@ Every capability, active or not, at snapshot time.
 readonly snapshotSchemaVersion: 2;
 ```
 
-Bumped only on a breaking change to this snapshot's own shape. Bumped 1 -> 2 by OUT-01: every capability key (`file#exportName`) is now built from a root-relative `file`, so a v1 snapshot's keys can never match a v2 run's.
+Bumped only on a breaking change to this snapshot's own shape. Bumped 1 -> 2: every capability key (`file#exportName`) is now built from a root-relative `file`, so a v1 snapshot's keys can never match a v2 run's.
 
 ***
 
 ### ManifestSnapshotCapability
 
-One capability's diffable shape at snapshot time -- field/operation names only, never their runtime values.
+One capability's diffable shape at snapshot time: field/operation names only, never their runtime values.
 
 #### Properties
 
@@ -3820,7 +3813,9 @@ Whether the capability was active at snapshot time.
 readonly citationSnapshots?: Readonly<Record<string, readonly CitationSnapshotEntry[]>>;
 ```
 
-Per-field citation integrity snapshots for declared `evidence.fields[key].dynamicAccess` entries, keyed by field name -- only present for a field that declares at least one citation that resolved to a real file at snapshot time (see `citation-verification.ts`).
+Per-field citation integrity snapshots for declared `evidence.fields[key].dynamicAccess`
+entries, keyed by field name. Present only for a field with at least one citation that resolved
+to a real file at snapshot time (see `citation-verification.ts`).
 
 ##### exportName
 
@@ -3844,7 +3839,7 @@ Sorted, dot-joined field paths.
 readonly file: string;
 ```
 
-Root-relative POSIX path of the file declaring this capability -- copied verbatim from `CapabilityNode.file` (OUT-01, see `display-path.ts`), which is what makes a committed snapshot diffable between two machines at all.
+Root-relative POSIX path of the file declaring this capability: copied verbatim from `CapabilityNode.file` (see `display-path.ts`), which is what makes a committed snapshot diffable between two machines at all.
 
 ##### getters
 
@@ -3882,7 +3877,7 @@ Sorted subscription names.
 
 ### OpenApiSchemaArtifact
 
-An OpenAPI 3.1 document's `components.schemas` shape -- see this module's own doc comment for what's deliberately not included.
+An OpenAPI 3.1 document's `components.schemas` shape: see this module's own doc comment for what's deliberately not included.
 
 #### Properties
 
@@ -3931,7 +3926,7 @@ readonly openapi: "3.1.0";
 
 ### OperationNames
 
-Static operation names discovered on a `createData(...)` call's config object literal -- names (AST object keys) only, never the operations' own function bodies. `undefined` for a `buildData(...)` call, which never has these sections.
+Static operation names discovered on a `createData(...)` call's config object literal: names (AST object keys) only, never the operations' own function bodies. `undefined` for a `buildData(...)` call, which never has these sections.
 
 #### Properties
 
@@ -3981,7 +3976,7 @@ This operation's own declared documentation, if any.
 readonly endpoints: readonly DataFlowEndpoint[];
 ```
 
-Hoisted from `docs.endpoints` for convenient lookup -- author-declared, never statically verified.
+Hoisted from `docs.endpoints` for convenient lookup: author-declared, never statically verified.
 
 ##### hasOptimistic
 
@@ -3989,7 +3984,7 @@ Hoisted from `docs.endpoints` for convenient lookup -- author-declared, never st
 readonly hasOptimistic: boolean;
 ```
 
-Whether this operation's config object literal declares an `optimistic` key -- structurally always `false` for a getter/subscription.
+Whether this operation's config object literal declares an `optimistic` key: structurally always `false` for a getter/subscription.
 
 ##### hasProcessor
 
@@ -3997,7 +3992,7 @@ Whether this operation's config object literal declares an `optimistic` key -- s
 readonly hasProcessor: boolean;
 ```
 
-Whether this operation's config object literal declares a `processor` key -- a proven, structural presence fact (never an evaluation of what the processor does; see ADR 0050).
+Whether this operation's config object literal declares a `processor` key: a proven, structural presence fact (never an evaluation of what the processor does; see ADR 0050).
 
 ##### kind
 
@@ -4021,7 +4016,7 @@ The operation's key name.
 readonly writes: readonly (readonly string[])[];
 ```
 
-Top-level field paths this operation's statically-extracted `writes` shape covers. Empty when `writes` was absent (on a getter/subscription) or unresolvable -- never guessed at.
+Top-level field paths this operation's statically-extracted `writes` shape covers. Empty when `writes` was absent (on a getter/subscription) or unresolvable: never guessed at.
 
 ***
 
@@ -4109,7 +4104,7 @@ The binding name the capability is exported as.
 readonly file: string;
 ```
 
-Root-relative POSIX path of the file declaring this capability -- carried through verbatim from `CapabilityNode.file` (see `display-path.ts`).
+Root-relative POSIX path of the file declaring this capability: carried through verbatim from `CapabilityNode.file` (see `display-path.ts`).
 
 ***
 
@@ -4139,7 +4134,7 @@ The field's path within its capability.
 
 ### OwnershipMatrixEntry
 
-One owner's row in the ownership matrix -- every capability and field they're accountable for.
+One owner's row in the ownership matrix: every capability and field they're accountable for.
 
 #### Properties
 
@@ -4181,7 +4176,7 @@ The owner's name, or `UNOWNED`.
 readonly entries: readonly OwnershipMatrixEntry[];
 ```
 
-Every owner's row -- see `buildOwnershipMatrix`.
+Every owner's row: see `buildOwnershipMatrix`.
 
 ##### schemaVersion
 
@@ -4237,7 +4232,7 @@ Every top-level import binding found in this file.
 readonly localConsts: ReadonlyMap<string, Expression>;
 ```
 
-Top-level `const X = <expr>` bindings, keyed by name -- for resolving an `identifier`-kind `SchemaRef` within the same file.
+Top-level `const X = <expr>` bindings, keyed by name: for resolving an `identifier`-kind `SchemaRef` within the same file.
 
 ##### warnings
 
@@ -4245,13 +4240,13 @@ Top-level `const X = <expr>` bindings, keyed by name -- for resolving an `identi
 readonly warnings: readonly ParseWarning[];
 ```
 
-Extraction problems encountered while parsing this file -- never thrown, always collected.
+Extraction problems encountered while parsing this file: never thrown, always collected.
 
 ***
 
 ### ParseWarning
 
-A recoverable issue found while statically parsing or linking one capability file -- never fatal, always surfaced to the caller as data.
+A recoverable issue found while statically parsing or linking one capability file: never fatal, always surfaced to the caller as data.
 
 #### Properties
 
@@ -4358,7 +4353,7 @@ One `buildData(...)`/`createData(...)` call found in a file's top-level statemen
 readonly declarationPosition: SourcePosition;
 ```
 
-Position of this call's own declaration site -- always available, since `node` always resolves to a real AST location regardless of how `fields` itself resolves.
+Position of this call's own declaration site: always available, since `node` always resolves to a real AST location regardless of how `fields` itself resolves.
 
 ##### exportName
 
@@ -4366,7 +4361,7 @@ Position of this call's own declaration site -- always available, since `node` a
 readonly exportName: string | undefined;
 ```
 
-The exported binding name (`export const X = buildData(...)`), or `undefined` if unexported -- see the accompanying warning in that case.
+The exported binding name (`export const X = buildData(...)`), or `undefined` if unexported: see the accompanying warning in that case.
 
 ##### fieldPositions
 
@@ -4376,7 +4371,9 @@ readonly fieldPositions:
   | undefined;
 ```
 
-Position of each top-level field's own key, keyed by field name -- only when `fieldsRef.kind === "literal"` (an identifier-resolved `fields` crosses a file boundary this pass doesn't retain AST access to; `undefined` there, never guessed at).
+Position of each top-level field's own key, keyed by field name. Present only when
+`fieldsRef.kind === "literal"`: an identifier-resolved `fields` lives in a file whose AST this
+pass does not keep, so it is `undefined`, never guessed.
 
 ##### fieldsRef
 
@@ -4392,7 +4389,7 @@ How this call's `fields` argument resolves within this one file.
 readonly kind: "buildData" | "createData";
 ```
 
-`"buildData"` or `"createData"` -- which call form this is.
+`"buildData"` or `"createData"`: which call form this is.
 
 ##### node
 
@@ -4440,7 +4437,7 @@ One `documentData(...)` call found in a file's top-level statements.
 readonly docsNode: Expression | undefined;
 ```
 
-The second (`docs`) argument, for later structural inspection -- not evaluated here.
+The second (`docs`) argument, for later structural inspection: not evaluated here.
 
 ##### fieldsRef
 
@@ -4463,11 +4460,11 @@ The full call expression AST node, for later structural inspection.
 ### RawOperationPresence
 
 One operation's statically-detected presence of a `processor`/`optimistic`
-key on its config object literal -- a structural AST-key-presence check,
-the same technique `extractOperationWrites` already uses for `writes`,
-never an evaluation of what the function actually does (ADR 0002 stays
+key on its config object literal. It is a structural AST-key-presence check,
+the same technique `extractOperationWrites` already uses for `writes`.
+It is never an evaluation of what the function actually does. ADR 0002 stays
 fully honored: this can tell a `processor` key exists without knowing
-anything about what it computes). See ADR 0050.
+anything about what it computes. See ADR 0050.
 
 #### Properties
 
@@ -4477,7 +4474,7 @@ anything about what it computes). See ADR 0050.
 readonly hasOptimistic: boolean;
 ```
 
-Whether this operation's config object literal has an `optimistic` key at all -- structurally always `false` for a getter/subscription, since `GetterDefinition`/`SubscriptionDefinition` never declare one.
+Whether this operation's config object literal has an `optimistic` key at all: structurally always `false` for a getter/subscription, since `GetterDefinition`/`SubscriptionDefinition` never declare one.
 
 ##### hasProcessor
 
@@ -4499,7 +4496,9 @@ The operation's key name.
 
 ### RawOperationWrites
 
-One operation's statically-extracted `writes` field-ownership shape -- `true` (owns the whole capability), a nested plain object mirroring `FieldOwnership<T>` (untyped, since this is extracted data), or `undefined` when it couldn't be determined (never guessed at).
+One operation's statically extracted `writes` shape. It is `true` (owns the whole capability), a
+nested plain object mirroring `FieldOwnership<T>` (untyped extracted data), or `undefined` when
+it could not be determined. It is never guessed.
 
 #### Properties
 
@@ -4523,7 +4522,7 @@ The extracted `writes` value, unvalidated against the actual `fields` shape.
 
 ### RenamedField
 
-One added-field/removed-field pair correlated into a single rename via the current declaration's `renamedFrom` (EVD-05).
+One added-field/removed-field pair correlated into a single rename via the current declaration's `renamedFrom`.
 
 #### Properties
 
@@ -4533,7 +4532,7 @@ One added-field/removed-field pair correlated into a single rename via the curre
 readonly capability: string;
 ```
 
-The owning capability's key (`file#exportName`) -- a rename never crosses capabilities.
+The owning capability's key (`file#exportName`): a rename never crosses capabilities.
 
 ##### currentName
 
@@ -4541,7 +4540,7 @@ The owning capability's key (`file#exportName`) -- a rename never crosses capabi
 readonly currentName: string;
 ```
 
-The field's name after the rename -- matches an `added` entry in the same diff.
+The field's name after the rename: matches an `added` entry in the same diff.
 
 ##### previousName
 
@@ -4549,7 +4548,7 @@ The field's name after the rename -- matches an `added` entry in the same diff.
 readonly previousName: string;
 ```
 
-The field's name before the rename -- matches a `removed` entry in that capability's own field diff.
+The field's name before the rename: matches a `removed` entry in that capability's own field diff.
 
 ***
 
@@ -4557,9 +4556,9 @@ The field's name before the rename -- matches a `removed` entry in that capabili
 
 One reportable fact about the discovered capability graph. `severity` is
 assigned by the rule that produces the finding, following the two
-governing invariants in `AGENTS.md`: static analysis never infers a
+governing invariants in `AGENTS.md`. Static analysis never infers a
 relationship from insufficient evidence (an ambiguous case is `info` or
-`indeterminate`-flavored, never guessed at as `error`), and a finding
+`indeterminate`-flavored, never guessed at as `error`). A finding
 built from declared metadata (e.g. a missing `protections` field) never
 claims more than "documented" vs. "not documented."
 
@@ -4606,7 +4605,7 @@ Which kind of fact this finding reports.
 readonly evidence?: readonly EvidenceRef[];
 ```
 
-The records in the Evidence Model this finding rests on -- flow nodes and edges, a policy result, an unknown
+The records in the Evidence Model this finding rests on: flow nodes and edges, a policy result, an unknown
 (ADR 0070). Lets a reader drill from the finding to the analysis behind it, and lets SARIF show the path.
 Absent for findings derived from declared metadata alone.
 
@@ -4616,7 +4615,7 @@ Absent for findings derived from declared metadata alone.
 readonly family: ReportFindingFamily;
 ```
 
-Which analysis pass produced this finding -- see `ReportFindingFamily`.
+Which analysis pass produced this finding: see `ReportFindingFamily`.
 
 ##### field?
 
@@ -4632,7 +4631,7 @@ The field path this finding is about, if any.
 readonly indeterminateSites?: readonly SourceLocation[];
 ```
 
-Every candidate access site a `"FIELD_ACCESS_INDETERMINATE"` finding could actually be about -- populated only for that code. Spans potentially multiple consuming files, so each entry carries its own `file` (`SourceLocation`, not just `SourcePosition`).
+Every candidate access site a `"FIELD_ACCESS_INDETERMINATE"` finding could actually be about: populated only for that code. Spans potentially multiple consuming files, so each entry carries its own `file` (`SourceLocation`, not only `SourcePosition`).
 
 ##### message
 
@@ -4656,7 +4655,7 @@ The operation name this finding is about, if any.
 readonly position?: SourcePosition;
 ```
 
-Position of the declaration site (capability's own call, or field's own key) this finding is anchored to, when one is available -- see ADR 0052. Additive: absent for findings with no single declaration-site anchor (e.g. a usage-scan finding whose subject is a consuming file, not a declaration).
+Position of the declaration site (capability's own call, or field's own key) this finding is anchored to, when one is available: see ADR 0052. Additive: absent for findings with no single declaration-site anchor (e.g. a usage-scan finding whose subject is a consuming file, not a declaration).
 
 ##### severity
 
@@ -4707,12 +4706,11 @@ readonly evidence: EvidenceModel;
 ```
 
 `data-cap`'s Evidence Model (ADR 0050), composed from this same run's
-`inventory`/`usage`/`manifest`/`findings` -- always present, unlike
+`inventory`/`usage`/`manifest`/`findings`: always present, unlike
 `manifest`/`documentation`/`usage`/`flow` above, since composing it
 costs nothing beyond data already held in memory. `--evidence` only
-controls whether it's *additionally written to disk*; every consumer
-of `ReportResult` (including `--json`) already gets the real, composed
-model on every run, whether or not a file was requested for it.
+controls whether it is *also written to disk*. Every consumer of
+`ReportResult`, `--json` included, gets the composed model on every run.
 
 ##### findings
 
@@ -4736,7 +4734,7 @@ Present only when `--flow` was requested.
 readonly hasBlockingErrors: boolean;
 ```
 
-True when `errorCount > 0` -- `generateDataArtifacts` throws instead of writing when this is true.
+True when `errorCount > 0`: `generateDataArtifacts` throws instead of writing when this is true.
 
 ##### infoCount
 
@@ -4760,13 +4758,12 @@ Present only when `--location` was requested.
 readonly usage: GenerateUsageResult;
 ```
 
-Always present (F1): the usage scan (proven consumption positions,
-dependency edges, ownership/abandonment findings) runs on every call
-regardless of which flags were passed -- it's foundational evidence the
-Dependency Model needs, not something only `--ownership`/`--flow`
-consumers should get. `--ownership` only controls whether the rendered
-report additionally gets *written to disk* (`usage.location`) --
-`usage` itself, and its `edges`/`findings`, are always real.
+Always present: the usage scan runs on every call, whatever the flags. It
+yields proven consumption positions, dependency edges and ownership
+findings, which the Dependency Model needs. `--ownership` only controls
+whether the rendered report additionally gets *written to disk*
+(`usage.location`): `usage` itself, and its `edges`/`findings`, are
+always real.
 
 ##### warningCount
 
@@ -4788,11 +4785,11 @@ Parse/link warnings from discovery, never blocking.
 
 ### ResolvedGovernanceValue
 
-One resolved governance value plus its provenance (ADR 0057) -- the one path a
-`FieldNode` consumer reads for a governed property, replacing what used to require
-separately checking a bare resolved property AND `field.docs.X` to get the full
-picture. `declaredOn: undefined` means neither the field nor its capability
-declared a value at all (`value` is then also `undefined`).
+One resolved governance value plus its provenance (ADR 0057). It is the one path a
+`FieldNode` consumer reads for a governed property, instead of checking a resolved
+property and `field.docs.X` separately. `declaredOn: undefined` means neither the
+field nor its capability declared a value at all (`value` is then also
+`undefined`).
 
 #### Type Parameters
 
@@ -4873,7 +4870,7 @@ readonly retention: string;
 readonly packageVersion: string;
 ```
 
-The `data-cap` package version this model describes -- read from `package.json`, the same way `cli/json.ts`'s `TOOL_VERSION` is.
+The `data-cap` package version this model describes: read from `package.json`, the same way `cli/json.ts`'s `TOOL_VERSION` is.
 
 ##### policies
 
@@ -4905,7 +4902,7 @@ One documented runtime guarantee, traced to the ADR that governs it.
 readonly governingAdr: string;
 ```
 
-The ADR number (e.g. `"0024"`) that governs this fact -- always a real file under `specs/decisions/`.
+The ADR number (e.g. `"0024"`) that governs this fact: always a real file under `specs/decisions/`.
 
 ##### key
 
@@ -4935,7 +4932,7 @@ Human-readable statement of the guarantee.
 
 ### SarifLog
 
-A minimal SARIF 2.1.0 log -- only the properties this adapter actually populates, not the full spec surface.
+A minimal SARIF 2.1.0 log: only the properties this adapter actually populates, not the full spec surface.
 
 #### Properties
 
@@ -4983,7 +4980,7 @@ Options for `scanDependencies`.
 readonly fs: BuildFileSystem;
 ```
 
-The filesystem capability -- `./build` never imports `node:fs` (ADR 0058).
+The filesystem capability: `./build` never imports `node:fs` (ADR 0058).
 
 ##### packages?
 
@@ -4991,7 +4988,7 @@ The filesystem capability -- `./build` never imports `node:fs` (ADR 0058).
 readonly packages?: readonly string[];
 ```
 
-Explicit cross-package schema discovery allowlist -- see `resolve-package-schema.ts`.
+Explicit cross-package schema discovery allowlist: see `resolve-package-schema.ts`.
 
 ##### root
 
@@ -5007,7 +5004,7 @@ Directory import specifiers resolve against.
 readonly tsconfig?: string | false;
 ```
 
-Explicit `tsconfig.json` path override, or `false` to disable alias resolution -- same meaning as `LinkOptions.tsconfig`.
+Explicit `tsconfig.json` path override, or `false` to disable alias resolution: same meaning as `LinkOptions.tsconfig`.
 
 ***
 
@@ -5031,7 +5028,7 @@ Every proven consumer relationship found.
 readonly scannedPackages: readonly string[];
 ```
 
-Allow-listed package names whose own directory was actually walked and scanned as potential consumer source -- the honest "what was actually searched" boundary a "field is unconsumed" conclusion is scoped to (ADR 0053). A package listed in `options.packages` but not resolvable (see `warnings`) is never silently counted as scanned.
+Allow-listed package names whose own directory was actually walked and scanned as potential consumer source: the honest "what was actually searched" boundary a "field is unconsumed" conclusion is scoped to (ADR 0053). A package listed in `options.packages` but not resolvable (see `warnings`) is never silently counted as scanned.
 
 ##### warnings
 
@@ -5063,7 +5060,7 @@ Absolute paths of every project file to analyze.
 readonly fs: BuildFileSystem;
 ```
 
-The filesystem capability -- `./build` never imports `node:fs` (ADR 0058).
+The filesystem capability: `./build` never imports `node:fs` (ADR 0058).
 
 ##### inventory
 
@@ -5378,18 +5375,17 @@ type FindingLocation =
 };
 ```
 
-Where a finding points, as a discriminated union -- never a formatted
+Where a finding points, as a discriminated union: never a formatted
 string a consumer would have to parse back apart. Ships with only the
 variants `findings.ts`'s actual emission sites produce today
-(`"capability"`/`"field"`/`"consumer"`/`"none"`); `"operation"` is
+(`"capability"`/`"field"`/`"consumer"`/`"none"`). `"operation"` is
 included because `ReportFinding.operation` is already part of that
-type's public shape, even though no current finding populates it --
+type's public shape, even though no current finding populates it. It is
 trivially reachable the day one does, not a guess about what it would
-look like. `"capability"`/`"field"`/`"operation"` carry an optional
-`position` (ADR 0052) -- the declaration site's own position, when the
-source `ReportFinding.position` was populated; `"consumer"` doesn't,
-since it locates a *consuming file*, which has no single declaration
-position the way a capability/field/operation's own declaration does.
+look like. `"capability"`, `"field"` and `"operation"` carry an optional
+`position` (ADR 0052): the declaration site, when the source
+`ReportFinding.position` was set. `"consumer"` has none, since a *consuming
+file* has no single declaration position.
 
 #### Union Members
 
@@ -5446,11 +5442,11 @@ readonly indeterminateSites?: readonly SourceLocation[];
 ```
 
 Every candidate access site a `"FIELD_ACCESS_INDETERMINATE"` finding
-could actually be about (ADR 0052) -- populated only for that code.
+could actually be about (ADR 0052): populated only for that code.
 Lives here, on the one variant that can carry it, rather than as a
 flat sibling of `location`: a field-level finding is the only kind
 that ever has one. Spans potentially multiple consuming files, so
-each entry carries its own `file` (`SourceLocation`, not just
+each entry carries its own `file` (`SourceLocation`, not only
 `SourcePosition`).
 
 ###### kind
@@ -5553,7 +5549,7 @@ readonly module: string;
 type JsonSchemaLike = Record<string, unknown>;
 ```
 
-A minimal JSON-Schema-ish type descriptor -- only what can be honestly inferred from a literal default value. `{}` (no `type`) means "unrepresentable/unknown," never a guess.
+A minimal JSON-Schema-ish type descriptor: only what can be honestly inferred from a literal default value. `{}` (no `type`) means "unrepresentable/unknown," never a guess.
 
 ***
 
@@ -5570,7 +5566,7 @@ type LiteralEvalResult =
 };
 ```
 
-The result of statically evaluating one AST expression -- `ok: false` when the expression falls outside the allow-listed literal grammar, never guessed at.
+The result of statically evaluating one AST expression: `ok: false` when the expression falls outside the allow-listed literal grammar, never guessed at.
 
 #### Union Members
 
@@ -5627,12 +5623,12 @@ type LocatedFinding = Omit<ReportFinding, FlatLocators> & {
 };
 ```
 
-One finding, with its structured `location` computed -- and *only* that
-(OUT-02). A rule/scan emits a `ReportFinding` carrying the raw, optional
+One finding, with its structured `location` computed, and *only* that.
+A rule/scan emits a `ReportFinding` carrying the raw, optional
 `capability`/`field`/`operation`/`source`/`position`/`indeterminateSites`
-locators (see `findings.ts`); `locationOf` resolves all six into one
-required, structured `location`, and this type then drops them, so a
-consumer has exactly one path to "where does this point" instead of a
+locators (see `findings.ts`). `locationOf` resolves all six into one
+required, structured `location`, and this type then drops them. So a
+consumer has exactly one path to "where does this point". There is no
 structured answer sitting next to six flat ones that say the same thing
 (and could drift apart under a hand-constructed value). Two names for one
 lineage: emit a `ReportFinding`, consume a `LocatedFinding`.
@@ -5756,20 +5752,19 @@ Every kind of fact a static rule or usage-scan/data-flow pass can report.
 type ReportFindingFamily = "governance" | "structural" | "usage" | "citation" | "flow";
 ```
 
-Which analysis pass a finding came out of -- an orthogonal axis to
+Which analysis pass a finding came out of: an orthogonal axis to
 `severity` (how much it matters) and `code` (exactly what it is).
 
 This is what makes the `--strict*` flags' own groupings legible in the
 output rather than only in the orchestrator's source: `--strict-docs`
 escalates `"governance"`/`"structural"`/`"citation"`, `--strict-ownership`
-escalates `"usage"`, `--strict-flow` escalates `"flow"`. A consumer
-filtering a report ("show me only what a usage scan proved") currently has
-to hardcode a list of `ReportFindingCode`s and keep it in sync by hand;
-`family` makes that a real, stable field instead.
+escalates `"usage"`, `--strict-flow` escalates `"flow"`. With `family`, a
+consumer filters a report ("only what a usage scan proved") by one stable
+field, instead of a hand-kept list of `ReportFindingCode`s.
 
 Deliberately assigned at the emission site, never derived from `code` by a
-lookup table: the rule that produces a finding is the only thing that
-actually knows which pass it belongs to, and a table would be a second
+lookup table. The rule that produces a finding is the only thing that
+actually knows which pass it belongs to. A table would be a second
 source of truth to drift out of sync (the same reasoning that keeps
 `severity` at the emission site).
 
@@ -5805,7 +5800,7 @@ type SchemaRef =
 
 How a `buildData`/`createData`/`documentData` call's `fields` reference
 resolves, before any cross-file linking is attempted (that's `link.ts`'s
-job -- this module only ever looks at one file's own AST).
+job: this module only ever looks at one file's own AST).
 
 #### Union Members
 
@@ -5847,7 +5842,7 @@ The object literal AST node itself.
 }
 ```
 
-`fields` is a bare identifier -- resolved against `ParseResult.localConsts`/cross-file imports by `link.ts`.
+`fields` is a bare identifier: resolved against `ParseResult.localConsts`/cross-file imports by `link.ts`.
 
 ###### kind
 
@@ -5902,15 +5897,15 @@ Human-readable explanation of why resolution failed.
 const CAPABILITY_MODEL_SCHEMA_VERSION: 3 = 3;
 ```
 
-Capability Model's schema version (ADR 0050) -- `CapabilityInventory` is
+Capability Model's schema version (ADR 0050): `CapabilityInventory` is
 both. Bumped only when a reader could misinterpret the shape (a field
-changes type/meaning, or is removed), never for a purely additive field --
+changes type/meaning, or is removed), never for a purely additive field:
 the same discipline `MANIFEST_SNAPSHOT_SCHEMA_VERSION`
 (manifest-snapshot.ts) and `JSON_SCHEMA_VERSION` (cli/json.ts) already
 document. Bumped 1 -> 2 by ADR 0057: `CapabilityNode`'s six governance properties
 moved to `docs` only; `FieldNode`'s six moved from a bare value to
-`ResolvedGovernanceValue<T>` (`{value, declaredOn}`). Bumped 2 -> 3 by
-OUT-01: `CapabilityNode.file` is now root-relative, not absolute.
+`ResolvedGovernanceValue<T>` (`{value, declaredOn}`). Bumped 2 -> 3:
+`CapabilityNode.file` is now root-relative, not absolute.
 
 ***
 
@@ -5920,10 +5915,10 @@ OUT-01: `CapabilityNode.file` is now root-relative, not absolute.
 const CHANGE_MODEL_SCHEMA_VERSION: 2 = 2;
 ```
 
-Bump only when a reader could misinterpret the shape -- same discipline
+Bump only when a reader could misinterpret the shape: same discipline
 every other model's schema-version constant already documents. Bumped
-1 -> 2: every capability key is now built from a root-relative `file`
-(OUT-01), and `renamedFields` was added (EVD-05).
+1 -> 2: every capability key is now built from a root-relative `file`,
+and `renamedFields` was added.
 
 ***
 
@@ -5943,7 +5938,8 @@ Bump only when a reader could misinterpret the shape.
 const DEFAULT_EXPIRING_WITHIN_DAYS: 30 = 30;
 ```
 
-How many days out counts as "expiring soon" when a caller doesn't say -- 30, matching env-cap's own `DEFAULT_EXPIRING_WITHIN_DAYS` so a team running both packages gets one answer to "what's expiring soon," not two.
+How many days out counts as "expiring soon" when a caller does not say: 30. It matches env-cap's
+`DEFAULT_EXPIRING_WITHIN_DAYS`, so both packages give one answer.
 
 ***
 
@@ -5973,11 +5969,11 @@ The default `include` glob when none is supplied: every `.ts`/`.tsx` file.
 const DEPENDENCY_MODEL_SCHEMA_VERSION: 3 = 3;
 ```
 
-Bump only when a reader could misinterpret the shape -- same discipline
+Bump only when a reader could misinterpret the shape: same discipline
 `CAPABILITY_MODEL_SCHEMA_VERSION`/`MANIFEST_SNAPSHOT_SCHEMA_VERSION` already
 document. Bumped 1 -> 2 by ADR 0056: `byCapability`/`consumers` removed from
 this model's own stored shape (see `dependency-projections.ts`). Bumped
-2 -> 3 by OUT-01: every edge's `from`/`to.capability.file` is now
+2 -> 3: every edge's `from`/`to.capability.file` is now
 root-relative, not absolute.
 
 ***
@@ -5988,12 +5984,12 @@ root-relative, not absolute.
 const EVIDENCE_MODEL_SCHEMA_VERSION: 3 = 3;
 ```
 
-Bump only when a reader could misinterpret the shape -- same discipline
+Bump only when a reader could misinterpret the shape: same discipline
 every other model's schema-version constant already documents. Bumped
-1 -> 2: `provenance` became required and gained `toolVersion`/`commit`
-(OUT-06), `lifecycle` was added (EVD-05), and `computed` was added
-(OUT-04). Bumped 2 -> 3 (ADR 0070): `flow`, `policy`, `observation` and
-`claims` were added, each with its own `computed` flag. Additive -- a v2
+1 -> 2: `provenance` became required and gained `toolVersion`/`commit`,
+and `lifecycle` and `computed` were added. Bumped 2 -> 3 (ADR 0070):
+`flow`, `policy`, `observation` and
+`claims` were added, each with its own `computed` flag. Additive: a v2
 reader's interpretation of every field it knew is unchanged.
 
 ***
@@ -6004,13 +6000,12 @@ reader's interpretation of every field it knew is unchanged.
 const FINDING_MODEL_SCHEMA_VERSION: 2 = 2;
 ```
 
-Bump only when a reader could misinterpret the shape -- same discipline
+Bump only when a reader could misinterpret the shape: same discipline
 every other model's schema-version constant already documents. Bumped
 1 -> 2: `LocatedFinding` no longer carries the flat `capability`/`field`/
-`operation`/`position`/`indeterminateSites` locators alongside `location`
-(OUT-02), `FindingLocationCapability.file` is now root-relative rather
-than absolute (OUT-01), and every finding now carries a `family`
-(NAM-12).
+`operation`/`position`/`indeterminateSites` locators alongside `location`,
+`FindingLocationCapability.file` is now root-relative rather than
+absolute, and every finding now carries a `family`.
 
 ***
 
@@ -6020,7 +6015,7 @@ than absolute (OUT-01), and every finding now carries a `family`
 const FLOW_MODEL_SCHEMA_VERSION: 1 = 1;
 ```
 
-Bump only when a reader could misinterpret the shape -- same discipline
+Bump only when a reader could misinterpret the shape: same discipline
 every other model's schema-version constant already documents.
 
 ***
@@ -6031,7 +6026,7 @@ every other model's schema-version constant already documents.
 const LIFECYCLE_MODEL_SCHEMA_VERSION: 1 = 1;
 ```
 
-Bump only when a reader could misinterpret the shape -- same discipline every other model's schema-version constant already documents.
+Bump only when a reader could misinterpret the shape: same discipline every other model's schema-version constant already documents.
 
 ***
 
@@ -6051,7 +6046,7 @@ Bump only when a reader could misinterpret the shape.
 const OWNERSHIP_MODEL_SCHEMA_VERSION: 2 = 2;
 ```
 
-Bump only when a reader could misinterpret the shape -- same discipline every other model's schema-version constant already documents. Bumped 1 -> 2 by OUT-01: `OwnershipCapabilityRef.file` is now root-relative, not absolute.
+Bump only when a reader could misinterpret the shape: same discipline every other model's schema-version constant already documents. Bumped 1 -> 2: `OwnershipCapabilityRef.file` is now root-relative, not absolute.
 
 ***
 
@@ -6071,7 +6066,7 @@ Bump only when a reader could misinterpret the shape.
 const RUNTIME_CONTRACT_MODEL_SCHEMA_VERSION: 1 = 1;
 ```
 
-Bump only when a reader could misinterpret the shape -- same discipline every other model's schema-version constant already documents.
+Bump only when a reader could misinterpret the shape: same discipline every other model's schema-version constant already documents.
 
 ***
 
@@ -6081,7 +6076,7 @@ Bump only when a reader could misinterpret the shape -- same discipline every ot
 const UNOWNED: "(unowned)";
 ```
 
-Sentinel bucket for a capability/field with no documented owner at any level --
+Sentinel bucket for a capability/field with no documented owner at any level:
 surfaced explicitly rather than silently omitted, so "nobody owns this" is as
 visible as any real owner.
 
@@ -6098,7 +6093,7 @@ function buildChangeModel(
 ```
 
 Projects a manifest diff (optionally combined with the current run's
-Dependency Model) into `data-cap`'s Change Model. Pure -- takes
+Dependency Model) into `data-cap`'s Change Model. Pure: takes
 already-computed inputs, no filesystem access. `capabilities` is only
 consulted when `dependencyModel` is supplied (it's what
 `groupEdgesByCapability` needs to find a changed capability's current
@@ -6128,9 +6123,9 @@ function buildCitationSnapshots(
 ): Promise<ReadonlyMap<string, Readonly<Record<string, readonly CitationSnapshotEntry[]>>>>;
 ```
 
-Computes this run's citation snapshots -- one `CitationSnapshotEntry` per
+Computes this run's citation snapshots: one `CitationSnapshotEntry` per
 currently-declared citation that resolves to a real, readable file under
-`root`. A capability with no declared citations at all is simply absent
+`root`. A capability with no declared citations at all is absent
 from the returned map (never an empty-object placeholder).
 
 #### Parameters
@@ -6173,8 +6168,8 @@ Builds the Claims Model from the Flow Model and, when supplied, the Policy and O
 function buildDependencyModel(edges): DependencyModel;
 ```
 
-Projects already-scanned `edges` into `data-cap`'s Dependency Model. Pure
--- takes already-computed edges as input, no filesystem access, same
+Projects already-scanned `edges` into `data-cap`'s Dependency Model. Pure:
+takes already-computed edges as input, no filesystem access, same
 contract `buildFlowGraph`/`deriveUsageFindings` already follow.
 
 #### Parameters
@@ -6277,12 +6272,11 @@ Assigns ids, orders deterministically, checks referential integrity, and summari
 function buildInventory(linkResult): CapabilityInventory;
 ```
 
-Builds the `CapabilityInventory` from an already-discovered `LinkResult`
--- the one shared model every report generator (Phase C) reads from, and
-the boundary where each capability's absolute discovery path becomes the
-root-relative `file` every downstream model publishes (OUT-01). The root
-comes from `linkResult.root` -- the same one linking itself resolved
-against -- so the two can never disagree.
+Builds the `CapabilityInventory`, the model every report generator reads,
+from an already-discovered `LinkResult`. Here each capability's absolute
+discovery path becomes the root-relative `file` every later model publishes.
+The root comes from `linkResult.root` (the same one linking itself resolved
+against) so the two can never disagree.
 
 #### Parameters
 
@@ -6306,16 +6300,14 @@ function buildLifecycleModel(
 ): LifecycleModel;
 ```
 
-Projects `inventory` into `data-cap`'s Lifecycle Model. Pure -- a
-projection over an already-built inventory, never a second scan, which is
-why `EvidenceModel` can populate `lifecycle` unconditionally alongside
-`capability` rather than gating it on an opt-in pass the way
-`dependency`/`ownership` are gated on a usage scan.
+Projects `inventory` into `data-cap`'s Lifecycle Model. Pure: a projection
+over an already-built inventory, never a second scan. So `EvidenceModel`
+always fills `lifecycle` next to `capability`, with no opt-in pass like the
+usage scan behind `dependency` and `ownership`.
 
-`now` is a parameter, never `new Date()` read in here: every time-
-sensitive computation in one run must agree on the same instant, and a
-caller-supplied clock is also what makes this testable without freezing
-time globally.
+`now` is a parameter, never `new Date()` read in here. Every time-sensitive
+computation in one run must agree on the same instant, and a caller-supplied
+clock keeps this testable.
 
 #### Parameters
 
@@ -6337,7 +6329,7 @@ time globally.
 function buildManifestSnapshot(inventory): ManifestSnapshot;
 ```
 
-Builds a deterministic snapshot of the current inventory -- every capability included, active or not (so deactivating a capability is a detectable, diffable change, not a silent disappearance).
+Builds a deterministic snapshot of the current inventory: every capability included, active or not (so deactivating a capability is a detectable, diffable change, not a silent disappearance).
 
 #### Parameters
 
@@ -6464,7 +6456,7 @@ function buildRuntimeContractModel(): RuntimeContractModel;
 ```
 
 Builds `data-cap`'s Runtime Contract Model. Takes no consumer-project
-argument -- unlike the other six models, this one describes the
+argument: unlike the other six models, this one describes the
 `data-cap` package itself, and is identical for every caller on the same
 package version.
 
@@ -6522,12 +6514,12 @@ function checkDuplicateEndpoints(inventory): readonly ReportFinding[];
 ```
 
 Flags active capabilities outside a shared `exclusiveGroup` that declare
-an operation endpoint with the same `url` -- `info`, never blocking.
-Presence-only in the same sense as the rest of this vocabulary: this
+an operation endpoint with the same `url`: `info`, never blocking.
+Presence-only in the same sense as the rest of this vocabulary. This
 never proves two capabilities actually fetch the same data at runtime
 (that would require tracing `execute`/`subscribe` bodies, which this
-package never does -- ADR 0002), only that both DECLARE the same URL,
-which is itself a strong, actionable enough signal to surface.
+package never does; ADR 0002). It only shows that both DECLARE the same
+URL, which is itself a strong, actionable enough signal to surface.
 
 #### Parameters
 
@@ -6547,7 +6539,7 @@ readonly [`ReportFinding`](#reportfinding)[]
 function checkExclusiveGroups(inventory): readonly ReportFinding[];
 ```
 
-Flags every `exclusiveGroup` shared by more than one *active* capability -- a hard `error`, since that's exactly what the field means.
+Flags every `exclusiveGroup` shared by more than one *active* capability: a hard `error`, since that's exactly what the field means.
 
 #### Parameters
 
@@ -6567,7 +6559,7 @@ readonly [`ReportFinding`](#reportfinding)[]
 function checkOwnershipAndSensitivity(inventory): readonly ReportFinding[];
 ```
 
-Ownership and sensitivity findings for every capability/field in the inventory -- pure, no file-tree scan.
+Ownership and sensitivity findings for every capability/field in the inventory: pure, no file-tree scan.
 
 #### Parameters
 
@@ -6587,7 +6579,7 @@ readonly [`ReportFinding`](#reportfinding)[]
 function checkStructuralDuplication(inventory): readonly ReportFinding[];
 ```
 
-Flags active capabilities outside a shared `exclusiveGroup` that declare a field with the same path and structural shape -- `info`, never blocking.
+Flags active capabilities outside a shared `exclusiveGroup` that declare a field with the same path and structural shape: `info`, never blocking.
 
 #### Parameters
 
@@ -6610,7 +6602,7 @@ function collectFlowPolicyRules(inventory): readonly FlowPolicyRule[];
 Gathers every active capability's declared `flowPolicy` (ADR 0070) into
 rules for `buildPolicyModel`. Each rule is scoped to the capability that
 declared it (`appliesTo.scope` is its file; `appliesTo.field` is qualified
-with its export name) and its id is namespaced (`exportName/id`), so two
+with its export name). Its id is namespaced (`exportName/id`), so two
 capabilities can reuse a name and a rule can never govern another
 capability's fields.
 
@@ -6634,8 +6626,8 @@ function computeDataArtifacts(options): Promise<ComputedArtifacts>;
 
 Runs discovery, linking, inventory-building, and every requested
 generator, returning the full `ReportResult` and the list of files that
-*would* be written -- without writing anything. The one place both
-`generateDataArtifacts` and `checkArtifacts` (C9) share, so the two can
+*would* be written: without writing anything. The one place both
+`generateDataArtifacts` and `checkArtifacts` share, so the two can
 never compute a different answer for the same inputs.
 
 #### Parameters
@@ -6686,7 +6678,7 @@ function computeSourceFingerprint(options): Promise<string>;
 ```
 
 SHA-256 over `data-cap`'s own installed version plus the path and raw bytes of
-every file a real run would discover -- no parsing, no linking, no AST. Still
+every file a real run would discover: no parsing, no linking, no AST. Still
 pays for the glob walk itself (a fingerprint has to know which files matter),
 but nothing after it.
 
@@ -6714,7 +6706,7 @@ content between two paths, changes the fingerprint.
 function deriveUsageFindings(inventory, edges): readonly ReportFinding[];
 ```
 
-Derives every finding that requires a real usage scan -- as opposed to
+Derives every finding that requires a real usage scan: as opposed to
 `static-rules.ts`'s findings, which need only the inventory. An
 `ABANDONED_CAPABILITY` capability short-circuits its own field/consumer
 findings: with zero edges, there is nothing further to characterize.
@@ -6739,7 +6731,7 @@ function diffManifestSnapshots(previous, current): ManifestChangeReport;
 ```
 
 Diffs two snapshots into a change report. `previous === undefined` means
-no prior snapshot exists (a first run) -- every current capability is
+no prior snapshot exists (a first run): every current capability is
 reported `added`, never guessed to be "unchanged."
 
 #### Parameters
@@ -6781,7 +6773,7 @@ Discovers every file matching `include`/`exclude` under `root`, alphabetically s
 function evaluateLiteral(node): LiteralEvalResult;
 ```
 
-Statically evaluates one AST expression against the allow-listed literal grammar -- never `eval`/`import`/`require`s anything (ADR 0002).
+Statically evaluates one AST expression against the allow-listed literal grammar: never `eval`/`import`/`require`s anything (ADR 0002).
 
 #### Parameters
 
@@ -6820,7 +6812,7 @@ The disclaimer.
 function findManifestExportCollisions(inventory): ReadonlyMap<string, readonly string[]>;
 ```
 
-Export names that collide across two or more different active capability files -- the manifest can't re-export both under the same identifier.
+Export names that collide across two or more different active capability files: the manifest can't re-export both under the same identifier.
 
 #### Parameters
 
@@ -6840,7 +6832,7 @@ Export names that collide across two or more different active capability files -
 function fingerprintPathFor(evidencePath): string;
 ```
 
-The sidecar path paired with an evidence artifact -- `<evidence-path>.fingerprint`.
+The sidecar path paired with an evidence artifact: `<evidence-path>.fingerprint`.
 
 #### Parameters
 
@@ -6926,7 +6918,7 @@ The comment line.
 function generateDocumentation(options): GenerateDocumentationResult;
 ```
 
-Renders the Markdown documentation catalog and runs the ownership/sensitivity static rules (C4).
+Renders the Markdown documentation catalog and runs the ownership/sensitivity static rules.
 
 #### Parameters
 
@@ -6946,7 +6938,7 @@ Renders the Markdown documentation catalog and runs the ownership/sensitivity st
 function generateFlow(options): GenerateFlowResult;
 ```
 
-Builds the flow graph and renders the full Data Flow Diagram + Security Data-Flow Review artifact set (C10).
+Builds the flow graph and renders the full Data Flow Diagram + Security Data-Flow Review artifact set.
 
 #### Parameters
 
@@ -6966,7 +6958,7 @@ Builds the flow graph and renders the full Data Flow Diagram + Security Data-Flo
 function generateManifest(options): GenerateManifestResult;
 ```
 
-Renders the deterministic manifest `.ts` file -- pure, no filesystem access, no diffing (see this module's own doc comment).
+Renders the deterministic manifest `.ts` file: pure, no filesystem access, no diffing (see this module's own doc comment).
 
 #### Parameters
 
@@ -7008,7 +7000,7 @@ function getEvidenceModel(options): Promise<GetEvidenceModelResult>;
 
 Trusts the persisted evidence artifact at `options.location` only when its
 paired `.fingerprint` sidecar matches a freshly (cheaply) computed
-[computeSourceFingerprint](#computesourcefingerprint) -- never on file presence alone, never on
+[computeSourceFingerprint](#computesourcefingerprint): never on file presence alone, never on
 a timestamp. On any mismatch (stale fingerprint, missing/corrupt evidence
 file, no sidecar at all, an unrecognized `schemaVersion`), falls back to a
 real `computeDataArtifacts()` call: never hard-fails, never silently
@@ -7026,9 +7018,9 @@ serves data that might be stale.
 
 #### Remarks
 
-Never writes anything. A cache miss here does not self-heal the cache --
-only an explicit generation run (`generateDataArtifacts()` with
-`evidence`) refreshes the artifact and its fingerprint together, so "when
+Never writes anything. A cache miss here does not self-heal the cache.
+Only an explicit generation run (`generateDataArtifacts()` with
+`evidence`) refreshes the artifact and its fingerprint together. So "when
 was this last regenerated" stays under explicit control rather than
 becoming an implicit side effect of a read. Two callers hitting the same
 stale cache both recompute independently; neither one's recompute changes
@@ -7042,7 +7034,7 @@ what the other reads.
 function getStaticPropertyName(name): string | undefined;
 ```
 
-Reads a property name statically (identifier, string literal, or numeric literal) -- a computed key (e.g. `[expr]`) resolves to `undefined` rather than being guessed at.
+Reads a property name statically (identifier, string literal, or numeric literal): a computed key (e.g. `[expr]`) resolves to `undefined` rather than being guessed at.
 
 #### Parameters
 
@@ -7062,7 +7054,7 @@ Reads a property name statically (identifier, string literal, or numeric literal
 function groupEdgesByCapability(capabilities, edges): readonly DependencyModelCapabilityEdges[];
 ```
 
-Groups `edges` by the capability each targets -- every capability in
+Groups `edges` by the capability each targets: every capability in
 `capabilities`, including one with zero edges (an `ABANDONED_CAPABILITY`
 candidate, per `usage-report.ts`), sorted by file then exportName. Takes
 `capabilities` as well as `edges`, unlike `groupEdgesByConsumer`: a
@@ -7088,7 +7080,7 @@ readonly [`DependencyModelCapabilityEdges`](#dependencymodelcapabilityedges)[]
 function groupEdgesByConsumer(edges): readonly DependencyModelConsumer[];
 ```
 
-Groups `edges` by the consuming file each originates from -- the inverse
+Groups `edges` by the consuming file each originates from: the inverse
 of `groupEdgesByCapability`. Only files with at least one edge appear,
 sorted by file. Takes `edges` alone: unlike a capability, a file is only
 ever known to this projection because it produced at least one edge.
@@ -7127,8 +7119,8 @@ Whether `content` carries a [generatedBanner](#generatedbanner)-produced marker,
 
 #### Remarks
 
-Deliberately not a bare `content.startsWith(generatedBanner(...))`: a shebang, a `"use strict"` pragma, or a
-license header pushes a real banner off line one, and a stricter check would then read a genuinely
+Deliberately not a bare `content.startsWith(generatedBanner(...))`. A shebang, a `"use strict"` pragma, or a
+license header pushes a real banner off line one. A stricter check would then read a genuinely
 generated file as hand-written, which the dependency scan would take as "a real consumer imports this" and
 so permanently mask an abandoned one. The marker is looked for across the first 20 non-empty lines instead,
 which clears every realistic preamble without scanning a whole file.
@@ -7185,7 +7177,7 @@ function parseCapabilityFile(filePath, sourceText): ParseResult;
 Parses one file's top-level statements only (matching `buildData`'s/
 `createData`'s own intended usage: called once, at module scope, and
 exported). Nested/conditional/dynamically-constructed calls are not this
-module's concern -- they cannot be statically discovered and are simply
+module's concern: they cannot be statically discovered and are
 never found, never guessed at.
 
 #### Parameters
@@ -7228,7 +7220,7 @@ One finding per violated or indeterminate result; satisfied results produce none
 function positionOf(sourceFile, node): SourcePosition;
 ```
 
-The one place a `SourcePosition` is ever computed from a raw AST node -- every caller reuses this instead of hand-rolling `getLineAndCharacterOfPosition` arithmetic.
+The one place a `SourcePosition` is ever computed from a raw AST node: every caller reuses this instead of hand-rolling `getLineAndCharacterOfPosition` arithmetic.
 
 #### Parameters
 
@@ -7249,10 +7241,9 @@ The one place a `SourcePosition` is ever computed from a raw AST node -- every c
 function projectAuditEvidence(evidence): ProjectAuditEvidenceOutput;
 ```
 
-Data Audit Evidence / Data Assurance Report / Data Governance Report
-(reframed): a rollup of ownership and finding counts plus provenance --
-never a governance verdict or a risk score, only the counted facts a
-consumer's own policy can be evaluated against.
+Data Audit Evidence (also called a Data Assurance or Data Governance Report):
+a rollup of ownership and finding counts, plus provenance. It gives counted
+facts for a consumer's own policy, never a verdict or a risk score.
 
 The clearest case for the per-field schema: `ownedCapabilities` is derived
 from Ownership Model alone, `findingsBySeverity` from Finding Model alone,
@@ -7297,7 +7288,7 @@ Data Classification Evidence: every capability/field with a declared `sensitivit
 function projectComplianceEvidence(evidence): ProjectComplianceEvidenceOutput;
 ```
 
-Data Compliance Evidence: every capability's declared `metadata` bag, unvalidated -- `data-cap` asserts no regime applies.
+Data Compliance Evidence: every capability's declared `metadata` bag, unvalidated; `data-cap` asserts no regime applies.
 
 #### Parameters
 
@@ -7317,7 +7308,7 @@ Data Compliance Evidence: every capability's declared `metadata` bag, unvalidate
 function projectFields(inventory): readonly WithCapability<FieldNode>[];
 ```
 
-Every field across every capability -- the Field Inventory Report.
+Every field across every capability: the Field Inventory Report.
 
 #### Parameters
 
@@ -7337,7 +7328,7 @@ readonly [`WithCapability`](#withcapability)\<[`FieldNode`](#fieldnode)\>[]
 function projectGetters(inventory): readonly WithCapability<OperationNode>[];
 ```
 
-Every getter across every capability -- the Getter Report.
+Every getter across every capability: the Getter Report.
 
 #### Parameters
 
@@ -7357,7 +7348,7 @@ readonly [`WithCapability`](#withcapability)\<[`OperationNode`](#operationnode)\
 function projectMutators(inventory): readonly WithCapability<OperationNode>[];
 ```
 
-Every mutator across every capability -- the Mutator Report.
+Every mutator across every capability: the Mutator Report.
 
 #### Parameters
 
@@ -7377,7 +7368,7 @@ readonly [`WithCapability`](#withcapability)\<[`OperationNode`](#operationnode)\
 function projectOperationInventory(inventory): readonly WithCapability<OperationNode>[];
 ```
 
-Every getter, mutator, and subscription across every capability -- the Operation Inventory Report.
+Every getter, mutator, and subscription across every capability: the Operation Inventory Report.
 
 #### Parameters
 
@@ -7437,7 +7428,7 @@ Data Retention Evidence: every capability/field with a declared `retention` poli
 function projectSubscriptions(inventory): readonly WithCapability<OperationNode>[];
 ```
 
-Every subscription across every capability -- the Subscription Report.
+Every subscription across every capability: the Subscription Report.
 
 #### Parameters
 
@@ -7485,10 +7476,9 @@ function renderDependencyGraphDot(capabilities, model): string;
 
 Renders Dependency Model as a DOT digraph: one node per capability, one
 node per consuming file, edges labeled by relationship. `capabilities`
-supplies the full capability list -- since `model.edges` alone can never
-reveal a capability with zero edges, this is what lets a genuinely
-unconsumed capability still appear as a node (see `groupEdgesByCapability`,
-ADR 0056).
+supplies the full capability list. `model.edges` alone never shows a
+capability with zero edges, so this list is what puts an unconsumed
+capability in the graph (see `groupEdgesByCapability`, ADR 0056).
 
 #### Parameters
 
@@ -7518,10 +7508,10 @@ function renderDocumentation(
 
 Renders the full Markdown documentation catalog. `root` is the discovery
 root every rendered path displays relative to (see `display-path.ts`).
-`changes` is optional -- omit it (or pass `undefined`) when there's no
-previous snapshot to compare against. `edges` is likewise optional: it's
+`changes` is optional: omit it (or pass `undefined`) when there's no
+previous snapshot to compare against. `edges` is likewise optional. It's
 only ever available when the caller also ran the (more expensive) usage
-scan `--ownership`/`--flow` trigger -- `--docs` requested alone renders
+scan `--ownership`/`--flow` trigger. `--docs` requested alone renders
 exactly as before, with the "Consumed at" column showing "(not scanned)"
 rather than a false "(none found)". `evidencePath` names this same run's
 own `--evidence` output, when it requested one, in the banner note.
@@ -7556,28 +7546,22 @@ function renderManifest(
 Renders the manifest source text for every active capability in
 `inventory`, importing each from `outputPath`'s own directory. Two
 capabilities exporting the same identifier name from different files
-produce a real name collision in the generated output -- surfaced to the
-caller as a `ReportFinding` by `generate-manifest.ts`, not silently
-renamed here (renaming would make the manifest's export names diverge
-from the capability's own declared name, which is worse).
+produce a real name collision in the generated output. It is surfaced to
+the caller as a `ReportFinding` by `generate-manifest.ts`, not silently
+renamed here. Renaming would make the manifest's export names diverge
+from the capability's own declared name, which is worse.
 
-This is the trickiest consumer of OUT-01's root-relative
+This is the trickiest consumer of the root-relative
 `CapabilityNode.file`: an import specifier is relative to the *output
 file's own directory*, not to `root`, so neither path can be used
-directly. Both sides are lifted to absolute first (`outputPath` already
-is; `capability.file` via `absolutePathFrom(root, ...)`) and only then
-related to each other -- which also keeps a `--package`-discovered
-capability living outside `root` working exactly as before, since
-`absolutePathFrom` returns such a path unchanged.
+directly. Both sides are made absolute first (`capability.file` through
+`absolutePathFrom(root, ...)`), then related to each other. A
+`--package`-discovered capability outside `root` still works, since
+`absolutePathFrom` returns its path unchanged.
 
-Emitted as `import` + a single `export {...}`, not as `export {...} from`:
-a re-export forwards a binding without introducing a local one, so
-`manifest`'s own array literal below would reference names that don't
-exist in the emitted module's scope. That was invisible while the
-conventional output path (`docs/`) sat outside every example's own
-`tsconfig` `include`; moving it to `src/generated/` (OUT-03) put the
-generated file under a real type-check for the first time and surfaced it
-immediately.
+Emitted as `import` plus one `export {...}`, not as `export {...} from`. A
+re-export creates no local binding, so the `manifest` array literal below
+would name identifiers missing from the module's scope.
 
 #### Parameters
 
@@ -7738,11 +7722,11 @@ function scanFileForUsage(
 ): readonly DependencyEdge[];
 ```
 
-Walks `sourceFile`'s full AST (not just top-level statements, unlike
+Walks `sourceFile`'s full AST (not only top-level statements, unlike
 `parseCapabilityFile`) for every reference to a local name in `matches`,
 producing one `DependencyEdge` per recognized access pattern found. A
 binding's own import declaration is walked like any other node but produces
-no edge -- an import-position identifier is never in an access expression.
+no edge: an import-position identifier is never in an access expression.
 
 #### Parameters
 
@@ -7789,19 +7773,17 @@ function verifyDynamicAccessCitations(
 ): Promise<readonly ReportFinding[]>;
 ```
 
-Re-checks every currently-declared citation against `previousSnapshot`.
-Two independent failure modes, both real findings, never silently
-folded into one: a citation whose file no longer resolves at all
-(`MISSING_DYNAMIC_ACCESS_CITATION`), and one that resolves but whose
-content hash no longer matches what was recorded last run
-(`STALE_DYNAMIC_ACCESS_CITATION`). A citation with no prior recorded
-hash (first time seen, or `previousSnapshot` is `undefined` -- a first
-run) is never flagged either way -- there is nothing to have gone stale
-relative to yet, and "missing" only means the file doesn't currently
-resolve, not that it used to.
+Re-checks every currently-declared citation against `previousSnapshot`. Two
+separate failure modes, each its own finding. A citation whose file no
+longer resolves is `MISSING_DYNAMIC_ACCESS_CITATION`. One whose content hash
+differs from the last recorded run is `STALE_DYNAMIC_ACCESS_CITATION`. A
+citation with no prior recorded hash (first time seen, or `previousSnapshot`
+is `undefined` on a first run) is never flagged either way. There is nothing
+to have gone stale relative to yet, and "missing" only means the file
+doesn't currently resolve, not that it used to.
 
 Deliberately additive to, never a replacement for,
-`FIELD_DYNAMIC_ACCESS_DECLARED` (`usage-report.ts`) -- that finding
+`FIELD_DYNAMIC_ACCESS_DECLARED` (`usage-report.ts`): that finding
 states what was *asserted*; these state the assertion's own *current
 integrity*. Both can legitimately appear together for the same field.
 

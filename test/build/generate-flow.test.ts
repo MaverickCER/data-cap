@@ -334,7 +334,7 @@ describe("generateFlow", () => {
 
         # Data Flow Diagram & Security Data-Flow Review
 
-        This report cannot trace data *through* a third-party system once it reaches an external-service/api endpoint -- what that system does with it afterward is unknowable to a static scan of one repository. It does not assign a regulatory classification, since that's jurisdiction-specific; record it in a capability's \`metadata\` instead (see \`specs/decisions/0049-capability-metadata-vocabulary.md\`).
+        This report cannot trace data *through* a third-party system once it reaches an external-service/api endpoint. What that system does with it afterward is unknowable to a static scan of one repository. It does not assign a regulatory classification, since that's jurisdiction-specific; record it in a capability's \`metadata\` instead (see \`specs/decisions/0049-capability-metadata-vocabulary.md\`).
 
         ## Security Data-Flow Review
 
@@ -344,10 +344,10 @@ describe("generateFlow", () => {
 
         ### Warnings
 
-        - **SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY**: Field "ssn" on "userCapability" is sensitivity "restricted" and has a declared endpoint crossing an external-service/api/queue boundary -- verify this is intentional and adequately protected.
-        - **SENSITIVE_FIELD_ENDPOINT_MISSING_HANDLING**: Field "ssn" on "userCapability" is sensitivity "restricted" and has 1 declared boundary-crossing endpoint(s) with no declared "handling" -- state how this field's data is protected at each crossing (plaintext/masked/redacted/hashed/encrypted).
-        - **SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY**: Field "email" on "userCapability" is sensitivity "confidential" and has a declared endpoint crossing an external-service/api/queue boundary -- verify this is intentional and adequately protected.
-        - **SENSITIVE_FIELD_ENDPOINT_MISSING_HANDLING**: Field "email" on "userCapability" is sensitivity "confidential" and has 1 declared boundary-crossing endpoint(s) with no declared "handling" -- state how this field's data is protected at each crossing (plaintext/masked/redacted/hashed/encrypted).
+        - **SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY**: Field "ssn" on "userCapability" is sensitivity "restricted" and has a declared endpoint crossing an external-service/api/queue boundary. Verify this is intentional and adequately protected.
+        - **SENSITIVE_FIELD_ENDPOINT_MISSING_HANDLING**: Field "ssn" on "userCapability" is sensitivity "restricted" and has 1 declared boundary-crossing endpoint(s) with no declared "handling". State how this field's data is protected at each crossing (plaintext/masked/redacted/hashed/encrypted).
+        - **SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY**: Field "email" on "userCapability" is sensitivity "confidential" and has a declared endpoint crossing an external-service/api/queue boundary. Verify this is intentional and adequately protected.
+        - **SENSITIVE_FIELD_ENDPOINT_MISSING_HANDLING**: Field "email" on "userCapability" is sensitivity "confidential" and has 1 declared boundary-crossing endpoint(s) with no declared "handling". State how this field's data is protected at each crossing (plaintext/masked/redacted/hashed/encrypted).
 
         ### Informational
 
@@ -356,7 +356,7 @@ describe("generateFlow", () => {
         ## System overview diagram
 
         \`\`\`mermaid
-        %% System overview -- declared endpoints and proven consumers per capability
+        %% System overview: declared endpoints and proven consumers per capability
         flowchart TB
           subgraph boundary["Trust Boundary (proven, in-repo)"]
             n0(["userCapability"])

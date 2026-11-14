@@ -2,15 +2,15 @@
  * Client-side pattern: optimistic UI. `addPendingTransition` makes a
  * mutation's not-yet-confirmed value visible immediately (`FieldInfo.
  * optimistic: true`); `removePendingTransition` removes it once the
- * operation settles, success or failure -- there is no automatic rollback,
+ * operation settles, success or failure; there is no automatic rollback,
  * and no invented conflict-resolution policy. `project()` always folds
  * every still-pending transition onto whatever is CURRENTLY authoritative,
- * never onto a stale snapshot captured when the mutation started -- that is
+ * never onto a stale snapshot captured when the mutation started: that is
  * what makes the concurrency scenario below correct.
  *
  * Patches are absolute value replacements, never deltas: `{ count: n + 1 }`
  * always means "set count to exactly n + 1", computed from whatever the
- * caller read at the time it built the patch -- not "increment by 1"
+ * caller read at the time it built the patch; not "increment by 1"
  * applied later. An optimizer that wants a delta-like effect must read the
  * current visible value itself and compute the new absolute value.
  */
@@ -46,7 +46,7 @@ assert.equal(
 assert.equal(store.getSnapshot().info.user?.optimistic, true)
 
 // B: an optimistic count increment (mutation B owns `count`), computed from
-// the CURRENT visible value -- not a delta the framework applies for you.
+// the CURRENT visible value; not a delta the framework applies for you.
 const currentCount = store.getSnapshot().fields.count
 const optimisticCount = currentCount + 1
 const transitionB = store.addPendingTransition(
@@ -62,7 +62,7 @@ assert.equal(
 )
 
 // B completes first. Its own commit always folds onto CURRENT authoritative
-// state (here, unchanged since buildData()) -- never a snapshot captured
+// state (here, unchanged since buildData()): never a snapshot captured
 // when B started.
 store.commitAuthoritative(
   { count: optimisticCount },
@@ -79,7 +79,7 @@ assert.equal(
 )
 assert.equal(afterB.info.user?.optimistic, true, "A is still pending")
 
-// A completes second, regardless of start order -- completion order, not
+// A completes second, regardless of start order: completion order, not
 // start order, is what determines commit order.
 store.commitAuthoritative(
   { user: { email: optimisticEmail } },
@@ -102,7 +102,7 @@ const transitionC = store.addPendingTransition(
 )
 assert.equal(store.getSnapshot().fields.nickname, rejectedNickname)
 
-// The operation fails. There is no special "rollback" API -- removing the
+// The operation fails. There is no special "rollback" API: removing the
 // pending transition is the entire mechanism. The next project() fold
 // simply omits it, so the visible value reverts to whatever is still
 // authoritative (the original default, since nothing ever committed it).

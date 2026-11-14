@@ -23,7 +23,7 @@ const createRule = RuleCreator(
 /** Options for `no-raw-external-io`. */
 export interface RuleOptions {
   /**
-   * Glob-array of files this rule doesn't apply to -- for a consuming
+   * Glob-array of files this rule doesn't apply to: for a consuming
    * project's own transport/client layer, a test harness, or a script that
    * legitimately talks to the network outside any capability. Empty by
    * default: `data-cap` never guesses at which of a project's files are
@@ -36,7 +36,7 @@ export interface RuleOptions {
    * `execute`/`subscribe`. Defaults to `["fetch"]`; extend it with whatever
    * a project's own environment provides (`"XMLHttpRequest"`,
    * `"WebSocket"`, `"EventSource"`). Deliberately a list of *global*
-   * identifiers rather than a set of special-cased HTTP client libraries --
+   * identifiers rather than a set of special-cased HTTP client libraries:
    * this rule never learns about axios, ky, got, or any other package by
    * name.
    */
@@ -62,7 +62,7 @@ function isBareGlobal(
   node: TSESTree.Identifier,
 ): boolean {
   // The innermost scope declaring the name decides. A real global (`fetch`, `XMLHttpRequest`) appears in
-  // the global scope's variable list with zero definitions -- nothing in this program declared it.
+  // the global scope's variable list with zero definitions: nothing in this program declared it.
   // Anything with a definition was declared or imported here. A name no scope lists is a bare global too.
   const variable = scopeChain(sourceCode.getScope(node))
     .flatMap((scope) => scope.variables)
@@ -76,20 +76,20 @@ function isBareGlobal(
  * `getters`/`mutators`/`subscriptions` section.
  *
  * Walks outward from `node` and requires, in this order: a function literal
- * that is the *value* of an `execute`/`subscribe` property, and -- further
- * up, still inside the same walk -- a `getters`/`mutators`/`subscriptions`
+ * that is the *value* of an `execute`/`subscribe` property, and (further
+ * up, still inside the same walk) a `getters`/`mutators`/`subscriptions`
  * property, and then the enclosing capability call itself. Requiring all
- * three (rather than just "inside a capability call") is what keeps a
+ * three (rather than only "inside a capability call") is what keeps a
  * `fetch` in a `processor`, an `optimistic`, or a `documentData` docs
  * literal from being silently exempted: only the two properties that are
  * *supposed* to perform I/O are.
  *
  * Nothing here reads the function's body. The exemption is granted by
  * position alone, the moment a call is lexically inside an `execute`/
- * `subscribe` -- never by cross-referencing a URL against declared endpoint
- * metadata, which would make this rule depend on documentation being
- * accurate and would violate the invariant that an operation's body stays
- * opaque to static analysis (`AGENTS.md` invariant 6).
+ * `subscribe`. It is never granted by cross-referencing a URL against
+ * declared endpoint metadata. That would make this rule depend on
+ * documentation being accurate. It would also violate the invariant that an
+ * operation's body stays opaque to static analysis (`AGENTS.md` invariant 6).
  */
 function isInsideOperationBody(node: TSESTree.Node): boolean {
   let sawOperationBody = false
@@ -111,7 +111,7 @@ function isInsideOperationBody(node: TSESTree.Node): boolean {
   return false
 }
 
-/** Whether this property's value is an inline function literal -- `execute: someModuleLevelFn` is a reference, and its referent's own body is a separate lexical scope this rule never treats as exempt. */
+/** Whether this property's value is an inline function literal: `execute: someModuleLevelFn` is a reference, and its referent's own body is a separate lexical scope this rule never treats as exempt. */
 function isFunctionValueOf(property: TSESTree.Property): boolean {
   return (
     property.value.type === AST_NODE_TYPES.ArrowFunctionExpression ||
@@ -129,20 +129,19 @@ const DEFAULT_RULE_OPTIONS = [{ allow: [] as string[], functions: DEFAULT_FUNCTI
 const LEGACY_DEFAULT_OPTIONS = { defaultOptions: DEFAULT_RULE_OPTIONS }
 
 /**
- * Flags a direct call to a global I/O function (`fetch` by default) written
- * anywhere other than inside a capability's own `execute`/`subscribe`, so
- * external data access always goes through a declared, analyzable
- * capability operation instead of being scattered through application code.
+ * Flags a direct call to a global I/O function (`fetch` by default) outside a
+ * capability's own `execute` or `subscribe`. External data access then goes
+ * through a declared capability operation the build pass can read.
  *
  * @remarks
  * **Exact matching rule, deliberately kept purely structural.** A
  * `fetch(...)` is exempt the moment it is lexically inside an
  * `execute`/`subscribe` function of an operation declared in a
  * `buildData`/`createData` call's `getters`/`mutators`/`subscriptions`
- * section -- position alone. There is no cross-referencing against declared
+ * section: position alone. There is no cross-referencing against declared
  * `endpoints` metadata, no URL matching, and no inspection of what the
- * operation's body actually does: an operation body is opaque to `data-cap`'s
- * static analysis by design (`AGENTS.md` invariant 6), and a rule that peeked
+ * operation's body actually does. An operation body is opaque to `data-cap`'s
+ * static analysis by design (`AGENTS.md` invariant 6). A rule that peeked
  * inside one would be the first thing in this package to break that.
  *
  * The consequence is worth stating plainly: this rule proves *where* a call
@@ -173,7 +172,7 @@ export const noRawExternalIo = createRule<[RuleOptions], "noRawExternalIo">({
     ],
     messages: {
       noRawExternalIo:
-        "\"{{name}}\" is called outside any capability's execute/subscribe, so this data access is invisible to data-cap's analysis -- no owner, no sensitivity, no declared endpoint, and nothing for the generated reports to describe. Move it into a getter/mutator/subscription's own execute/subscribe (see GUIDE.md's ESLint plugin section for the allow-list escape hatch for a project's own transport layer).",
+        "\"{{name}}\" is called outside any capability's execute/subscribe, so this data access is invisible to data-cap's analysis: no owner, no sensitivity, no declared endpoint, and nothing for the generated reports to describe. Move it into a getter/mutator/subscription's own execute/subscribe (see GUIDE.md's ESLint plugin section for the allow-list escape hatch for a project's own transport layer).",
     },
     defaultOptions: [{ allow: [], functions: DEFAULT_FUNCTIONS }],
   },
@@ -186,7 +185,7 @@ export const noRawExternalIo = createRule<[RuleOptions], "noRawExternalIo">({
     const flagged = new Set(options.functions ?? DEFAULT_FUNCTIONS)
 
     // `NewExpression` as well as `CallExpression`: `XMLHttpRequest` and
-    // `WebSocket` -- the natural entries beyond the default -- are only ever
+    // `WebSocket` (the natural entries beyond the default) are only ever
     // reached through `new`, so a rule that only saw plain calls would
     // silently do nothing for them while still accepting them as options. The
     // `Identifier.callee` selectors mean every node reaching `check` already

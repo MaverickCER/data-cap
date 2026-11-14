@@ -2,7 +2,7 @@
 digraph "data-flow" {
   rankdir=LR;
   labelloc=t;
-  label="Data flow -- NOT complete: parts could not be followed, so a missing flow is not proof of absence";
+  label="Data flow: NOT complete (parts could not be followed, so a missing flow is not proof of absence)";
   node [fontname=Helvetica];
   edge [fontname=Helvetica];
   "n0" [id="boundary:boundary#postgres:users", label="database: postgres:users", shape=cylinder, color=blue];

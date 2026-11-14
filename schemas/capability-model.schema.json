@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://maverickcer.github.io/data-cap/schema/capability-model.schema.json",
   "title": "data-cap Capability Model",
-  "description": "Canonical, versioned projection of every discovered capability's fields and operations (see ADR 0050). Generated from src/build/inventory.ts's CapabilityInventory type -- never hand-authored.",
+  "description": "Canonical, versioned projection of every discovered capability's fields and operations (see ADR 0050). Generated from src/build/inventory.ts's CapabilityInventory type. Never hand-authored.",
   "$ref": "#/definitions/CapabilityInventory",
   "definitions": {
     "CapabilityInventory": {
@@ -25,7 +25,7 @@
           "items": {
             "$ref": "#/definitions/ParseWarning"
           },
-          "description": "Parse/link warnings carried through from the discovery/linking pass that produced this inventory, each `file` root-relative like every other path this model publishes (OUT-01)."
+          "description": "Parse/link warnings carried through from the discovery/linking pass that produced this inventory, each `file` root-relative like every other path this model publishes."
         }
       },
       "required": [
@@ -34,14 +34,14 @@
         "warnings"
       ],
       "additionalProperties": false,
-      "description": "The one authoritative model every report generator reads from -- see `buildInventory`. This type IS `data-cap`'s Capability Model (ADR 0050), not a separate thing that produces one: `CAPABILITY_MODEL_SCHEMA_VERSION` above versions this exact interface. ADR 0050 deliberately kept the `CapabilityInventory`/`buildInventory` names rather than introducing a `CapabilityModel`/`buildCapabilityModel` wrapper, since this type was already the intended public model before that ADR existed -- a rename would duplicate an already-correct, already-public shape for no gain. A canonical, versioned, JSON-serializable projection of every discovered capability's fields and operations, active or not."
+      "description": "The one authoritative model every report generator reads from: see `buildInventory`. This type IS `data-cap`'s Capability Model (ADR 0050), not a separate thing that produces one: `CAPABILITY_MODEL_SCHEMA_VERSION` above versions this exact interface. ADR 0050 kept the `CapabilityInventory` and `buildInventory` names rather than add a `CapabilityModel` wrapper. This type was already the public model, so a rename would only duplicate it. A canonical, versioned, JSON-serializable projection of every discovered capability's fields and operations, active or not."
     },
     "CapabilityNode": {
       "type": "object",
       "properties": {
         "file": {
           "type": "string",
-          "description": "Root-relative POSIX path of the file declaring this capability -- the one place an absolute discovery path is converted for publication (OUT-01, see `display-path.ts`). Every downstream model that carries a capability's `file` (Ownership, Finding, Dependency, Manifest Snapshot) copies this value rather than re-deriving it, so there is exactly one conversion point. Re-derive a real path with `absolutePathFrom(root, file)` when actual filesystem/import work needs one."
+          "description": "Root-relative POSIX path of the file declaring this capability: the one place an absolute discovery path is converted for publication (see `display-path.ts`). Every downstream model that carries a capability's `file` (Ownership, Finding, Dependency, Manifest Snapshot) copies this value rather than re-deriving it, so there is exactly one conversion point. Re-derive a real path with `absolutePathFrom(root, file)` when actual filesystem/import work needs one."
         },
         "exportName": {
           "type": "string",
@@ -53,11 +53,11 @@
             "buildData",
             "createData"
           ],
-          "description": "`\"buildData\"` or `\"createData\"` -- which call form declared this capability."
+          "description": "`\"buildData\"` or `\"createData\"`: which call form declared this capability."
         },
         "docs": {
           "$ref": "#/definitions/LooseCapabilityDocs",
-          "description": "This capability's own declared documentation, if any -- the single path for `owner`/`sensitivity`/`purpose`/`legalBasis`/`dataResidency`/`auditRequired` (ADR 0057): a capability has nothing above it to resolve against, so a separate top-level \"resolved\" property would only ever duplicate `docs.X` verbatim."
+          "description": "This capability's own declared documentation, if any. It is the single path for `owner`, `sensitivity`, `purpose`, `legalBasis`, `dataResidency` and `auditRequired` (ADR 0057). A capability has nothing above it to resolve against, so a separate \"resolved\" property would only copy `docs.X`."
         },
         "active": {
           "type": "boolean",
@@ -69,7 +69,7 @@
         },
         "declarationPosition": {
           "$ref": "#/definitions/SourcePosition",
-          "description": "Position of this capability's own `buildData`/`createData` call site -- always available (ADR 0052)."
+          "description": "Position of this capability's own `buildData`/`createData` call site: always available (ADR 0052)."
         },
         "fields": {
           "type": "array",
@@ -156,7 +156,7 @@
         },
         "name": {
           "type": "string",
-          "description": "Display name -- falls back to the export/binding name when omitted."
+          "description": "Display name: falls back to the export/binding name when omitted."
         },
         "description": {
           "type": "string",
@@ -168,7 +168,7 @@
         },
         "category": {
           "type": "string",
-          "description": "Free-form classification -- never validated."
+          "description": "Free-form classification: never validated."
         },
         "exclusiveGroup": {
           "type": "string",
@@ -180,23 +180,23 @@
         },
         "sensitivity": {
           "type": "string",
-          "description": "Data classification. Standard vocabulary: `\"public\"` / `\"internal\"` / `\"confidential\"` / `\"restricted\"` (ascending) -- custom values are allowed but flagged as non-standard, never blocking."
+          "description": "Data classification. Standard vocabulary: `\"public\"` / `\"internal\"` / `\"confidential\"` / `\"restricted\"` (ascending); custom values are allowed but flagged as non-standard, never blocking."
         },
         "protections": {
           "type": "string",
-          "description": "Documented safeguard -- presence only, never an adequacy claim."
+          "description": "Documented safeguard: presence only, never an adequacy claim."
         },
         "retention": {
           "type": "string",
-          "description": "Documented retention policy -- presence only, never an enforcement claim."
+          "description": "Documented retention policy: presence only, never an enforcement claim."
         },
         "purpose": {
           "type": "string",
-          "description": "The declared reason this capability's data is collected/retained. Declared only -- data-cap never verifies the stated purpose matches actual usage. A field's own `purpose` (see `FieldDocs`) overrides this for that field specifically."
+          "description": "The declared reason this capability's data is collected or retained. Declared only: data-cap never verifies the stated purpose matches actual usage. A field's own `purpose` (see `FieldDocs`) overrides this for that field specifically."
         },
         "legalBasis": {
           "type": "string",
-          "description": "The declared legal basis asserted for processing this capability's data (e.g. `\"consent\"`, `\"contract\"`, `\"legitimate interest\"`). Records that a basis was declared -- never that data-cap has determined the basis is legally valid; data-cap records declared governance facts, it does not determine whether those facts satisfy a law. A field's own `legalBasis` overrides this for that field specifically."
+          "description": "The declared legal basis asserted for processing this capability's data (e.g. `\"consent\"`, `\"contract\"`, `\"legitimate interest\"`). Records that a basis was declared, never that data-cap has determined the basis is legally valid. It records declared governance facts; data-cap does not determine whether those facts satisfy a law. A field's own `legalBasis` overrides this for that field specifically."
         },
         "dataResidency": {
           "anyOf": [
@@ -210,11 +210,11 @@
               }
             }
           ],
-          "description": "The declared jurisdiction(s) this capability's data is permitted/ expected to be *stored* in -- a policy constraint, not an observed fact, not a processing-location claim, not a data-subject-location claim. A field's own `dataResidency` overrides this for that field specifically."
+          "description": "The declared jurisdiction(s) this capability's data is permitted or expected to be *stored* in. It is a policy constraint, not an observed fact, a processing-location claim or a data-subject-location claim. A field's own `dataResidency` overrides this for that field specifically."
         },
         "transferSafeguard": {
           "type": "string",
-          "description": "The declared safeguard relied on for any transfer of this capability's data out of `dataResidency`'s own jurisdiction(s) -- paired conceptually with `dataResidency`, same presence-only discipline. A field's own `transferSafeguard` (see `FieldDocs`) overrides this for that field specifically."
+          "description": "The declared safeguard relied on for any transfer of this capability's data out of `dataResidency`'s own jurisdiction(s): paired conceptually with `dataResidency`, same presence-only discipline. A field's own `transferSafeguard` (see `FieldDocs`) overrides this for that field specifically."
         },
         "auditRequired": {
           "type": "boolean",
@@ -222,7 +222,7 @@
         },
         "expiresAt": {
           "type": "string",
-          "description": "When this capability's data (or the credential/source behind it) is declared to stop being valid, as an ISO-8601 date. A field's own `expiresAt` (see `FieldDocs`) overrides this for that field specifically. Declared only -- nothing expires at runtime."
+          "description": "When this capability's data (or the credential/source behind it) is declared to stop being valid, as an ISO-8601 date. A field's own `expiresAt` (see `FieldDocs`) overrides this for that field specifically. Declared only: nothing expires at runtime."
         },
         "deprecated": {
           "type": "boolean",
@@ -235,7 +235,7 @@
         "metadata": {
           "type": "object",
           "additionalProperties": {},
-          "description": "Free-form extension bag for anything data-cap itself has no named concept for -- opaque, never inspected or validated by any code path in this package (e.g. jurisdiction-specific regulatory classification: `{ regulatory: \"GDPR,PCI-DSS\" }`). Once a concept matters enough for data-cap to reason about, it gets its own named field above (as `purpose`/`legalBasis`/`dataResidency`/`transferSafeguard`/`auditRequired` did); everything else stays here."
+          "description": "Free-form extension bag for anything data-cap itself has no named concept for. It is opaque: no code path in this package inspects or validates it. An example is a jurisdiction-specific regulatory classification such as `{ regulatory: \"GDPR,PCI-DSS\" }`. Once a concept matters enough for data-cap to reason about, it gets its own named field above, as `purpose`, `legalBasis`, `dataResidency`, `transferSafeguard` and `auditRequired` did. Everything else stays here."
         },
         "flowPolicy": {
           "type": "array",
@@ -267,15 +267,15 @@
         },
         "retention": {
           "type": "string",
-          "description": "Documented retention policy for this field -- presence only, never an enforcement claim."
+          "description": "Documented retention policy for this field: presence only, never an enforcement claim."
         },
         "purpose": {
           "type": "string",
-          "description": "The declared reason this field's data is collected/retained. Declared only -- data-cap never verifies the stated purpose matches actual usage. Overrides the capability's own `purpose` for this field specifically."
+          "description": "The declared reason this field's data is collected/retained. Declared only: data-cap never verifies the stated purpose matches actual usage. Overrides the capability's own `purpose` for this field specifically."
         },
         "legalBasis": {
           "type": "string",
-          "description": "The declared legal basis asserted for processing this field (e.g. `\"consent\"`, `\"contract\"`, `\"legitimate interest\"`). Records that a basis was declared -- never that data-cap has determined the basis is legally valid. Overrides the capability's own `legalBasis` for this field specifically."
+          "description": "The declared legal basis asserted for processing this field (e.g. `\"consent\"`, `\"contract\"`, `\"legitimate interest\"`). Records that a basis was declared: never that data-cap has determined the basis is legally valid. Overrides the capability's own `legalBasis` for this field specifically."
         },
         "dataResidency": {
           "anyOf": [
@@ -289,11 +289,11 @@
               }
             }
           ],
-          "description": "The declared jurisdiction(s) this field's data is permitted/expected to be *stored* in -- a policy constraint, not an observed fact, not a processing-location claim, not a data-subject-location claim. Overrides the capability's own `dataResidency` for this field specifically."
+          "description": "The declared jurisdiction(s) this field's data is permitted or expected to be *stored* in. It is a policy constraint, not an observed fact, a processing-location claim or a data-subject-location claim. Overrides the capability's own `dataResidency` for this field specifically."
         },
         "transferSafeguard": {
           "type": "string",
-          "description": "The declared safeguard relied on for any transfer of this field's data out of `dataResidency`'s own jurisdiction(s) (e.g. `\"EU Standard Contractual Clauses\"`, `\"adequacy decision\"`) -- paired conceptually with `dataResidency` (which states where data is permitted to be\n*stored*; this states what protects a transfer *out of* that jurisdiction), same presence-only discipline as every other field here. Declared only -- data-cap never verifies a transfer actually occurred or that the named safeguard is legally adequate. Overrides the capability's own `transferSafeguard` for this field specifically. See `specs/decisions/0067-ropa-fields-recipient-categories-never-inferred.md`."
+          "description": "The declared safeguard relied on for any transfer of this field's data out of `dataResidency`'s jurisdictions, such as `\"EU Standard Contractual Clauses\"` or `\"adequacy decision\"`. `dataResidency` states where data may be *stored*; this states what protects a transfer *out of* that jurisdiction. Declared only: data-cap never verifies a transfer actually occurred or that the named safeguard is legally adequate. Overrides the capability's own `transferSafeguard` for this field specifically. See `specs/decisions/0067-ropa-fields-recipient-categories-never-inferred.md`."
         },
         "auditRequired": {
           "type": "boolean",
@@ -301,22 +301,22 @@
         },
         "dataSubjectCategory": {
           "type": "string",
-          "description": "The declared category of data subject this field's data concerns (e.g. `\"customers\"`, `\"employees\"`, `\"minors\"`). Declared only -- data-cap never verifies who a field's actual data subjects are. Field-level only: unlike `owner`/`sensitivity`/`purpose`/etc., this has no capability-level counterpart to override -- which data subjects a field concerns is a fact about that field's own data, not something a whole capability can meaningfully state once for every field under it."
+          "description": "The declared category of data subject this field's data concerns (e.g. `\"customers\"`, `\"employees\"`, `\"minors\"`). Declared only: data-cap never verifies who a field's actual data subjects are. Field-level only, with no capability-level counterpart to override. Which data subjects a field concerns is a fact about that field's own data, not one a capability can state for every field."
         },
         "recipientCategories": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "The declared categories of recipient this field's data has been or will be disclosed to (e.g. `\"payment processor\"`, `\"tax authority\"`, `\"internal support staff\"`). Always explicitly authored -- data-cap never infers a recipient category from its own dependency graph (a proven *consumer* relationship inside this codebase is a categorically different fact from a declared *external recipient*, and conflating the two would misrepresent both). Field-level only, for the same reason as `dataSubjectCategory`. See `specs/decisions/0067-ropa-fields-recipient-categories-never-inferred.md` for the full reasoning on why this is never derived."
+          "description": "The declared categories of recipient this field's data has been or will be disclosed to (e.g. `\"payment processor\"`, `\"tax authority\"`, `\"internal support staff\"`). Always explicitly authored: data-cap never infers a recipient category from its own dependency graph. A proven *consumer* inside this codebase is a different fact from a declared *external recipient*, and conflating them would misrepresent both. Field-level only, for the same reason as `dataSubjectCategory`. See `specs/decisions/0067-ropa-fields-recipient-categories-never-inferred.md` for the full reasoning on why this is never derived."
         },
         "expiresAt": {
           "type": "string",
-          "description": "When this field's data (or the credential/source behind it) is declared to stop being valid, as an ISO-8601 date (`\"2026-12-31\"`). Declared only: nothing expires anything at runtime, and `data-cap` never fetches a real expiry from a provider. Build tooling reads it to report what is expiring soon (see the Lifecycle Model) -- a date that has already passed is reported as expired, never acted on."
+          "description": "When this field's data (or the credential/source behind it) is declared to stop being valid, as an ISO-8601 date (`\"2026-12-31\"`). Declared only: nothing expires anything at runtime, and `data-cap` never fetches a real expiry from a provider. Build tooling reads it to report what is expiring soon (see the Lifecycle Model). A date that has already passed is reported as expired, never acted on."
         },
         "deprecated": {
           "type": "boolean",
-          "description": "Whether this field is documented as deprecated. Presence-only, same discipline as every other declared fact here -- nothing warns at runtime."
+          "description": "Whether this field is documented as deprecated. Presence-only, same discipline as every other declared fact here: nothing warns at runtime."
         },
         "deprecatedReason": {
           "type": "string",
@@ -324,20 +324,20 @@
         },
         "removeBy": {
           "type": "string",
-          "description": "The date by which a deprecated field is intended to be removed, ISO-8601. Field-level only: a removal deadline is about one specific field's own migration, and a capability-wide `removeBy` would say nothing about which of its fields still need work."
+          "description": "The date by which a deprecated field is intended to be removed, ISO-8601. Field-level only: a removal deadline is about one field's own migration. A capability-wide `removeBy` would say nothing about which of its fields still need work."
         },
         "renamedFrom": {
           "type": "string",
-          "description": "The previous name of this field, when it was renamed. Field-level only, for the same reason as `removeBy`. Build tooling uses this to correlate an added-field/removed-field pair across two runs into one rename rather than reporting an unrelated addition and deletion -- see `ChangeModel`'s `renamedFields`. Only ever populated from an *authored* value, never guessed from name similarity."
+          "description": "The previous name of this field, when it was renamed. Field-level only, for the same reason as `removeBy`. Build tooling uses it to read an added field and a removed field across two runs as one rename. Without it they are an unrelated addition and deletion (see `ChangeModel`'s `renamedFields`). Only ever populated from an *authored* value, never guessed from name similarity."
         },
         "metadata": {
           "type": "object",
           "additionalProperties": {},
-          "description": "Free-form extension bag for anything data-cap itself has no named concept for -- opaque, never inspected or validated by any code path in this package. Once a concept matters enough for data-cap to reason about, it gets its own named field above; everything else stays here."
+          "description": "Free-form extension bag for anything data-cap itself has no named concept for: opaque, never inspected or validated by any code path in this package. Once a concept matters enough for data-cap to reason about, it gets its own named field above; everything else stays here."
         }
       },
       "additionalProperties": false,
-      "description": "Every property here is always assigned (never conditionally omitted -- see extractCapabilityDocs()/extractOperationDocsMap()/ extractEvidenceFieldsMap() below), just sometimes with an `undefined` value when the AST literal didn't declare it. exactOptionalPropertyTypes distinguishes \"key absent\" from \"key present holding undefined\"; widening every property to explicitly include `| undefined` (rather than routing every assignment through a conditional-spread \"omit if absent\" instead) matches what this type actually represents: a raw, unconstrained parse result, not a validated CapabilityDocs."
+      "description": "Every property here is always assigned (never conditionally omitted: see extractCapabilityDocs()/extractOperationDocsMap()/ extractEvidenceFieldsMap() below). Some are assigned an `undefined` value when the AST literal didn't declare it. exactOptionalPropertyTypes distinguishes \"key absent\" from \"key present holding undefined\". This type widens every property to explicitly include `| undefined` (rather than routing every assignment through a conditional-spread \"omit if absent\" instead). That matches what this type actually represents: a raw, unconstrained parse result, not a validated CapabilityDocs."
     },
     "Loosen<OperationDocs>": {
       "type": "object",
@@ -352,7 +352,7 @@
         },
         "credentials": {
           "type": "string",
-          "description": "What's required to call this operation -- descriptive only, never an authorization/enforcement claim."
+          "description": "What's required to call this operation: descriptive only, never an authorization/enforcement claim."
         },
         "response": {
           "type": "string",
@@ -363,12 +363,12 @@
           "items": {
             "$ref": "#/definitions/DataFlowEndpoint"
           },
-          "description": "Declared data-flow boundaries this operation crosses -- see `DataFlowEndpoint`."
+          "description": "Declared data-flow boundaries this operation crosses: see `DataFlowEndpoint`."
         },
         "metadata": {
           "type": "object",
           "additionalProperties": {},
-          "description": "Free-form extension bag for anything data-cap itself has no named concept for -- opaque, never inspected or validated by any code path in this package. The index signature below remains for the same reason it always has (documenting never fights the type checker); `metadata` is the recommended place for new extension data going forward."
+          "description": "Free-form extension bag for anything data-cap itself has no named concept for: opaque, never inspected or validated by any code path in this package. The index signature below stays so documenting never fights the type checker. `metadata` is the recommended place for new extension data."
         }
       },
       "additionalProperties": {
@@ -379,7 +379,7 @@
           }
         ]
       },
-      "description": "Every property here is always assigned (never conditionally omitted -- see extractCapabilityDocs()/extractOperationDocsMap()/ extractEvidenceFieldsMap() below), just sometimes with an `undefined` value when the AST literal didn't declare it. exactOptionalPropertyTypes distinguishes \"key absent\" from \"key present holding undefined\"; widening every property to explicitly include `| undefined` (rather than routing every assignment through a conditional-spread \"omit if absent\" instead) matches what this type actually represents: a raw, unconstrained parse result, not a validated CapabilityDocs."
+      "description": "Every property here is always assigned (never conditionally omitted: see extractCapabilityDocs()/extractOperationDocsMap()/ extractEvidenceFieldsMap() below). Some are assigned an `undefined` value when the AST literal didn't declare it. exactOptionalPropertyTypes distinguishes \"key absent\" from \"key present holding undefined\". This type widens every property to explicitly include `| undefined` (rather than routing every assignment through a conditional-spread \"omit if absent\" instead). That matches what this type actually represents: a raw, unconstrained parse result, not a validated CapabilityDocs."
     },
     "DataFlowEndpoint": {
       "type": "object",
@@ -394,15 +394,15 @@
         },
         "name": {
           "type": "string",
-          "description": "Short identifier, e.g. \"stripe-api\", \"postgres:users\" -- a semantic label, not a sentence."
+          "description": "Short identifier, e.g. \"stripe-api\", \"postgres:users\"; a semantic label, not a sentence."
         },
         "url": {
           "type": "string",
-          "description": "A literal, trackable location for this endpoint -- a URL, a route path, a `table:column` reference. Distinct from `name` (a short label): this is meant to be compared/matched across capabilities (e.g. flagging two capabilities that declare the same URL as likely-duplicate fetches), not just read by a person."
+          "description": "A literal, trackable location for this endpoint: a URL, a route path, a `table:column` reference. Unlike `name` (a short label), it is compared and matched across capabilities, not only read by a person. For example, two capabilities that declare the same URL are flagged as likely duplicate fetches."
         },
         "handling": {
           "$ref": "#/definitions/FlowHandling",
-          "description": "The declared data-safety state of this field's value AT this specific boundary crossing -- e.g. a field that arrives `\"encrypted\"` on an `\"input\"` endpoint and is sent back out `\"redacted\"` on an `\"output\"` endpoint. Declared only, same presence-only discipline as every other field in this vocabulary: this records what a developer states about handling at this crossing, never that data-cap has verified the field's actual runtime value matches the claim."
+          "description": "The declared data-safety state of this field's value AT this specific boundary crossing. For example, a field can arrive `\"encrypted\"` on an `\"input\"` endpoint and leave `\"redacted\"` on an `\"output\"` endpoint. Declared only, like every other field in this vocabulary. It records what a developer states about handling at this crossing, never that data-cap verified the runtime value matches it."
         }
       },
       "required": [
@@ -411,7 +411,7 @@
         "name"
       ],
       "additionalProperties": false,
-      "description": "One declared data-flow boundary an operation crosses. A getter/ subscription's endpoints are typically `\"input\"` (where `execute`/ `subscribe` acquires data from); a mutator's are typically `\"output\"` (where it sends data to) -- nothing enforces the typical case, since this is documentation, not a runtime contract."
+      "description": "One declared data-flow boundary an operation crosses. A getter's or subscription's endpoints are typically `\"input\"`: where `execute` or `subscribe` acquires data from. A mutator's are typically `\"output\"`: where it sends data to. Nothing enforces the typical case, since this is documentation, not a runtime contract."
     },
     "DataFlowDirection": {
       "type": "string",
@@ -419,7 +419,7 @@
         "input",
         "output"
       ],
-      "description": "Which direction data moves across a declared boundary, and what kind of boundary it is. Author-declared documentation only -- never statically verified against an operation's actual `execute`/`subscribe` body (those stay opaque per `AGENTS.md` invariant 6). A report may never present an endpoint as a proven fact; see `AGENTS.md`'s declared-vs-proven invariant."
+      "description": "Which direction data moves across a declared boundary, and what kind of boundary it is. Author-declared documentation only: never statically verified against an operation's actual `execute`/`subscribe` body (those stay opaque per `AGENTS.md` invariant 6). A report may never present an endpoint as a proven fact; see `AGENTS.md`'s declared-vs-proven invariant."
     },
     "DataFlowEndpointKind": {
       "type": "string",
@@ -434,7 +434,7 @@
         "computed",
         "internal"
       ],
-      "description": "What kind of boundary a declared data-flow endpoint crosses -- a data store (`database`/`cache`/`storage`/`queue`), an external entity (`api`/`external-service`/`user-input`), or something internal to this codebase (`computed`/`internal`)."
+      "description": "What kind of boundary a declared data-flow endpoint crosses: a data store (`database`/`cache`/`storage`/`queue`), an external entity (`api`/`external-service`/`user-input`), or something internal to this codebase (`computed`/`internal`)."
     },
     "FlowHandling": {
       "type": "string",
@@ -445,7 +445,7 @@
         "hashed",
         "encrypted"
       ],
-      "description": "The declared data-safety state of a value at a boundary crossing -- the vocabulary of `DataFlowEndpoint.handling` and of flow policy rules."
+      "description": "The declared data-safety state of a value at a boundary crossing: the vocabulary of `DataFlowEndpoint.handling` and of flow policy rules."
     },
     "Loosen<EvidenceFieldDocs>": {
       "type": "object",
@@ -455,11 +455,11 @@
           "items": {
             "type": "string"
           },
-          "description": "Citations of where this field is accessed in a way static analysis can't see on its own (e.g. a truly dynamic key derived at runtime), each `\"<relative-path>:<line>:<column>\"`. Re-verified every run: a citation whose file no longer exists, or whose cited line has visibly changed since the citation was written, is downgraded and flagged, never trusted forever."
+          "description": "Citations of where this field is accessed in a way static analysis can't see on its own, such as a dynamic key derived at runtime. Each is `\"<relative-path>:<line>:<column>\"`. Every run re-verifies them. A citation whose file no longer exists, or whose cited line has visibly changed since it was written, is downgraded and flagged, never trusted forever."
         }
       },
       "additionalProperties": false,
-      "description": "Every property here is always assigned (never conditionally omitted -- see extractCapabilityDocs()/extractOperationDocsMap()/ extractEvidenceFieldsMap() below), just sometimes with an `undefined` value when the AST literal didn't declare it. exactOptionalPropertyTypes distinguishes \"key absent\" from \"key present holding undefined\"; widening every property to explicitly include `| undefined` (rather than routing every assignment through a conditional-spread \"omit if absent\" instead) matches what this type actually represents: a raw, unconstrained parse result, not a validated CapabilityDocs."
+      "description": "Every property here is always assigned (never conditionally omitted: see extractCapabilityDocs()/extractOperationDocsMap()/ extractEvidenceFieldsMap() below). Some are assigned an `undefined` value when the AST literal didn't declare it. exactOptionalPropertyTypes distinguishes \"key absent\" from \"key present holding undefined\". This type widens every property to explicitly include `| undefined` (rather than routing every assignment through a conditional-spread \"omit if absent\" instead). That matches what this type actually represents: a raw, unconstrained parse result, not a validated CapabilityDocs."
     },
     "FlowPolicyDocs": {
       "type": "object",
@@ -510,7 +510,7 @@
         "appliesTo"
       ],
       "additionalProperties": false,
-      "description": "One declared data-flow rule: which of this capability's fields it governs, and what must hold wherever their data goes. Evaluated against the Flow Model at build time; a rule is a declaration, never a runtime check, and a result is only as complete as the analysis behind it (see the Policy Model's `indeterminate` outcome). At least one of `forbidDestinations`, `allowedDestinations` and `requireHandling` is required."
+      "description": "One declared data-flow rule: which of this capability's fields it governs, and what must hold wherever their data goes. Evaluated against the Flow Model at build time. A rule is a declaration, never a runtime check. A result is only as complete as the analysis behind it (see the Policy Model's `indeterminate` outcome). At least one of `forbidDestinations`, `allowedDestinations` and `requireHandling` is required."
     },
     "FlowPolicyAppliesToDocs": {
       "type": "object",
@@ -579,7 +579,7 @@
         },
         "docs": {
           "$ref": "#/definitions/FieldDocs",
-          "description": "This field's own declared documentation, if any -- `description`/`protections`/`retention`/`metadata` have no resolution concept and live only here; for the six governed properties below, prefer `.value`/`.declaredOn` over reading this object directly (ADR 0057)."
+          "description": "This field's own declared documentation, if any: `description`/`protections`/`retention`/`metadata` have no resolution concept and live only here; for the six governed properties below, prefer `.value`/`.declaredOn` over reading this object directly (ADR 0057)."
         },
         "owner": {
           "$ref": "#/definitions/ResolvedGovernanceValue%3Cstring%3E",
@@ -587,23 +587,23 @@
         },
         "sensitivity": {
           "$ref": "#/definitions/ResolvedGovernanceValue%3Cstring%3E",
-          "description": "Resolved: the field's own `docs.sensitivity`, else the capability's `sensitivity` -- same inheritance rule as `owner` (ADR 0049, ADR 0050, ADR 0057)."
+          "description": "Resolved: the field's own `docs.sensitivity`, else the capability's `sensitivity`; same inheritance rule as `owner` (ADR 0049, ADR 0050, ADR 0057)."
         },
         "purpose": {
           "$ref": "#/definitions/ResolvedGovernanceValue%3Cstring%3E",
-          "description": "Resolved: the field's own `docs.purpose`, else the capability's `purpose` -- same inheritance rule as `owner`/`sensitivity` (ADR 0051, ADR 0057). Declared only, never verified."
+          "description": "Resolved: the field's own `docs.purpose`, else the capability's `purpose`; same inheritance rule as `owner`/`sensitivity` (ADR 0051, ADR 0057). Declared only, never verified."
         },
         "legalBasis": {
           "$ref": "#/definitions/ResolvedGovernanceValue%3Cstring%3E",
-          "description": "Resolved: the field's own `docs.legalBasis`, else the capability's `legalBasis` -- same inheritance rule. A declared fact, never a legal determination (ADR 0051, ADR 0057)."
+          "description": "Resolved: the field's own `docs.legalBasis`, else the capability's `legalBasis`; same inheritance rule. A declared fact, never a legal determination (ADR 0051, ADR 0057)."
         },
         "dataResidency": {
           "$ref": "#/definitions/ResolvedGovernanceValue%3C(string%7Cstring%5B%5D)%3E",
-          "description": "Resolved: the field's own `docs.dataResidency`, else the capability's `dataResidency` -- same inheritance rule. The declared permitted-storage jurisdiction(s), not an observed fact (ADR 0051, ADR 0057)."
+          "description": "Resolved: the field's own `docs.dataResidency`, else the capability's `dataResidency`; same inheritance rule. The declared permitted-storage jurisdiction(s), not an observed fact (ADR 0051, ADR 0057)."
         },
         "auditRequired": {
           "$ref": "#/definitions/ResolvedGovernanceValue%3Cboolean%3E",
-          "description": "Resolved: the field's own `docs.auditRequired`, else the capability's `auditRequired` -- same inheritance rule (ADR 0051, ADR 0057)."
+          "description": "Resolved: the field's own `docs.auditRequired`, else the capability's `auditRequired`; same inheritance rule (ADR 0051, ADR 0057)."
         },
         "writtenBy": {
           "type": "array",
@@ -633,11 +633,11 @@
           "description": "Every getter/mutator/subscription whose statically-extracted `writes` shape claims this field."
         },
         "shape": {
-          "description": "The field's literal-evaluated declared default -- structural comparison only (e.g. `structural-duplication.ts`), never a runtime value."
+          "description": "The field's literal-evaluated declared default: structural comparison only (e.g. `structural-duplication.ts`), never a runtime value."
         },
         "declarationPosition": {
           "$ref": "#/definitions/SourcePosition",
-          "description": "Position of this field's own key in the `fields` object literal -- only when `fields` was resolved as an inline literal in this file; `undefined` when identifier-resolved across a file boundary this pass doesn't retain AST access to (never guessed at -- ADR 0052)."
+          "description": "Position of this field's own key in the `fields` object literal. Set only when `fields` was resolved as an inline literal in this file. It is `undefined` when identifier-resolved across a file boundary this pass doesn't retain AST access to (never guessed at; ADR 0052)."
         }
       },
       "required": [
@@ -675,15 +675,15 @@
         },
         "retention": {
           "type": "string",
-          "description": "Documented retention policy for this field -- presence only, never an enforcement claim."
+          "description": "Documented retention policy for this field: presence only, never an enforcement claim."
         },
         "purpose": {
           "type": "string",
-          "description": "The declared reason this field's data is collected/retained. Declared only -- data-cap never verifies the stated purpose matches actual usage. Overrides the capability's own `purpose` for this field specifically."
+          "description": "The declared reason this field's data is collected/retained. Declared only: data-cap never verifies the stated purpose matches actual usage. Overrides the capability's own `purpose` for this field specifically."
         },
         "legalBasis": {
           "type": "string",
-          "description": "The declared legal basis asserted for processing this field (e.g. `\"consent\"`, `\"contract\"`, `\"legitimate interest\"`). Records that a basis was declared -- never that data-cap has determined the basis is legally valid. Overrides the capability's own `legalBasis` for this field specifically."
+          "description": "The declared legal basis asserted for processing this field (e.g. `\"consent\"`, `\"contract\"`, `\"legitimate interest\"`). Records that a basis was declared: never that data-cap has determined the basis is legally valid. Overrides the capability's own `legalBasis` for this field specifically."
         },
         "dataResidency": {
           "anyOf": [
@@ -697,11 +697,11 @@
               }
             }
           ],
-          "description": "The declared jurisdiction(s) this field's data is permitted/expected to be *stored* in -- a policy constraint, not an observed fact, not a processing-location claim, not a data-subject-location claim. Overrides the capability's own `dataResidency` for this field specifically."
+          "description": "The declared jurisdiction(s) this field's data is permitted or expected to be *stored* in. It is a policy constraint, not an observed fact, a processing-location claim or a data-subject-location claim. Overrides the capability's own `dataResidency` for this field specifically."
         },
         "transferSafeguard": {
           "type": "string",
-          "description": "The declared safeguard relied on for any transfer of this field's data out of `dataResidency`'s own jurisdiction(s) (e.g. `\"EU Standard Contractual Clauses\"`, `\"adequacy decision\"`) -- paired conceptually with `dataResidency` (which states where data is permitted to be\n*stored*; this states what protects a transfer *out of* that jurisdiction), same presence-only discipline as every other field here. Declared only -- data-cap never verifies a transfer actually occurred or that the named safeguard is legally adequate. Overrides the capability's own `transferSafeguard` for this field specifically. See `specs/decisions/0067-ropa-fields-recipient-categories-never-inferred.md`."
+          "description": "The declared safeguard relied on for any transfer of this field's data out of `dataResidency`'s jurisdictions, such as `\"EU Standard Contractual Clauses\"` or `\"adequacy decision\"`. `dataResidency` states where data may be *stored*; this states what protects a transfer *out of* that jurisdiction. Declared only: data-cap never verifies a transfer actually occurred or that the named safeguard is legally adequate. Overrides the capability's own `transferSafeguard` for this field specifically. See `specs/decisions/0067-ropa-fields-recipient-categories-never-inferred.md`."
         },
         "auditRequired": {
           "type": "boolean",
@@ -709,22 +709,22 @@
         },
         "dataSubjectCategory": {
           "type": "string",
-          "description": "The declared category of data subject this field's data concerns (e.g. `\"customers\"`, `\"employees\"`, `\"minors\"`). Declared only -- data-cap never verifies who a field's actual data subjects are. Field-level only: unlike `owner`/`sensitivity`/`purpose`/etc., this has no capability-level counterpart to override -- which data subjects a field concerns is a fact about that field's own data, not something a whole capability can meaningfully state once for every field under it."
+          "description": "The declared category of data subject this field's data concerns (e.g. `\"customers\"`, `\"employees\"`, `\"minors\"`). Declared only: data-cap never verifies who a field's actual data subjects are. Field-level only, with no capability-level counterpart to override. Which data subjects a field concerns is a fact about that field's own data, not one a capability can state for every field."
         },
         "recipientCategories": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "The declared categories of recipient this field's data has been or will be disclosed to (e.g. `\"payment processor\"`, `\"tax authority\"`, `\"internal support staff\"`). Always explicitly authored -- data-cap never infers a recipient category from its own dependency graph (a proven *consumer* relationship inside this codebase is a categorically different fact from a declared *external recipient*, and conflating the two would misrepresent both). Field-level only, for the same reason as `dataSubjectCategory`. See `specs/decisions/0067-ropa-fields-recipient-categories-never-inferred.md` for the full reasoning on why this is never derived."
+          "description": "The declared categories of recipient this field's data has been or will be disclosed to (e.g. `\"payment processor\"`, `\"tax authority\"`, `\"internal support staff\"`). Always explicitly authored: data-cap never infers a recipient category from its own dependency graph. A proven *consumer* inside this codebase is a different fact from a declared *external recipient*, and conflating them would misrepresent both. Field-level only, for the same reason as `dataSubjectCategory`. See `specs/decisions/0067-ropa-fields-recipient-categories-never-inferred.md` for the full reasoning on why this is never derived."
         },
         "expiresAt": {
           "type": "string",
-          "description": "When this field's data (or the credential/source behind it) is declared to stop being valid, as an ISO-8601 date (`\"2026-12-31\"`). Declared only: nothing expires anything at runtime, and `data-cap` never fetches a real expiry from a provider. Build tooling reads it to report what is expiring soon (see the Lifecycle Model) -- a date that has already passed is reported as expired, never acted on."
+          "description": "When this field's data (or the credential/source behind it) is declared to stop being valid, as an ISO-8601 date (`\"2026-12-31\"`). Declared only: nothing expires anything at runtime, and `data-cap` never fetches a real expiry from a provider. Build tooling reads it to report what is expiring soon (see the Lifecycle Model). A date that has already passed is reported as expired, never acted on."
         },
         "deprecated": {
           "type": "boolean",
-          "description": "Whether this field is documented as deprecated. Presence-only, same discipline as every other declared fact here -- nothing warns at runtime."
+          "description": "Whether this field is documented as deprecated. Presence-only, same discipline as every other declared fact here: nothing warns at runtime."
         },
         "deprecatedReason": {
           "type": "string",
@@ -732,20 +732,20 @@
         },
         "removeBy": {
           "type": "string",
-          "description": "The date by which a deprecated field is intended to be removed, ISO-8601. Field-level only: a removal deadline is about one specific field's own migration, and a capability-wide `removeBy` would say nothing about which of its fields still need work."
+          "description": "The date by which a deprecated field is intended to be removed, ISO-8601. Field-level only: a removal deadline is about one field's own migration. A capability-wide `removeBy` would say nothing about which of its fields still need work."
         },
         "renamedFrom": {
           "type": "string",
-          "description": "The previous name of this field, when it was renamed. Field-level only, for the same reason as `removeBy`. Build tooling uses this to correlate an added-field/removed-field pair across two runs into one rename rather than reporting an unrelated addition and deletion -- see `ChangeModel`'s `renamedFields`. Only ever populated from an *authored* value, never guessed from name similarity."
+          "description": "The previous name of this field, when it was renamed. Field-level only, for the same reason as `removeBy`. Build tooling uses it to read an added field and a removed field across two runs as one rename. Without it they are an unrelated addition and deletion (see `ChangeModel`'s `renamedFields`). Only ever populated from an *authored* value, never guessed from name similarity."
         },
         "metadata": {
           "type": "object",
           "additionalProperties": {},
-          "description": "Free-form extension bag for anything data-cap itself has no named concept for -- opaque, never inspected or validated by any code path in this package. Once a concept matters enough for data-cap to reason about, it gets its own named field above; everything else stays here."
+          "description": "Free-form extension bag for anything data-cap itself has no named concept for: opaque, never inspected or validated by any code path in this package. Once a concept matters enough for data-cap to reason about, it gets its own named field above; everything else stays here."
         }
       },
       "additionalProperties": false,
-      "description": "Documentation metadata for one field.\n\n`owner`, `sensitivity`, `protections`, and `transferSafeguard` override the capability-level value of the same name for this field specifically -- not every field in a capability is equally sensitive, equally owned, or crosses the same transfer boundary. `protections` and `retention` are documentation-presence signals only: a generator may say a safeguard/ policy is \"documented\" or \"not documented,\" never that it is adequate, correct, or enforced. `purpose`/`legalBasis`/`dataResidency`/ `transferSafeguard`/`auditRequired` carry the same presence-only discipline -- declared governance facts, never a claim that data-cap has determined they satisfy any law (see `specs/decisions/0051-documentdata-metadata-and-governance-fields.md`). `dataSubjectCategory`/`recipientCategories` are field-level only (no capability-level counterpart) -- see each property's own doc comment for why.\n\nThe boundary this interface draws is deliberate: a named property here is reserved for a concept data-cap itself understands, projects, or reports on. Anything else -- organization-specific detail with no data-cap-defined meaning -- belongs in `metadata`, never as an ad hoc extra property, so this vocabulary stays bounded instead of accreting one-off keys over time.\n\nNote what is deliberately absent: there is no per-field `validate`/ `validator` property, and no `helpers.validators` combinator library backing one, unlike `@maverickcer/env-cap`'s `EnvVarDocs`. That is a design choice, not a gap. `env-cap` validates on a reject-and-throw pipeline, where a failing validator must carry a message explaining the rejection; `data-cap` has no reject path to write a message for -- invalid processor/operation output resets the field to its declared default via `core/schema.ts`'s `checkValueAgainstSchema`, keeping fields synchronously readable (`AGENTS.md` invariant 2) and surfacing the mismatch through `DataInfo`. See `helpers/shape.ts`'s own module comment for the full reasoning."
+      "description": "Documentation metadata for one field.\n\n`owner`, `sensitivity`, `protections`, and `transferSafeguard` override the capability-level value of the same name for this field. Fields in one capability can differ in sensitivity, owner and transfer boundary. `protections` and `retention` only signal that documentation is present. A generator may say a safeguard or policy is \"documented\" or \"not documented\", never that it is adequate, correct or enforced. `purpose`, `legalBasis`, `dataResidency`, `transferSafeguard` and `auditRequired` follow the same presence-only rule. They are declared governance facts, never a claim that data-cap has determined they satisfy any law (see `specs/decisions/0051-documentdata-metadata-and-governance-fields.md`). `dataSubjectCategory` and `recipientCategories` are field-level only, with no capability-level counterpart; each property's own doc comment says why.\n\nThe boundary this interface draws is deliberate: a named property here is reserved for a concept data-cap itself understands, projects, or reports on. Anything else (organization-specific detail with no data-cap-defined meaning) belongs in `metadata`, never in an ad hoc extra property. That keeps this vocabulary bounded instead of accreting one-off keys over time.\n\nNote what is deliberately absent: there is no per-field `validate`/ `validator` property, and no `helpers.validators` combinator library backing one, unlike `@maverickcer/env-cap`'s `EnvVarDocs`. That is a design choice, not a gap. `env-cap` validates on a reject-and-throw pipeline, where a failing validator must carry a message explaining the rejection. `data-cap` has no reject path to write a message for. Invalid processor/operation output resets the field to its declared default via `core/schema.ts`'s `checkValueAgainstSchema`. That keeps fields synchronously readable (`AGENTS.md` invariant 2) and surfaces the mismatch through `DataInfo`. See `helpers/shape.ts`'s own module comment for the full reasoning."
     },
     "ResolvedGovernanceValue<string>": {
       "type": "object",
@@ -764,7 +764,7 @@
         }
       },
       "additionalProperties": false,
-      "description": "One resolved governance value plus its provenance (ADR 0057) -- the one path a `FieldNode` consumer reads for a governed property, replacing what used to require separately checking a bare resolved property AND `field.docs.X` to get the full picture. `declaredOn: undefined` means neither the field nor its capability declared a value at all (`value` is then also `undefined`)."
+      "description": "One resolved governance value plus its provenance (ADR 0057). It is the one path a `FieldNode` consumer reads for a governed property, instead of checking a resolved property and `field.docs.X` separately. `declaredOn: undefined` means neither the field nor its capability declared a value at all (`value` is then also `undefined`)."
     },
     "ResolvedGovernanceValue<(string|string[])>": {
       "type": "object",
@@ -793,7 +793,7 @@
         }
       },
       "additionalProperties": false,
-      "description": "One resolved governance value plus its provenance (ADR 0057) -- the one path a `FieldNode` consumer reads for a governed property, replacing what used to require separately checking a bare resolved property AND `field.docs.X` to get the full picture. `declaredOn: undefined` means neither the field nor its capability declared a value at all (`value` is then also `undefined`)."
+      "description": "One resolved governance value plus its provenance (ADR 0057). It is the one path a `FieldNode` consumer reads for a governed property, instead of checking a resolved property and `field.docs.X` separately. `declaredOn: undefined` means neither the field nor its capability declared a value at all (`value` is then also `undefined`)."
     },
     "ResolvedGovernanceValue<boolean>": {
       "type": "object",
@@ -812,7 +812,7 @@
         }
       },
       "additionalProperties": false,
-      "description": "One resolved governance value plus its provenance (ADR 0057) -- the one path a `FieldNode` consumer reads for a governed property, replacing what used to require separately checking a bare resolved property AND `field.docs.X` to get the full picture. `declaredOn: undefined` means neither the field nor its capability declared a value at all (`value` is then also `undefined`)."
+      "description": "One resolved governance value plus its provenance (ADR 0057). It is the one path a `FieldNode` consumer reads for a governed property, instead of checking a resolved property and `field.docs.X` separately. `declaredOn: undefined` means neither the field nor its capability declared a value at all (`value` is then also `undefined`)."
     },
     "OperationNode": {
       "type": "object",
@@ -842,22 +842,22 @@
               "type": "string"
             }
           },
-          "description": "Top-level field paths this operation's statically-extracted `writes` shape covers. Empty when `writes` was absent (on a getter/subscription) or unresolvable -- never guessed at."
+          "description": "Top-level field paths this operation's statically-extracted `writes` shape covers. Empty when `writes` was absent (on a getter/subscription) or unresolvable: never guessed at."
         },
         "hasProcessor": {
           "type": "boolean",
-          "description": "Whether this operation's config object literal declares a `processor` key -- a proven, structural presence fact (never an evaluation of what the processor does; see ADR 0050)."
+          "description": "Whether this operation's config object literal declares a `processor` key: a proven, structural presence fact (never an evaluation of what the processor does; see ADR 0050)."
         },
         "hasOptimistic": {
           "type": "boolean",
-          "description": "Whether this operation's config object literal declares an `optimistic` key -- structurally always `false` for a getter/subscription."
+          "description": "Whether this operation's config object literal declares an `optimistic` key: structurally always `false` for a getter/subscription."
         },
         "endpoints": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/DataFlowEndpoint"
           },
-          "description": "Hoisted from `docs.endpoints` for convenient lookup -- author-declared, never statically verified."
+          "description": "Hoisted from `docs.endpoints` for convenient lookup: author-declared, never statically verified."
         }
       },
       "required": [
@@ -884,7 +884,7 @@
         },
         "credentials": {
           "type": "string",
-          "description": "What's required to call this operation -- descriptive only, never an authorization/enforcement claim."
+          "description": "What's required to call this operation: descriptive only, never an authorization/enforcement claim."
         },
         "response": {
           "type": "string",
@@ -895,16 +895,16 @@
           "items": {
             "$ref": "#/definitions/DataFlowEndpoint"
           },
-          "description": "Declared data-flow boundaries this operation crosses -- see `DataFlowEndpoint`."
+          "description": "Declared data-flow boundaries this operation crosses: see `DataFlowEndpoint`."
         },
         "metadata": {
           "type": "object",
           "additionalProperties": {},
-          "description": "Free-form extension bag for anything data-cap itself has no named concept for -- opaque, never inspected or validated by any code path in this package. The index signature below remains for the same reason it always has (documenting never fights the type checker); `metadata` is the recommended place for new extension data going forward."
+          "description": "Free-form extension bag for anything data-cap itself has no named concept for: opaque, never inspected or validated by any code path in this package. The index signature below stays so documenting never fights the type checker. `metadata` is the recommended place for new extension data."
         }
       },
       "additionalProperties": {},
-      "description": "Documentation metadata for one getter/mutator/subscription. Reserved keys are explicitly typed (mirroring the vocabulary real capabilities tend to document -- what it does, where it talks to, what it costs to call) while still accepting arbitrary extra keys for anything project-specific, so documenting never fights the type checker.\n\n`credentials` is descriptive only -- documenting `credentials: \"user session\"` is never proof that authorization is actually enforced. `endpoints` is likewise author-declared, never verified."
+      "description": "Documentation metadata for one getter/mutator/subscription. Reserved keys are explicitly typed (mirroring the vocabulary real capabilities tend to document: what it does, where it talks to, what it costs to call). The type still accepts arbitrary extra keys for anything project-specific, so documenting never fights the type checker.\n\n`credentials` is descriptive only: documenting `credentials: \"user session\"` is never proof that authorization is actually enforced. `endpoints` is likewise author-declared, never verified."
     },
     "ParseWarning": {
       "type": "object",
@@ -923,7 +923,7 @@
         "message"
       ],
       "additionalProperties": false,
-      "description": "A recoverable issue found while statically parsing or linking one capability file -- never fatal, always surfaced to the caller as data."
+      "description": "A recoverable issue found while statically parsing or linking one capability file: never fatal, always surfaced to the caller as data."
     }
   }
 }

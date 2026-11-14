@@ -1,24 +1,24 @@
 /**
  * A persisted, JSON-serializable snapshot of the capability inventory,
- * diffed run-over-run to compute "changes since last report." The
- * generated manifest `.ts` file itself carries no metadata (just
- * re-exports) -- this is the sidecar that makes change detection possible
- * without re-parsing the manifest's own generated source. Pure -- no
+ * diffed run-over-run to compute "changes since last report". The
+ * generated manifest `.ts` file itself carries no metadata (only
+ * re-exports). This is the sidecar that makes change detection possible
+ * without re-parsing the manifest's own generated source. Pure: no
  * filesystem access; the caller reads/writes the snapshot JSON.
  */
 
 import type { CapabilityInventory, CapabilityNode } from "./inventory.js"
 import type { SourceLocation } from "./source-position.js"
 
-/** One `dynamicAccess` citation's integrity snapshot -- see `ManifestSnapshotCapability.citationSnapshots`. */
+/** One `dynamicAccess` citation's integrity snapshot: see `ManifestSnapshotCapability.citationSnapshots`. */
 export interface CitationSnapshotEntry extends SourceLocation {
-  /** Whole-file SHA-256 (hex) of the cited file's content, at the moment this citation was last confirmed to exist. An integrity signal only -- "this file hasn't visibly changed since the citation was written" -- never proof the citation's own underlying claim is semantically correct (see ADR 0053). */
+  /** Whole-file SHA-256 (hex) of the cited file's content, at the moment this citation was last confirmed to exist. An integrity signal only ("this file hasn't visibly changed since the citation was written") never proof the citation's own underlying claim is semantically correct (see ADR 0053). */
   readonly hash: string
 }
 
-/** One capability's diffable shape at snapshot time -- field/operation names only, never their runtime values. */
+/** One capability's diffable shape at snapshot time: field/operation names only, never their runtime values. */
 export interface ManifestSnapshotCapability {
-  /** Root-relative POSIX path of the file declaring this capability -- copied verbatim from `CapabilityNode.file` (OUT-01, see `display-path.ts`), which is what makes a committed snapshot diffable between two machines at all. */
+  /** Root-relative POSIX path of the file declaring this capability: copied verbatim from `CapabilityNode.file` (see `display-path.ts`), which is what makes a committed snapshot diffable between two machines at all. */
   readonly file: string
   /** The binding name the capability is exported as. */
   readonly exportName: string
@@ -34,13 +34,17 @@ export interface ManifestSnapshotCapability {
   readonly mutators: readonly string[]
   /** Sorted subscription names. */
   readonly subscriptions: readonly string[]
-  /** Per-field citation integrity snapshots for declared `evidence.fields[key].dynamicAccess` entries, keyed by field name -- only present for a field that declares at least one citation that resolved to a real file at snapshot time (see `citation-verification.ts`). */
+  /**
+   * Per-field citation integrity snapshots for declared `evidence.fields[key].dynamicAccess`
+   * entries, keyed by field name. Present only for a field with at least one citation that resolved
+   * to a real file at snapshot time (see `citation-verification.ts`).
+   */
   readonly citationSnapshots?: Readonly<Record<string, readonly CitationSnapshotEntry[]>>
 }
 
-/** A persisted, JSON-serializable snapshot of the inventory at one point in time -- see `buildManifestSnapshot`. */
+/** A persisted, JSON-serializable snapshot of the inventory at one point in time: see `buildManifestSnapshot`. */
 export interface ManifestSnapshot {
-  /** Bumped only on a breaking change to this snapshot's own shape. Bumped 1 -> 2 by OUT-01: every capability key (`file#exportName`) is now built from a root-relative `file`, so a v1 snapshot's keys can never match a v2 run's. */
+  /** Bumped only on a breaking change to this snapshot's own shape. Bumped 1 -> 2: every capability key (`file#exportName`) is now built from a root-relative `file`, so a v1 snapshot's keys can never match a v2 run's. */
   readonly snapshotSchemaVersion: 2
   /** Every capability, active or not, at snapshot time. */
   readonly capabilities: readonly ManifestSnapshotCapability[]
@@ -65,7 +69,7 @@ function toSnapshotCapability(capability: CapabilityNode): ManifestSnapshotCapab
   }
 }
 
-/** Builds a deterministic snapshot of the current inventory -- every capability included, active or not (so deactivating a capability is a detectable, diffable change, not a silent disappearance). */
+/** Builds a deterministic snapshot of the current inventory: every capability included, active or not (so deactivating a capability is a detectable, diffable change, not a silent disappearance). */
 export function buildManifestSnapshot(inventory: CapabilityInventory): ManifestSnapshot {
   const capabilities = inventory.capabilities
     .map(toSnapshotCapability)
@@ -88,12 +92,10 @@ export interface ManifestCapabilityUpdate {
   /** Human-readable description of each individual change (e.g. `"owner changed from ... to ..."`). */
   readonly changes: readonly string[]
   /**
-   * The same field-level diff `changes` describes in prose, as data (EVD-05).
-   * Added so `ChangeModel`'s rename correlation has something to match
-   * against without re-parsing a human-readable sentence -- a report
-   * deriving structure back out of its own prose is exactly the kind of
-   * fragility this codebase avoids. `changes` is unaffected and still reads
-   * the same.
+   * The same field-level diff `changes` describes in prose, as data. It gives
+   * `ChangeModel`'s rename correlation a value to match, so no report has to
+   * parse structure back out of its own prose. `changes` is unaffected and
+   * still reads the same.
    */
   readonly fields: ManifestFieldDiff
 }
@@ -108,7 +110,7 @@ export interface ManifestChangeReport {
   readonly updatedCapabilities: readonly ManifestCapabilityUpdate[]
 }
 
-/** The raw added/removed split between two sorted name lists -- the one place that comparison happens, so the prose and the structured `fields` diff can never disagree. */
+/** The raw added/removed split between two sorted name lists: the one place that comparison happens, so the prose and the structured `fields` diff can never disagree. */
 function splitStringArrays(
   previous: readonly string[],
   current: readonly string[],
@@ -154,7 +156,7 @@ function diffCapability(
 
 /**
  * Diffs two snapshots into a change report. `previous === undefined` means
- * no prior snapshot exists (a first run) -- every current capability is
+ * no prior snapshot exists (a first run): every current capability is
  * reported `added`, never guessed to be "unchanged."
  */
 export function diffManifestSnapshots(
@@ -176,7 +178,7 @@ export function diffManifestSnapshots(
     if (changes.length > 0) {
       // `splitStringArrays` filters two already-sorted name lists (the snapshot
       // contract guarantees `fields` is sorted), and `.filter()` preserves order,
-      // so `added`/`removed` are already sorted -- same assumption the prose diff
+      // so `added`/`removed` are already sorted: same assumption the prose diff
       // in `diffStringArrays` relies on when it `.join()`s without re-sorting.
       const { added, removed } = splitStringArrays(previousCapability.fields, capability.fields)
       updatedCapabilities.push({ capability: key, changes, fields: { added, removed } })

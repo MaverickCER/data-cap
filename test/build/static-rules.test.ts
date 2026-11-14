@@ -297,7 +297,7 @@ describe("checkOwnershipAndSensitivity -- purpose/legalBasis/auditRequired (ADR 
 
   it("does not flag auditRequired when an owner resolves (own or inherited)", () => {
     // `field.owner` here is already the RESOLVED value (as inventory.ts's
-    // own fallback would produce it) -- checkFieldGovernance reads the
+    // own fallback would produce it): checkFieldGovernance reads the
     // resolved field, it doesn't re-derive the fallback itself.
     const findings = checkOwnershipAndSensitivity(
       inventory([
@@ -323,7 +323,7 @@ describe("checkOwnershipAndSensitivity -- purpose/legalBasis/auditRequired (ADR 
     expect(findings).toContainEqual(
       expect.objectContaining({ code: "AUDIT_REQUIRED_WITHOUT_OWNER" }),
     )
-    // The capability-level finding has no `field` ref -- confirms it's the
+    // The capability-level finding has no `field` ref: confirms it's the
     // capability check firing, not a field-level one leaking through.
     const auditFinding = findings.find((f) => f.code === "AUDIT_REQUIRED_WITHOUT_OWNER")
     expect(auditFinding?.field).toBeUndefined()
@@ -452,7 +452,7 @@ describe("checkOwnershipAndSensitivity -- every finding, verbatim", () => {
         family: "governance",
         severity: "info",
         message:
-          '"userCapability" declares sensitivity "top-secret", which isn\'t one of the standard levels (public/internal/confidential/restricted) -- still honored, just flagged for vocabulary drift.',
+          '"userCapability" declares sensitivity "top-secret", which isn\'t one of the standard levels (public/internal/confidential/restricted). It is still honored, only flagged for vocabulary drift.',
         ...ref,
       },
       {
@@ -503,7 +503,7 @@ describe("checkOwnershipAndSensitivity -- every finding, verbatim", () => {
         family: "governance",
         severity: "info",
         message:
-          'Field "contact.email" on "userCapability" declares sensitivity "hush-hush", which isn\'t one of the standard levels (public/internal/confidential/restricted) -- still honored, just flagged for vocabulary drift.',
+          'Field "contact.email" on "userCapability" declares sensitivity "hush-hush", which isn\'t one of the standard levels (public/internal/confidential/restricted). It is still honored, only flagged for vocabulary drift.',
         ...ref,
       },
       {

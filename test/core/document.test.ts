@@ -26,7 +26,7 @@ describe("documentData", () => {
   it("never throws, even given a config/docs pair that describes mismatched shapes", () => {
     // documentData is never itself evidence that an executable buildData/
     // createData capability exists, and never validates its input at
-    // runtime -- that is static-analysis/build tooling's job.
+    // runtime: that is static-analysis/build tooling's job.
     expect(() => {
       documentData(
         { fields: { id: "" } },
@@ -60,8 +60,8 @@ describe("documentData", () => {
         dataResidency: ["us", "eu"],
         transferSafeguard: "EU Standard Contractual Clauses",
         auditRequired: true,
-        // `metadata` is a genuinely arbitrary-shaped bag (Record<string, unknown>)
-        // -- a non-string value here proves the widened type, not just presence.
+        // `metadata` is a genuinely arbitrary-shaped bag (Record<string, unknown>):
+        // a non-string value here proves the widened type, not just presence.
         metadata: { regulatory: "GDPR,PCI-DSS", retentionYears: 7, tags: ["pii"] },
         fields: {
           email: {
@@ -110,7 +110,7 @@ describe("documentData", () => {
   })
 
   it("passing the SAME schema object to createData and documentData -- the real name-checking this API is for -- compiles cleanly", () => {
-    // Not a throw-behavior test -- see the type-level describe block below
+    // Not a throw-behavior test: see the type-level describe block below
     // for the compile-time proof (a nonexistent getter name is flagged
     // there). This just proves the ergonomic shape works end to end against
     // the same schema object at runtime.
@@ -149,11 +149,11 @@ describe("CapabilityDocs / FieldDocs / OperationDocs -- type-level", () => {
     expectTypeOf<Docs["dataResidency"]>().toEqualTypeOf<string | readonly string[] | undefined>()
     expectTypeOf<Docs["transferSafeguard"]>().toEqualTypeOf<string | undefined>()
     expectTypeOf<Docs["auditRequired"]>().toEqualTypeOf<boolean | undefined>()
-    // Widened from Record<string, string> -- metadata is a genuinely opaque,
+    // Widened from Record<string, string>: metadata is a genuinely opaque,
     // arbitrary-shaped extension bag (ADR 0051), not a string-only vocabulary.
     expectTypeOf<Docs["metadata"]>().toEqualTypeOf<Readonly<Record<string, unknown>> | undefined>()
     // dataSubjectCategory/recipientCategories are deliberately field-level
-    // only -- CapabilityDocs has no property for either.
+    // only: CapabilityDocs has no property for either.
     expectTypeOf<Docs>().not.toHaveProperty("dataSubjectCategory")
     expectTypeOf<Docs>().not.toHaveProperty("recipientCategories")
   })
@@ -238,7 +238,7 @@ describe("CapabilityDocs / FieldDocs / OperationDocs -- type-level", () => {
 
   it("a fields-only config (no operations declared) can't document any getter/mutator/subscription name -- there's nothing to check it against", () => {
     const fieldsOnly = { fields: { email: "" } }
-    documentData(fieldsOnly, {}) // no operations section at all -- fine
+    documentData(fieldsOnly, {}) // no operations section at all: fine
     documentData(fieldsOnly, {
       // @ts-expect-error -- fieldsOnly declares no getters, so no getter name can be documented
       getters: { getUser: { description: "..." } },

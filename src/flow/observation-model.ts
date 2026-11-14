@@ -1,5 +1,5 @@
 /**
- * `data-cap`'s Observation Model (ADR 0070, ADR 0072) -- runtime observations
+ * `data-cap`'s Observation Model (ADR 0070, ADR 0072): runtime observations
  * (`data-cap/observe` events) aggregated into the Evidence Model. Each
  * observation records that a named field was seen at a named boundary in a
  * named scope (an execution or test), how many times, and with what declared
@@ -11,7 +11,7 @@
  * dropped here as well as in the recorder, so a JSON file of events written
  * by some other tool cannot smuggle a value into the evidence.
  *
- * Pure -- no filesystem access.
+ * Pure: no filesystem access.
  */
 
 import { compareById } from "./flow-model.js"
@@ -32,7 +32,7 @@ export interface Observation {
   readonly id: string
   readonly scope: string
   readonly boundary: { readonly kind: FlowBoundaryKind; readonly name: string }
-  /** Capability-qualified dotted field path -- the Flow Model's field-node naming. */
+  /** Capability-qualified dotted field path: the Flow Model's field-node naming. */
   readonly field: string
   readonly handling?: FlowHandling
   /** How many matching events were recorded. */
@@ -80,11 +80,11 @@ export interface ObservationModel {
   readonly observations: readonly Observation[]
   /** First/last seen per scope, ordered by scope; absent when no event carried a time. */
   readonly scopeTimes?: readonly ObservationScopeTimes[]
-  /** Events (and skip reports) dropped as malformed -- stated, never silent. */
+  /** Events (and skip reports) dropped as malformed: stated, never silent. */
   readonly skipped: number
   /** What the recorder reported leaving out, ordered by scope, field, reason; absent when it reported nothing. */
   readonly truncations?: readonly ObservationTruncation[]
-  /** The scopes with a truncation, sorted -- a claim built on one cannot be called verified near the cut. Absent when none. */
+  /** The scopes with a truncation, sorted: a claim built on one cannot be called verified near the cut. Absent when none. */
   readonly truncatedScopes?: readonly string[]
 }
 
@@ -177,7 +177,7 @@ function isSkipReason(value: unknown): value is ObservationSkipReason {
 
 /** Orders grouped entries by their keys, which are distinct. */
 function byKey([a]: readonly [string, unknown], [b]: readonly [string, unknown]): number {
-  // Stryker disable next-line EqualityOperator: equivalent -- the keys are distinct, so `<` and `<=` order them the same.
+  // Stryker disable next-line EqualityOperator: equivalent: the keys are distinct, so `<` and `<=` order them the same.
   return a < b ? -1 : 1
 }
 

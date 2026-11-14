@@ -1,18 +1,18 @@
 /**
  * Two cross-capability duplication nudges, both `info`-severity, never
- * blocking -- flagging something worth a human look, not a defect:
+ * blocking: flagging something worth a human look, not a defect:
  *
  * - `checkStructuralDuplication`: two *active* capabilities, outside any
  *   shared `exclusiveGroup`, declaring a top-level field with the same name
  *   and the same structural shape. Replaces env-cap's `compatibility.ts`
  *   (which treats "two contracts define the same variable name" as
- *   inherently suspect, because `process.env` is one flat namespace -- a
+ *   inherently suspect, because `process.env` is one flat namespace: a
  *   real collision there). data-cap capabilities are independent state
- *   trees: two unrelated capabilities both having a `user.email` field is
- *   normal, not a collision -- see ADR 0049.
+ *   trees. Two unrelated capabilities both having a `user.email` field is
+ *   normal, not a collision; see ADR 0049.
  * - `checkDuplicateEndpoints`: two *active* capabilities, outside any
  *   shared `exclusiveGroup`, declaring an operation endpoint with the same
- *   `url` -- a likely-duplicate network fetch that a reader might otherwise
+ *   `url`. It is a likely-duplicate network fetch that a reader might otherwise
  *   miss, since each capability's own file only shows its own declaration,
  *   never the other one making the same call.
  *
@@ -25,7 +25,7 @@ import type { CapabilityInventory, CapabilityNode, FieldNode, OperationNode } fr
 import type { DataFlowEndpoint } from "../core/document.js"
 import type { ReportFinding } from "./findings.js"
 
-/** A structural (type/key-shape) signature of a literal-evaluated field default -- ignores the actual literal value, so `""` and `"a"` are the same shape but `""` and `0` are not. Deliberately coarse: this feeds an `info`-only nudge, not a correctness check. Exported for direct testing (a signature scheme is only meaningful for what exact strings it produces). */
+/** A structural (type/key-shape) signature of a literal-evaluated field default: ignores the actual literal value, so `""` and `"a"` are the same shape but `""` and `0` are not. Deliberately coarse: this feeds an `info`-only nudge, not a correctness check. Exported for direct testing (a signature scheme is only meaningful for what exact strings it produces). */
 export function shapeSignature(value: unknown, depth = 0): string {
   // A literal-evaluated default is shallow in practice; this bound only stops a
   // pathological (or self-referential) structure from recursing without end.
@@ -44,7 +44,7 @@ export function shapeSignature(value: unknown, depth = 0): string {
 
 /**
  * The most pair findings either rule lists. Every pair of similar capabilities is a finding, so N alike capabilities
- * are N(N-1)/2 of them -- millions at a few thousand -- and a report that size cannot even be serialized. Past this
+ * are N(N-1)/2 of them (millions at a few thousand) and a report that size cannot even be serialized. Past this
  * many, the rest are counted in one closing finding instead of listed.
  */
 export const MAX_LISTED_PAIR_FINDINGS = 1000
@@ -75,7 +75,7 @@ function keyedFields(capability: CapabilityNode): readonly KeyedField[] {
 
 /**
  * Every unordered pair of *active* capabilities that are not in the same
- * `exclusiveGroup` -- the pairwise scan both structural rules in this module
+ * `exclusiveGroup`: the pairwise scan both structural rules in this module
  * share (see the module doc comment). What a rule needs to know about a
  * capability is worked out once for it by `derive`, not once per pair.
  */
@@ -95,7 +95,7 @@ function* activeCapabilityPairs<T>(
   }
 }
 
-/** Flags active capabilities outside a shared `exclusiveGroup` that declare a field with the same path and structural shape -- `info`, never blocking. */
+/** Flags active capabilities outside a shared `exclusiveGroup` that declare a field with the same path and structural shape: `info`, never blocking. */
 export function checkStructuralDuplication(
   inventory: CapabilityInventory,
 ): readonly ReportFinding[] {
@@ -116,7 +116,7 @@ export function checkStructuralDuplication(
         code: "DUPLICATE_FIELD_SHAPE_ACROSS_CAPABILITIES",
         family: "structural",
         severity: "info",
-        message: `"${field.path[0]}" is declared with the same shape in both "${a.exportName}" and "${b.exportName}" -- independent capabilities can legitimately duplicate a field; worth a look if that wasn't intentional.`,
+        message: `"${field.path[0]}" is declared with the same shape in both "${a.exportName}" and "${b.exportName}". Independent capabilities can legitimately duplicate a field; worth a look if that wasn't intentional.`,
         capability: { file: a.file, exportName: a.exportName },
         field: field.path,
       })
@@ -157,12 +157,12 @@ function groupedByUrl(refs: readonly OperationEndpointRef[]): UrlIndex {
 
 /**
  * Flags active capabilities outside a shared `exclusiveGroup` that declare
- * an operation endpoint with the same `url` -- `info`, never blocking.
- * Presence-only in the same sense as the rest of this vocabulary: this
+ * an operation endpoint with the same `url`: `info`, never blocking.
+ * Presence-only in the same sense as the rest of this vocabulary. This
  * never proves two capabilities actually fetch the same data at runtime
  * (that would require tracing `execute`/`subscribe` bodies, which this
- * package never does -- ADR 0002), only that both DECLARE the same URL,
- * which is itself a strong, actionable enough signal to surface.
+ * package never does; ADR 0002). It only shows that both DECLARE the same
+ * URL, which is itself a strong, actionable enough signal to surface.
  */
 export function checkDuplicateEndpoints(inventory: CapabilityInventory): readonly ReportFinding[] {
   const findings: ReportFinding[] = []
@@ -182,7 +182,7 @@ export function checkDuplicateEndpoints(inventory: CapabilityInventory): readonl
           code: "DUPLICATE_ENDPOINT_ACROSS_CAPABILITIES",
           family: "structural",
           severity: "info",
-          message: `Endpoint "${refA.endpoint.url}" is declared by both "${a.exportName}"'s ${refA.operation.kind} "${refA.operation.name}" and "${b.exportName}"'s ${refB.operation.kind} "${refB.operation.name}" -- possibly a duplicate network fetch across independently-declared capabilities; worth a look if that wasn't intentional.`,
+          message: `Endpoint "${refA.endpoint.url}" is declared by both "${a.exportName}"'s ${refA.operation.kind} "${refA.operation.name}" and "${b.exportName}"'s ${refB.operation.kind} "${refB.operation.name}". It may be a duplicate network fetch across independently-declared capabilities; worth a look if that wasn't intentional.`,
           capability: { file: a.file, exportName: a.exportName },
           operation: refA.operation.name,
         })

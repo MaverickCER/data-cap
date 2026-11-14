@@ -23,14 +23,14 @@ export function isWithinDirectory(baseDir: string, targetPath: string): boolean 
  * Resolves `location` against `root` and checks the result doesn't escape it
  * (e.g. `location: "../../malicious.ts"`, or an absolute path on another
  * branch of the filesystem entirely). Discovery (`include`/`exclude`) is
- * already safe by construction -- it only ever walks *down* from `root` via
+ * already safe by construction: it only ever walks *down* from `root` via
  * `readdir`, so a pattern can't make it read outside `root`. Output
  * locations have no such structural guarantee, since `path.resolve` happily
  * walks back out via `..` segments, so this is a plain lexical bounds-check
- * (not a symlink-aware `realpath` check -- these are *output* paths that
+ * (not a symlink-aware `realpath` check: these are *output* paths that
  * usually don't exist yet).
  *
- * Never throws itself -- returns a `ParseWarning`-shaped finding on escape
+ * Never throws itself: returns a `ParseWarning`-shaped finding on escape
  * so each generator function can wrap it in its own error type.
  */
 export function resolveWithinRoot(
@@ -47,7 +47,7 @@ export function resolveWithinRoot(
         file: location,
         message:
           `"${optionName}" ("${location}") resolves to "${resolved}", which is outside "root" ("${root}"). ` +
-          `${functionName}() refuses to write outside root -- use a path nested under root instead.`,
+          `${functionName}() refuses to write outside root. Use a path nested under root instead.`,
       },
     }
   }

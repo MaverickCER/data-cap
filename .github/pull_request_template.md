@@ -1,6 +1,6 @@
 ## What changed and why
 
-<!-- What changes for a consumer, not just what changed in the diff. -->
+<!-- What changes for a consumer, not only what changed in the diff. -->
 
 ## Changeset
 
@@ -9,7 +9,7 @@
 
 ## ADR
 
-- [ ] This PR adds or updates a decision record in `specs/decisions/` (or doesn't need one — see [`CONTRIBUTING.md`](../CONTRIBUTING.md#adding-an-architecture-decision-record-adr))
+- [ ] This PR adds or updates a decision record in `specs/decisions/` (or doesn't need one; see [`CONTRIBUTING.md`](../CONTRIBUTING.md#adding-an-architecture-decision-record-adr))
 
 ## Checks
 

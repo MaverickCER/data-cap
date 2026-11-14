@@ -609,7 +609,7 @@ describe("renderDocumentation -- full-catalog snapshot", () => {
   // One maximal fixture exercising every branch of every renderer, pinned
   // character-for-character. Anything that quietly reworded a heading, a
   // separator, a placeholder, a table column, an operator, or the arithmetic
-  // in the lifecycle "Nd remaining"/"expired Nd ago" status fails here -- the
+  // in the lifecycle "Nd remaining"/"expired Nd ago" status fails here: the
   // per-behaviour `toContain` tests above stay for legibility, this proves the
   // exact rendered document.
   const NOW = new Date("2026-01-01T00:00:00.000Z")
@@ -653,7 +653,7 @@ describe("renderDocumentation -- full-catalog snapshot", () => {
         field({
           // A nested (multi-segment) field path that also carries a newline in
           // its description, a declared sensitivity, an upcoming expiry, and a
-          // deprecation with no rename -- so the `path.join(".")`, the
+          // deprecation with no rename: so the `path.join(".")`, the
           // newline->space cell escape, the review row, the lifecycle expiry
           // row, and the `deprecated === true` deprecation row all render for
           // a path that is only correct when joined with ".".
@@ -983,7 +983,7 @@ describe("renderDocumentation -- full-catalog snapshot", () => {
       },
       { ...base, to: { ...base.to, field: ["name"] } },
       // exactOptionalPropertyTypes: `to.field` is optional-without-undefined,
-      // so omit the key rather than set it to `undefined` -- but `position`
+      // so omit the key rather than set it to `undefined`; but `position`
       // (below) is required-but-nullable (`SourcePosition | undefined`, no
       // `?`), so `position: undefined` was always valid there.
       { ...base, to: { capability: base.to.capability } },
@@ -1000,7 +1000,7 @@ describe("renderDocumentation -- full-catalog snapshot", () => {
 
 /**
  * The exact bytes between the "## Changes since last report" heading and the
- * "## Table of contents" heading -- deliberately un-trimmed so the change
+ * "## Table of contents" heading: deliberately un-trimmed so the change
  * renderer's own trailing-blank handling (its `.trim()`) is part of what the
  * permutation snapshots pin.
  */

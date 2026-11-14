@@ -1,16 +1,16 @@
 /**
- * W3C PROV-JSON for the Evidence Model's flow (ADR 0070): provenance and
- * transformation lineage in the standard vocabulary, as a pure projection of
- * the one evidence object.
+ * W3C PROV-JSON for the Evidence Model's flow (ADR 0070). It states
+ * provenance and transformation lineage in the standard vocabulary, as a pure
+ * projection of the one evidence object.
  *
- * The mapping follows PROV's own division of labour. Data (fields,
- * parameters, return values, boundaries, claims, observations) are
- * **entities**; the functions that move and reshape it, the analysis run, and
- * each observation scope are **activities**; `data-cap` is the **agent**.
+ * The mapping follows PROV's own division of labour. Data are **entities**:
+ * fields, parameters, return values, boundaries, claims and observations.
+ * The functions that move and reshape it, the analysis run, and each
+ * observation scope are **activities**. `data-cap` is the **agent**.
  * A function `used` what it read and `wasGeneratedBy`-produced what it
  * returned or sent; a declared source `wasDerivedFrom`-feeds its field; a call
  * `wasInformedBy` its caller. Every relation carries the path and the
- * epistemic status (ADR 0071) of the edge it came from, so lineage is never
+ * epistemic status (ADR 0071) of the edge it came from. So lineage is never
  * stated more strongly than the evidence supports. A path a function received
  * and dropped is a `used` with the role `discarded`: PROV has no verb for
  * "dropped", and silence would lose it.

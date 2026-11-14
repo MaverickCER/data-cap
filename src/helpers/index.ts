@@ -1,7 +1,14 @@
 /**
+ * `data-cap/helpers`: optional helpers for writing processors (`processors`), keying array items
+ * (`identity`, `canonicalize`) and narrowing raw values (`shape`).
+ *
+ * @packageDocumentation
+ */
+
+/**
  * Optional convenience helpers for writing processors, working with array
  * identity, and structurally narrowing raw values. Entirely separate from
- * core/runtime -- neither `buildData` nor the runtime's `createData` have
+ * core/runtime: neither `buildData` nor the runtime's `createData` have
  * knowledge of this module and behave identically without it.
  *
  * Usage: `processors.toNumber(raw.age)`, `shape.isPlainObject(raw)`,
@@ -10,9 +17,9 @@
  * Deliberately built from explicit named imports assembled into plain
  * object literals, not `export * as processors from "./processors.js"`. A
  * bundler (tsup/esbuild) lowers that `export * as` form into a namespace-
- * construction helper call it can't prove side-effect-free, which defeats
+ * construction helper call it can't prove side-effect-free. That defeats
  * tree-shaking in a *second*, downstream bundling pass (a consumer's own
- * bundler bundling this already-bundled package): importing only
+ * bundler bundling this already-bundled package). Importing only
  * `processors` would still ship all of `shape`'s code. A plain object
  * literal of already-imported bindings has no such call in the way, so
  * `import { processors } from "data-cap/helpers"` alone drops
@@ -44,7 +51,7 @@ export type {
   ReconcileArrayInfoResult,
 } from "./identity.js"
 
-/** Convenience coercion helpers for a `processor(raw, ctx)` function (e.g. `processors.toNumber(raw.age)`). Never throw -- unparseable input resolves to `undefined`. */
+/** Convenience coercion helpers for a `processor(raw, ctx)` function (e.g. `processors.toNumber(raw.age)`). Never throw: unparseable input resolves to `undefined`. */
 export const processors = {
   /** Parses a JSON string; non-string input returns `undefined`. */
   parseJSON,
@@ -74,7 +81,7 @@ export const processors = {
   trim,
 }
 
-/** Array-identity primitives -- the same ones the standalone runtime uses to reconcile `info` for an identity-configured array field. */
+/** Array-identity primitives: the same ones the standalone runtime uses to reconcile `info` for an identity-configured array field. */
 export const identity = {
   /** Computes the joined identity key for one array item from its declared identity fields. */
   computeItemIdentity,
@@ -88,7 +95,7 @@ export const shape = {
   isDate,
   /** True for `null`/`undefined`. */
   isNullish,
-  /** True for a plain object literal (or `Object.create(null)`) -- false for arrays, `null`, and class instances. */
+  /** True for a plain object literal (or `Object.create(null)`): false for arrays, `null`, and class instances. */
   isPlainObject,
   /** True for a `RegExp` instance. */
   isRegExp,

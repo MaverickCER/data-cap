@@ -1,14 +1,21 @@
 {
   "name": "data-cap",
   "version": "0.10.0",
-  "description": "Executable, analyzable data contracts. Capabilities declare the fields they own and the getters/mutators/subscriptions that acquire, mutate, or observe them, independent of databases, transports, frameworks, and state-management libraries.",
+  "description": "Declare who owns your app's data and how it may be handled. Lint and build checks enforce those rules, and the data documentation regenerates from your code, so it never falls behind. Works next to fetch, TanStack Query, Redux and Zustand.",
   "keywords": [
-    "data",
-    "state",
-    "contracts",
-    "optimistic-updates",
-    "subscriptions",
     "typescript",
+    "data-ownership",
+    "state",
+    "state-management",
+    "optimistic-updates",
+    "request-deduplication",
+    "subscriptions",
+    "static-analysis",
+    "data-catalog",
+    "data-flow",
+    "data-governance",
+    "documentation-generator",
+    "eslint-plugin",
     "framework-agnostic"
   ],
   "license": "MIT",
@@ -201,7 +208,7 @@
     "verify": "npm run typecheck && npm run lint && npm run format:check && npm run build && npm run schema && npm run test:coverage && npm run size && npm run verify:ambient && npm run verify:compiler-isolation && npm run verify:readme-example && npm run docs:api:report:check",
     "precommit": "npm run typecheck && npm run lint && npm run format && npm run build && npm run schema && npm run test:coverage && npm run size && npm run verify:ambient && npm run verify:compiler-isolation && npm run verify:readme-example && npm run docs:api:report:check",
     "prepublishOnly": "npm run verify",
-    "version": "changeset version && npm install --package-lock-only --ignore-scripts && npm run build && npm run examples:update-golden && internal-package-contract skill && internal-package-contract site",
+    "version": "changeset version && npm install --package-lock-only --ignore-scripts && npm run build && internal-package-contract update-baseline && npm run examples:update-golden && internal-package-contract skill && internal-package-contract site",
     "release": "changeset publish",
     "benchmark:check": "node benchmarks/run-benchmarks.mjs --check",
     "package-managers": "node scripts/package-managers-smoke.mjs"
@@ -244,7 +251,7 @@
     "espree": "^11.2.0",
     "fast-check": "^4.10.2",
     "globals": "^17.9.0",
-    "internal-package-contract": "github:MaverickCER/internal-package-contract#v0.18.0",
+    "internal-package-contract": "github:MaverickCER/internal-package-contract#v0.19.0",
     "prettier": "3.9.10",
     "ts-json-schema-generator": "^2.9.0",
     "tsup": "^9.0.0",
@@ -262,7 +269,8 @@
     },
     "adm-zip": "0.6.1",
     "katex": "^0.18.2",
-    "qs": "6.16.0"
+    "qs": "6.16.2",
+    "re2js": "2.10.0"
   },
   "publishConfig": {
     "access": "public"
@@ -317,6 +325,12 @@
       "env": [
         "bin"
       ]
-    }
+    },
+    "surfaceRenderers": [
+      "src/build/docs.ts",
+      "src/build/generate-flow.ts",
+      "src/build/usage-report.ts",
+      "scripts/github-action/report.mjs"
+    ]
   }
 }

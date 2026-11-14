@@ -178,7 +178,7 @@
   },
   "kind": "Package",
   "canonicalReference": "data-cap!",
-  "docComment": "",
+  "docComment": "/**\n * `data-cap/runtime/retry`: `withRetry`, opt-in retry for one operation, and `isStillDefault`, a\n * ready-made retry predicate. `data-cap/runtime` does not include it.\n *\n * @packageDocumentation\n */\n",
   "name": "data-cap",
   "preserveMemberOrder": false,
   "members": [
@@ -191,7 +191,7 @@
         {
           "kind": "Function",
           "canonicalReference": "data-cap!abortReason:function(1)",
-          "docComment": "/**\n * The reason value a `withRetry`/`delay` abort rejects with -- the signal's own `reason`, or a synthesized `AbortError` when it has none. Exported for direct unit coverage.\n *\n * @internal\n */\n",
+          "docComment": "/**\n * The reason value a `withRetry`/`delay` abort rejects with: the signal's own `reason`, or a synthesized `AbortError` when it has none. Exported for direct unit coverage.\n *\n * @internal\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -237,7 +237,7 @@
         {
           "kind": "Function",
           "canonicalReference": "data-cap!defaultBackoff:function(1)",
-          "docComment": "/**\n * Capped exponential backoff (1s, 2s, 4s, ... 30s max) for a 1-indexed attempt. Exported for direct unit coverage -- reached in production only through `withRetry`'s loop.\n *\n * @internal\n */\n",
+          "docComment": "/**\n * Capped exponential backoff (1s, 2s, 4s, ... 30s max) for a 1-indexed attempt. Exported for direct unit coverage: reached in production only through `withRetry`'s loop.\n *\n * @internal\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -349,7 +349,7 @@
         {
           "kind": "Function",
           "canonicalReference": "data-cap!isStillDefault:function(1)",
-          "docComment": "/**\n * One documented retry policy, exposed ready-made for the common case: retry\n * only when the target field currently holds nothing but its declared\n * schema default -- never risks overwriting already-valid data with an\n * ambiguous retry. Not the only valid policy. Uses the same canonicalization\n * comparison as array identity/coordinator dedup; a non-canonicalizable\n * value is conservatively treated as \"not the default\" (never retried).\n */\n",
+          "docComment": "/**\n * One documented retry policy, ready-made for the common case: retry only while\n * the target field still holds its declared schema default. It never risks\n * overwriting valid data with an ambiguous retry. Not the only valid policy.\n * Uses the same canonicalization\n * comparison as array identity/coordinator dedup; a non-canonicalizable\n * value is conservatively treated as \"not the default\" (never retried).\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -410,7 +410,7 @@
         {
           "kind": "Interface",
           "canonicalReference": "data-cap!RetryOptions:interface",
-          "docComment": "/**\n * Optional, opt-in retry. Never required by core, never applied\n * automatically to a processor/validation failure -- only the caller's\n * `shouldRetry` predicate decides what's worth retrying, since retry.ts\n * itself has no knowledge of data-cap's operation-failure taxonomy (that\n * distinction belongs to whatever wires this into the real execution\n * pipeline, in a later phase). Never retries after the signal aborts, never\n * exceeds `maxAttempts`, and never assumes a mutation is idempotent -- the\n * developer opts a specific operation into retry, this module never decides\n * that on its own.\n *\n * Ships as its own `./runtime/retry` entry point (see tsup.config.ts) for\n * the same structural tree-shaking guarantee `./runtime/cache` has.\n */\n",
+          "docComment": "/**\n * Options for `withRetry`. Every field is optional; the defaults retry every error up to 3 times with capped backoff.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -479,7 +479,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!RetryOptions#shouldRetry:member",
-              "docComment": "/**\n * Whether `error` (from the given 1-indexed attempt) is worth retrying at all. Defaults to retrying every error -- callers should narrow this for real use.\n */\n",
+              "docComment": "/**\n * Whether `error` (from the given 1-indexed attempt) is worth retrying at all. Defaults to retrying every error: callers should narrow this for real use.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -509,7 +509,7 @@
         {
           "kind": "Function",
           "canonicalReference": "data-cap!withRetry:function(1)",
-          "docComment": "/**\n * Runs `fn`, retrying on failure per `options`. Checks `signal` before every\n * attempt (including the first) and during any inter-attempt delay -- an\n * aborted signal always wins over a pending retry.\n */\n",
+          "docComment": "/**\n * Runs `fn`, retrying on failure per `options`. Checks `signal` before every\n * attempt (including the first) and during any inter-attempt delay: an\n * aborted signal always wins over a pending retry.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",

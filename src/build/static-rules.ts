@@ -1,5 +1,5 @@
 /**
- * Ownership and sensitivity findings computed directly off the inventory --
+ * Ownership and sensitivity findings computed directly off the inventory:
  * no file-tree scan needed, unlike `scan-dependencies.ts`. Standard
  * `sensitivity` vocabulary and the presence-only meaning of `protections`
  * are governed by ADR 0049; this module is what actually enforces those
@@ -14,7 +14,7 @@ import type {
 } from "./inventory.js"
 import type { ReportFinding } from "./findings.js"
 
-/** The standard `sensitivity` vocabulary (ADR 0049) -- anything else is honored but flagged for drift. */
+/** The standard `sensitivity` vocabulary (ADR 0049): anything else is honored but flagged for drift. */
 function isStandardSensitivityLevel(level: string): boolean {
   return (
     level === "public" || level === "internal" || level === "confidential" || level === "restricted"
@@ -54,7 +54,7 @@ function checkCapabilitySensitivity(capability: CapabilityNode): ReportFinding[]
       code: "NONSTANDARD_SENSITIVITY_LEVEL",
       family: "governance",
       severity: "info",
-      message: `"${capability.exportName}" declares sensitivity "${sensitivity}", which isn't one of the standard levels (public/internal/confidential/restricted) -- still honored, just flagged for vocabulary drift.`,
+      message: `"${capability.exportName}" declares sensitivity "${sensitivity}", which isn't one of the standard levels (public/internal/confidential/restricted). It is still honored, only flagged for vocabulary drift.`,
       ...ref,
     })
   }
@@ -72,9 +72,9 @@ function checkCapabilitySensitivity(capability: CapabilityNode): ReportFinding[]
 
 function checkFieldSensitivity(capability: CapabilityNode, field: FieldNode): ReportFinding[] {
   // Deliberately the field's own declared value, not the capability-inherited
-  // resolved value (`field.sensitivity.value` when `declaredOn === "capability"`)
-  // -- checkCapabilitySensitivity already fires
-  // SENSITIVE_CAPABILITY_MISSING_PROTECTIONS once per capability, so
+  // resolved value (`field.sensitivity.value` when `declaredOn === "capability"`).
+  // Because checkCapabilitySensitivity already fires
+  // SENSITIVE_CAPABILITY_MISSING_PROTECTIONS once per capability,
   // triggering here on the inherited value would duplicate that finding for
   // every field on a sensitive capability (ADR 0050, ADR 0057).
   const sensitivity = ownValue(field.sensitivity)
@@ -90,7 +90,7 @@ function checkFieldSensitivity(capability: CapabilityNode, field: FieldNode): Re
       code: "NONSTANDARD_SENSITIVITY_LEVEL",
       family: "governance",
       severity: "info",
-      message: `Field "${field.path.join(".")}" on "${capability.exportName}" declares sensitivity "${sensitivity}", which isn't one of the standard levels (public/internal/confidential/restricted) -- still honored, just flagged for vocabulary drift.`,
+      message: `Field "${field.path.join(".")}" on "${capability.exportName}" declares sensitivity "${sensitivity}", which isn't one of the standard levels (public/internal/confidential/restricted). It is still honored, only flagged for vocabulary drift.`,
       ...ref,
     })
   }
@@ -116,19 +116,19 @@ function checkCapabilityAuditRequired(capability: CapabilityNode): ReportFinding
       message: `"${capability.exportName}" declares auditRequired but has no documented owner to hold accountable for that audit trail.`,
       capability: { file: capability.file, exportName: capability.exportName },
       // Unlike FieldNode.declarationPosition (optional), CapabilityNode's own
-      // is always present -- no exactOptionalPropertyTypes guard needed here.
+      // is always present: no exactOptionalPropertyTypes guard needed here.
       position: capability.declarationPosition,
     },
   ]
 }
 
 /**
- * `purpose`/`legalBasis`/`auditRequired` presence findings for one field --
+ * `purpose`/`legalBasis`/`auditRequired` presence findings for one field:
  * same presence-only discipline `checkFieldSensitivity` established for
  * `protections` (a finding here means "not declared, own or inherited,"
  * never "declared but inadequate"). `purpose`/`legalBasis` trigger off the
  * field's own declared sensitivity, not the capability-inherited value, for
- * the same dedup-avoidance reason `checkFieldSensitivity` does (ADR 0050) --
+ * the same dedup-avoidance reason `checkFieldSensitivity` does (ADR 0050):
  * but check the RESOLVED (fallback-inclusive) `purpose`/`legalBasis`, since
  * a capability-level declaration legitimately covers every field under it.
  */
@@ -172,7 +172,7 @@ function checkFieldGovernance(capability: CapabilityNode, field: FieldNode): Rep
   return findings
 }
 
-/** Ownership and sensitivity findings for every capability/field in the inventory -- pure, no file-tree scan. */
+/** Ownership and sensitivity findings for every capability/field in the inventory: pure, no file-tree scan. */
 export function checkOwnershipAndSensitivity(
   inventory: CapabilityInventory,
 ): readonly ReportFinding[] {

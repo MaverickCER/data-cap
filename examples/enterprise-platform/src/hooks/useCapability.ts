@@ -1,5 +1,5 @@
 /**
- * Wires any `createData` capability into React -- `getSnapshot`/`subscribe`
+ * Wires any `createData` capability into React: `getSnapshot`/`subscribe`
  * are already `useSyncExternalStore`-compatible by construction (see
  * AGENTS.md's own non-negotiable invariants), so this hook is a thin,
  * generic adapter, not a data-cap-specific integration layer. The same
@@ -20,7 +20,7 @@ export function useCapability<TSnapshot>(capability: CapabilityLike<TSnapshot>):
     () => capability.getSnapshot(),
     // Server snapshot, for TanStack Start's own SSR pass (`examples/
     // enterprise-platform/` is the only one of this session's three
-    // examples with a real SSR framework in front of it) -- the same,
+    // examples with a real SSR framework in front of it): the same,
     // ordinary synchronous `getSnapshot()` call works identically on the
     // server, since it's never a browser-only API, only a return of
     // whatever state the capability already holds (its declared defaults,

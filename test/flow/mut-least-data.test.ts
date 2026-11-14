@@ -544,7 +544,7 @@ describe("leastDataFindings: exact findings", () => {
         family: "flow",
         severity: "warning",
         message:
-          'Field "user" on "userData" is sent whole to the client response "http-response" (keys: email, name) -- send only the keys the client needs.',
+          'Field "user" on "userData" is sent whole to the client response "http-response" (keys: email, name). Send only the keys the client needs.',
         capability: CAP,
         field: ["user"],
         evidence: [

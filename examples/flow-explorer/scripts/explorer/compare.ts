@@ -3,7 +3,7 @@
  *
  * Every question is answered by data-cap itself: `diffFlow` says which nodes, edges and unknowns differ (by
  * content-addressed id), and the policy results are compared by the rule, field and boundary they are about.
- * This module only arranges the answers into a list a person can read and walk -- the page renders the same
+ * This module only arranges the answers into a list a person can read and walk: the page renders the same
  * list as buttons, `npm run docs` renders it as plain text (`docs/flow.diff.md`), and the page's static HTML
  * carries it too, so the comparison reads without scripts.
  *

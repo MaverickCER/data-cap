@@ -33,12 +33,12 @@
       "expires": ""
     },
     {
-      "id": "mutation:src/build/flow-scan-class-values.ts:BlockStatement:55e930f2ac6b",
+      "id": "mutation:src/build/flow-scan-class-values.ts:BlockStatement:3ba7b236d678",
       "version": 2,
       "justification": "Resolving a callback or a class by name, and a namespace member by namespace, gives the same function through the environment as through these lookups for every program tried.",
       "file": "src/build/flow-scan-class-values.ts",
       "mutator": "BlockStatement",
-      "original": "{\n        const namespace = this.namespaceFile(frame.fn.file, target.expression.text)\n        // Stryker disable next-line ConditionalExpression: equivalent -- `findExport` of a missing file finds no exports, so skipping it and calling it with `undefined` give the same result.\n        if (namespace !== undefined) return this.findExport(namespace, target.name.text)\n      }",
+      "original": "{\n        const namespace = this.namespaceFile(frame.fn.file, target.expression.text)\n        // Stryker disable next-line ConditionalExpression: equivalent: `findExport` of a missing file finds no exports, so skipping it and calling it with `undefined` give the same result.\n        if (namespace !== undefined) return this.findExport(namespace, target.name.text)\n      }",
       "replacement": "{}",
       "ruleBroken": "Every mutant must be killed by a test, or shown equivalent to the original code.",
       "attempted": "Killing: a function given as a callback by name, from another file, through a namespace, through a re-exported namespace, hoisted, a class, and a local that shadows a function. Equivalence: a name in scope is found through the environment before it is looked up by name in the file, so the lookups by name and by namespace are reached only for names the environment lacks, which then resolve as the guards expect.",

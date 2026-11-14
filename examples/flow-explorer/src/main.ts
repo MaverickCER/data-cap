@@ -1,6 +1,6 @@
 /**
- * Tier 4 -- "Can I see, for any one piece of data, every function that touches
- * it and everywhere it goes -- and trust the picture?"
+ * Tier 4 ("Can I see, for any one piece of data, every function that touches
+ * it and everywhere it goes) and trust the picture?"
  *
  * This is the example's end-to-end regression test: it runs the real handlers
  * to record what actually leaves the service, runs the real analysis over the

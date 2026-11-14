@@ -1,5 +1,5 @@
 /**
- * Reference projections (ADR 0050) over Capability Model alone -- plain
+ * Reference projections (ADR 0050) over Capability Model alone: plain
  * exported functions, deliberately NOT routed through
  * `defineEvidenceProjection()`. A single-model filter gains nothing from
  * full Evidence composition; requiring one would only add a dependency
@@ -37,28 +37,28 @@ function projectOperations(
   })
 }
 
-/** Every getter across every capability -- the Getter Report. */
+/** Every getter across every capability: the Getter Report. */
 export function projectGetters(
   inventory: CapabilityInventory,
 ): readonly WithCapability<OperationNode>[] {
   return projectOperations(inventory, "getter")
 }
 
-/** Every mutator across every capability -- the Mutator Report. */
+/** Every mutator across every capability: the Mutator Report. */
 export function projectMutators(
   inventory: CapabilityInventory,
 ): readonly WithCapability<OperationNode>[] {
   return projectOperations(inventory, "mutator")
 }
 
-/** Every subscription across every capability -- the Subscription Report. */
+/** Every subscription across every capability: the Subscription Report. */
 export function projectSubscriptions(
   inventory: CapabilityInventory,
 ): readonly WithCapability<OperationNode>[] {
   return projectOperations(inventory, "subscription")
 }
 
-/** Every getter, mutator, and subscription across every capability -- the Operation Inventory Report. */
+/** Every getter, mutator, and subscription across every capability: the Operation Inventory Report. */
 export function projectOperationInventory(
   inventory: CapabilityInventory,
 ): readonly WithCapability<OperationNode>[] {
@@ -69,7 +69,7 @@ export function projectOperationInventory(
   ]
 }
 
-/** Every field across every capability -- the Field Inventory Report. */
+/** Every field across every capability: the Field Inventory Report. */
 export function projectFields(
   inventory: CapabilityInventory,
 ): readonly WithCapability<FieldNode>[] {

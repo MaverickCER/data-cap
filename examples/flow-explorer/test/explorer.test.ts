@@ -1,6 +1,6 @@
 /**
  * The explorer, exercised the way a person uses it: keyboard, mouse, filters,
- * a shared link, a second revision -- in jsdom, with the page's real, bundled
+ * a shared link, a second revision; in jsdom, with the page's real, bundled
  * script running against the real committed evidence. Plus an accessibility
  * audit (axe-core) and WCAG contrast, computed from the very palette the CSS is
  * generated from.

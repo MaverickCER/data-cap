@@ -1,7 +1,7 @@
-// Cross-runtime conformance -- see bun.test.ts's header comment for why this
+// Cross-runtime conformance: see bun.test.ts's header comment for why this
 // file exists and what gap it closes. Deliberately dependency-free (no
 // `@std/assert` from JSR) so this smoke test never depends on network access
-// in CI -- its only job is proving dist/index.js's and dist/runtime/index.js's
+// in CI: its only job is proving dist/index.js's and dist/runtime/index.js's
 // actual behavior under Deno's engine, not showcasing Deno test idioms.
 //
 // Run via `deno test --no-check --allow-read test/cross-runtime/deno.test.ts`
@@ -101,7 +101,7 @@ Deno.test(
     assertEqual(notifications, 1, "a real change should notify exactly once")
     assertEqual(store.getSnapshot().fields.name, "changed", "the committed value should be visible")
 
-    // Same value again -- a true no-op must never notify (see negative-guarantee checklist item 10).
+    // Same value again: a true no-op must never notify (see negative-guarantee checklist item 10).
     store.commitAuthoritative({ name: "changed" }, undefined)
     assertEqual(
       notifications,

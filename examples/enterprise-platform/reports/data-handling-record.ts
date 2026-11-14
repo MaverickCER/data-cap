@@ -1,34 +1,34 @@
 /**
- * The data-handling record -- one of this tier's two generated
+ * The data-handling record: one of this tier's two generated
  * governance reports (`reports/audit-prep.ts` is the other). Every
  * declared/proven fact below comes from data-cap's own canonical models
- * (Capability, Dependency, Finding, Evidence -- ADR 0050), never hand-typed
+ * (Capability, Dependency, Finding, Evidence: ADR 0050), never hand-typed
  * here. **This demonstrates evidence production, never a compliance
- * claim** -- see the disclaimer this report opens with, and
+ * claim**: see the disclaimer this report opens with, and
  * `specs/generated-artifacts.md`'s "Declared vs. proven" section for the
  * exact epistemic rules every line below follows.
  *
  * Scoped to the same concrete scenario `main-headless.ts` runs for real:
  * a client disputes an invoice (`billingData.disputeInvoice`), and this
  * report records what billing (and identity) data existed and how it was
- * handled, as declared and as found in the code -- not just for `invoices`, but for every declared-sensitive
+ * handled, as declared and as found in the code; not just for `invoices`, but for every declared-sensitive
  * field across the platform, since a real dispute review needs to account
  * for who touched the data, not only what the data was.
  *
  * Structural constraint on this generator, not just a style goal: every
- * assertion below traces to exactly one of five sources -- a
+ * assertion below traces to exactly one of five sources; a
  * `documentData()` declaration, a proven (AST-derived) usage site, a
  * declared endpoint `handling` state, a developer's own `dynamicAccess`
  * citation, or an explicitly disclosed uncertainty (an `indeterminate`
  * candidate-site list, or the stated scanned/not-scanned boundary). No
- * free-floating summary prose that doesn't reduce to one of these five --
+ * free-floating summary prose that doesn't reduce to one of these five:
  * regenerating this report from the same inputs always produces the same
  * output (verified for real by `main-headless.ts`'s own determinism check).
  *
  * This report and `audit-prep.ts` are both thin renderers over one shared
  * source: `getEvidence()` (`reports/evidence-cache.ts`), which serves the
  * exact same composed model `npm run docs`'s own `--evidence` flag writes
- * to `docs/data.evidence.json` -- cached and fingerprint-verified, so
+ * to `docs/data.evidence.json`; cached and fingerprint-verified, so
  * neither report re-runs discovery/linking/scanning on every invocation
  * the way an earlier version of this file did (ADR 0054; see
  * `evidence-cache.ts`'s own header comment for why that's safe). "Every
@@ -54,7 +54,7 @@ import type {
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
 
 /**
- * One field-writing operation's own declared endpoint handling -- the
+ * One field-writing operation's own declared endpoint handling: the
  * "what stage, what handling" half of a field's lifecycle. `direction`
  * distinguishes data arriving (a getter/subscription's own `input`
  * endpoint) from data leaving (a mutator's own `output` endpoint); the same
@@ -70,7 +70,7 @@ interface HandlingStage {
   readonly handling: string | undefined
 }
 
-/** One field's fully-sourced evidence entry -- every property here traces to exactly one of this file's own header comment's five permitted sources. */
+/** One field's fully-sourced evidence entry: every property here traces to exactly one of this file's own header comment's five permitted sources. */
 interface FieldEvidenceEntry {
   readonly capability: string
   readonly field: string
@@ -95,7 +95,7 @@ interface FieldEvidenceEntry {
   readonly indeterminateSites: readonly SourceLocation[]
   readonly dynamicAccessCitations: readonly string[]
   readonly citationIntegrityFindings: readonly { readonly code: string; readonly message: string }[]
-  /** Every operation that writes this field, and what that operation's own declared endpoint(s) say about handling at that boundary crossing -- the DB-to-endpoint leg is this platform's own backend/database concern (`src/server/`), outside anything data-cap observes; this is the endpoint-to-consumer leg data-cap can actually make a declared claim about. */
+  /** Every operation that writes this field, and what that operation's own declared endpoint(s) say about handling at that boundary crossing: the DB-to-endpoint leg is this platform's own backend/database concern (`src/server/`), outside anything data-cap observes; this is the endpoint-to-consumer leg data-cap can actually make a declared claim about. */
   readonly handlingByOperation: readonly HandlingStage[]
 }
 
@@ -158,13 +158,13 @@ const CITATION_INTEGRITY_CODES: ReadonlySet<string> = new Set([
 
 /**
  * `defineEvidenceProjection` itself only ever hands its wrapped function the
- * `EvidenceModel` (ADR 0050 -- provenance/extra context is caller-supplied,
+ * `EvidenceModel` (ADR 0050: provenance/extra context is caller-supplied,
  * never ambient). This report needs one more thing a bare `EvidenceModel`
  * doesn't index for convenient per-field lookup (`findingsByField`, grouped
  * once by the caller from `evidence.finding.findings`), so that's closed
  * over by this factory rather than smuggled onto the wrapped function's own
- * signature. Everything else this report needs -- a capability's own
- * `getters`/`mutators`/`subscriptions`/`fields`, complete with `endpoints` --
+ * signature. Everything else this report needs (a capability's own
+ * `getters`/`mutators`/`subscriptions`/`fields`, complete with `endpoints`)
  * is already sitting on `evidence.capability.capabilities` itself; no
  * separate lookup map is needed the way an earlier version of this file
  * built one.
@@ -181,7 +181,7 @@ function buildDataHandlingRecordProjection(
   return defineEvidenceProjection({
     // Each output field gets its own projector, so `.project()` can report
     // that `fields` was derived from the Capability/Finding/Dependency
-    // Models while `generatedAt` came from provenance alone -- per-field
+    // Models while `generatedAt` came from provenance alone: per-field
     // evidence a reviewer can actually check, not one undifferentiated
     // "this report read everything."
     disclaimer: () => evidenceDisclaimer(),
@@ -255,7 +255,8 @@ function buildDataHandlingRecordProjection(
   })
 }
 
-function renderMarkdown(report: DataHandlingRecord): string {
+/** Renders the record as Markdown. Exported so a test can drive the caption branches directly. */
+export function renderMarkdown(report: DataHandlingRecord): string {
   const lines: string[] = []
   lines.push("# Data Handling Record")
   lines.push("")
@@ -366,7 +367,7 @@ function renderMarkdown(report: DataHandlingRecord): string {
 
 /**
  * Reads the shared, fingerprint-verified `EvidenceModel` (`evidence-
- * cache.ts`) instead of computing one itself -- the fast path on every
+ * cache.ts`) instead of computing one itself: the fast path on every
  * `npm run reports` where `docs/data.evidence.json` is already fresh, with
  * a real `computeDataArtifacts()` fallback (logged, never silent) when
  * it isn't.
@@ -375,9 +376,9 @@ export async function generateDataHandlingRecord(): Promise<DataHandlingRecord> 
   const evidence = await getEvidence()
 
   // Findings are indexed off their structured `location`, the single path a
-  // `LocatedFinding` exposes for "where does this point" -- the flat
-  // `capability`/`field` duplicates this used to read were removed with
-  // OUT-02, and only a `"field"` location can key a per-field lookup at all.
+  // `LocatedFinding` exposes for "where does this point": the flat
+  // `capability`/`field` duplicates this used to read were removed
+  // earlier, and only a `"field"` location can key a per-field lookup at all.
   const findingsByField = new Map<string, LocatedFinding[]>()
   for (const finding of evidence.finding?.findings ?? []) {
     if (finding.location.kind !== "field") continue
@@ -396,7 +397,7 @@ export async function generateDataHandlingRecord(): Promise<DataHandlingRecord> 
   return projectDataHandlingRecord(evidence)
 }
 
-/** Strips the one wall-clock provenance stamp (`generatedAt` in JSON, the `Generated: ` line in Markdown) so two renders a moment apart compare equal whenever every *derived* fact agrees -- the same discipline `main-headless.ts`'s own determinism check applies. */
+/** Strips the one wall-clock provenance stamp (`generatedAt` in JSON, the `Generated: ` line in Markdown) so two renders a moment apart compare equal whenever every *derived* fact agrees: the same discipline `main-headless.ts`'s own determinism check applies. */
 function stableJson(report: DataHandlingRecord): string {
   return JSON.stringify({ ...report, generatedAt: null }, null, 2)
 }
@@ -433,7 +434,7 @@ async function main(): Promise<void> {
   console.log(`Data-handling record written for ${report.fields.length} sensitive field(s).`)
 }
 
-// Only runs the CLI entry when invoked directly (`npm run reports`) -- not
+// Only runs the CLI entry when invoked directly (`npm run reports`): not
 // when `main-headless.ts` imports `generateDataHandlingRecord` itself.
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   await main()

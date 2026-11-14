@@ -2,9 +2,9 @@
  * The headline guarantee of the flow pass (ADR 0070, ADR 0071): it is never silently safe.
  *
  * A catalog of syntactic forms, each a tiny project whose code leaks exactly one field of `userData.user` to a sink
- * through that form. Every row says which of three outcomes the evidence must end in -- (A) the leak is followed to the
+ * through that form. Every row says which of three outcomes the evidence must end in ((A) the leak is followed to the
  * sink, with the sibling field not reported as leaked, (B) the trace is reported incomplete through an unknown
- * that concerns the leaked field, or (W) the whole record is sent -- and the test fails on the fourth outcome, (C) a
+ * that concerns the leaked field, or (W) the whole record is sent) and the test fails on the fourth outcome, (C) a
  * complete trace that misses the leak. The table pins what is supported today: when reach improves, a row flips from B to A on purpose.
  */
 import fc from "fast-check"

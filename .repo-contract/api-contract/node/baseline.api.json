@@ -178,7 +178,7 @@
   },
   "kind": "Package",
   "canonicalReference": "data-cap!",
-  "docComment": "",
+  "docComment": "/**\n * `data-cap/node` (Node only): `nodeBuildFileSystem`, the `node:fs` adapter a build script passes\n * to `data-cap/build` as its `fs` option.\n *\n * @packageDocumentation\n */\n",
   "name": "data-cap",
   "preserveMemberOrder": false,
   "members": [

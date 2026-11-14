@@ -1,9 +1,9 @@
 /**
  * Client-side pattern: subscription transport sharing, field-state, and
- * processor execution are three independent concerns -- only the first is
+ * processor execution are three independent concerns; only the first is
  * ever shared. Two DIFFERENT capabilities acquiring the SAME `subscribe`
  * function identity share one underlying connection, but each still runs
- * its own processor against its own `DataStore` -- there is no shared
+ * its own processor against its own `DataStore`: there is no shared
  * `authoritativeState`, no shared `pendingTransitions`, no shared
  * processing logic.
  *
@@ -30,7 +30,7 @@ interface PriceEvent {
 
 let connectionCount = 0
 
-// One real transport, shared by identity -- e.g. one WebSocket carrying a
+// One real transport, shared by identity: e.g. one WebSocket carrying a
 // raw price feed that two unrelated capabilities both care about. The
 // transport itself decides when an event fires; `handlers` here is the
 // coordinator's own fan-out, so calling `handlers.onEvent` broadcasts to
@@ -45,7 +45,7 @@ function subscribeToPriceFeed(handlers: SubscriptionHandlers<PriceEvent>): () =>
 const capabilityA = buildData({ fields: { priceUsd: 0 } })
 const storeA = createDataStore(capabilityA)
 
-// Capability B: tracks the SAME feed, but converts to a different unit --
+// Capability B: tracks the SAME feed, but converts to a different unit;
 // its own processor, entirely independent of A's.
 const capabilityB = buildData({ fields: { priceCents: 0 } })
 const storeB = createDataStore(capabilityB)

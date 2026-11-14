@@ -2,8 +2,8 @@
 
 **Client-side pattern.** `coordinator.dedupe` shares one in-flight call
 across concurrent requests with the same function identity and
-canonically-equal params -- several parts of an app independently
-requesting the same data at once only actually triggers one real call.
+canonically-equal params. Several parts of an app independently
+requesting the same data at once trigger only one real call.
 
 ## Run it
 
@@ -17,8 +17,8 @@ npm start
 - Identical params concurrently requested through the same function
   reference dedupe onto one underlying call; different params never do.
 - A function-valued (non-canonicalizable) param never dedupes, even with
-  the identical reference passed twice -- dedup degrades gracefully rather
+  the identical reference passed twice. Dedup degrades gracefully rather
   than risking a false collision.
 - A per-caller `AbortSignal` only rejects that caller's own returned
-  promise -- it never cancels the shared underlying work another caller is
+  promise. It never cancels the shared underlying work another caller is
   still waiting on.

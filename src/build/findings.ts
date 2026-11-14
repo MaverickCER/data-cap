@@ -4,8 +4,8 @@
  * usage-scan/data-flow pass emits into, instead of each generator
  * inventing its own ad hoc shape. Establishing this once, before any
  * generator exists, is what keeps "what counts as a conflict" consistent
- * across the whole report-generation engine -- see ADR 0049 and
- * `specs/architecture.md`'s Phase B.5 model section.
+ * across the whole report-generation engine: see ADR 0049 and
+ * the "Report-generation model" section of `specs/architecture.md`.
  */
 
 import type { EvidenceRef } from "../flow/claims-model.js"
@@ -15,20 +15,19 @@ import type { SourceLocation, SourcePosition } from "./source-position.js"
 export type ReportSeverity = "info" | "warning" | "error"
 
 /**
- * Which analysis pass a finding came out of -- an orthogonal axis to
+ * Which analysis pass a finding came out of: an orthogonal axis to
  * `severity` (how much it matters) and `code` (exactly what it is).
  *
  * This is what makes the `--strict*` flags' own groupings legible in the
  * output rather than only in the orchestrator's source: `--strict-docs`
  * escalates `"governance"`/`"structural"`/`"citation"`, `--strict-ownership`
- * escalates `"usage"`, `--strict-flow` escalates `"flow"`. A consumer
- * filtering a report ("show me only what a usage scan proved") currently has
- * to hardcode a list of `ReportFindingCode`s and keep it in sync by hand;
- * `family` makes that a real, stable field instead.
+ * escalates `"usage"`, `--strict-flow` escalates `"flow"`. With `family`, a
+ * consumer filters a report ("only what a usage scan proved") by one stable
+ * field, instead of a hand-kept list of `ReportFindingCode`s.
  *
  * Deliberately assigned at the emission site, never derived from `code` by a
- * lookup table: the rule that produces a finding is the only thing that
- * actually knows which pass it belongs to, and a table would be a second
+ * lookup table. The rule that produces a finding is the only thing that
+ * actually knows which pass it belongs to. A table would be a second
  * source of truth to drift out of sync (the same reasoning that keeps
  * `severity` at the emission site).
  */
@@ -79,16 +78,16 @@ export type ReportFindingCode =
 /**
  * One reportable fact about the discovered capability graph. `severity` is
  * assigned by the rule that produces the finding, following the two
- * governing invariants in `AGENTS.md`: static analysis never infers a
+ * governing invariants in `AGENTS.md`. Static analysis never infers a
  * relationship from insufficient evidence (an ambiguous case is `info` or
- * `indeterminate`-flavored, never guessed at as `error`), and a finding
+ * `indeterminate`-flavored, never guessed at as `error`). A finding
  * built from declared metadata (e.g. a missing `protections` field) never
  * claims more than "documented" vs. "not documented."
  */
 export interface ReportFinding {
   /** Which kind of fact this finding reports. */
   readonly code: ReportFindingCode
-  /** Which analysis pass produced this finding -- see `ReportFindingFamily`. */
+  /** Which analysis pass produced this finding: see `ReportFindingFamily`. */
   readonly family: ReportFindingFamily
   /** How strongly this finding should be treated. */
   readonly severity: ReportSeverity
@@ -107,14 +106,14 @@ export interface ReportFinding {
   readonly operation?: string
   /** The consuming file, for usage-scan-derived findings only. */
   readonly source?: string
-  /** Position of the declaration site (capability's own call, or field's own key) this finding is anchored to, when one is available -- see ADR 0052. Additive: absent for findings with no single declaration-site anchor (e.g. a usage-scan finding whose subject is a consuming file, not a declaration). */
+  /** Position of the declaration site (capability's own call, or field's own key) this finding is anchored to, when one is available: see ADR 0052. Additive: absent for findings with no single declaration-site anchor (e.g. a usage-scan finding whose subject is a consuming file, not a declaration). */
   readonly position?: SourcePosition
   /**
-   * The records in the Evidence Model this finding rests on -- flow nodes and edges, a policy result, an unknown
+   * The records in the Evidence Model this finding rests on: flow nodes and edges, a policy result, an unknown
    * (ADR 0070). Lets a reader drill from the finding to the analysis behind it, and lets SARIF show the path.
    * Absent for findings derived from declared metadata alone.
    */
   readonly evidence?: readonly EvidenceRef[]
-  /** Every candidate access site a `"FIELD_ACCESS_INDETERMINATE"` finding could actually be about -- populated only for that code. Spans potentially multiple consuming files, so each entry carries its own `file` (`SourceLocation`, not just `SourcePosition`). */
+  /** Every candidate access site a `"FIELD_ACCESS_INDETERMINATE"` finding could actually be about: populated only for that code. Spans potentially multiple consuming files, so each entry carries its own `file` (`SourceLocation`, not only `SourcePosition`). */
   readonly indeterminateSites?: readonly SourceLocation[]
 }

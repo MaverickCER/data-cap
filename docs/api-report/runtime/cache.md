@@ -1,5 +1,8 @@
 # runtime/cache
 
+`data-cap/runtime/cache`: `createDataCache`, an optional bounded cache of whole `DataState`
+snapshots. `data-cap/runtime` does not include it.
+
 ## Interfaces
 
 ### DataCache
@@ -119,8 +122,8 @@ function createDataCache<TFields>(options?): DataCache<TFields>;
 Creates a bounded, least-recently-used-eviction cache of complete
 `DataState` snapshots keyed by an opaque string the caller computes (e.g.
 a canonicalized function-identity + params key, mirroring the
-coordinator's own dedup key -- computing that key is an integration
-concern outside this module, which is deliberately keying-scheme-agnostic).
+coordinator's own dedup key). Computing that key is an integration
+concern outside this module, which is deliberately keying-scheme-agnostic.
 
 #### Type Parameters
 

@@ -5,91 +5,41 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-  # Lets a bot-authored branch with no human push get real CI on demand --
-  # internal-package-contract's dependency-pin-sync.yml (called from this
-  # repo's own sync-internal-package-contract.yml) dispatches this explicitly
-  # after opening its pin-bump PR. (This is NOT needed for the benchmark-pr
-  # job's own commit below -- that one genuinely fires its own `pull_request:
-  # synchronize` event, contrary to what an earlier version of this comment
-  # assumed; see benchmark-pr's own placement/ordering for how that's
-  # actually handled now.)
+  # Gives a bot-authored branch CI on demand. internal-package-contract's dependency-pin-sync.yml
+  # (called from sync-internal-package-contract.yml) dispatches this workflow after it opens its
+  # pin-bump PR.
   workflow_dispatch:
 
-# Explicit least-privilege default so every job's GITHUB_TOKEN scope is a
-# property of this file, not an assumption about the repo/org's ambient
-# default -- mirrors env-cap's own ci.yml.
+# Least-privilege default: each job's GITHUB_TOKEN scope is stated in this file, never inherited
+# from the repository or organization default.
 permissions:
   contents: read
 
-# Core/runtime/runtime-cache/runtime-retry/helpers each carry a gzip budget
-# (ci/size-budgets.mjs) -- this workflow is what turns that budget from a
-# script someone could forget to run into a check every change actually has
-# to pass.
-#
-# NOTE: a job for docs deployment is added once Phase 9's docs site is
-# finalized -- see specs/architecture.md.
+# Every entry point carries a gzip budget in ci/size-budgets.mjs; the `verify` job runs it, so
+# no change can skip it.
 jobs:
-  # Runs first, on every PR that touches benchmarked code: it measures the
-  # suites and posts or updates one PR comment. It never commits to the PR
-  # branch -- results and history are recorded after the merge, through their
-  # own small pull request -- so every job below validates exactly the commit
-  # that was pushed, in one CI run.
+  # Measures the benchmark suites on same-repo pull requests and posts or updates one PR comment.
+  # It never commits to the PR branch, so every job below tests exactly the pushed commit.
+  # Results and history are recorded after the merge, through their own small pull request.
   #
-  # A thin caller of internal-package-contract's reusable benchmark-pr.yml
-  # workflow (its own `scripts/benchmark/*.mjs` -- append-history.mjs,
-  # render-summary.mjs -- replace this repo's former, now-deleted
-  # `benchmarks/append-benchmark-history.mjs` / `render-benchmark-summary.mjs`
-  # copies; see internal-package-contract's README "Shared benchmark engine"
-  # section). The job is still named exactly `benchmark-pr` -- `lint`/
-  # `verify` below reference `needs.benchmark-pr.result` by that literal name,
-  # and GitHub has no way to alias a `uses:` job under a different key, so
-  # keeping this job's own name unchanged (rather than, say, inlining the
-  # reusable workflow's job under a name like `benchmark`) is what keeps
-  # every downstream `if:` below correct without also having to rewrite them.
-  # The `if:` below is UNCHANGED from the pre-migration job (only the
-  # `steps:` moved into the reusable workflow) -- same same-repo-PRs-only +
-  # `github.actor != 'github-actions[bot]'` anti-recursion-loop guard. The
-  # per-PR push serialization (`concurrency: group: benchmarks-<PR#>`) is
-  # NOT duplicated here even though it's still a legal caller-job key --
-  # see this job's own `permissions:`-adjacent comment below for why
-  # declaring it on both this caller job and the reusable workflow's own
-  # internal job (which already declares it) deadlocks the run instead of
-  # doubly-guarding it. A `uses:` job cannot also declare `runs-on:`/
-  # `steps:` (the reusable workflow's own job declares those).
+  # A thin caller of internal-package-contract's reusable benchmark-pr.yml. The job keeps the name
+  # `benchmark-pr` because the jobs below read `needs.benchmark-pr.result`, and a `uses:` job
+  # cannot be aliased. A `uses:` job cannot declare `runs-on:` or `steps:` either; the reusable
+  # workflow's job declares them.
   benchmark-pr:
-    # Same-repo PRs only -- a fork PR's GITHUB_TOKEN is read-only here, so the
-    # comment/commit/push steps inside the reusable workflow would just fail
-    # loudly; `lint`/`verify` below already treat this job being skipped as a
-    # pass (see their own `if:`), so a fork PR still gets full CI, just
-    # without the benchmark refresh/comment. `github.actor !=
-    # 'github-actions[bot]'` is the other half of breaking the loop this
-    # job's own module comment describes: once this job's own commit becomes
-    # the HEAD that re-triggers this workflow, this run's own benchmark-pr
-    # sees itself as the actor and skips remeasuring entirely, so there is
-    # nothing left to recommit and no further re-trigger -- bounding a real
-    # push to at most one extra re-trigger, never an unbounded chain. The
-    # reusable workflow's own internal job carries this exact same condition
-    # too (it inherits the same `github` event context as this caller job),
-    # so it's evaluated twice, redundantly but consistently -- the one here
-    # is what actually determines whether this job runs at all (and
-    # therefore what `needs.benchmark-pr.result` reports downstream).
+    # Same-repo pull requests only: a fork PR's GITHUB_TOKEN is read-only, so posting the comment
+    # would fail. `lint` and `verify` treat a skipped benchmark-pr as a pass, so a fork PR still gets
+    # full CI without the benchmark comment. Runs that `github-actions[bot]` triggered skip it too.
+    # The reusable workflow's job repeats this condition; the copy here decides whether
+    # `needs.benchmark-pr.result` is `skipped`.
     if: >-
       github.event_name == 'pull_request' &&
       github.event.pull_request.head.repo.full_name == github.repository &&
       github.actor != 'github-actions[bot]'
-    # NOT duplicated here: the reusable workflow's own internal job already
-    # declares this exact `concurrency: group: benchmarks-<PR#>` (serializing
-    # the real write its commit/push step makes onto the PR branch). Adding
-    # the identical group name on this caller job too doesn't strengthen
-    # that guard -- it deadlocks it. GitHub detected exactly this live
-    # ("Canceling since a deadlock was detected for concurrency group:
-    # 'benchmarks-<PR#>' between 'benchmark-pr' and 'benchmark-pr /
-    # benchmark-pr'") the first time this was tried: the caller job and the
-    # reusable workflow's own inner job both waiting on one group across two
-    # levels of the same call is unsatisfiable, so the run cancels itself
-    # instead of ever starting. One declaration of a given concurrency group
-    # per call chain is what's actually required, and the reusable workflow
-    # is the one that owns the write this guard protects.
+    # No `concurrency:` here. The reusable workflow's job already declares `group: benchmarks-<PR#>`.
+    # Declaring the same group on this caller job too deadlocked the run when it was tried. GitHub
+    # cancelled it with "a deadlock was detected for concurrency group". One declaration per call
+    # chain is enough.
     # A caller job's own `permissions:` caps the token the reusable workflow's job runs with, so it
     # must grant at least what that job declares. The pinned benchmark-pr.yml only reads the
     # repository and posts or updates the PR comment (`contents: read`, `pull-requests: write`);
@@ -98,9 +48,9 @@ jobs:
       contents: read
       pull-requests: write
     # The `suites`/`install-dirs` inputs below exist only in internal-package-contract commits that
-    # include the generalized benchmark kit: bump this SHA to such a commit together with the
+    # include the generalized benchmark kit. Bump this SHA to such a commit together with the
     # internal-package-contract devDependency pin, in the same pull request.
-    uses: MaverickCER/internal-package-contract/.github/workflows/benchmark-pr.yml@e5b8d9eeac7d951a5ea0c7c02c2f761087f8148b # v0.18.0
+    uses: MaverickCER/internal-package-contract/.github/workflows/benchmark-pr.yml@de11cec0f2cd93bbac00512ba706db3f4bbf5e09 # v0.19.0
     with:
       suites: |
         Runtime|benchmarks/performance-runtime|benchmarks/history/runtime.json
@@ -114,17 +64,14 @@ jobs:
 
   # Dev-tooling checks (lint/format/API-report) are a property of the source
   # repo, not the published package's own runtime behavior across Node
-  # versions -- unlike `verify` below, running them once on a single modern
+  # versions: unlike `verify` below, running them once on a single modern
   # Node version is correct, not a coverage gap. Splitting them out here
   # also keeps them independent of `verify`'s own Node-version floor.
   lint:
     needs: [benchmark-pr]
-    # A skipped dependency isn't a passing one by GitHub's own default job
-    # condition -- without this, `lint` (and `verify` below) would themselves
-    # always skip whenever benchmark-pr does (every push-to-main run, every
-    # fork PR), taking every job that needs them, including `contract`, down
-    # with them. `always()` opts back into running on a skip; the explicit
-    # result check still blocks on a genuine benchmark-pr failure.
+    # A skipped benchmark-pr (every push to main, every fork PR) must not skip this job, so
+    # `always()` opts back in on a skip. A failed benchmark-pr skips it; `contract` then fails on
+    # that failure in its first step, because GitHub counts a skipped required check as passing.
     if: always() && (needs.benchmark-pr.result == 'success' || needs.benchmark-pr.result == 'skipped')
     runs-on: ubuntu-latest
     steps:
@@ -132,8 +79,8 @@ jobs:
         with:
           persist-credentials: false
           # github.sha: the merge commit for a pull_request (what would actually land), the pushed
-          # commit for a push, and the dispatched branch's head for a workflow_dispatch. Never the PR
-          # head by name -- checking that out in a workflow that can also be dispatched runs untrusted
+          # commit for a push, and the dispatched branch's head for a workflow_dispatch. Never check
+          # out the PR head by name. In a workflow that can also be dispatched, that runs untrusted
           # code with a privileged cache scope (CodeQL actions/cache-poisoning).
           ref: ${{ github.sha }}
 
@@ -145,17 +92,15 @@ jobs:
       - run: npm run lint
       - run: npm run format:check
       - run: npm run build
-      # The committed Markdown API report (docs/api-report/) must match a
-      # fresh `typedoc --options typedoc.markdown.json` -- a public API
-      # change can't land without the report, and the PR diff, updated too.
+      # The committed Markdown API report (docs/api-report/) must match a fresh `typedoc --options
+      # typedoc.markdown.json`. So a public API change can't land without the report, and the PR diff,
+      # updated too.
       - run: npm run docs:api:report:check
 
-  # Matches package.json's own `engines.node` floor (`>=22.0.0`). Was
-  # `[18.x, 22.x, 24.x]` until the dev toolchain itself (Vitest 4.x, whose
-  # own `engines.node` is `^20.0.0 || ^22.0.0 || >=24.0.0`) stopped running
-  # on Node 18 at all -- `vitest run --coverage` can't even start there,
-  # so 18.x was never actually being verified, just failing to boot. The
-  # `engines.node` promise moved to match what's genuinely tested.
+  # Matches package.json's own `engines.node` floor (`>=22.0.0`). It was `[18.x, 22.x, 24.x]` until the
+  # dev toolchain stopped running on Node 18: Vitest 4.x's own `engines.node` is `^20.0.0 || ^22.0.0 ||
+  # >=24.0.0`. `vitest run --coverage` can't even start there, so 18.x was never verified; it failed to
+  # boot. The `engines.node` promise moved to match what's tested.
   verify:
     needs: [benchmark-pr]
     # Same reasoning as `lint`'s own identical condition above.
@@ -201,11 +146,12 @@ jobs:
       - run: npm test
       - run: npm run size
 
-  # Mutation testing is the one contract check too slow for a single job: the full run is about 18,000 mutants, which
-  # does not finish inside GitHub's six-hour job limit. internal-package-contract splits it (IPC_MUTATION_SHARD=i/n:
-  # the same size-balanced slices every time, every source file in exactly one slice). Each slice runs here as its
-  # own job; `contract` merges the slices' reports and judges the merged report by the full Mutation policy, so
-  # nothing is skipped or waived -- only run in parallel. Not named `contract`: that name is the required check.
+  # Mutation testing is the one contract check too slow for a single job. The full run is about 18,000
+  # mutants, which does not finish inside GitHub's six-hour job limit. internal-package-contract splits it
+  # (IPC_MUTATION_SHARD=i/n: the same size-balanced slices every time, every source file in exactly one
+  # slice). Each slice runs here as its own job. `contract` merges the slices' reports and judges the
+  # merged report by the full Mutation policy. So nothing is skipped or waived: the slices only run in
+  # parallel. Not named `contract`: that name is the required check.
   mutation-shard:
     runs-on: ubuntu-latest
     strategy:
@@ -242,35 +188,30 @@ jobs:
           retention-days: 5
           if-no-files-found: error
 
-  # The org-wide governance gate: internal-package-contract's own 56 checks
-  # (mutation, coverage, security-deps/secrets/socket, accessibility,
-  # dead-code, docs, licenses, ...) run against this package for real, not
-  # just declared as a devDependency. Node 24.x to match
-  # internal-package-contract's own engines.node floor.
+  # The org-wide governance gate. internal-package-contract's own 56 checks run against this package for
+  # real, not only as a declared devDependency. They include mutation, coverage, security-
+  # deps/secrets/socket, accessibility, dead-code, docs and licenses. Node 24.x matches internal-package-
+  # contract's own engines.node floor.
   contract:
     needs: [verify, lint, mutation-shard, benchmark-pr]
-    # Same reasoning as `verify`/`lint`'s own identical-shaped condition: GitHub's default
-    # `success()` considers the *entire* transitive dependency graph, not just this job's direct
-    # `needs` -- since `verify`/`lint` themselves depend on `benchmark-pr`, a skipped `benchmark-pr`
-    # (every push-to-main run, every fork PR) still propagates through as "not success" here even
-    # when `verify`/`lint` genuinely ran and passed, silently skipping `contract` itself. Confirmed
-    # live: a real PR run where `verify`/`lint` both concluded "success" still skipped `contract`.
-    # `verify` and `lint` are deliberately NOT in this condition: a skipped required check counts as
-    # passing on GitHub, so when they fail this job must run and FAIL (first step below), never skip.
-    if: always() && (needs.benchmark-pr.result == 'success' || needs.benchmark-pr.result == 'skipped')
+    # Always runs, so it can never be skipped: GitHub counts a skipped required check as passing.
+    # The first step fails it when benchmark-pr failed or verify or lint did not pass. So a benchmark
+    # failure blocks the merge through `contract` as well as through `required`.
+    if: always()
     runs-on: ubuntu-latest
     permissions:
       contents: read
       # CodeScanning reads the repository's open alerts.
       security-events: read
     steps:
-      - name: verify and lint passed
-        if: needs.verify.result != 'success' || needs.lint.result != 'success'
+      - name: benchmark-pr, verify and lint passed
+        if: needs.verify.result != 'success' || needs.lint.result != 'success' || (needs.benchmark-pr.result != 'success' && needs.benchmark-pr.result != 'skipped')
         env:
+          BENCHMARK: ${{ needs.benchmark-pr.result }}
           VERIFY: ${{ needs.verify.result }}
           LINT: ${{ needs.lint.result }}
         run: |
-          echo "::error::contract needs verify and lint to pass (verify=$VERIFY, lint=$LINT)"
+          echo "::error::contract needs benchmark-pr to pass or be skipped, and verify and lint to pass (benchmark-pr=$BENCHMARK, verify=$VERIFY, lint=$LINT)"
           exit 1
 
       # A skipped required check counts as passing, so a failed slice must FAIL this job, never skip it.
@@ -282,7 +223,7 @@ jobs:
           echo "::error::A mutation slice did not pass ($SLICES); the Mutation check cannot be judged."
           exit 1
 
-      # fetch-depth: 0 -- the Commits check reads origin/main..HEAD.
+      # fetch-depth: 0; the Commits check reads origin/main..HEAD.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.sha }}
@@ -296,11 +237,10 @@ jobs:
       - run: npm ci
       # The contract builds docs/benchmarks (`npm run docs:benchmarks`) before its checks, so the link check
       # finds the page the docs link to.
-      # internal-package-contract's own runner deletes reports/ and coverage/
-      # after the run UNLESS they existed before it started -- pre-creating
-      # them here is what makes the mutation-report artifact upload below
-      # (and Coverage's own reports) survive past the run at all on a fresh
-      # CI checkout, which starts with neither directory present.
+      # internal-package-contract's own runner deletes reports/ and coverage/ after the run UNLESS they
+      # existed before it started. A fresh CI checkout starts with neither directory. Pre-creating them
+      # here is what makes the mutation-report artifact upload below (and Coverage's own reports) survive
+      # past the run.
       - run: mkdir -p reports coverage
       - run: npm run benchmark:check --if-present
       # The slices' reports, put back together. The merge refuses a missing, repeated, unreadable or overlapping
@@ -326,12 +266,10 @@ jobs:
           SOCKET_SECURITY_API_KEY: ${{ secrets.SOCKET_SECURITY_API_KEY }}
           GH_TOKEN: ${{ github.token }}
 
-      # Diagnostic aid, not part of the gate itself: `always()` so a failed
-      # Mutation run's exact per-mutant detail (file, mutator, location,
-      # status) is downloadable instead of only the summary count `npm run
-      # contract` prints to the log -- needed to hand-verify a CI-only
-      # "Survived" that never reproduces locally, per each mutant's own real
-      # source rather than guessing from the count alone.
+      # Diagnostic aid, not part of the gate itself. `always()` makes a failed Mutation run's per-mutant
+      # detail (file, mutator, location, status) downloadable. Otherwise only the summary count `npm run
+      # contract` prints to the log is left. The detail is needed to hand-verify a CI-only "Survived" that
+      # never reproduces locally, from each mutant's own source rather than the count alone.
       - name: Upload mutation report
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -341,13 +279,11 @@ jobs:
           retention-days: 5
           if-no-files-found: ignore
 
-      # A contract run is not a pure read: Format/Lint auto-fix, and
-      # SecurityDeps/SecuritySocket reconcile .repo-contract/exceptions/*.json
-      # (scaffolding a blank stub for any new finding, surfacing a stale
-      # record). CI starts from a clean checkout, so any post-run working-tree
-      # change means an ungoverned finding or an un-added exception stub
-      # slipped through -- fail loudly rather than let it ride along with a
-      # green run, matching repo-contract's own identical guard.
+      # A contract run is not a pure read. Format/Lint auto-fix, and SecurityDeps/SecuritySocket reconcile
+      # .repo-contract/exceptions/*.json: they scaffold a blank stub for any new finding and surface a
+      # stale record. CI starts from a clean checkout. So any post-run working-tree change means an
+      # ungoverned finding or an un-added exception stub slipped through. Fail loudly rather than let it
+      # ride along with a green run, as repo-contract's own identical guard does.
       - name: Working tree is clean after the contract run
         run: |
           if [ -n "$(git status --porcelain)" ]; then
@@ -358,8 +294,8 @@ jobs:
           fi
 
   # The package declares `typescript: ^5 || ^6 || ^7` as a peer and the development toolchain is on 6, so the
-  # type-check and the tests also run against the newest TypeScript 5. The oldest declared floor is not
-  # covered here.
+  # type-check and the tests also run against TypeScript 5.9.3. That was the newest 5.x when pinned; the exact
+  # version keeps the install reproducible. The oldest declared floor is not covered here.
   typescript-5:
     runs-on: ubuntu-latest
     steps:
@@ -372,13 +308,13 @@ jobs:
           node-version: 22.x
 
       - run: npm ci
-      - run: npm install --no-save typescript@5
+      - run: npm install --no-save typescript@5.9.3
       - run: npm run build
       - run: npm run typecheck
       - run: npm test
 
-  # Packs the package and installs it next to a root `typescript` of 5, 6 and 7: the scanner has to run
-  # from both its ESM and CJS entry points (under 7 through the bundled TypeScript 6, ADR 0069) and the
+  # Packs the package and installs it next to a root `typescript` of 5, 6 and 7. The scanner has to run
+  # from both its ESM and CJS entry points (under 7 through the bundled TypeScript 6, ADR 0069). The
   # shipped declarations have to type-check in a consumer. See scripts/typescript-compat.mjs.
   typescript-compat:
     runs-on: ubuntu-latest
@@ -417,28 +353,22 @@ jobs:
       - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2
         with:
           deno-version: v2.x
-      # --no-check: Deno's type-checker doesn't resolve the sibling .d.ts for
-      # a bare relative-path .js import the way tsc/vitest do, and instead
-      # infers a type from dist/index.js's own static JS shape -- a Deno
-      # import-resolution nuance, not a defect in the shipped declarations
-      # (see test/cross-runtime/deno.test.ts's header comment). This job's
-      # job is proving execution conformance, which --no-check still fully
-      # exercises; type-declaration correctness is already checked by
-      # `npm run typecheck` against source in the `verify` job above.
+      # --no-check: Deno's type-checker doesn't resolve the sibling .d.ts for a bare relative-path .js
+      # import the way tsc/vitest do. It infers a type from dist/index.js's own static JS shape instead.
+      # That is a Deno import-resolution nuance, not a defect in the shipped declarations (see test/cross-
+      # runtime/deno.test.ts's header comment). This job proves execution conformance, which --no-check
+      # still fully exercises. `npm run typecheck` in the `verify` job above already checks type-
+      # declaration correctness against source.
       - run: deno test --no-check --allow-read test/cross-runtime/deno.test.ts
 
-  # Proves each of the 3 curated, audience-facing flagship examples still
-  # installs, typechecks, and runs cleanly against the real, just-built
-  # package -- each depends on the root package via `file:../..`, which
-  # needs `dist/` to already exist. Without this job, an API change could
-  # silently break a flagship's own real assertions with nothing to catch
-  # it until a human runs one by hand. The final step runs every flagship's
-  # own runtime assertions + golden comparison in one vitest pass
-  # (test/examples/*.test.ts, each gated on its own node_modules already
-  # being installed by the per-example steps above). The other 16 real-
-  # mechanism regression fixtures this job used to cover live in
-  # `test/integration/` now (see examples/README.md) -- the
-  # `integration-fixtures` job below covers those the same way.
+  # Proves each curated example (four tiers plus nextjs-app) still installs, typechecks, and runs cleanly
+  # against the real, just-built package. Each depends on the root package via `file:../..`, which needs
+  # `dist/` to already exist. Without this job, an API change could break a flagship's own assertions, and
+  # nothing would catch it until a human runs one by hand. The final step runs every flagship's own
+  # runtime assertions and golden comparison in one vitest pass (test/examples/*.test.ts). Each of those
+  # tests is gated on its example's node_modules, installed by the per-example steps above. The other 16
+  # real-mechanism regression fixtures this job used to cover live in `test/integration/` now (see
+  # examples/README.md). The `integration-fixtures` job below covers those the same way.
   examples:
     runs-on: ubuntu-latest
     steps:
@@ -460,7 +390,7 @@ jobs:
           npm run typecheck
 
       # With the example's dependencies installed, so the README's "See it run" block is compared with a
-      # real run here; without them the script skips (the `contract` job has none installed).
+      # real run here. Without them the script skips (the `contract` job has none installed).
       - name: README example is still real
         run: npm run verify:readme-example
 
@@ -477,8 +407,8 @@ jobs:
           npm run typecheck
 
       # Tier 4. Besides installing and typechecking, the `npx vitest run test/examples/` step below runs its
-      # end-to-end tests: the explorer's behaviour and accessibility, and every exported standard against
-      # that standard's own tools. Its devDependencies (a Graphviz renderer, jsdom, axe-core, a Mermaid
+      # end-to-end tests. They cover the explorer's behaviour and accessibility, and every exported standard
+      # against that standard's own tools. Its devDependencies (a Graphviz renderer, jsdom, axe-core, a Mermaid
       # parser) are why this example is a separate project and not part of the package.
       - name: flow-explorer
         working-directory: examples/flow-explorer
@@ -486,11 +416,10 @@ jobs:
           npm ci
           npm run typecheck
 
-      # Not a fifth example tier -- see examples/README.md's "Framework integration"
-      # section. `npm run build` (which chains `docs` -> `next build`) is the
-      # real assertion: it exercises `useSyncExternalStore`'s SSR path and
-      # the globalThis-keyed session secret this example's own README
-      # documents finding and fixing, not just a typecheck.
+      # Not a fifth example tier: see examples/README.md's "Framework integration" section. `npm run
+      # build` (which chains `docs` -> `next build`) is the real assertion, not a typecheck. It exercises
+      # `useSyncExternalStore`'s SSR path and the globalThis-keyed session secret that this example's own
+      # README documents finding and fixing.
       - name: nextjs-app
         working-directory: examples/nextjs-app
         run: |
@@ -499,10 +428,9 @@ jobs:
 
       - run: npx vitest run test/examples/
 
-  # The 16 real-mechanism regression fixtures relocated out of `examples/`
-  # (see examples/README.md) -- same install/typecheck/run-assertions/
-  # compare-golden discipline as the `examples` job above, just answering
-  # "does data-cap actually work?" instead of "why would I use it?".
+  # The 16 real-mechanism regression fixtures relocated out of `examples/` (see examples/README.md). They
+  # follow the same install/typecheck/run-assertions/compare-golden discipline as the `examples` job
+  # above. They answer "does data-cap actually work?" instead of "why would I use it?".
   integration-fixtures:
     runs-on: ubuntu-latest
     steps:
@@ -601,10 +529,9 @@ jobs:
           npm ci
           npm run typecheck
 
-      # Installs shared-schema-package (a sibling file: dependency, not a
-      # real npm-published package) automatically as part of its own
-      # npm install -- no separate pack/build step needed, unlike a tarball-
-      # based cross-package example.
+      # Installs shared-schema-package (a sibling file: dependency, not a real npm-published package) as
+      # part of its own npm install. Unlike a tarball-based cross-package example, it needs no separate
+      # pack/build step.
       - name: tsconfig-aliases-consumer
         working-directory: test/integration/build-tooling/tsconfig-aliases-consumer
         run: |
@@ -620,9 +547,9 @@ jobs:
       - run: npx vitest run test/integration/
 
   # The one status check the ruleset requires for every job above that is not `contract` or `lint`.
-  # GitHub cannot name a matrix job (`verify (22.x)`) as a required context and counts a skipped or
-  # cancelled job as passing, so this job runs `if: always()` and fails unless each job it needs
-  # finished `success`. `benchmark-pr` may skip: it runs only on same-repo pull requests by design.
+  # GitHub cannot name a matrix job (`verify (22.x)`) as a required context, and it counts a skipped or
+  # cancelled job as passing. So this job runs `if: always()` and fails unless each job it needs finished
+  # `success`.
   # `verify-current` (Node current) stays informational. Add every new job to `needs`;
   # test/ci-jobs.test.ts fails when one is missing.
   required:
@@ -655,10 +582,10 @@ jobs:
             process.exit(1);
           }"
 
-  # Installs the packed tarball with npm, pnpm, Yarn 1 and Yarn Berry (node-modules linker) and imports
-  # every entry point from it, as ESM and as CommonJS (scripts/package-managers-smoke.mjs). What is
-  # proven is exactly that: the tarball installs and resolves under those managers; nothing else about
-  # them is claimed. Yarn Plug'n'Play and pnpm's `pnp` node linker are documented as unsupported.
+  # Installs the packed tarball with npm, pnpm, Yarn 1 and Yarn Berry (node-modules linker). It imports
+  # every entry point from it, as ESM and as CommonJS (scripts/package-managers-smoke.mjs). What is proven
+  # is exactly that: the tarball installs and resolves under those managers. Nothing else about them is
+  # claimed. Yarn Plug'n'Play and pnpm's `pnp` node linker are documented as unsupported.
   package-managers:
     runs-on: ubuntu-latest
     permissions:
@@ -677,11 +604,11 @@ jobs:
 
   badges:
     needs: [verify, lint, cross-runtime, contract]
-    # Same transitive-skip reasoning as `contract`'s own identical-shaped condition above --
-    # `verify`/`lint` depend on `benchmark-pr`, which is always skipped on a push-to-main event
-    # (it only ever runs for `pull_request`), so without this, GitHub's default `success()` here
-    # sees that skipped ancestor and silently skips `badges` (and therefore `deploy` below) even
-    # when `verify`/`lint` genuinely ran and passed. Confirmed live on a real push to `main`.
+    # Same transitive-skip reasoning as `contract`'s own identical-shaped condition above. `verify`/`lint`
+    # depend on `benchmark-pr`, which is always skipped on a push-to-main event (it only runs for
+    # `pull_request`). Without this, GitHub's default `success()` here sees that skipped ancestor. It then
+    # skips `badges` (and therefore `deploy` below) even when `verify`/`lint` ran and passed. Confirmed
+    # live on a real push to `main`.
     if: >-
       github.event_name == 'push' && github.ref == 'refs/heads/main' && always() &&
       (needs.verify.result == 'success' || needs.verify.result == 'skipped') &&
@@ -722,22 +649,19 @@ jobs:
             docs/size.json
           retention-days: 14
 
-  # Deploys docs/ (the GitHub Pages site) plus the badge JSON `badges` above
-  # just produced, in the same run -- no cross-run artifact download, no
-  # extra `actions: read` permission, no second workflow file to keep in
-  # sync with this one. Only this job needs the `pages`/`id-token`
-  # permissions and the `pages` concurrency group -- job-level `permissions`/
-  # `concurrency` override the workflow-level default, so `verify`/
-  # `verify-current`/`cross-runtime`/`examples`/`integration-fixtures`/
-  # `badges` keep running with the workflow's existing minimal default
-  # permissions.
+  # Deploys docs/ (the GitHub Pages site) plus the badge JSON that `badges` above produced, in the same
+  # run. That means no cross-run artifact download, no extra `actions: read` permission and no second
+  # workflow file to keep in sync. Only this job needs the `pages`/`id-token` permissions and the `pages`
+  # concurrency group. Job-level `permissions`/`concurrency` override the workflow-level default. So the
+  # other jobs (`verify`, `verify-current`, `cross-runtime`, `examples`, `integration-fixtures`, `badges`)
+  # keep the workflow's minimal default permissions.
   deploy:
     needs: badges
-    # Same transitive-skip reasoning as `badges`'/`contract`'s own conditions above -- `badges`'
-    # own ancestry runs back through `verify`/`lint` to `benchmark-pr`, which is always skipped on
-    # a push-to-main event, so without this, GitHub's default `success()` here still sees that
-    # skipped ancestor deep in the chain and silently skips `deploy` even when `badges` genuinely
-    # ran and passed. Confirmed live on a real push to `main`.
+    # Same transitive-skip reasoning as the `badges` and `contract` conditions above. The ancestry of
+    # `badges` runs back through `verify`/`lint` to `benchmark-pr`, which is always skipped on a push-to-
+    # main event. Without this, GitHub's default `success()` here sees that skipped ancestor deep in the
+    # chain. It then skips `deploy` even when `badges` ran and passed. Confirmed live on a real push to
+    # `main`.
     if: always() && needs.badges.result == 'success'
     runs-on: ubuntu-latest
     permissions:
@@ -760,17 +684,15 @@ jobs:
         with:
           node-version: 22.x
       - run: npm ci
-      # The rendered HTML API reference is generated fresh here, never
-      # committed -- it lands at maverickcer.github.io/data-cap/api/ alongside
-      # the hand-authored landing page. The Markdown report drift check in
-      # the `verify` job is what guards the API surface itself.
+      # The rendered HTML API reference is generated fresh here, never committed. It lands at
+      # maverickcer.github.io/data-cap/api/ alongside the hand-authored landing page. The Markdown report
+      # drift check in the `verify` job is what guards the API surface itself.
       - run: npm run docs:api
-      # Same "generated fresh here, never committed" treatment as docs/api
-      # above -- a static history page (small-multiples charts, one per
-      # benchmark group, annotated with its currently-inferred complexity
-      # class) built from the committed benchmarks/history/*.json by
-      # internal-package-contract's shared scripts/benchmark/render-page.mjs.
-      # Lands at maverickcer.github.io/data-cap/benchmarks/.
+      # Same "generated fresh here, never committed" treatment as docs/api above. internal-package-
+      # contract's shared scripts/benchmark/render-page.mjs builds a static history page from the
+      # committed benchmarks/history/*.json. It has small-multiples charts, one per benchmark group, each
+      # annotated with its currently-inferred complexity class. Lands at maverickcer.github.io/data-
+      # cap/benchmarks/.
       - run: npm run docs:benchmarks
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:

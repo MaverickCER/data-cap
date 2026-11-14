@@ -1,5 +1,5 @@
 /**
- * Type-level tests only -- checked by `tsc` (via `npm run typecheck`), not exercised at runtime. They hold the
+ * Type-level tests only: checked by `tsc` (via `npm run typecheck`), not exercised at runtime. They hold the
  * names `data-cap/build` exports for what its reference projections return, and the literal type of `UNOWNED`.
  */
 import { describe, expectTypeOf, it } from "vitest"

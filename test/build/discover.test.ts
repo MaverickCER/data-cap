@@ -171,8 +171,8 @@ describe("discoverCapabilityFiles", () => {
 })
 
 // ADR 0058: `src/build/**` depends on the `BuildFileSystem` *contract*, not on
-// `node:fs`. Running the exact same discovery against a `Map`-backed fake --
-// no real disk anywhere -- is the proof: if `discover.ts` reached for
+// `node:fs`. Running the exact same discovery against a `Map`-backed fake (
+// no real disk anywhere) is the proof: if `discover.ts` reached for
 // `node:fs` itself, these would not pass.
 describe("discoverCapabilityFiles against an in-memory BuildFileSystem", () => {
   const memRoot = path.normalize("/project")

@@ -1,5 +1,5 @@
 # internal-package-contract caller workflow. Runs the shared Changesets + npm OIDC
-# trusted-publishing release flow on every push to main. Replace nothing -- the real
+# trusted-publishing release flow on every push to main. Replace nothing: the real
 # logic lives in the shared, centrally-maintained reusable workflow this calls; a fix
 # or improvement there reaches every consumer without a per-repo edit. See
 # https://github.com/MaverickCER/internal-package-contract/blob/main/.github/workflows/release-npm-changesets.yml
@@ -11,12 +11,15 @@ on:
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
+# Each job grants only what it needs; nothing is granted workflow-wide.
+permissions: {}
+
 jobs:
   release:
     permissions:
       contents: write
       pull-requests: write
-      # Enables npm's OIDC trusted publishing -- see the called workflow's own
+      # Enables npm's OIDC trusted publishing: see the called workflow's own
       # comment. Required here too: GitHub caps the called workflow's effective
       # permissions at the intersection of what this caller grants and what it
       # itself declares.
@@ -25,4 +28,4 @@ jobs:
       # which needs `actions: write`. A caller granting less than the called workflow declares makes
       # GitHub refuse to start the run at all (`startup_failure`), so no release ever runs.
       actions: write
-    uses: MaverickCER/internal-package-contract/.github/workflows/release-npm-changesets.yml@e5b8d9eeac7d951a5ea0c7c02c2f761087f8148b # v0.18.0
+    uses: MaverickCER/internal-package-contract/.github/workflows/release-npm-changesets.yml@de11cec0f2cd93bbac00512ba706db3f4bbf5e09 # v0.19.0

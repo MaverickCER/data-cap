@@ -43,7 +43,7 @@ Build the package first: `npm run build` at the repository root. Then, in this d
 
 Then open `docs/explorer.html`. A failed assertion or test exits 1, and `npm run check` exits 1 listing each stale file.
 
-CI's `examples` job runs `npm run typecheck` here. It then runs `npm start`, `npm run check` and `npm test` through `test/examples/flow-explorer.test.ts`. That job does not block a merge.
+CI's `examples` job runs `npm run typecheck` here. It then runs `npm start`, `npm run check` and `npm test` through `test/examples/flow-explorer.test.ts`. `required` waits for that job, so a failure blocks a merge.
 
 In the page, choose `userData.user` and type `passwordHash` as the path. Its one route, to the debug endpoint and out to the client, turns red while everything else dims. Press **T** on any node to trace from it. Tab moves between nodes; Enter inspects one.
 

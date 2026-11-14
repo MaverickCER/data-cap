@@ -6,12 +6,12 @@ import { DataProjectGenerationError } from "../../src/build/errors.js"
 import { EVIDENCE_MODEL_SCHEMA_VERSION } from "../../src/build/evidence-model.js"
 import { main } from "../../src/cli/index.js"
 
-// Real, end-to-end exercise of main()'s stdout-formatting path -- test/cli/index.test.ts
+// Real, end-to-end exercise of main()'s stdout-formatting path: test/cli/index.test.ts
 // only covers parseArgs()/the individual write*Summary() helpers, and
 // test/cli/bin.test.ts only spawns the built CLI for --help/error/exit-code
 // cases, so main()'s real generate/check wiring below was never actually
 // exercised by any other test. `--evidence` is the only flag this CLI still
-// accepts (ADR 0066) -- manifest/docs/ownership/flow generation (and their
+// accepts (ADR 0066): manifest/docs/ownership/flow generation (and their
 // own summary formatting) moved to direct `data-cap/build` calls, covered by
 // test/build/generate-data-artifacts.test.ts instead.
 
@@ -141,7 +141,7 @@ describe("main() -- real --evidence run", () => {
   })
 
   // The CLI can no longer request a manifest/docs/ownership report/flow set
-  // (ADR 0066) -- `result.manifest`/`result.documentation`/`result.flow` are
+  // (ADR 0066): `result.manifest`/`result.documentation`/`result.flow` are
   // always undefined from a real CLI run, so their own summary lines (and
   // the "changes since last execution" section) never print.
   it("never prints manifest/docs/ownership/flow lines, since the CLI can no longer request any of them", async () => {
@@ -482,18 +482,18 @@ documentData({ fields: fields }, { owner: "billing-team" });
   })
 
   it("--check surfaces findings for visibility, escalated -- and, unlike --docs's DATA.md, --evidence's persisted JSON embeds the finding model itself, so a --strict-docs check against a non-strict generation genuinely IS stale, not just noisier", async () => {
-    // checkArtifacts() never throws (see check-artifacts.ts) -- it diffs
+    // checkArtifacts() never throws (see check-artifacts.ts): it diffs
     // computed content against disk and never itself blocks on a blocking
     // (error-severity) finding, unlike a real (--check-less) run, which
     // throws DataProjectGenerationError before writing anything. But
     // "content" for --evidence is the full persisted EvidenceModel, and
-    // that model embeds `finding.findings` -- severities included -- so
+    // that model embeds `finding.findings` (severities included) so
     // adding --strict-docs on the check side alone (without regenerating)
     // changes the bytes `checkArtifacts` recomputes, and the artifact
     // correctly reads as stale. (--docs's DATA.md has no such coupling:
     // `generateDocumentation()`'s `findings` are a value returned
     // alongside `.content`, never rendered into it, which is why the
-    // pre-ADR-0066 version of this test -- run against --docs -- could
+    // pre-ADR-0066 version of this test (run against --docs) could
     // stay "up to date" under the same kind of flag mismatch.)
     const flags = [
       "node",
@@ -514,7 +514,7 @@ documentData({ fields: fields }, { owner: "billing-team" });
     expect(output).toContain("STALE")
     expect(output).toContain("[error] [CAPABILITY_MISSING_OWNER]") // surfaced for visibility, escalated
     // --check's own exit code still reflects staleness, not the escalated
-    // severity directly -- it's just that here the two happen to coincide,
+    // severity directly: it's just that here the two happen to coincide,
     // since the escalation is precisely what makes the recomputed content
     // differ from what's on disk.
     expect(process.exitCode).toBe(1)
@@ -658,7 +658,7 @@ describe("main() -- normal-flow non-json error propagation", () => {
 
 describe("main() -- init subcommand dispatch", () => {
   it("routes `init` (first positional token) to the scaffolder, not parseArgs", async () => {
-    // parseArgs() would throw "Unknown argument: init" -- reaching the init
+    // parseArgs() would throw "Unknown argument: init"; reaching the init
     // help text at all proves main() intercepted before parseArgs.
     process.argv = ["node", "data-cap", "init", "--help"]
 
@@ -670,7 +670,7 @@ describe("main() -- init subcommand dispatch", () => {
 
   it("scaffolds into the current directory and exits 0", async () => {
     // Mocks the `process.cwd` FUNCTION rather than calling the real
-    // `process.chdir()` -- the latter genuinely cannot run under a
+    // `process.chdir()`: the latter genuinely cannot run under a
     // `worker_threads`-pooled test runner (Node itself throws
     // "process.chdir() is not supported in workers"), which is exactly the
     // pool Stryker's own coverageAnalysis dry run uses. Mocking the

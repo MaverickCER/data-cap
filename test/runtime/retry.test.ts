@@ -41,7 +41,7 @@ describe("withRetry", () => {
       expect(fn).toHaveBeenCalledTimes(2)
     } finally {
       // Always restored, even when an assertion above throws (e.g. under a
-      // mutation that breaks withRetry's exit condition) -- an uncaught
+      // mutation that breaks withRetry's exit condition): an uncaught
       // failure here would otherwise leave fake timers active for every
       // later test in this worker, turning an unrelated later test's real
       // `setTimeout`-based await into a hang instead of a clean failure.
@@ -144,7 +144,7 @@ describe("withRetry", () => {
     })
     const controller = new AbortController()
 
-    // `attempt > maxAttempts` can never fire when maxAttempts is Infinity --
+    // `attempt > maxAttempts` can never fire when maxAttempts is Infinity:
     // a real, if pathological, caller mistake (e.g. a mis-parsed config
     // value) this fail-safe iteration ceiling exists to catch.
     await expect(
@@ -276,7 +276,7 @@ describe("isStillDefault", () => {
   it("treats the exact same non-canonicalizable reference as still-default (Object.is fast path)", () => {
     const fn = (): void => undefined
     // No canonical key exists for a function, so this can only pass via the
-    // `Object.is` short-circuit -- not the canonicalize comparison.
+    // `Object.is` short-circuit: not the canonicalize comparison.
     expect(isStillDefault(fn, fn)).toBe(true)
     const sym = Symbol("s")
     expect(isStillDefault(sym, sym)).toBe(true)
@@ -288,7 +288,7 @@ describe("isStillDefault", () => {
   })
 
   it("conservatively treats a non-canonicalizable value as not-default (never auto-retried)", () => {
-    // Two distinct (non-reference-equal) non-canonicalizable values -- if
+    // Two distinct (non-reference-equal) non-canonicalizable values: if
     // they were the exact same reference, Object.is's fast path would
     // trivially short-circuit to `true` without ever exercising the
     // canonicalize-based comparison this test targets.

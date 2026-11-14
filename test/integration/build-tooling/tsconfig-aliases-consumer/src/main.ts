@@ -3,7 +3,7 @@
  * allow-lists an installed package by name, letting a `fields` reference
  * that bare-imports from it (`import { productFields } from
  * "shared-schema-package"`) resolve to the schema file that package
- * declares via its own `package.json#dataCap.schema` field -- a real
+ * declares via its own `package.json#dataCap.schema` field; a real
  * versioning/trust boundary crossing (a different package), unlike
  * `tsconfig-aliases/`'s same-project alias.
  */
@@ -15,7 +15,7 @@ import { nodeBuildFileSystem } from "data-cap/node"
 
 const root = path.join(import.meta.dirname, "..")
 
-// Discovery must exclude the "published" package's own directory -- an
+// Discovery must exclude the "published" package's own directory: an
 // application discovers ITS OWN source, never crawls into a dependency's
 // tree looking for capabilities (that's what the explicit `packages`
 // allowlist is for).

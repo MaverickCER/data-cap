@@ -4,6 +4,7 @@ import path from "node:path"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
 import {
   checkArtifacts,
+  maskChangesSection,
   normalizeForComparison,
   readOnDisk,
 } from "../../src/build/check-artifacts.js"
@@ -49,6 +50,44 @@ describe("checkArtifacts", () => {
 
     const { stale } = await checkArtifacts({ fs: nodeBuildFs, root, tsconfig: false, location })
     expect(stale).toEqual([])
+  })
+
+  it("reports a catalog clean right after the generation that wrote it, though a rerun renders its change section differently", async () => {
+    await writeFile(
+      "user.ts",
+      `export const userCapability = createData({ fields: { email: "" } });`,
+    )
+    const options = {
+      fs: nodeBuildFs,
+      root,
+      tsconfig: false as const,
+      location: path.join(root, "generated", "manifest.ts"),
+      docs: path.join(root, "docs", "DATA.md"),
+    }
+    await generateDataArtifacts(options)
+    // The first run's change section differs from what a second computation renders.
+    expect(await fs.readFile(options.docs, "utf8")).not.toContain(
+      "_No changes since the last report._",
+    )
+
+    const { stale } = await checkArtifacts(options)
+    expect(stale).toEqual([])
+  })
+
+  it("still reports the catalog stale when a capability changes after it was generated", async () => {
+    await writeFile(
+      "user.ts",
+      `export const userCapability = createData({ fields: { email: "" } });`,
+    )
+    const docs = path.join(root, "docs", "DATA.md")
+    await generateDataArtifacts({ fs: nodeBuildFs, root, tsconfig: false, docs })
+    await writeFile(
+      "user.ts",
+      `export const userCapability = createData({ fields: { email: "", name: "" } });`,
+    )
+
+    const { stale } = await checkArtifacts({ fs: nodeBuildFs, root, tsconfig: false, docs })
+    expect(stale).toContain(docs)
   })
 
   it("detects drift in exactly the file that was hand-edited, leaving the untouched one reported clean", async () => {
@@ -238,7 +277,7 @@ describe("checkArtifacts", () => {
     await writeFile("docs/data.evidence.json", "not json at all")
     const { stale } = await checkArtifacts({ fs: nodeBuildFs, root, tsconfig: false, evidence })
     // `--evidence` alone now also drives the manifest snapshot sidecar's own
-    // read/write (F2) -- never written on disk here, so it reports stale
+    // read/write (F2): never written on disk here, so it reports stale
     // too, alongside the hand-written evidence file itself.
     expect(stale).toEqual([path.join(root, ".data-cap-manifest-snapshot.json"), evidence])
   })
@@ -283,6 +322,36 @@ describe("normalizeForComparison", () => {
     expect(normalized.provenance).toStrictEqual({ generatedAt: "", tool: "t" })
     expect(normalized.change).toBeNull()
     expect(normalized.capability).toBe("x")
+  })
+
+  it("masks the catalog's change section in Markdown, and nothing before or after it", () => {
+    const catalog = (changes: string, body: string) =>
+      `# Data Capability Catalog\n\n## Changes since last report\n\n${changes}\n\n## Table of contents\n\n${body}\n`
+    const masked =
+      "# Data Capability Catalog\n\n## Changes since last report\n\n## Table of contents\n\n- a\n"
+    expect(normalizeForComparison(catalog("**Added:**\n- `a`", "- a"))).toBe(masked)
+    expect(normalizeForComparison(catalog("_No changes since the last report._", "- a"))).toBe(
+      masked,
+    )
+    expect(normalizeForComparison(catalog("_No changes._", "- b"))).not.toBe(masked)
+  })
+
+  it("ends the change section at the next heading, not at a `## ` inside a line", () => {
+    expect(
+      maskChangesSection(
+        "## Changes since last report\n\n- `a ## b` renamed\n\n## Table of contents\n\n- a\n",
+      ),
+    ).toBe("## Changes since last report\n\n## Table of contents\n\n- a\n")
+  })
+
+  it("leaves text without a change section, or with nothing after it, unchanged", () => {
+    expect(maskChangesSection("# Title\n\n## Other\n\nx\n")).toBe("# Title\n\n## Other\n\nx\n")
+    expect(maskChangesSection("## Changes since last report\n\nx\n")).toBe(
+      "## Changes since last report\n\nx\n",
+    )
+    expect(maskChangesSection("intro ## Changes since last report\nx\n## Next\n")).toBe(
+      "intro ## Changes since last report\nx\n## Next\n",
+    )
   })
 
   it("returns text that is not JSON unchanged", () => {

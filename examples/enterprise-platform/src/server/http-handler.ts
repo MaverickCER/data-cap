@@ -1,15 +1,15 @@
 /**
- * The real HTTP surface -- one small router, no framework. Used two ways,
+ * The real HTTP surface: one small router, no framework. Used two ways,
  * from the exact same code: `main-headless.ts` hands it to a plain
  * `node:http` server, and `vite.config.ts`'s own dev-server plugin hands it
- * to Vite's Connect middleware stack (`configureServer`) for `npm run dev`
- * -- both are the same Node `(req, res)` shape, so there is exactly one
+ * to Vite's Connect middleware stack (`configureServer`) for `npm run dev`:
+ * both are the same Node `(req, res)` shape, so there is exactly one
  * implementation of "what the backend does," not two that could drift.
  *
  * This is deliberately the layer TanStack Start's own `createServerFn`
  * doesn't cover: server functions are request/response RPC, not long-lived
  * streams, so the SSE endpoint here is a real gap in what the framework
- * provides on its own -- exactly the kind of boundary this example exists
+ * provides on its own; exactly the kind of boundary this example exists
  * to make visible (see README's "Services this example integrates").
  */
 import { randomUUID } from "node:crypto"
@@ -194,7 +194,7 @@ export async function handleRequest(req: IncomingMessage, res: ServerResponse): 
 
     const streamMatch = /^\/api\/projects\/([^/]+)\/invoices\/stream$/.exec(pathname)
     if (method === "GET" && streamMatch) {
-      // Secure by construction: no session, no stream -- see this module's
+      // Secure by construction: no session, no stream; see this module's
       // own header comment and sse.ts's.
       const session = requireSession(req, res)
       if (session === undefined) return true

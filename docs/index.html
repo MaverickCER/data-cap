@@ -19,23 +19,29 @@
         } catch (error) {}
       })()
     </script>
-    <title>data-cap: capability-owned data contracts</title>
+    <title>data-cap: who owns your app&#39;s data, and how it may be handled</title>
     <meta
       name="description"
-      content="Your application&#39;s data should have an owner. data-cap declares each piece of application data once, as a capability-owned contract, whatever database, transport, framework or state library sits underneath. It works next to TanStack Query, Redux or plain fetch, not instead of them."
+      content="Declare who owns your app&#39;s data and how it may be handled. Lint and build checks enforce those rules, and the data documentation regenerates from your code, so it never falls behind. data-cap works next to TanStack Query, Redux or plain fetch, not instead of them."
     />
     <link rel="canonical" href="https://maverickcer.github.io/data-cap/" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://maverickcer.github.io/data-cap/" />
-    <meta property="og:title" content="data-cap: capability-owned data contracts" />
+    <meta
+      property="og:title"
+      content="data-cap: who owns your app&#39;s data, and how it may be handled"
+    />
     <meta
       property="og:description"
-      content="Your application&#39;s data should have an owner. data-cap declares each piece of application data once, as a capability-owned contract, whatever database, transport, framework or state library sits underneath. It works next to TanStack Query, Redux or plain fetch, not instead of them."
+      content="Declare who owns your app&#39;s data and how it may be handled. Lint and build checks enforce those rules, and the data documentation regenerates from your code, so it never falls behind. data-cap works next to TanStack Query, Redux or plain fetch, not instead of them."
     />
-    <meta name="twitter:title" content="data-cap: capability-owned data contracts" />
+    <meta
+      name="twitter:title"
+      content="data-cap: who owns your app&#39;s data, and how it may be handled"
+    />
     <meta
       name="twitter:description"
-      content="Your application&#39;s data should have an owner. data-cap declares each piece of application data once, as a capability-owned contract, whatever database, transport, framework or state library sits underneath. It works next to TanStack Query, Redux or plain fetch, not instead of them."
+      content="Declare who owns your app&#39;s data and how it may be handled. Lint and build checks enforce those rules, and the data documentation regenerates from your code, so it never falls behind. data-cap works next to TanStack Query, Redux or plain fetch, not instead of them."
     />
     <meta
       property="og:image"
@@ -85,19 +91,20 @@
       <section class="hero" id="top" aria-labelledby="hero-heading">
         <div class="container">
           <p class="section-eyebrow">Data, owned</p>
-          <h1 id="hero-heading">Your application&#39;s data should have an owner.</h1>
+          <h1 id="hero-heading">Declare who owns your app&#39;s data and how it may be handled.</h1>
           <p class="hero-lede">
-            Fetching libraries dedupe requests. State libraries give you a store. Neither says which
-            part of your application owns a piece of data, or what its status means to every
-            consumer.
+            You declare each piece of data once, in a capability: its fields, and the functions that
+            load, change or watch them. <code>documentData()</code> adds its <code>owner</code> and
+            each field&#39;s sensitivity, purpose, legal basis and retention.
           </p>
           <p class="hero-support">
-            A capability declares a piece of data with the getters, mutators and subscriptions that
-            touch it. Every consumer reads the same snapshot.
+            The ESLint plugin and a build pass check your code against those declarations. The same
+            pass writes the field catalog and ownership report, and the <code>--check</code> mode of
+            the script <code>data-cap init</code> scaffolds fails CI when a committed copy is stale.
           </p>
           <p class="hero-outcome">
-            Give every piece of application data one owner and one shared status vocabulary, without
-            replacing your database, transport or state library.
+            Lint and build checks enforce those rules, and the data documentation regenerates from
+            your code, so it never falls behind.
           </p>
           <p class="hero-meta">Pre-1.0 · v0.10.0 · MIT</p>
           <div class="code-block">
@@ -132,34 +139,37 @@ npx data-cap init</code></pre>
           <h2 id="why-heading">Fetching and state libraries answer different questions.</h2>
           <p class="section-lede">
             A fetching library dedupes requests, and a state library gives you a store. Neither says
-            which part of the application owns a piece of data. Neither says whether an optimistic
-            value will disagree with other components.
+            who owns a piece of data or how it may be handled. Neither keeps the page that documents
+            it current.
           </p>
           <div class="diagram">
             <p class="sr-only">
-              Where the agreement lives today: each component&#39;s own idea of &quot;loading&quot;,
-              each component&#39;s own idea of &quot;stale&quot;, each team&#39;s optimistic-update
-              logic — no single source of truth for what the data&#39;s status means.
+              Where the answers live today: a wiki page about who owns which data, each
+              component&#39;s own idea of &quot;loading&quot; and &quot;stale&quot;, a review
+              document that lists where sensitive fields go — none of them is checked against the
+              code.
             </p>
             <ol class="diagram-tree" aria-hidden="true">
               <li>
-                <span class="diagram-branch-label">Where the agreement lives today</span>
+                <span class="diagram-branch-label">Where the answers live today</span>
                 <ol>
-                  <li>each component&#39;s own idea of &quot;loading&quot;</li>
-                  <li>each component&#39;s own idea of &quot;stale&quot;</li>
-                  <li>each team&#39;s optimistic-update logic</li>
+                  <li>a wiki page about who owns which data</li>
+                  <li>
+                    each component&#39;s own idea of &quot;loading&quot; and &quot;stale&quot;
+                  </li>
+                  <li>a review document that lists where sensitive fields go</li>
                 </ol>
               </li>
               <li>
                 <span class="diagram-branch-label"
-                  >&rarr; no single source of truth for what the data&#39;s status means</span
+                  >&rarr; none of them is checked against the code</span
                 >
               </li>
             </ol>
           </div>
           <p>
-            data-cap makes the agreement itself the artifact. A capability declares its fields and
-            operations, and every consumer reads the same synchronous snapshot.
+            data-cap writes those answers down once, in the capability that owns the data. Lint and
+            build checks compare them with the code, and the documentation is generated from it.
           </p>
         </div>
       </section>
@@ -168,9 +178,10 @@ npx data-cap init</code></pre>
           <p class="section-eyebrow">How it works</p>
           <h2 id="how-heading">Full manual control, or batteries included: same primitives.</h2>
           <p class="section-lede">
-            <code>buildData</code>, <code>createDataStore</code> and <code>coordinator</code> are
-            the same Stable primitives <code>createData</code> composes. Start wherever matches how
-            much control the capability needs.
+            <code>buildData</code>, <code>createDataStore</code> and a coordinator from
+            <code>createCoordinator</code> are the same Stable primitives
+            <code>createData</code> composes. Start wherever matches how much control the capability
+            needs.
           </p>
           <div class="diagram">
             <p class="sr-only">
@@ -182,7 +193,7 @@ npx data-cap init</code></pre>
               <li>
                 <span class="diagram-branch-label"
                   >→ Manual path (Stable): <code>buildData</code> · <code>createDataStore</code> ·
-                  <code>coordinator</code>, with full control over execution, retry and
+                  <code>createCoordinator</code>, with full control over execution, retry and
                   caching</span
                 >
               </li>
@@ -198,7 +209,7 @@ npx data-cap init</code></pre>
           <p>
             Neither path is the one way: pick per capability. Fields are readable from the moment
             <code>buildData()</code> or <code>createData()</code> returns. <code>info</code> is on
-            every <code>DataState</code>, so consumers never check whether metadata exists.
+            every <code>DataState</code>, so components never check whether metadata exists.
           </p>
         </div>
       </section>
@@ -221,7 +232,10 @@ npx data-cap init</code></pre>
               </button>
             </div>
             <pre tabindex="0"><code id="demo-output">Wrote evidence model: docs/data.evidence.json
-[generate-docs] wrote src/generated/data.manifest.ts (1 active capability(ies)), docs/DATA.md, docs/OWNERSHIP.md, 4 flow file(s), and docs/data.evidence.json.</code></pre>
+[generate-docs] wrote src/generated/data.manifest.ts (1 active capability(ies)), docs/DATA.md, docs/OWNERSHIP.md, 4 flow file(s), and docs/data.evidence.json.
+
+0 error(s), 2 warning(s), 0 info finding(s):
+  - [warning] [SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY] [taskData] Field &quot;tasks&quot; on &quot;taskData&quot; is sensitivity &quot;internal&quot; and has a declared endpoint crossing an external-service/api/queue boundary. Verify this is intentional and adequately protected.</code></pre>
           </div>
           <p class="source-note">
             Source:
@@ -230,9 +244,11 @@ npx data-cap init</code></pre>
             >
           </p>
           <p>
-            A manifest of every active capability, a documentation catalog, and a dependency and
-            ownership report, derived statically from the example&#39;s code. CI&#39;s examples job
-            compares this output with a fresh run.
+            A manifest of every active capability, a field catalog, an ownership report and the
+            evidence file, derived statically from the example&#39;s code. The warning shows a
+            declared sensitivity and a declared endpoint that disagree;
+            <code>strictFlow</code> turns it into an error. CI&#39;s examples job compares the
+            README&#39;s copy of this output with a fresh run.
           </p>
         </div>
       </section>
@@ -293,9 +309,9 @@ npx data-cap init</code></pre>
           <p class="section-eyebrow">Why not TanStack Query, Redux, or manual fetch-and-state?</p>
           <h2 id="why-not-ci-heading">You keep all of them.</h2>
           <p class="section-lede">
-            data-cap does not replace your transport or your store. It adds one capability-owned
-            contract that every consumer reads. A static pass turns that contract into ownership and
-            dependency evidence.
+            data-cap does not replace your transport or your store. It adds one capability per piece
+            of data, naming its owner and how it may be handled, and every component reads it. Lint
+            and build checks compare it with the code.
           </p>
           <div class="table-scroll">
             <table class="comparison-table">
@@ -314,7 +330,7 @@ npx data-cap init</code></pre>
                   <th scope="row">Manual fetch + <code>useState</code></th>
                   <td>Gets data on screen</td>
                   <td>
-                    No shared status vocabulary, no dedup, no optimistic-update contract; every
+                    No shared status values, no dedup, no shared optimistic-update rules; every
                     component re-derives its own version
                   </td>
                 </tr>
@@ -323,7 +339,7 @@ npx data-cap init</code></pre>
                   <td>Fetching, caching, request dedup</td>
                   <td>
                     Says nothing about mutation-driven data your app owns outside a query, or how
-                    two consumers agree on ownership
+                    two components agree on ownership
                   </td>
                 </tr>
                 <tr>
@@ -346,8 +362,8 @@ npx data-cap init</code></pre>
           <p class="section-lede">
             Most applications start with whichever primitive matches how much control a capability
             needs: full manual control (<code>buildData</code>, <code>createDataStore</code>,
-            <code>coordinator</code>) or the batteries-included <code>createData</code>. Neither is
-            the one way.
+            <code>createCoordinator</code>) or the batteries-included <code>createData</code>.
+            Neither is the one way.
           </p>
           <div class="callout callout--note">
             <p class="callout-title">One capability at a time</p>
@@ -375,8 +391,9 @@ npx data-cap init</code></pre>
           <p class="section-eyebrow">For decision-makers</p>
           <h2 id="brief-heading">A one-page brief for your manager</h2>
           <p class="section-lede">
-            data-cap gives every piece of application data one owner and one shared status. Every
-            part of the application then agrees on what the data is doing.
+            data-cap records who owns each piece of application data and how it may be handled. Lint
+            and build checks compare that record with the code, and the data documentation is
+            generated from it.
           </p>
           <p>
             It answers what this is, why it matters, what it costs, what could go wrong and what is

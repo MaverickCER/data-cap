@@ -2,12 +2,12 @@
  * The structural AST vocabulary both rules in this folder share: how to
  * recognize a `buildData(...)`/`createData(...)` call, and how to read a
  * static property key. Extracted here rather than duplicated once per rule
- * so "what counts as a capability declaration" has exactly one definition --
+ * so "what counts as a capability declaration" has exactly one definition:
  * a second, drifting copy is the failure mode this folder is small enough to
  * still avoid.
  *
  * Nothing here inspects what an operation's `execute`/`processor`/`subscribe`
- * body *does* -- that stays opaque, per `AGENTS.md` invariant 6. These helpers
+ * body *does*: that stays opaque, per `AGENTS.md` invariant 6. These helpers
  * only answer questions about the shape of the call expression itself.
  */
 
@@ -17,7 +17,7 @@ import type { TSESTree } from "@typescript-eslint/utils"
 /** The two call forms that declare a capability. `buildData` has no operations section; `createData` does. */
 export const CAPABILITY_CALL_NAMES: ReadonlySet<string> = new Set(["buildData", "createData"])
 
-/** Whether `key` names one of `createData`'s three operation sections -- the only places an `execute`/`subscribe` can legitimately live. */
+/** Whether `key` names one of `createData`'s three operation sections: the only places an `execute`/`subscribe` can legitimately live. */
 export function isOperationSectionKey(key: string | undefined): boolean {
   return key === "getters" || key === "mutators" || key === "subscriptions"
 }
@@ -29,7 +29,7 @@ export function isOperationBodyKey(key: string | undefined): boolean {
 
 /**
  * Whether `node` is a call to one of `names`, written either bare
- * (`createData(...)`) or as a member access (`dataCap.createData(...)`) --
+ * (`createData(...)`) or as a member access (`dataCap.createData(...)`):
  * the same two forms `stable-operation-reference.ts` has always recognized.
  * Never resolves an alias or traces an import: a renamed binding is outside
  * what a purely structural check can decide.

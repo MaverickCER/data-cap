@@ -51,7 +51,7 @@ describe("writeFlowSummary", () => {
       capture(() => {
         writeFlowSummary(evidence({ flow: { coverage: coverage() } }))
       }),
-    ).toBe("Flow analysis: 4 function(s) analyzed -- complete.\n")
+    ).toBe("Flow analysis: 4 function(s) analyzed; complete.\n")
     expect(
       capture(() => {
         writeFlowSummary(
@@ -63,7 +63,7 @@ describe("writeFlowSummary", () => {
         )
       }),
     ).toBe(
-      "Flow analysis: 4 function(s) analyzed, 2 not fully analyzed, 3 unknown(s) -- not complete.\n",
+      "Flow analysis: 4 function(s) analyzed, 2 not fully analyzed, 3 unknown(s); not complete.\n",
     )
     expect(
       capture(() => {
@@ -71,7 +71,7 @@ describe("writeFlowSummary", () => {
           evidence({ flow: { coverage: coverage({ unknowns: 1, complete: false }) } }),
         )
       }),
-    ).toBe("Flow analysis: 4 function(s) analyzed, 1 unknown(s) -- not complete.\n")
+    ).toBe("Flow analysis: 4 function(s) analyzed, 1 unknown(s); not complete.\n")
   })
 
   it("describes the policy summary", () => {
@@ -128,7 +128,7 @@ describe("writeFlowSummary", () => {
     })
     expect(out).toBe(
       [
-        "Flow analysis: 4 function(s) analyzed -- complete.",
+        "Flow analysis: 4 function(s) analyzed; complete.",
         "Policy: 0 satisfied, 0 violated, 0 indeterminate.",
         "Observations: 0 across 0 scope(s).",
         "Claims: 1 verified.",

@@ -23,7 +23,7 @@ function dataCap(): GeneratedBannerOptions {
 const banner = createGeneratedBanner(dataCap)
 
 /**
- * Regeneration instruction for a report the CLI does not write (ADR 0066) -- it is produced by the project's own
+ * Regeneration instruction for a report the CLI does not write (ADR 0066): it is produced by the project's own
  * script calling the `data-cap/build` generators, so naming `npx data-cap` there would send a reader to a command that
  * cannot regenerate it.
  * @returns The instruction, as a sentence.
@@ -46,8 +46,8 @@ export function generatedBanner(format?: "ts" | "markdown", regenerate?: string)
  * Whether `content` carries a {@link generatedBanner}-produced marker, in either format.
  *
  * @remarks
- * Deliberately not a bare `content.startsWith(generatedBanner(...))`: a shebang, a `"use strict"` pragma, or a
- * license header pushes a real banner off line one, and a stricter check would then read a genuinely
+ * Deliberately not a bare `content.startsWith(generatedBanner(...))`. A shebang, a `"use strict"` pragma, or a
+ * license header pushes a real banner off line one. A stricter check would then read a genuinely
  * generated file as hand-written, which the dependency scan would take as "a real consumer imports this" and
  * so permanently mask an abandoned one. The marker is looked for across the first 20 non-empty lines instead,
  * which clears every realistic preamble without scanning a whole file.

@@ -1,6 +1,6 @@
 /**
  * The fix for a real inefficiency: `data-handling-record.ts` and
- * `audit-prep.ts` each used to call `computeDataArtifacts()` themselves --
+ * `audit-prep.ts` each used to call `computeDataArtifacts()` themselves;
  * two full discover -> link -> scan passes over the same source, every
  * `npm run reports`. ADR 0054's own "Alternatives considered" rejected
  * having reports read `docs/data.evidence.json` directly instead, on the
@@ -9,16 +9,16 @@
  *
  * That objection is answered by `data-cap` itself now: `getEvidenceModel()`
  * (`data-cap/build`) never trusts `docs/data.evidence.json` on
- * file presence alone -- it re-derives a cheap fingerprint of the exact same
+ * file presence alone; it re-derives a cheap fingerprint of the exact same
  * source `computeDataArtifacts()` would read (a filesystem walk plus
  * `sha256` over raw bytes, no TypeScript Compiler API involvement at all,
  * plus the installed engine version) and only serves the cached file when
  * that fingerprint matches the one recorded when the file was written.
  *
  * This file used to hand-roll all of that. It no longer does: the mechanism
- * shipped into the package as `evidence-cache.ts` (EVD-01), and this example
+ * shipped into the package as `evidence-cache.ts`, and this example
  * is now a consumer of it rather than a parallel implementation that could
- * drift. What's left here is the part that is genuinely example-specific --
+ * drift. What's left here is the part that is genuinely example-specific:
  * *where* this project keeps its evidence artifact, and which
  * `computeDataArtifacts()` options describe this project.
  *
@@ -41,7 +41,7 @@ import { nodeBuildFileSystem } from "data-cap/node"
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
 
 // Must match the `--evidence` path `package.json`'s own `docs` script passes
-// to the `data-cap` CLI -- there is deliberately only one literal string for
+// to the `data-cap` CLI: there is deliberately only one literal string for
 // this path in the whole project; every other reference imports it from here.
 export const EVIDENCE_PATH = path.join(root, "docs/data.evidence.json")
 
@@ -50,15 +50,15 @@ export const EVIDENCE_PATH = path.join(root, "docs/data.evidence.json")
  * `audit-prep.ts` share, via `getEvidence()` below.
  *
  * `location`/`docs`/`ownership`/`flow` are real `computeDataArtifacts()`
- * options (unaffected by the CLI's own narrower surface -- ADR 0066): they
+ * options (unaffected by the CLI's own narrower surface (ADR 0066): they
  * request the manifest/flow passes purely so this run's composed
  * `EvidenceModel.finding.findings` includes their own finding kinds
  * (`MANIFEST_EXPORT_NAME_COLLISION`, `SENSITIVE_DATA_CROSSES_EXTERNAL_BOUNDARY`/
- * `SENSITIVE_FIELD_ENDPOINT_MISSING_HANDLING`) -- the same completeness
+ * `SENSITIVE_FIELD_ENDPOINT_MISSING_HANDLING`)) the same completeness
  * `test/examples/enterprise-platform-reports.test.ts` asserts via
  * `evidence.computed`. `getEvidenceModel()` (below) never writes anything to
  * disk on a cache miss (see its own doc comment), so these paths are never
- * actually written here -- `scripts/generate-docs/run.ts` is what writes the
+ * actually written here: `scripts/generate-docs/run.ts` is what writes the
  * real `src/generated/data.manifest.ts`/`docs/DATA.md`/`docs/OWNERSHIP.md`/
  * `docs/flow/` files, as a wholly separate discover+scan pass; removing
  * these four keys would silently thin the Evidence Model these reports read,
@@ -74,7 +74,7 @@ export const COMPUTE_OPTIONS: GetEvidenceModelOptions = {
   ownership: path.join(root, "docs/OWNERSHIP.md"),
   flow: path.join(root, "docs/flow"),
   // Both "where a real run writes the Evidence Model" and "where the cache
-  // reads it from" -- one option, so the two can never point at different
+  // reads it from": one option, so the two can never point at different
   // files.
   evidence: EVIDENCE_PATH,
 }

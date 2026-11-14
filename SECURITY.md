@@ -27,7 +27,7 @@ When a fix is ready, a security advisory on this repository names the affected v
 | Dependencies, secrets, licences, Socket alerts, code scanning, dist URLs and minification pass.                                     | `SecurityDeps`, `SecuritySecrets`, `Licenses`, `SecuritySocket`, `CodeScanning`, `DistNoUrls`, `NoMinify` | `contract`                          | A finding can be waived by a record under `.repo-contract/exceptions/`. `SecurityDevDeps` only warns. |
 | Each release is the tarball CI built, published with provenance.                                                                    | The shared release workflow's build and publish jobs                                                      | release                             | See [Supply-chain posture](#supply-chain-posture).                                                    |
 
-`contract` and `lint` are the two checks the branch ruleset requires. That is a repository setting; no check fails if it changes.
+`contract`, `lint` and `required` are the three checks the branch ruleset requires. That is a repository setting; no check fails if it changes.
 
 ## Runtime security model
 
@@ -74,9 +74,9 @@ Those stay with the application and its infrastructure. The capability contract 
 - **Publishing:** releases go through npm trusted publishing over OIDC (`.github/workflows/release.yml`, which calls a shared, pinned workflow). The repository holds no `NPM_TOKEN` secret today; nothing fails if one is added.
 - **What is published:** the release's build job runs `npm run verify`, packs the tarball, installs it into an empty project and imports every entry point. Only then does the publish job publish exactly that tarball, from the default branch, with a provenance attestation.
 - **After publishing:** the workflow asks npm for the version and its attestation, and the run fails if either is missing. This check runs after the publish; a failure marks the run red but does not withdraw the version.
-- **Workflows:** permissions are least-privilege and actions are pinned by commit SHA. The `GithubActions` and `PinConsistency` checks fail otherwise. The Bun setup step uses the latest Bun.
-- **Tests:** coverage floors are 90% branches, 100% functions, and 95% lines and statements (`vitest.config.ts`). The `contract` check fails below them; review raises them and never lowers them. Mutation testing fails `contract` unless every mutant is killed or recorded as equivalent.
-- **Runtimes:** each isomorphic entry is smoke-tested under Bun and Deno, one test per entry, in a job that does not block a merge.
+- **Workflows:** actions are pinned by commit SHA, and the `GithubActions` and `PinConsistency` checks fail otherwise. Every workflow sets `permissions` at the top and grants write scopes per job; no check enforces that. The Bun setup step uses the latest Bun.
+- **Tests:** coverage floors are 90% branches, 100% functions, and 95% lines and statements (`vitest.config.ts`). The `contract` check fails below them. They are raised in review when coverage improves; lowering one is a visible diff to `vitest.config.ts`. Mutation testing fails `contract` unless every mutant is killed or recorded as equivalent; code marked with a `Stryker disable` comment is not mutated.
+- **Runtimes:** each isomorphic entry is smoke-tested under Bun and Deno, one test per entry, in a job `required` waits for.
 
 [RELEASING.md](RELEASING.md) has the trusted-publisher setup and recovery steps.
 

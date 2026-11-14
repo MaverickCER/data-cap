@@ -1,7 +1,6 @@
 /**
  * Combines `docs.ts`'s rendering with `static-rules.ts`'s ownership/
- * sensitivity findings into the one result `generate-data-artifacts.ts`
- * (C8) needs. Pure -- no filesystem access.
+ * sensitivity findings into the one result `generate-data-artifacts.ts` needs. Pure: no filesystem access.
  */
 
 import { renderDocumentation } from "./docs.js"
@@ -23,9 +22,9 @@ export interface GenerateDocumentationOptions {
   readonly location: string
   /** Manifest changes since the last report, rendered as a "changes since last report" section when present. */
   readonly changes?: ManifestChangeReport | undefined
-  /** Proven usage edges, when the caller already ran the usage scan (`--ownership`/`--flow`) -- renders exact `file:line:column` consumption sites per field when supplied. Omit when no usage scan ran; the catalog still renders, just without that column populated. */
+  /** Proven usage edges, when the caller already ran the usage scan (`--ownership`/`--flow`): renders exact `file:line:column` consumption sites per field when supplied. Omit when no usage scan ran; the catalog still renders, without that column populated. */
   readonly edges?: readonly DependencyEdge[]
-  /** This same run's own `--evidence` output path, when requested -- named in the generated banner's Evidence Model note. */
+  /** This same run's own `--evidence` output path, when requested: named in the generated banner's Evidence Model note. */
   readonly evidencePath?: string | undefined
   /**
    * How many days out counts as "expiring soon" in the rendered Lifecycle
@@ -34,10 +33,9 @@ export interface GenerateDocumentationOptions {
    */
   readonly expiringWithinDays?: number | undefined
   /**
-   * The instant `daysRemaining` is measured from. Defaults to the wall clock
-   * at call time; `generateDataArtifacts` passes its own single run-wide
-   * instant, so the catalog and the published Evidence Model can never
-   * report a different "12d remaining" for the same field.
+   * The instant `daysRemaining` is measured from. Defaults to the wall clock at
+   * call time. `generateDataArtifacts` passes one run-wide instant, so the
+   * catalog and the Evidence Model report the same "12d remaining" for a field.
    */
   readonly generatedAt?: Date
 }
@@ -52,7 +50,7 @@ export interface GenerateDocumentationResult {
   readonly findings: readonly ReportFinding[]
 }
 
-/** Renders the Markdown documentation catalog and runs the ownership/sensitivity static rules (C4). */
+/** Renders the Markdown documentation catalog and runs the ownership/sensitivity static rules. */
 export function generateDocumentation(
   options: GenerateDocumentationOptions,
 ): GenerateDocumentationResult {
@@ -64,10 +62,10 @@ export function generateDocumentation(
       options.changes,
       options.edges,
       options.evidencePath,
-      // Rebuilt here rather than threaded in as a pre-computed model: this
+      // Rebuilt here rather than threaded in as a pre-computed model. This
       // is a pure projection over the same `inventory` already in hand, so
       // the orchestrator's own Lifecycle Model and this one are identical by
-      // construction given the same window and instant -- and a standalone
+      // construction given the same window and instant. And a standalone
       // caller of `generateDocumentation` gets the section without having to
       // know a second model exists.
       buildLifecycleModel(

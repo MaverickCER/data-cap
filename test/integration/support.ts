@@ -6,7 +6,7 @@ import { expect } from "vitest"
 
 /**
  * Shared, non-test plumbing for every `test/integration/<category>/<name>.test.ts`
- * file -- the same shape as `test/examples/support.ts`, kept as its own
+ * file: the same shape as `test/examples/support.ts`, kept as its own
  * copy (not a shared import) because the two answer different questions:
  * `test/examples/` proves the 3 flagship examples work end to end;
  * `test/integration/` proves each individual mechanism the flagships don't
@@ -33,7 +33,7 @@ interface RunResult {
 }
 
 /**
- * `spawnSync`, not `execFileSync` -- deliberately. `execFileSync` only
+ * `spawnSync`, not `execFileSync`: deliberately. `execFileSync` only
  * returns captured output on a *throw* (a non-zero exit); on success it
  * returns stdout alone and silently discards stderr. `spawnSync` always
  * returns both streams, regardless of exit code, so callers below can merge
@@ -67,7 +67,7 @@ export function runStart(fixturePath: string): string {
  * Byte-for-byte comparison of `<fixturePath>/output.json` (written fresh by
  * this run's `npm start`) against its committed `expected/output.json`
  * golden. Compares parsed JSON (not raw text) so key ordering never causes
- * a spurious diff -- `JSON.stringify`'s own key order is stable per-object
+ * a spurious diff: `JSON.stringify`'s own key order is stable per-object
  * regardless, but this keeps the comparison robust to that regardless.
  */
 export function compareGoldenOutput(fixturePath: string): void {

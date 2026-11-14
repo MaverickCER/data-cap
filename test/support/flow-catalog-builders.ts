@@ -5,7 +5,7 @@ import { fn, module, userField } from "./flow-catalog.js"
  * whose code leaks exactly one field of `userData.user` (`f`) to a sink, using that form, and says which class the
  * evidence must end up in today: `A` (the leak is followed to the sink), `B` (the trace is reported incomplete), or `W`
  * (the form sends the whole record, so both fields reach the sink).
- * Improving the scanner's reach flips a row from `B` to `A` deliberately -- never the other way, never to `C`.
+ * Improving the scanner's reach flips a row from `B` to `A` deliberately: never the other way, never to `C`.
  */
 export interface Form {
   readonly id: string

@@ -1,5 +1,8 @@
 # node
 
+`data-cap/node` (Node only): `nodeBuildFileSystem`, the `node:fs` adapter a build script passes
+to `data-cap/build` as its `fs` option.
+
 ## Variables
 
 ### nodeBuildFileSystem

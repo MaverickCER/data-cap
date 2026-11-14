@@ -1,6 +1,6 @@
 /**
- * The flow pass (ADR 0070, ADR 0071): a syntactic, import-resolved,
- * context-sensitive data-flow analysis that follows capability field data
+ * The flow pass (ADR 0070, ADR 0071) is a syntactic, import-resolved,
+ * context-sensitive data-flow analysis. It follows capability field data
  * through local variables, destructuring, spreads, object and array
  * literals, function parameters and return values, closures, callbacks and
  * known sinks, and produces the input for `buildFlowModel`.
@@ -14,10 +14,10 @@
  * one appear to reach the other's destinations.
  *
  * Never imports or evaluates the code it reads (ADR 0002); the compiler API
- * parses text only. Anything it cannot follow -- a call it cannot resolve
+ * parses text only. Anything it cannot follow (a call it cannot resolve
  * that receives tracked data, a computed key on tracked data, a call chain
- * deeper than its limit -- becomes an explicit `FlowUnknown` with a
- * `file:line:column` citation, and the data is assumed to pass through
+ * deeper than its limit) becomes an explicit `FlowUnknown` with a
+ * `file:line:column` citation. The data is then assumed to pass through
  * approximately (an `inferred` edge). It never guesses silently (ADR 0071).
  *
  * Operation bodies (`createData`/`buildData`/`documentData` arguments) stay
@@ -121,7 +121,7 @@ type Methods = ReturnType<typeof setupMethods> &
   ReturnType<typeof reportsMethods> &
   ReturnType<typeof builtinsMethods>
 
-// The methods live in the files imported above, so that no file grows past what a mutation run can cover quickly.
+// The methods live in the files imported above. That way no file grows past what a mutation run can cover quickly.
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging, @typescript-eslint/no-empty-object-type -- the interface gives the class the methods the files above add to its prototype.
 export interface FlowScan extends Methods {}
 
@@ -179,7 +179,7 @@ export class FlowScan {
   >()
 
   /** Set when a write changed a scope other than the one running, so earlier-analyzed functions may see more. */
-  // Stryker disable next-line BooleanLiteral: equivalent -- `run` clears the flag at the start of every round, before any function is analyzed.
+  // Stryker disable next-line BooleanLiteral: equivalent: `run` clears the flag at the start of every round, before any function is analyzed.
   dirty = false
 
   readonly caps = new Map<string, CapInfo>()
@@ -273,7 +273,7 @@ export async function scanFlowWithin(
   const scan = new FlowScan(
     options.root,
     options.sinks ?? defaultFlowSinks(),
-    // Stryker disable next-line ArrayDeclaration: equivalent -- an entry that is not a summary names no module, so it matches no call.
+    // Stryker disable next-line ArrayDeclaration: equivalent: an entry that is not a summary names no module, so it matches no call.
     options.summaries ?? [],
     limits,
   )

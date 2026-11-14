@@ -56,7 +56,7 @@ describe("resolveWithinRoot", () => {
       expect(result.warning.file).toBe("../../etc/passwd")
       expect(result.warning.message).toBe(
         '"location" ("../../etc/passwd") resolves to "/etc/passwd", which is outside "root" ("/project/root"). ' +
-          "generateManifest() refuses to write outside root -- use a path nested under root instead.",
+          "generateManifest() refuses to write outside root. Use a path nested under root instead.",
       )
     }
   })
@@ -99,7 +99,7 @@ describe("resolveWithinRoot", () => {
 
         const result = resolveWithinRoot(tmpRoot, "escape-link.ts", "location", "generateManifest")
 
-        // Lexically, "escape-link.ts" resolves to a path inside tmpRoot --
+        // Lexically, "escape-link.ts" resolves to a path inside tmpRoot:
         // resolveWithinRoot must report ok:true (proving, not "fixing", the
         // intentional scope limit), even though the symlink's real target
         // is outside tmpRoot.

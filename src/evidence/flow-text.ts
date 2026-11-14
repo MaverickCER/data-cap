@@ -1,12 +1,13 @@
 /**
  * The textual equivalent of the data-flow graph (ADR 0070): the same facts the
- * graph view carries, written as Markdown a screen reader, a code review, a
- * terminal or a compliance document can read without drawing anything. It is a
+ * graph view carries, written as Markdown. A screen reader, a code review, a
+ * terminal or a review document can read it without drawing anything. It is a
  * pure projection of the one Evidence Model.
  *
  * It states what the analysis could not follow as plainly as what it could,
- * and says "not complete" whenever that is so -- an absent flow below is not
- * proof that no such flow exists unless the picture is complete (ADR 0071).
+ * and says "not complete" whenever that is so. Unless the picture is
+ * complete, an absent flow below is not proof that no such flow exists
+ * (ADR 0071).
  */
 
 import { flowEvidenceDisclaimer } from "./flow-disclaimer.js"
@@ -44,7 +45,10 @@ interface Group<T> {
   readonly items: readonly T[]
 }
 
-/** Groups by key in key order; within a group the items keep their input order (an item is ordered after an equal one, so ties never reorder). */
+/**
+ * Groups by key in key order. Within a group the items keep their input order: an item is ordered
+ * after an equal one, so ties never reorder.
+ */
 function groupBy<T>(items: readonly T[], key: (item: T) => string): Group<T>[] {
   const ordered = items
     .map((item) => ({ id: key(item), item }))
@@ -96,7 +100,7 @@ function functionBlock(
     (flow) => `${flow.to}\u0000${flow.field}`,
   ).map(
     ({ first, items }) =>
-      `${first.toName} -- ${first.field}: ${pathList(items.map((flow) => flow.path))}`,
+      `${first.toName} (${first.field}): ${pathList(items.map((flow) => flow.path))}`,
   )
   lines.push(`- Passes on: ${passed.length === 0 ? "none" : passed.join("; ")}`)
 
@@ -122,7 +126,7 @@ function functionBlock(
   for (const id of fn.unknowns) {
     const unknown = unknowns.get(id)
     if (unknown !== undefined)
-      lines.push(`- Not followed: ${locationOf(unknown)} -- ${unknownText(unknown.reason)}`)
+      lines.push(`- Not followed: ${locationOf(unknown)}, ${unknownText(unknown.reason)}`)
   }
   lines.push("")
   return lines
@@ -134,8 +138,8 @@ function coverageLine(coverage: FlowGraphView["coverage"]): string {
     parts.push(`${coverage.functionsUnanalyzed} not fully analyzed`)
   if (coverage.unknowns > 0) parts.push(`${coverage.unknowns} unknown(s)`)
   return coverage.complete
-    ? `Coverage: ${parts.join(", ")} -- complete.`
-    : `Coverage: ${parts.join(", ")} -- not complete: parts of the program could not be followed, so a flow missing below is not proof that it does not exist.`
+    ? `Coverage: ${parts.join(", ")}; complete.`
+    : `Coverage: ${parts.join(", ")}; not complete. Parts of the program could not be followed, so a flow missing below is not proof that it does not exist.`
 }
 
 /** The fields and functions to show: all of them, or only the wanted field and the functions that touch it. */
@@ -178,7 +182,7 @@ function fieldBlock(field: FieldView, heading: string): string[] {
   lines.push(
     field.complete
       ? "- Complete: yes"
-      : "- Complete: no -- the analysis could not follow part of this field's flow, so the destinations above may be incomplete.",
+      : "- Complete: no. The analysis could not follow part of this field's flow, so the destinations above may be incomplete.",
     "",
   )
   return lines
@@ -204,7 +208,7 @@ function unknownsBlock(view: FlowGraphView, heading: string): string[] {
   const lines = [`${heading} What the analysis could not follow`, ""]
   for (const unknown of view.unknowns) {
     lines.push(
-      `- ${locationOf(unknown)} -- ${unknownText(unknown.reason)}${unknown.detail === undefined ? "" : ` (${unknown.detail})`}`,
+      `- ${locationOf(unknown)}, ${unknownText(unknown.reason)}${unknown.detail === undefined ? "" : ` (${unknown.detail})`}`,
     )
   }
   lines.push("")

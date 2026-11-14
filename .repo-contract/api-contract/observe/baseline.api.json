@@ -178,7 +178,7 @@
   },
   "kind": "Package",
   "canonicalReference": "data-cap!",
-  "docComment": "",
+  "docComment": "/**\n * `data-cap/observe` (Experimental): record which field names cross a boundary at runtime, never\n * their values, into a sink you supply. Pass the recording to `data-cap --observations`.\n *\n * @packageDocumentation\n */\n",
   "name": "data-cap",
   "preserveMemberOrder": false,
   "members": [
@@ -189,9 +189,89 @@
       "preserveMemberOrder": false,
       "members": [
         {
+          "kind": "Interface",
+          "canonicalReference": "data-cap!BodyReadable:interface",
+          "docComment": "/**\n * The part of a web `Response` or `Request` that `observeResponse` uses; both satisfy it.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface BodyReadable "
+            }
+          ],
+          "fileUrlPath": "src/observe/index.ts",
+          "releaseTag": "Public",
+          "name": "BodyReadable",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "MethodSignature",
+              "canonicalReference": "data-cap!BodyReadable#clone:member(1)",
+              "docComment": "/**\n * A copy whose body can be read without consuming the original's.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "clone(): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "BodyReadable",
+                  "canonicalReference": "data-cap!BodyReadable:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "returnTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [],
+              "name": "clone"
+            },
+            {
+              "kind": "MethodSignature",
+              "canonicalReference": "data-cap!BodyReadable#json:member(1)",
+              "docComment": "/**\n * The body parsed as JSON.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "json(): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Promise",
+                  "canonicalReference": "!Promise:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<unknown>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": false,
+              "returnTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 3
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [],
+              "name": "json"
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
           "kind": "Function",
           "canonicalReference": "data-cap!createMemorySink:function(1)",
-          "docComment": "/**\n * An in-memory sink -- the only one this package provides.\n */\n",
+          "docComment": "/**\n * An in-memory sink: the only one this package provides.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -217,6 +297,15 @@
             },
             {
               "kind": "Content",
+              "text": "[];\n    skips(): readonly "
+            },
+            {
+              "kind": "Reference",
+              "text": "ObservationSkip",
+              "canonicalReference": "data-cap!ObservationSkip:interface"
+            },
+            {
+              "kind": "Content",
               "text": "[];\n}"
             },
             {
@@ -227,7 +316,7 @@
           "fileUrlPath": "src/observe/index.ts",
           "returnTypeTokenRange": {
             "startIndex": 1,
-            "endIndex": 6
+            "endIndex": 8
           },
           "releaseTag": "Public",
           "overloadIndex": 1,
@@ -296,6 +385,215 @@
           "name": "fieldPathName"
         },
         {
+          "kind": "Function",
+          "canonicalReference": "data-cap!instrumentBoundary:function(1)",
+          "docComment": "/**\n * Wraps `target[method]` so every call is observed with `observeValue`. `observe: \"args\"` (the\n * default) observes the first argument, `\"result\"` the result, and `\"both\"` both. A returned\n * `Response` is observed through a clone, a native promise through its resolved value. The call\n * then goes through with its `this`, arguments and result untouched. Returns a restore function\n * (a no-op if someone else has since replaced the method). Throws a `TypeError` at set-up when `target[method]` is not a function.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function instrumentBoundary(target: "
+            },
+            {
+              "kind": "Content",
+              "text": "object"
+            },
+            {
+              "kind": "Content",
+              "text": ", method: "
+            },
+            {
+              "kind": "Content",
+              "text": "string"
+            },
+            {
+              "kind": "Content",
+              "text": ", context: "
+            },
+            {
+              "kind": "Reference",
+              "text": "InstrumentContext",
+              "canonicalReference": "data-cap!InstrumentContext:interface"
+            },
+            {
+              "kind": "Content",
+              "text": ", sink: "
+            },
+            {
+              "kind": "Reference",
+              "text": "ObservationSink",
+              "canonicalReference": "data-cap!ObservationSink:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Content",
+              "text": "() => void"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "src/observe/index.ts",
+          "returnTypeTokenRange": {
+            "startIndex": 9,
+            "endIndex": 10
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "target",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isOptional": false
+            },
+            {
+              "parameterName": "method",
+              "parameterTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              },
+              "isOptional": false
+            },
+            {
+              "parameterName": "context",
+              "parameterTypeTokenRange": {
+                "startIndex": 5,
+                "endIndex": 6
+              },
+              "isOptional": false
+            },
+            {
+              "parameterName": "sink",
+              "parameterTypeTokenRange": {
+                "startIndex": 7,
+                "endIndex": 8
+              },
+              "isOptional": false
+            }
+          ],
+          "name": "instrumentBoundary"
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "data-cap!InstrumentContext:interface",
+          "docComment": "/**\n * `observeValue` context plus the walker options, for `instrumentBoundary` and `observeSink`.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface InstrumentContext extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "ObserveValueContext",
+              "canonicalReference": "data-cap!ObserveValueContext:interface"
+            },
+            {
+              "kind": "Content",
+              "text": " "
+            }
+          ],
+          "fileUrlPath": "src/observe/index.ts",
+          "releaseTag": "Public",
+          "name": "InstrumentContext",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!InstrumentContext#observe:member",
+              "docComment": "/**\n * What to observe on each call: the first argument (default), the returned value, or both.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly observe?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "InstrumentObserve",
+                  "canonicalReference": "data-cap!InstrumentObserve:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "observe",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!InstrumentContext#options:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly options?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "ObserveValueOptions",
+                  "canonicalReference": "data-cap!ObserveValueOptions:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "options",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "extendsTokenRanges": [
+            {
+              "startIndex": 1,
+              "endIndex": 2
+            }
+          ]
+        },
+        {
+          "kind": "TypeAlias",
+          "canonicalReference": "data-cap!InstrumentObserve:type",
+          "docComment": "/**\n * Which call results `instrumentBoundary` observes.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export type InstrumentObserve = "
+            },
+            {
+              "kind": "Content",
+              "text": "\"args\" | \"result\" | \"both\""
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "src/observe/index.ts",
+          "releaseTag": "Public",
+          "name": "InstrumentObserve",
+          "typeTokenRange": {
+            "startIndex": 1,
+            "endIndex": 2
+          }
+        },
+        {
           "kind": "Interface",
           "canonicalReference": "data-cap!ObservationEvent:interface",
           "docComment": "/**\n * One observation: a field name was seen at a boundary during one scope. Never a value.\n */\n",
@@ -310,6 +608,33 @@
           "name": "ObservationEvent",
           "preserveMemberOrder": false,
           "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!ObservationEvent#at:member",
+              "docComment": "/**\n * When the crossing was seen: epoch milliseconds or an ISO 8601 string. Present only when the caller supplied a\n * `clock` (the recorder never reads one itself, so it stays deterministic); the Observation Model keeps first/last seen.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly at?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string | number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "at",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!ObservationEvent#boundary:member",
@@ -341,7 +666,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!ObservationEvent#field:member",
-              "docComment": "/**\n * Capability-qualified dotted field path, for example `userData.user.email` -- the same naming the static Flow Model uses for field nodes.\n */\n",
+              "docComment": "/**\n * Capability-qualified dotted field path, for example `userData.user.email`: the same naming the static Flow Model uses for field nodes.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -441,7 +766,7 @@
             {
               "kind": "MethodSignature",
               "canonicalReference": "data-cap!ObservationSink#record:member(1)",
-              "docComment": "",
+              "docComment": "/**\n * Receives one event. A throw here is caught; the observed code never sees it.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -483,9 +808,209 @@
                 }
               ],
               "name": "record"
+            },
+            {
+              "kind": "MethodSignature",
+              "canonicalReference": "data-cap!ObservationSink#skip:member(1)",
+              "docComment": "/**\n * Optional channel for what the walker left out; pass `skips()` of the memory sink to `buildObservationModel`.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "skip?(info: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "ObservationSkip",
+                  "canonicalReference": "data-cap!ObservationSkip:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "void"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isOptional": true,
+              "returnTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "info",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                }
+              ],
+              "name": "skip"
             }
           ],
           "extendsTokenRanges": []
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "data-cap!ObservationSkip:interface",
+          "docComment": "/**\n * Evidence the recorder knowingly did not capture: below `field` (a capability-qualified path, or the capability\n * itself for the root) something was left out, for the stated reason. Names only, never a value.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface ObservationSkip "
+            }
+          ],
+          "fileUrlPath": "src/observe/index.ts",
+          "releaseTag": "Public",
+          "name": "ObservationSkip",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!ObservationSkip#boundary:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly boundary: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "ObservedBoundary",
+                  "canonicalReference": "data-cap!ObservedBoundary:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "boundary",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!ObservationSkip#field:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly field: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "field",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!ObservationSkip#reason:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly reason: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "ObservationSkipReason",
+                  "canonicalReference": "data-cap!ObservationSkipReason:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "reason",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!ObservationSkip#scope:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly scope: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "scope",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
+          "kind": "TypeAlias",
+          "canonicalReference": "data-cap!ObservationSkipReason:type",
+          "docComment": "/**\n * Why the walker did not record part of a value.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export type ObservationSkipReason = "
+            },
+            {
+              "kind": "Content",
+              "text": "\"dotted-key\" | \"max-depth\" | \"max-nodes\" | \"cycle\""
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "src/observe/index.ts",
+          "releaseTag": "Public",
+          "name": "ObservationSkipReason",
+          "typeTokenRange": {
+            "startIndex": 1,
+            "endIndex": 2
+          }
         },
         {
           "kind": "Function",
@@ -615,6 +1140,33 @@
               "isOptional": false,
               "releaseTag": "Public",
               "name": "capability",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!ObserveBoundaryInput#clock:member",
+              "docComment": "/**\n * Caller-supplied time source (epoch ms), read once per call. The recorder never defaults to `Date.now()`.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly clock?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "() => number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "clock",
               "propertyTypeTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
@@ -773,6 +1325,586 @@
               "propertyTypeTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
+              }
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
+          "kind": "Function",
+          "canonicalReference": "data-cap!observeResponse:function(1)",
+          "docComment": "/**\n * Observes the JSON body of a web `Response` or `Request` without consuming the caller's: it clones, parses the\n * clone asynchronously and observes the parsed value (`observeValue`: names and paths only). Returns `response`\n * itself, untouched, so it can wrap a call (`const res = observeResponse(sink, ctx, await fetch(url))`). Scope and\n * the caller's `clock` are read when this is called, not when the body is parsed. A body that is not JSON, was\n * already used, or cannot be cloned records nothing; never throws and does no I/O beyond the clone. Cloning a\n * streaming body buffers it for the second reader, so avoid it on unbounded streams. Web-standard classes only.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function observeResponse<T extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "BodyReadable",
+              "canonicalReference": "data-cap!BodyReadable:interface"
+            },
+            {
+              "kind": "Content",
+              "text": ">(sink: "
+            },
+            {
+              "kind": "Reference",
+              "text": "ObservationSink",
+              "canonicalReference": "data-cap!ObservationSink:interface"
+            },
+            {
+              "kind": "Content",
+              "text": ", context: "
+            },
+            {
+              "kind": "Reference",
+              "text": "ObserveValueContext",
+              "canonicalReference": "data-cap!ObserveValueContext:interface"
+            },
+            {
+              "kind": "Content",
+              "text": ", response: "
+            },
+            {
+              "kind": "Content",
+              "text": "T"
+            },
+            {
+              "kind": "Content",
+              "text": ", options?: "
+            },
+            {
+              "kind": "Reference",
+              "text": "ObserveValueOptions",
+              "canonicalReference": "data-cap!ObserveValueOptions:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Content",
+              "text": "T"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "src/observe/index.ts",
+          "returnTypeTokenRange": {
+            "startIndex": 11,
+            "endIndex": 12
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "sink",
+              "parameterTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              },
+              "isOptional": false
+            },
+            {
+              "parameterName": "context",
+              "parameterTypeTokenRange": {
+                "startIndex": 5,
+                "endIndex": 6
+              },
+              "isOptional": false
+            },
+            {
+              "parameterName": "response",
+              "parameterTypeTokenRange": {
+                "startIndex": 7,
+                "endIndex": 8
+              },
+              "isOptional": false
+            },
+            {
+              "parameterName": "options",
+              "parameterTypeTokenRange": {
+                "startIndex": 9,
+                "endIndex": 10
+              },
+              "isOptional": true
+            }
+          ],
+          "typeParameters": [
+            {
+              "typeParameterName": "T",
+              "constraintTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            }
+          ],
+          "name": "observeResponse"
+        },
+        {
+          "kind": "Function",
+          "canonicalReference": "data-cap!observeSink:function(1)",
+          "docComment": "/**\n * A one-argument pass-through that observes its argument and returns it: `const tap = observeSink(sink, ctx); res.json(tap(body))`.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function observeSink(sink: "
+            },
+            {
+              "kind": "Reference",
+              "text": "ObservationSink",
+              "canonicalReference": "data-cap!ObservationSink:interface"
+            },
+            {
+              "kind": "Content",
+              "text": ", context: "
+            },
+            {
+              "kind": "Reference",
+              "text": "InstrumentContext",
+              "canonicalReference": "data-cap!InstrumentContext:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Content",
+              "text": "<T>(value: T) => T"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "src/observe/index.ts",
+          "returnTypeTokenRange": {
+            "startIndex": 5,
+            "endIndex": 6
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "sink",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isOptional": false
+            },
+            {
+              "parameterName": "context",
+              "parameterTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              },
+              "isOptional": false
+            }
+          ],
+          "name": "observeSink"
+        },
+        {
+          "kind": "Function",
+          "canonicalReference": "data-cap!observeValue:function(1)",
+          "docComment": "/**\n * Walks any JSON-like `value` and records, through `observeBoundary`, the field path of every\n * object and leaf in it: names and paths, never a value. It returns `value` itself, so it can wrap\n * a call (`res.json(observeValue(sink, ctx, body))`). Array elements (and, with `collections`, Map\n * values and Set members)\n * collapse into the Flow Model's element marker `[]`. Functions, symbols and `undefined` are ignored; getters are\n * never run; cycles are not re-entered; depth and visited-value count are bounded. The root itself is not a field\n * (a root primitive records nothing). Keys that are empty or contain a dot cannot be path segments (the Flow Model\n * names a path by joining segments with a dot, so there is no reversible spelling). They are skipped, but never\n * silently. Every skip (`dotted-key`, `max-depth`,\n * `max-nodes`, `cycle`) is reported to `options.onSkip` and to `sink.skip`. Never throws.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function observeValue<T>(sink: "
+            },
+            {
+              "kind": "Reference",
+              "text": "ObservationSink",
+              "canonicalReference": "data-cap!ObservationSink:interface"
+            },
+            {
+              "kind": "Content",
+              "text": ", context: "
+            },
+            {
+              "kind": "Reference",
+              "text": "ObserveValueContext",
+              "canonicalReference": "data-cap!ObserveValueContext:interface"
+            },
+            {
+              "kind": "Content",
+              "text": ", value: "
+            },
+            {
+              "kind": "Content",
+              "text": "T"
+            },
+            {
+              "kind": "Content",
+              "text": ", options?: "
+            },
+            {
+              "kind": "Reference",
+              "text": "ObserveValueOptions",
+              "canonicalReference": "data-cap!ObserveValueOptions:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Content",
+              "text": "T"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "src/observe/index.ts",
+          "returnTypeTokenRange": {
+            "startIndex": 9,
+            "endIndex": 10
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "sink",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isOptional": false
+            },
+            {
+              "parameterName": "context",
+              "parameterTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              },
+              "isOptional": false
+            },
+            {
+              "parameterName": "value",
+              "parameterTypeTokenRange": {
+                "startIndex": 5,
+                "endIndex": 6
+              },
+              "isOptional": false
+            },
+            {
+              "parameterName": "options",
+              "parameterTypeTokenRange": {
+                "startIndex": 7,
+                "endIndex": 8
+              },
+              "isOptional": true
+            }
+          ],
+          "typeParameters": [
+            {
+              "typeParameterName": "T",
+              "constraintTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            }
+          ],
+          "name": "observeValue"
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "data-cap!ObserveValueContext:interface",
+          "docComment": "/**\n * What `observeValue` and `observeSink` need besides the value; `scope` may be a function evaluated at each call (for example the current test name).\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface ObserveValueContext "
+            }
+          ],
+          "fileUrlPath": "src/observe/index.ts",
+          "releaseTag": "Public",
+          "name": "ObserveValueContext",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!ObserveValueContext#boundary:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly boundary: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "ObservedBoundary",
+                  "canonicalReference": "data-cap!ObservedBoundary:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "boundary",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!ObserveValueContext#capability:member",
+              "docComment": "/**\n * The capability's export name, used to qualify each field path.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly capability: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "capability",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!ObserveValueContext#clock:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly clock?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "() => number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "clock",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!ObserveValueContext#handling:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly handling?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "FlowHandling",
+                  "canonicalReference": "data-cap!~FlowHandling:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "handling",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!ObserveValueContext#scope:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly scope: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string | (() => string)"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "scope",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "data-cap!ObserveValueOptions:interface",
+          "docComment": "/**\n * Bounds and switches for the walker.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface ObserveValueOptions "
+            }
+          ],
+          "fileUrlPath": "src/observe/index.ts",
+          "releaseTag": "Public",
+          "name": "ObserveValueOptions",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!ObserveValueOptions#collections:member",
+              "docComment": "/**\n * Walk `Map` values and `Set` members under the element marker `[]` (default off: they are leaves). Map keys are never read.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly collections?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "boolean"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "collections",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!ObserveValueOptions#maxDepth:member",
+              "docComment": "/**\n * Deepest nesting recorded (default 8); anything deeper is not walked and not recorded.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly maxDepth?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "maxDepth",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!ObserveValueOptions#maxNodes:member",
+              "docComment": "/**\n * Most values visited per call (default 1000).\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly maxNodes?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "maxNodes",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!ObserveValueOptions#onSkip:member",
+              "docComment": "/**\n * Called once per distinct (reason, path) when the walker leaves something out, with the path (dotted, relative to\n * the capability, `\"\"` for the root) below which evidence is missing. Names only. The same information goes to\n * `sink.skip` when the sink has one. A throwing callback is ignored.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly onSkip?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "(reason: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "ObservationSkipReason",
+                  "canonicalReference": "data-cap!ObservationSkipReason:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": ", path: string) => void"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "onSkip",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 4
               }
             }
           ],

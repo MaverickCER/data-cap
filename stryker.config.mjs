@@ -4,7 +4,7 @@
  * (`internal-package-contract/config/stryker`), which sets the test runner, reporters, per-test
  * coverage, static-mutant handling and the single worker, with what is data-cap's own.
  *
- * The mutation-score threshold is NOT set here -- the `Mutation` check owns the policy
+ * The mutation-score threshold is NOT set here: the `Mutation` check owns the policy
  * (zero tolerance: every non-ignored mutant must be killed, or carry an exception record in
  * `.repo-contract/exceptions/mutation.json`) and reads the JSON report directly.
  *

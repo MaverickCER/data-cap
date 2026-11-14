@@ -26,7 +26,7 @@ Build the package first: `npm run build` at the repository root. Then, in this d
 
 `npm start` runs `node:assert/strict` checks against the installed `data-cap` build. A failed assertion exits 1 and names the check. `npm run check` exits 1 and lists each stale file when `docs/` no longer matches a fresh run.
 
-CI's `examples` job runs `npm run typecheck` here, then `npm start` and `npm run check` through `test/examples/application.test.ts`. It also runs `npm run docs` in a copy and compares the output with the root README's "See it run" block. That job does not block a merge.
+CI's `examples` job runs `npm run typecheck` here, then `npm start` and `npm run check` through `test/examples/application.test.ts`. It also runs `npm run docs` in a copy and compares the output with the root README's "See it run" block. `required` waits for that job, so a failure blocks a merge.
 
 ## One schema, shared between `createData` and `documentData`
 

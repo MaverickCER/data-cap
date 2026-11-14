@@ -12,8 +12,8 @@ import type { Harness } from "../support/flow-reach.js"
 
 /**
  * Heap aliasing (ADR 0074 section 5). An object another name holds is the same object: a store through one name is
- * seen through every other, however the sharing was made -- by a literal that holds a reference, an array element, a
- * function's result, a shallow copy, a prototype, a closure -- and a copy is a different object. Each test pins what is
+ * seen through every other, however the sharing was made (by a literal that holds a reference, an array element, a
+ * function's result, a shallow copy, a prototype, a closure) and a copy is a different object. Each test pins what is
  * followed (`effects`) and what is reported (`reasons`).
  */
 describe("flow-reach: aliasing through the heap", () => {

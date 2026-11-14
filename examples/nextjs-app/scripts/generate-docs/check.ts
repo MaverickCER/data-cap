@@ -3,13 +3,13 @@
 // CLI flag): verifies src/generated/data.manifest.ts, docs/DATA.md,
 // docs/OWNERSHIP.md, and docs/data.evidence.json are exactly what a fresh
 // run.ts would produce, without writing anything, via `data-cap/build`'s
-// exported `checkArtifacts()` -- the same function the removed
+// exported `checkArtifacts()` (the same function the removed
 // `data-cap --check --location --docs --ownership` combination called
 // internally, with `evidence` included for the same reason run.ts includes
 // it (see run.ts's own header comment): the committed
 // docs/data.evidence.json is the FULLER Evidence Model every requested pass
 // contributes to, not the thinner one a standalone
-// `data-cap --check --evidence` alone would recompute -- so this is the one
+// `data-cap --check --evidence` alone would recompute) so this is the one
 // place that artifact's freshness is verified, not the CLI's own `--check`.
 import path from "node:path"
 import { fileURLToPath } from "node:url"

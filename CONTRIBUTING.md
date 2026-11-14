@@ -18,7 +18,7 @@ npm run setup   # install, build, regenerate the schemas, and install the git ho
 | pre-push   | The contract without the slow analyses            |
 | commit-msg | The Conventional Commits format check             |
 
-The hooks are optional; CI is the gate. The branch ruleset requires the `contract` and `lint` checks.
+The hooks are optional; CI is the gate. The branch ruleset requires the `contract`, `lint` and `required` checks.
 
 `npm run verify` runs locally what CI spreads over `lint` and `verify`, plus the README example check (skipped unless `examples/application` is installed):
 
@@ -44,9 +44,9 @@ If you changed observed behaviour on purpose, regenerate the examples' committed
 
 1. Branch from `main`.
 2. Make the change. If it touches a Stable surface in [`VERSIONING.md`](VERSIONING.md), decide whether it is breaking, additive or a fix.
-3. Add or update tests. `npm run test:coverage` fails below the floors in `vitest.config.ts`. Floors are raised in review when coverage improves and never lowered to fit a drop. A new dense pure function (canonicalization, patching, ownership) also gets property-based tests.
+3. Add or update tests. `npm run test:coverage` fails below the floors in `vitest.config.ts`. Floors are raised in review when coverage improves; lowering one is a visible diff to `vitest.config.ts`. A new dense pure function (canonicalization, patching, ownership) also gets property-based tests.
 4. Add a changeset with `npx changeset`, written for someone who installs the package. Pick the bump from VERSIONING.md's tiers; a change to an Experimental surface is never `major`. Before 1.0, write `minor` for a breaking change; a `major` changeset publishes 1.0.0. Without one, a changeset is generated on `main` from your commit messages.
-5. Open a pull request. The `lint`, `verify` and `contract` jobs run the same steps as `npm run verify`, plus the contract and mutation testing. The other jobs (examples, integration fixtures, Bun and Deno, TypeScript and package-manager compatibility, benchmarks) also run but do not block a merge. A failed `benchmark-pr` skips `lint`, `verify` and `contract`, and GitHub counts a skipped required check as passing, so check it by hand. The release still needs a successful `contract` run.
+5. Open a pull request. The `lint`, `verify` and `contract` jobs run the same steps as `npm run verify`, plus the contract and mutation testing. The other jobs (examples, integration fixtures, Bun and Deno, TypeScript and package-manager compatibility, benchmarks) feed the `required` check, which the ruleset requires. A failed `benchmark-pr` also fails `contract` in its first step. The release still needs a successful `contract` run.
 
 Commit messages follow Conventional Commits; the `Commits` check in `contract` fails otherwise.
 

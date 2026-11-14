@@ -6,7 +6,7 @@
     <title>data-cap: a one-page brief</title>
     <meta
       name="description"
-      content="data-cap gives every piece of application data one owner and one shared status. Every part of the application then agrees on what the data is doing."
+      content="data-cap records who owns each piece of application data and how it may be handled. Lint and build checks compare that record with the code, and the data documentation is generated from it."
     />
     <link rel="canonical" href="https://maverickcer.github.io/data-cap/brief.html" />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
@@ -18,8 +18,9 @@
       <p class="brief-back"><a href="index.html">&larr; data-cap</a></p>
       <h1>data-cap: a one-page brief</h1>
       <p class="brief-oneline">
-        data-cap gives every piece of application data one owner and one shared status. Every part
-        of the application then agrees on what the data is doing.
+        data-cap records who owns each piece of application data and how it may be handled. Lint and
+        build checks compare that record with the code, and the data documentation is generated from
+        it.
       </p>
       <section class="brief-block">
         <h2>The problem</h2>
@@ -31,19 +32,23 @@
       <section class="brief-block">
         <h2>What it does</h2>
         <p>
-          Each piece of data is declared once, with the fields and operations that touch it. Every
-          consumer then reads the same up-to-date snapshot, whichever fetching or state library sits
-          underneath.
+          Each piece of data is declared once, with its owner, its fields and how each field may be
+          handled. Checks in the editor and in CI compare the declaration with the code, and the
+          documentation is regenerated from it.
         </p>
       </section>
       <section class="brief-block">
         <h2>Why it matters</h2>
         <ul>
           <li>
-            Components stop disagreeing about what &quot;loading&quot; or &quot;stale&quot; means.
+            Who owns each piece of data, and how it may be handled, is written once and checked
+            against the code.
+          </li>
+          <li>
+            The data documentation is regenerated from the code, and a CI check fails when the
+            committed copy is stale.
           </li>
           <li>It works alongside the fetching and state libraries a team already uses.</li>
-          <li>A generated report shows who owns each piece of data and what depends on it.</li>
         </ul>
       </section>
       <section class="brief-block">
@@ -70,6 +75,10 @@
           <li>
             Ownership is enforced by dropping the write and warning in development, not by throwing.
             A mistake is reported rather than prevented.
+          </li>
+          <li>
+            The checks record what the team declared. They do not decide whether a declared purpose
+            or legal basis is lawful.
           </li>
         </ul>
       </section>

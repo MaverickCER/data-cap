@@ -40,8 +40,8 @@ describe("resolveOperationPatch -- ownership boundary", () => {
     const result = resolveOperationPatch({
       declaredOwnership: { id: true },
       fieldsSchema: schema,
-      // `processedOutput` is deliberately typed `unknown` -- runtime data
-      // whose shape can't be known statically -- so this malformed value is
+      // `processedOutput` is deliberately typed `unknown` (runtime data
+      // whose shape can't be known statically) so this malformed value is
       // valid at the type level; the point of this test is that the RUNTIME
       // still rejects it.
       processedOutput: { totallyMadeUp: "value" },
@@ -103,7 +103,7 @@ describe("resolveOperationPatch -- ownership boundary", () => {
   it("treats a nested ownership object declared for a non-object (leaf) schema field as not owned -- misconfiguration is never silently permissive", () => {
     const result = resolveOperationPatch({
       declaredOwnership: {
-        // `count` is a number in the schema -- a nested ownership object
+        // `count` is a number in the schema: a nested ownership object
         // here is a misconfiguration (FieldOwnership's own type already
         // rejects this at compile time); only `true` can grant access to a
         // leaf. This proves the runtime is defensive about it too.
@@ -196,7 +196,7 @@ describe("resolveOperationPatch -- invalid shape resets to schema default", () =
     const result = resolveOperationPatch({
       declaredOwnership: { id: true, count: true },
       fieldsSchema: schema,
-      // Wrong runtime type for `count` -- valid at the `unknown` type level, rejected at runtime.
+      // Wrong runtime type for `count`: valid at the `unknown` type level, rejected at runtime.
       processedOutput: { id: "valid", count: "not-a-number" },
       operator: "badMutation",
     })
@@ -223,7 +223,7 @@ describe("resolveOperationPatch -- invalid shape resets to schema default", () =
     const result = resolveOperationPatch({
       declaredOwnership: { tags: true },
       fieldsSchema: schema,
-      // Wrong runtime type -- valid at the `unknown` type level, rejected at runtime.
+      // Wrong runtime type: valid at the `unknown` type level, rejected at runtime.
       processedOutput: { tags: "not-an-array" },
       operator: "badTags",
     })
@@ -242,7 +242,7 @@ describe("resolveOperationPatch -- invalid shape resets to schema default", () =
     const rejected = resolveOperationPatch({
       declaredOwnership: { middleName: true },
       fieldsSchema: schema,
-      // Wrong runtime type -- valid at the `unknown` type level, rejected at runtime.
+      // Wrong runtime type: valid at the `unknown` type level, rejected at runtime.
       processedOutput: { middleName: 12345 },
       operator: "badMiddleName",
     })
@@ -297,7 +297,7 @@ describe("resolveOperationPatch -- property-based obligations", () => {
   it("no-smuggling: a randomly generated processor output including malicious/unlisted keys never leaks them into the accepted patch", () => {
     const maliciousKeys = ["__proto__", "constructor", "prototype", "notInSchema", "randomKey"]
     for (let i = 0; i < 30; i++) {
-      // Index is always in bounds (i % length) -- the fixture array's own known length guarantees this.
+      // Index is always in bounds (i % length): the fixture array's own known length guarantees this.
       const key = maliciousKeys[i % maliciousKeys.length]!
       const processedOutput: Record<string, unknown> = { id: `value-${i}` }
       if (key !== "__proto__") {

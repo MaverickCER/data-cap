@@ -1,7 +1,7 @@
 /**
  * The negative guarantee for the auto-walker (ADR 0072): names and paths only.
- * Whatever is in the value -- strings, numbers, secrets, keys that look like
- * values -- no *value* ever reaches the sink.
+ * Whatever is in the value (strings, numbers, secrets, keys that look like
+ * values) no *value* ever reaches the sink.
  */
 import { describe, expect, it } from "vitest"
 import {

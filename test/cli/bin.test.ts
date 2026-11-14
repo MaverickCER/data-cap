@@ -12,7 +12,7 @@ import path from "node:path"
  * That symlink indirection is the actual bug this suite guards against: a
  * naive `import.meta.url === pathToFileURL(process.argv[1]).href` check
  * matches when you run `node dist/cli/index.js` directly, but never matches
- * through the symlink npm actually creates -- so testing only the
+ * through the symlink npm actually creates; so testing only the
  * direct-execution path would have passed even with the bug present.
  * Requires a prior `npm run build`; skipped otherwise.
  */
@@ -65,7 +65,7 @@ describe.skipIf(distMissing)("CLI bin execution (requires `npm run build`)", () 
   })
 
   it("emits stdout that round-trips through JSON.parse() when run with --json and no target flags", () => {
-    // No --evidence -- exercises the JSON-aware usage-error path
+    // No --evidence: exercises the JSON-aware usage-error path
     // (src/cli/index.ts's "--evidence is required" branch), not a real
     // generation run, but proves the built binary's --json output is
     // well-formed JSON end-to-end through the real symlinked entry point.
@@ -77,7 +77,7 @@ describe.skipIf(distMissing)("CLI bin execution (requires `npm run build`)", () 
   })
 
   it("does not run main() when the built CLI file is only imported, not executed", () => {
-    // A fresh process whose only action is a dynamic import -- argv[1] is the
+    // A fresh process whose only action is a dynamic import: argv[1] is the
     // inline `-e` script, not the CLI file, so this must never print HELP_TEXT
     // or otherwise behave as if it were invoked as the entry point.
     const script = `import(${JSON.stringify(pathToFileURL(cliDist).href)}).then(() => {});`

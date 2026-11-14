@@ -1,11 +1,11 @@
 /**
  * Routes composed programmatically (`createRoute`/`addChildren`), not via
- * TanStack Router's file-based-routing convention -- deliberately, so
+ * TanStack Router's file-based-routing convention: deliberately, so
  * `npm run typecheck` (`tsc --noEmit`, run directly in CI, never through
  * Vite first) never depends on a `routeTree.gen.ts` file that only exists
  * after `vite dev`/`vite build` has actually run once. Programmatic
  * composition is a fully supported, first-class TanStack Router API, not a
- * workaround -- file-based routing is a convenience layer generating this
+ * workaround: file-based routing is a convenience layer generating this
  * exact same structure.
  */
 import { Outlet, createRootRoute, createRoute } from "@tanstack/react-router"

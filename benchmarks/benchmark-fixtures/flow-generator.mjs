@@ -1,4 +1,4 @@
-// Deterministic source fixtures for the flow scan -- a pure function of the file index, zero Math.random() or
+// Deterministic source fixtures for the flow scan: a pure function of the file index, zero Math.random() or
 // timestamps. One capability (`userData.user`, five fields) and `files` application modules that read it and hand
 // it down chains of wrapper functions to a response, the shape real handlers have:
 //
@@ -95,7 +95,7 @@ export async function writeFlowProject(outputDir, options) {
   }
 }
 
-/** A chain of `depth` wrapper functions from a read of the field to a response -- deeper than the scanner follows when `depth` is large. */
+/** A chain of `depth` wrapper functions from a read of the field to a response: deeper than the scanner follows when `depth` is large. */
 export function wrapperChainProject(depth) {
   const lines = ['import { userData } from "../features/user.js"', ""]
   lines.push(

@@ -1,6 +1,6 @@
 /**
  * The one canonical position representation used everywhere this codebase
- * captures where a fact came from -- not several subtly different
+ * captures where a fact came from: not several subtly different
  * `{line, column}`-shaped things accumulating independently across
  * `dependency-graph.ts`, `parse.ts`, `finding-model.ts`, and whatever future
  * module needs one next. Source positions are captured at the earliest
@@ -23,7 +23,7 @@ export interface SourceLocation extends SourcePosition {
   readonly file: string
 }
 
-/** The one place a `SourcePosition` is ever computed from a raw AST node -- every caller reuses this instead of hand-rolling `getLineAndCharacterOfPosition` arithmetic. */
+/** The one place a `SourcePosition` is ever computed from a raw AST node: every caller reuses this instead of hand-rolling `getLineAndCharacterOfPosition` arithmetic. */
 export function positionOf(sourceFile: TS.SourceFile, node: TS.Node): SourcePosition {
   const { line, character } = ts.getLineAndCharacterOfPosition(
     sourceFile,

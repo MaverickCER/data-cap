@@ -1,5 +1,5 @@
 /**
- * Hand-rolled session auth -- deliberately not a library, and deliberately
+ * Hand-rolled session auth: deliberately not a library, and deliberately
  * not what secures the SSE endpoint's own subscription semantics (that's
  * `sse.ts`'s job, see its own header comment). `data-cap` has no
  * authentication concept of its own; this is the boundary a real deployment
@@ -7,7 +7,7 @@
  *
  * `node:crypto`'s `scrypt` (never a fast general-purpose hash) for password
  * storage, and a random, unguessable session token stored server-side in
- * `sessions` (an in-memory Map here -- a real deployment would use a
+ * `sessions` (an in-memory Map here: a real deployment would use a
  * database-backed or Redis-backed store instead; swapping it doesn't change
  * anything above this module).
  */

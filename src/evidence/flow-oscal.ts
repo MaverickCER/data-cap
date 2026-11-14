@@ -1,20 +1,19 @@
 /**
  * NIST OSCAL assessment-results for the Evidence Model's declared flow
- * policies (ADR 0070): control coverage and assessment status in the
- * standard compliance vocabulary, as a pure projection of the one evidence
- * object.
+ * policies (ADR 0070). It states control coverage and assessment status in
+ * OSCAL's vocabulary, as a pure projection of the one evidence object.
  *
- * Control identifiers belong to the people who own the control catalog, so
- * they are **supplied by the caller and never inferred**: a mapping from a
+ * Control identifiers belong to the people who own the control catalog. So
+ * they are **supplied by the caller and never inferred**. The caller maps each
  * data-cap rule id to the control ids it is evidence for. A rule with no
- * mapping is listed as `unmapped-rule` rather than dropped, and with no
- * mapping at all the result says so instead of implying a review took place.
+ * mapping is listed as `unmapped-rule` rather than dropped. With no mapping
+ * at all, the result says so instead of implying a review took place.
  *
  * Status is never stronger than the evidence (ADR 0071). A rule is
- * `satisfied` only when every result for it holds; one violation, or one
- * contradicting observation, makes it `not-satisfied` (`fail`); a result the
+ * `satisfied` only when every result for it holds. One violation, or one
+ * contradicting observation, makes it `not-satisfied` (`fail`). A result the
  * analysis could not decide is `not-satisfied` with the reason `other` and the
- * reason stated -- "could not prove" is not "proved". A satisfied rule says
+ * reason stated: "could not prove" is not "proved". A satisfied rule says
  * whether it was also observed at runtime.
  *
  * Emits OSCAL 1.1.2 assessment-results. `test/evidence/flow-oscal.test.ts` validates the
@@ -51,26 +50,26 @@ function oscalTarget(id: string): {
 /** Options for `buildOscalAssessmentResults`. */
 export interface OscalOptions {
   /**
-   * data-cap rule id (as in `evidence.policy.rules[].id`, for example `userData/no-pii-to-log`) to the
-   * control ids it is evidence for. Never inferred. A control id (`ac-4`) is targeted at its
-   * assessment objective (`ac-4_obj`), the part id NIST's SP 800-53 OSCAL catalog gives it; an id that
-   * already names a part (`ac-4_obj`, `ac-4_smt`, `ac-4_smt.a`) is targeted as given. Name each
-   * objective once: `ac-4` and `ac-4_obj` are the same target and would give two findings.
+   * data-cap rule id (as in `evidence.policy.rules[].id`, for example `userData/no-pii-to-log`) to
+   * the control ids it is evidence for. Never inferred. A control id (`ac-4`) is targeted at its
+   * assessment objective (`ac-4_obj`), the part id NIST's SP 800-53 OSCAL catalog gives it. An id
+   * that already names a part (`ac-4_obj`, `ac-4_smt`, `ac-4_smt.a`) is targeted as given. Name
+   * each objective once: `ac-4` and `ac-4_obj` are the same target and would give two findings.
    */
   readonly controls: Readonly<Record<string, readonly string[]>>
   /** Document title (default `data-cap data-flow assessment`). */
   readonly title?: string | undefined
   /**
-   * `href` of the assessment plan this result imports. OSCAL requires one; without it the document
-   * carries the placeholder `#data-cap-assessment-plan` and says so in `import-ap.remarks`, which is
-   * enough for review and nothing an OSCAL tool-chain should resolve. See {@link strict}.
+   * `href` of the assessment plan this result imports. OSCAL requires one. Without it the document
+   * carries the placeholder `#data-cap-assessment-plan` and says so in `import-ap.remarks`. That is
+   * enough for review, and nothing an OSCAL tool-chain should resolve. See {@link strict}.
    */
   readonly assessmentPlan?: string | undefined
   /**
    * `href` the evidence file is reachable at from where the document will live (for example
    * `docs/data.evidence.json`). With it, every evidence reference becomes a back-matter resource
-   * with an `rlink`, and each observation's `relevant-evidence` points at that resource, so a
-   * tool-chain can follow the trail; without it the references stay descriptive text.
+   * with an `rlink`, and each observation's `relevant-evidence` points at that resource. Without
+   * it the references stay descriptive text.
    */
   readonly evidenceHref?: string | undefined
   /**
@@ -316,7 +315,7 @@ export function buildOscalAssessmentResults(
     for (const control of controls) {
       findings.push({
         uuid: deterministicUuid(`${seed}|finding|${ruleId}|${control}`),
-        title: `${ruleId} -- ${control}`,
+        title: `${ruleId}: ${control}`,
         description: `data-cap data-flow rule ${ruleId} as evidence for ${control}.`,
         target: {
           type: oscalTarget(control).type,

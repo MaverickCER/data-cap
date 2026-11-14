@@ -1,5 +1,8 @@
 # eslint-plugin
 
+`data-cap/eslint-plugin`: lint rules that keep capability code readable by the build pass:
+`stable-operation-reference`, `no-raw-external-io`, `no-fields-escape` and `no-node-fs`.
+
 ## Variables
 
 ### default
@@ -15,14 +18,11 @@ const default: {
 };
 ```
 
-`data-cap/eslint-plugin` -- a flat-config-shaped plugin object
+`data-cap/eslint-plugin`: a flat-config-shaped plugin object
 ({ rules: { ... } }), consumed as:
 
   import dataCapPlugin from "data-cap/eslint-plugin";
   export default [{ plugins: { "data-cap": dataCapPlugin }, rules: { "data-cap/stable-operation-reference": "warn" } }];
-
-A 6th public entry point alongside `.`, `./runtime`, `./build`,
-`./helpers`, and `./evidence`.
 
 #### Type Declaration
 
@@ -80,39 +80,39 @@ const noFieldsEscape: RuleModuleWithName<"prop" | "spread" | "argument" | "expor
 ```
 
 Flags a capability's whole `.fields` (or a bare `getSnapshot()` result)
-escaping this file's local, single-`.fields.<name>`-read visibility --
-spread into JSX/an object literal, destructured with a rest element,
-passed as a bare function argument or a named JSX prop, or exported
-(directly, or returned from an exported function) -- so field-level
-data flow stays provable by data-cap's build-time scanner instead of
-silently escaping it.
+escaping this file's local, single-`.fields.<name>`-read visibility.
+The escapes are a spread into JSX or an object literal, a rest-element
+destructure, a bare function argument or named JSX prop, and an export
+(direct, or returned from an exported function). Flagging
+them keeps field-level data flow provable by data-cap's build-time
+scanner instead of silently escaping it.
 
 #### Remarks
 
 **Exact matching rule, deliberately kept purely structural.** Matched by
-property/method name alone (`.fields`, `.getSnapshot()`) -- like
-`stable-operation-reference`'s `createData`/`buildData` name matching,
-this never resolves an import or confirms the base expression is
-actually a data-cap capability, and never traces an intermediate alias
-(`const f = x.fields; const { ...rest } = f;` is one hop this rule
-declines to follow, matching [ADR 0060](_media/0060-usage-scanner-escape-sites.md)'s
-own "one level" scope for the build-time scanner it mirrors). The
-consequence is worth stating plainly: an unrelated object that merely
-happens to expose a `.fields` property or a `.getSnapshot()` method is
-indistinguishable to this rule and would be flagged the same way --
-rare in practice, but a real, documented tradeoff, not an oversight.
+property/method name alone (`.fields`, `.getSnapshot()`), like
+`stable-operation-reference`'s `createData`/`buildData` name matching.
+This never resolves an import or confirms the base expression is
+actually a data-cap capability. It also never traces an intermediate
+alias. It does not follow `const f = x.fields; const { ...rest } = f;`,
+matching the "one level" scope of the build-time scanner in
+[ADR 0060](_media/0060-usage-scanner-escape-sites.md).
+An unrelated object that merely happens to expose a `.fields` property or
+a `.getSnapshot()` method is indistinguishable to this rule and would be
+flagged the same way. That
+is rare in practice, but a real, documented tradeoff, not an oversight.
 
 A **plain, non-exported local alias** (`const alias = x.fields;`, never
 spread, never passed anywhere, never exported) is deliberately never
-flagged on its own -- seeing a `const` declaration alone can't tell a
+flagged on its own. Seeing a `const` declaration alone can't tell a
 harmless local narrowing (`const f = x.fields; return f.email;`) apart
-from a real escape without dataflow tracing this rule doesn't do; see
+from a real escape without dataflow tracing this rule doesn't do. See
 [ADR 0064](_media/0064-no-fields-escape-export-argument-and-prop.md)
 for why *exported* reassignment is flagged (a provable, structural,
 module-boundary fact) while plain reassignment stays out of scope (an
 unprovable one).
 
-This rule does not itself prove a leak -- it proves a *shape* the
+This rule does not itself prove a leak: it proves a *shape* the
 build-time scanner cannot see through, the same distinction
 `no-raw-external-io`'s own doc comment draws for its own structural
 check. `options.allow` exempts whole files by glob.
@@ -144,10 +144,9 @@ record the message cites.
 const noRawExternalIo: RuleModuleWithName<"noRawExternalIo", [RuleOptions], unknown, RuleListener>;
 ```
 
-Flags a direct call to a global I/O function (`fetch` by default) written
-anywhere other than inside a capability's own `execute`/`subscribe`, so
-external data access always goes through a declared, analyzable
-capability operation instead of being scattered through application code.
+Flags a direct call to a global I/O function (`fetch` by default) outside a
+capability's own `execute` or `subscribe`. External data access then goes
+through a declared capability operation the build pass can read.
 
 #### Remarks
 
@@ -155,10 +154,10 @@ capability operation instead of being scattered through application code.
 `fetch(...)` is exempt the moment it is lexically inside an
 `execute`/`subscribe` function of an operation declared in a
 `buildData`/`createData` call's `getters`/`mutators`/`subscriptions`
-section -- position alone. There is no cross-referencing against declared
+section: position alone. There is no cross-referencing against declared
 `endpoints` metadata, no URL matching, and no inspection of what the
-operation's body actually does: an operation body is opaque to `data-cap`'s
-static analysis by design (`AGENTS.md` invariant 6), and a rule that peeked
+operation's body actually does. An operation body is opaque to `data-cap`'s
+static analysis by design (`AGENTS.md` invariant 6). A rule that peeked
 inside one would be the first thing in this package to break that.
 
 The consequence is worth stating plainly: this rule proves *where* a call
@@ -184,18 +183,16 @@ applies.
 
 #### Remarks
 
-Function identity controls sharing (not function syntax) -- an inline
-arrow function is a fresh identity every time the surrounding code runs,
-which is indistinguishable, from the coordinator's perspective, from the
-developer deliberately opting out of sharing. The same is true of an
-identifier that merely *looks* like a stable reference syntactically but
-resolves to a binding declared inside a function (a factory, a
-component, a parameter) -- that binding is a fresh identity every time
-the enclosing function runs, exactly like an inline literal would be.
-This rule exists to make both easy-to-miss cases visible, not to ban
-arrow functions -- `execute: myStableArrowFunction`, where
-`myStableArrowFunction` is declared at module scope (or imported), is
-exactly as sharable as a `function` declaration and never flagged.
+Function identity controls sharing, not function syntax. An inline arrow
+function is a fresh identity every time the surrounding code runs. To the
+coordinator, that looks the same as opting out of sharing on purpose. The
+same is true of an identifier that merely *looks* like a stable reference
+syntactically but resolves to a binding declared inside a function (a
+factory, a component, a parameter). That binding is a fresh identity every
+time the enclosing function runs, exactly like an inline literal would be.
+This rule makes both hard-to-spot cases visible; arrow functions stay
+allowed. `execute: myStableArrowFunction`, declared at module scope or
+imported, shares exactly like a `function` declaration and is never flagged.
 
 What this rule deliberately does not attempt: proving stability through
 a `CallExpression` (`execute: makeGetUser()`), a `MemberExpression`

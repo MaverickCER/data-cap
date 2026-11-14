@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Generates schemas/*.schema.json directly from their source types -- never
+// Generates schemas/*.schema.json directly from their source types: never
 // hand-authored, so a schema and the type it describes cannot silently drift
 // apart. Regenerated as part of `npm run verify`; each schema's own test
 // (e.g. test/build/json-schema.test.ts, test/build/capability-model-json-schema.test.ts)
@@ -16,7 +16,7 @@ import { createGenerator } from "ts-json-schema-generator"
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
 
 // TSDoc `{@link Target}`/`{@link Target|label}` tags are meant for TypeDoc to resolve into
-// hyperlinks (see typedoc.json) -- ts-json-schema-generator has no such resolution and would
+// hyperlinks (see typedoc.json): ts-json-schema-generator has no such resolution and would
 // otherwise emit the raw `{@link ...}` tag text verbatim into a schema's "description"
 // fields, which are read by external tools/humans with no TSDoc awareness.
 function stripLinkTags(value) {
@@ -40,7 +40,7 @@ function stripLinkTagsDeep(value) {
 }
 
 // One entry per published schema. Adding a new fact model's schema means
-// adding one entry here -- everything else (generation, writing, freshness
+// adding one entry here: everything else (generation, writing, freshness
 // checking) is shared.
 const TARGETS = [
   {
@@ -52,9 +52,9 @@ const TARGETS = [
     title: "data-cap --json report",
     description:
       "Machine-readable envelope emitted by `data-cap --json` (see README's CLI section). " +
-      "Generated from src/cli/json.ts's JsonReportPayload type -- never hand-authored. " +
+      "Generated from src/cli/json.ts's JsonReportPayload type. Never hand-authored. " +
       "Embeds the composed Evidence Model (see evidence-model.schema.json) as its own " +
-      "`evidence` field -- this envelope is the CLI run's own summary (files written, " +
+      "`evidence` field. This envelope is the CLI run's own summary (files written, " +
       "finding counts), not a competing canonical model.",
   },
   {
@@ -66,7 +66,7 @@ const TARGETS = [
     title: "data-cap Capability Model",
     description:
       "Canonical, versioned projection of every discovered capability's fields and operations " +
-      "(see ADR 0050). Generated from src/build/inventory.ts's CapabilityInventory type -- never hand-authored.",
+      "(see ADR 0050). Generated from src/build/inventory.ts's CapabilityInventory type. Never hand-authored.",
   },
   {
     name: "dependency-model",
@@ -78,7 +78,7 @@ const TARGETS = [
     description:
       "Canonical, versioned projection of every statically-proven consumer relationship, indexed " +
       "by capability and by consuming file (see ADR 0050). Generated from " +
-      "src/build/dependency-model.ts's DependencyModel type -- never hand-authored.",
+      "src/build/dependency-model.ts's DependencyModel type. Never hand-authored.",
   },
   {
     name: "ownership-model",
@@ -89,7 +89,7 @@ const TARGETS = [
     title: "data-cap Ownership Model",
     description:
       "Canonical, versioned owner -> {capabilities, fields} matrix (see ADR 0050). Generated from " +
-      "src/build/ownership-model.ts's OwnershipModel type -- never hand-authored.",
+      "src/build/ownership-model.ts's OwnershipModel type. Never hand-authored.",
   },
   {
     name: "lifecycle-model",
@@ -101,7 +101,7 @@ const TARGETS = [
     description:
       "Canonical, versioned projection of every capability's and field's declared lifecycle data " +
       "(expiry, deprecation, removal deadline, rename correlation), plus the expiring-soon view. " +
-      "Generated from src/build/lifecycle-model.ts's LifecycleModel type -- never hand-authored.",
+      "Generated from src/build/lifecycle-model.ts's LifecycleModel type. Never hand-authored.",
   },
   {
     name: "finding-model",
@@ -112,7 +112,7 @@ const TARGETS = [
     title: "data-cap Finding Model",
     description:
       "Canonical, versioned list of every finding, each with a structured, pre-computed `location` " +
-      "(see ADR 0050). Generated from src/build/finding-model.ts's FindingModel type -- never hand-authored.",
+      "(see ADR 0050). Generated from src/build/finding-model.ts's FindingModel type. Never hand-authored.",
   },
   {
     name: "change-model",
@@ -123,7 +123,7 @@ const TARGETS = [
     title: "data-cap Change Model",
     description:
       "Canonical, versioned manifest diff plus an optional blast-radius index (see ADR 0050). " +
-      "Generated from src/build/change-model.ts's ChangeModel type -- never hand-authored.",
+      "Generated from src/build/change-model.ts's ChangeModel type. Never hand-authored.",
   },
   {
     name: "runtime-contract-model",
@@ -135,7 +135,7 @@ const TARGETS = [
     description:
       "Canonical, versioned, package-level (not per-project) description of data-cap's own " +
       "documented execution guarantees (see ADR 0050). Generated from " +
-      "src/build/runtime-contract-model.ts's RuntimeContractModel type -- never hand-authored.",
+      "src/build/runtime-contract-model.ts's RuntimeContractModel type. Never hand-authored.",
   },
   {
     name: "flow-model",
@@ -147,7 +147,7 @@ const TARGETS = [
     description:
       "Canonical, versioned function-level, field-sensitive data-flow facts (nodes, edges, explicit " +
       "unknowns and a coverage summary), each with an epistemic status (see ADR 0070, ADR 0071). " +
-      "Generated from src/flow/flow-model.ts's FlowModel type -- never hand-authored.",
+      "Generated from src/flow/flow-model.ts's FlowModel type. Never hand-authored.",
   },
   {
     name: "policy-model",
@@ -158,7 +158,7 @@ const TARGETS = [
     title: "data-cap Policy Model",
     description:
       "Canonical, versioned declared data-flow rules and their evaluation results against the Flow " +
-      "Model (see ADR 0070). Generated from src/flow/policy-model.ts's PolicyModel type -- never hand-authored.",
+      "Model (see ADR 0070). Generated from src/flow/policy-model.ts's PolicyModel type. Never hand-authored.",
   },
   {
     name: "observation-model",
@@ -169,8 +169,8 @@ const TARGETS = [
     title: "data-cap Observation Model",
     description:
       "Canonical, versioned runtime observations: which field names were seen at which boundaries in " +
-      "which scopes -- names and paths only, never values (see ADR 0070, ADR 0072). Generated from " +
-      "src/flow/observation-model.ts's ObservationModel type -- never hand-authored.",
+      "which scopes: names and paths only, never values (see ADR 0070, ADR 0072). Generated from " +
+      "src/flow/observation-model.ts's ObservationModel type. Never hand-authored.",
   },
   {
     name: "claims-model",
@@ -182,7 +182,7 @@ const TARGETS = [
     description:
       "Canonical, versioned claims with supporting and contradicting evidence, scope and a derived " +
       "verification status (see ADR 0070, ADR 0071). Generated from src/flow/claims-model.ts's " +
-      "ClaimsModel type -- never hand-authored.",
+      "ClaimsModel type. Never hand-authored.",
   },
   {
     name: "evidence-model",
@@ -195,7 +195,7 @@ const TARGETS = [
       "Canonical, versioned composition of Capability/Lifecycle/Dependency/Ownership/Finding/Change/" +
       "Flow/Policy/Observation/Claims/Runtime Contract Model into one provenance-stamped artifact " +
       "(see ADR 0050, ADR 0070). Generated from " +
-      "src/build/evidence-model.ts's EvidenceModel type -- never hand-authored.",
+      "src/build/evidence-model.ts's EvidenceModel type. Never hand-authored.",
   },
 ]
 

@@ -62,7 +62,7 @@ export function methods() {
       }
     },
 
-    /** Records that `fn` accessed this data (so it is not "discarded"), and that it reads it -- even if it never goes anywhere. */
+    /** Records that `fn` accessed this data (so it is not "discarded"), and that it reads it: even if it never goes anywhere. */
     touch(this: FlowScan, fn: FunctionInfo, val: Val, site: TS.Node): void {
       for (const atom of flattenAtoms(val)) {
         this.entered
@@ -94,14 +94,14 @@ export function methods() {
           })
         case "param": {
           const owner = this.functions.get(entry.fn)
-          // Stryker disable next-line ConditionalExpression: equivalent -- an atom's function key was registered when the atom was made, so the owner is always found.
+          // Stryker disable next-line ConditionalExpression: equivalent: an atom's function key was registered when the atom was made, so the owner is always found.
           return owner === undefined
             ? undefined
             : this.addEdge({ kind: "reads", from: this.paramNode(owner, entry.index), ...base })
         }
         case "return": {
           const owner = this.functions.get(entry.from)
-          // Stryker disable next-line ConditionalExpression: equivalent -- an atom's function key was registered when the atom was made, so the owner is always found.
+          // Stryker disable next-line ConditionalExpression: equivalent: an atom's function key was registered when the atom was made, so the owner is always found.
           return owner === undefined
             ? undefined
             : this.addEdge({ kind: "passes", from: this.returnNode(owner), ...base })
@@ -111,7 +111,7 @@ export function methods() {
 
     sink(this: FlowScan, frame: Frame, val: Val, spec: SinkSpec, node: TS.Node): void {
       const fn = frame.fn
-      // Data handed to a boundary or an operation leaves the program: a whole `fields` object takes every field with it.
+      // Data handed to a boundary or an operation leaves the program. A whole `fields` object takes every field with it.
       const sent =
         spec.kind === "boundary" || spec.kind === "operation"
           ? this.materialize(frame, val, node)
@@ -252,13 +252,13 @@ export function methods() {
       for (let round = 0; round < rounds && !settled; round += 1) {
         // A counter that stopped advancing, or a cap that stopped holding, would turn this into an endless loop; fail at
         // once instead of hanging.
-        // Stryker disable next-line ConditionalExpression,LogicalOperator: equivalent -- the loop as written never moves its counter backwards nor past the cap, so a guard that never fires changes nothing a test can see; the guard exists so that a mutant that does fails fast instead of timing out.
+        // Stryker disable next-line ConditionalExpression,LogicalOperator: equivalent: the loop as written never moves its counter backwards nor past the cap, so a guard that never fires changes nothing a test can see; the guard exists so that a mutant that does fails fast instead of timing out.
         if (round < 0 || round === rounds)
-          // Stryker disable next-line StringLiteral,CallExpression: equivalent -- the message of a guard that never fires is never read.
+          // Stryker disable next-line StringLiteral,CallExpression: equivalent: the message of a guard that never fires is never read.
           throw new Error("flow scan: the round counter left its bounds")
-        // Stryker disable next-line ArithmeticOperator: equivalent -- rounds are only compared with one another and with 0, which no closure made while a round runs carries, so counting them from another number tells them apart the same way.
+        // Stryker disable next-line ArithmeticOperator: equivalent: rounds are only compared with one another and with 0, which no closure made while a round runs carries, so counting them from another number tells them apart the same way.
         this.round = round + 1
-        // Stryker disable next-line ConditionalExpression,EqualityOperator: equivalent -- before the first round the heap holds nothing to move on, so moving it on then changes nothing.
+        // Stryker disable next-line ConditionalExpression,EqualityOperator: equivalent: before the first round the heap holds nothing to move on, so moving it on then changes nothing.
         if (round > 0) {
           this.heap.nextRound()
         }
@@ -303,8 +303,8 @@ export function methods() {
     },
 
     /**
-     * Closures, and the methods of classes, that one call made and nothing called. Whatever received them can call them
-     * -- with the variables of the call that made them, which are not the variables of the first call -- so each is run on
+     * Closures, and the methods of classes, that one call made and nothing called. Whatever received them can call them:
+     * with the variables of the call that made them, which are not the variables of the first call; so each is run on
      * its own, and what it sends or returns counts.
      */
     runUncalledInstances(this: FlowScan): void {
@@ -313,10 +313,10 @@ export function methods() {
         const found: FunctionInfo[] = []
         for (const [token, round] of this.madeByCalls) {
           const fn = this.instances.get(token)
-          // Stryker disable next-line ConditionalExpression,OptionalChaining: equivalent -- a token in `madeByCalls` was put in `instances` with the node of the function it copies, so both are always there; the check only satisfies the type checker.
+          // Stryker disable next-line ConditionalExpression,OptionalChaining: equivalent: a token in `madeByCalls` was put in `instances` with the node of the function it copies, so both are always there; the check only satisfies the type checker.
           if (fn?.node === undefined) continue
           // The last round has the module's state as it ended up; earlier ones are superseded.
-          // Stryker disable next-line ConditionalExpression,EqualityOperator,LogicalOperator: equivalent -- the module's state only grows from round to round, so running a superseded closure as well finds nothing the last round's does not.
+          // Stryker disable next-line ConditionalExpression,EqualityOperator,LogicalOperator: equivalent: the module's state only grows from round to round, so running a superseded closure as well finds nothing the last round's does not.
           if (round !== 0 && round !== this.round) continue
           if (done.has(token) || this.calledKeys.has(token)) continue
           found.push(fn)
@@ -332,7 +332,7 @@ export function methods() {
           done.add(fn.instance ?? fn.key)
           this.runRoot(fn)
         }
-        // Stryker disable all: unreachable -- `pending` never offers a function twice, so each round marks one more as done; the check only turns a round that makes no progress into a failure instead of a hang.
+        // Stryker disable all: unreachable: `pending` never offers a function twice, so each round marks one more as done; the check only turns a round that makes no progress into a failure instead of a hang.
         /* v8 ignore next 3 -- unreachable: an earlier guard keeps this check from ever being true; it only turns a lost bound into a failure instead of a hang */
         if (done.size === before) {
           throw new Error("running the uncalled instances made no progress")
@@ -344,7 +344,7 @@ export function methods() {
     },
 
     /**
-     * How a function runs when nothing calls it: a method on an instance of its class, a constructor on a fresh instance.
+     * How a function runs when nothing calls it. A method runs on an instance of its class, a constructor on a fresh instance.
      * The constructor and the methods run on the same stand-in instance (one allocation site for the class), so what the
      * constructor and the field initializers store on `this` is what a method finds there.
      */
@@ -353,7 +353,7 @@ export function methods() {
       if (cls === undefined) return {}
       const instance = withAlloc(
         { ...EMPTY_VAL, instance: cls.key },
-        // Stryker disable next-line StringLiteral: equivalent -- the site is told apart by the class key; the text after it only has to differ from the positions other sites use.
+        // Stryker disable next-line StringLiteral: equivalent: the site is told apart by the class key; the text after it only has to differ from the positions other sites use.
         this.heap.allocId(cls.key, "instance"),
       )
       if (fn.role === "constructor") return { thisVal: instance, construct: cls }
@@ -364,7 +364,7 @@ export function methods() {
     flagUncalledClosures(this: FlowScan): void {
       for (const [key, atoms] of this.closureReturns) {
         const fn = this.functionOf(key)
-        // Stryker disable next-line ConditionalExpression,OptionalChaining: equivalent -- a key in `closureReturns` names a closure that was registered with its node, so both are always there; the check only satisfies the type checker.
+        // Stryker disable next-line ConditionalExpression,OptionalChaining: equivalent: a key in `closureReturns` names a closure that was registered with its node, so both are always there; the check only satisfies the type checker.
         if (fn?.node === undefined) continue
         if (atoms.length === 0) continue
         if (this.calledKeys.has(key)) continue
@@ -378,7 +378,7 @@ export function methods() {
       }
     },
 
-    // ----- function calls ------------------------------------------------------------------------
+    // ----- function calls -----------------------------------------------------------------------.
 
     analyze(
       this: FlowScan,
@@ -397,7 +397,7 @@ export function methods() {
       const shape = [
         options.construct?.key,
         options.constructs === true,
-        // Stryker disable next-line StringLiteral: equivalent -- the stand-in for "no receiver" only has to differ from the signature of a receiver.
+        // Stryker disable next-line StringLiteral: equivalent: the stand-in for "no receiver" only has to differ from the signature of a receiver.
         options.thisVal === undefined ? "" : signatureOf(options.thisVal),
         ...args.map(signatureOf),
       ]
@@ -500,9 +500,9 @@ export function methods() {
     },
 
     runBody(this: FlowScan, frame: Frame, fn: FunctionInfo): void {
-      // Stryker disable next-line OptionalChaining: equivalent -- only the module function has no node, and it is never analyzed as a call.
+      // Stryker disable next-line OptionalChaining: equivalent: only the module function has no node, and it is never analyzed as a call.
       const body = fn.node?.body
-      // Stryker disable next-line ConditionalExpression: equivalent -- a function declaration without a body is never registered, so the body is always present when a node is.
+      // Stryker disable next-line ConditionalExpression: equivalent: a function declaration without a body is never registered, so the body is always present when a node is.
       if (body === undefined) return
       if (ts.isBlock(body)) this.statements(frame, body.statements)
       else this.returnValue(frame, this.expr(frame, body), body)
@@ -556,7 +556,7 @@ export function methods() {
       return result
     },
 
-    /** An object the callee stored properties into is the caller's object: what was stored is visible to the caller from here on. */
+    /** An object the callee stored properties into is the caller's object. What was stored is visible to the caller from here on. */
     writeBack(this: FlowScan, call: CallSite, fn: FunctionInfo, index: number, val: Val): void {
       const target = index === -1 ? call.receiver : call.argExprs?.[index]
       const root = target === undefined ? undefined : memberChain(target).root

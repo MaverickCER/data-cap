@@ -1,5 +1,5 @@
 /**
- * Coordinates shared underlying work across capability instances -- NOT the
+ * Coordinates shared underlying work across capability instances: NOT the
  * state store (that's store.ts). Two responsibilities:
  *
  * 1. Execution dedup: concurrent calls to the same function identity with
@@ -9,19 +9,19 @@
  *    ref-counted, torn down when the last consumer releases.
  *
  * Sharing boundary is FUNCTION IDENTITY, never structural/behavioral
- * equality -- two capabilities passing the same `execute`/`subscribe`
+ * equality: two capabilities passing the same `execute`/`subscribe`
  * reference share; two capabilities passing different references (even
  * behaviorally identical ones) never do. This is not "arrow functions opt
- * out" -- the rule is identity, regardless of syntax.
+ * out": the rule is identity, regardless of syntax.
  *
  * `defaultCoordinator` is a module-level singleton, used implicitly
  * throughout one loaded module instance. `createCoordinator()` gives
  * applications an explicit, opt-in isolated coordination domain (multi-
- * tenant server processes, test isolation) -- isolation is always requested
+ * tenant server processes, test isolation): isolation is always requested
  * explicitly through this factory, never inferred from function identity/
  * syntax, which remains solely the intra-coordinator sharing boundary.
  *
- * Internal -- not re-exported from the public `.` barrel.
+ * Internal: not re-exported from the public `.` barrel.
  */
 
 import { canonicalize } from "../core/canonicalize.js"
@@ -32,7 +32,7 @@ interface ExecutionEntry {
   readonly promise: Promise<unknown>
 }
 
-/** Handlers a coordinator-managed subscription drives -- see `SubscriptionEventHandlers`, the same shape without a bound `params`. */
+/** Handlers a coordinator-managed subscription drives: see `SubscriptionEventHandlers`, the same shape without a bound `params`. */
 export interface SubscriptionHandlers<TEvent> {
   /** Call with each incoming event. */
   readonly onEvent: (event: TEvent) => void
@@ -53,16 +53,16 @@ interface SharedSubscriptionEntry {
   readonly unsubscribeFromTransport: () => void
 }
 
-/** An isolated coordination domain for dedup and shared subscriptions -- see `createCoordinator`/`defaultCoordinator`. */
+/** An isolated coordination domain for dedup and shared subscriptions: see `createCoordinator`/`defaultCoordinator`. */
 export interface Coordinator {
   /**
    * Deduplicates concurrent calls to `fn` (by its own identity) with
    * canonically-equal `params`. Non-canonicalizable params (or a
-   * non-canonicalizable-adjacent failure) simply never dedupe -- `fn` runs
+   * non-canonicalizable-adjacent failure) never dedupe: `fn` runs
    * fresh every time, never throwing and never silently colliding two
    * unrelated calls onto one shared promise.
    *
-   * Each caller's own `signal` only affects THEIR OWN wait -- aborting it
+   * Each caller's own `signal` only affects THEIR OWN wait: aborting it
    * rejects this call's returned promise without affecting the shared
    * underlying execution or any other caller sharing it.
    */
@@ -76,7 +76,7 @@ export interface Coordinator {
    * Acquires a shared subscription for `subscribeFn`. The first acquirer
    * establishes the transport; later acquirers with the same function
    * identity reuse it and immediately learn its current status. Returns a
-   * release function -- the transport tears down only once every acquirer
+   * release function: the transport tears down only once every acquirer
    * has released.
    */
   acquireSubscription<TEvent>(
@@ -85,7 +85,7 @@ export interface Coordinator {
   ): () => void
 }
 
-/** Creates a fresh, isolated `Coordinator` -- an independent dedup/shared-subscription domain, e.g. per-tenant on a server (ADR 0027). */
+/** Creates a fresh, isolated `Coordinator`: an independent dedup/shared-subscription domain, e.g. per-tenant on a server (ADR 0027). */
 export function createCoordinator(): Coordinator {
   const executionRegistry = new WeakMap<object, Map<string, ExecutionEntry>>()
   const subscriptionRegistry = new WeakMap<object, SharedSubscriptionEntry>()
@@ -110,7 +110,7 @@ export function createCoordinator(): Coordinator {
     }
 
     // The shared execution runs to completion independent of any single
-    // caller's own signal -- other callers may still need the result even
+    // caller's own signal: other callers may still need the result even
     // if this particular caller gives up on waiting.
     const controller = new AbortController()
     const promise = fn(params, controller.signal)
@@ -124,7 +124,7 @@ export function createCoordinator(): Coordinator {
     const settledEntries = entries
     promise
       .finally(() => {
-        // Completed, failed, or cancelled -- always removed, never left to
+        // Completed, failed, or cancelled: always removed, never left to
         // accumulate stale entries a long-lived `fn` would otherwise keep
         // growing regardless of GC (a pending promise is referenced by every
         // awaiter anyway and would never be collected while genuinely in
@@ -134,7 +134,7 @@ export function createCoordinator(): Coordinator {
       .catch(() => {
         // The .finally() cleanup itself never throws; this only exists so an
         // unhandled-rejection warning is never attributed to this internal
-        // bookkeeping promise -- the real rejection is still delivered to
+        // bookkeeping promise: the real rejection is still delivered to
         // every caller via their own returned (rejectOnAbort-wrapped) promise.
       })
 
@@ -151,10 +151,10 @@ export function createCoordinator(): Coordinator {
       const consumers = new Set<SubscriptionHandlers<unknown>>()
       consumers.add(handlers as SubscriptionHandlers<unknown>)
 
-      // Built without a placeholder `unsubscribeFromTransport` -- `entry` is
-      // only assigned once the real one is known, right before publishing
-      // (a throwaway function created solely as filler would never actually
-      // run, which is exactly the kind of dead code coverage exists to catch).
+      // Built without a placeholder `unsubscribeFromTransport`: `entry` is
+      // only assigned once the real one is known, right before publishing.
+      // A throwaway function created solely as filler would never actually
+      // run, which is exactly the kind of dead code coverage exists to catch.
       const newEntry = {
         refCount: 1,
         status: "connecting" as SubscriptionInfo["status"],
@@ -175,7 +175,7 @@ export function createCoordinator(): Coordinator {
         },
       }
 
-      // Runs before the registry entry is published -- if this throws, no
+      // Runs before the registry entry is published: if this throws, no
       // phantom entry is ever created, and the throw propagates directly to
       // this first caller.
       const unsubscribeFromTransport = subscribeFn(fanOut)
@@ -194,14 +194,14 @@ export function createCoordinator(): Coordinator {
       const current = subscriptionRegistry.get(subscribeFn)
       // Idempotent: a second call (or one after the entry was torn down and
       // possibly rebuilt) finds no live registration for `ownHandlers` and
-      // stops here -- no double `refCount` decrement, no crash.
+      // stops here; no double `refCount` decrement, no crash.
       if (!current?.consumers.has(ownHandlers)) return
 
       current.consumers.delete(ownHandlers)
       current.refCount -= 1
       if (current.refCount <= 0) {
         // The registry entry is removed even if the transport's own
-        // teardown throws -- a throwing unsubscribe must never leave a
+        // teardown throws: a throwing unsubscribe must never leave a
         // permanently stuck phantom entry blocking a fresh reconnect.
         try {
           current.unsubscribeFromTransport()

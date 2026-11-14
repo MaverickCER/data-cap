@@ -76,7 +76,7 @@ describe("deriveUsageFindings", () => {
         family: "usage",
         severity: "warning",
         message:
-          '"userCapability" is never imported anywhere in the scanned project -- if it\'s genuinely unused, remove it; if something imports it dynamically or from outside the scanned root, add a dynamicAccess citation so this scan can account for it.',
+          '"userCapability" is never imported anywhere in the scanned project. If it\'s genuinely unused, remove it; if something imports it dynamically or from outside the scanned root, add a dynamicAccess citation so this scan can account for it.',
         capability: { file: "/project/user.ts", exportName: "userCapability" },
       },
     ])
@@ -723,7 +723,7 @@ describe("renderUsageReport", () => {
 
 /**
  * One maximal fixture that reaches every branch of `deriveUsageFindings` and
- * every renderer -- exact-output assertions here are what pin the message
+ * every renderer: exact-output assertions here are what pin the message
  * templates, table separators, and section headings that the scenario tests
  * above (all `toContain`) leave unmutated.
  */
@@ -835,7 +835,7 @@ describe("usage-report -- maximal fixture (exact output)", () => {
           "field": [
             "secret",
           ],
-          "message": "Field "secret" on "alpha" is written but never statically read in the scanned project -- if it's genuinely unused, remove it; if something reads it dynamically or from outside the scanned root, add a dynamicAccess citation so this scan can account for it.",
+          "message": "Field "secret" on "alpha" is written but never statically read in the scanned project. If it's genuinely unused, remove it; if something reads it dynamically or from outside the scanned root, add a dynamicAccess citation so this scan can account for it.",
           "position": {
             "column": 3,
             "line": 5,
@@ -889,7 +889,7 @@ describe("usage-report -- maximal fixture (exact output)", () => {
             "audit",
             "trail",
           ],
-          "message": "Field "audit.trail" on "alpha" is written but never statically read in the scanned project -- if it's genuinely unused, remove it; if something reads it dynamically or from outside the scanned root, add a dynamicAccess citation so this scan can account for it.",
+          "message": "Field "audit.trail" on "alpha" is written but never statically read in the scanned project. If it's genuinely unused, remove it; if something reads it dynamically or from outside the scanned root, add a dynamicAccess citation so this scan can account for it.",
           "position": {
             "column": 3,
             "line": 8,
@@ -903,7 +903,7 @@ describe("usage-report -- maximal fixture (exact output)", () => {
           },
           "code": "ABANDONED_CAPABILITY",
           "family": "usage",
-          "message": ""gamma" is never imported anywhere in the scanned project -- if it's genuinely unused, remove it; if something imports it dynamically or from outside the scanned root, add a dynamicAccess citation so this scan can account for it.",
+          "message": ""gamma" is never imported anywhere in the scanned project. If it's genuinely unused, remove it; if something imports it dynamically or from outside the scanned root, add a dynamicAccess citation so this scan can account for it.",
           "severity": "warning",
         },
         {
@@ -913,7 +913,7 @@ describe("usage-report -- maximal fixture (exact output)", () => {
           },
           "code": "UNRESOLVED_CONSUMER",
           "family": "usage",
-          "message": ""/project/barrel.ts" appears to import "beta" by name, but the import specifier didn't resolve directly to its declaring file (possibly a barrel re-export) -- not fully traced.",
+          "message": ""/project/barrel.ts" appears to import "beta" by name, but the import specifier didn't resolve directly to its declaring file (possibly a barrel re-export), so it is not fully traced.",
           "severity": "info",
           "source": "/project/barrel.ts",
         },
@@ -924,7 +924,7 @@ describe("usage-report -- maximal fixture (exact output)", () => {
           },
           "code": "INDETERMINATE_CONSUMER",
           "family": "usage",
-          "message": ""/project/dynamic.ts" accesses "beta" using a dynamic/computed property, or in a way this scanner's local dataflow analysis can't follow (passed elsewhere, assigned to a new binding, spread, returned, or handed to JSX as a prop) -- can't be statically characterized (ADR 0060).",
+          "message": ""/project/dynamic.ts" accesses "beta" in a way this scanner's local dataflow analysis can't follow. The access uses a dynamic or computed property, or passes the value on (to a call, a new binding, a spread, a return or a JSX prop). It can't be statically characterized (ADR 0060).",
           "severity": "info",
           "source": "/project/dynamic.ts",
         },
@@ -945,7 +945,7 @@ describe("usage-report -- maximal fixture (exact output)", () => {
               "line": 3,
             },
           ],
-          "message": "Field "token" on "beta" appears unused, but there are instances of dynamic/computed access, or a reference this scanner's local dataflow analysis can't follow, on this capability that can't be statically attributed to a specific field -- it may be one of them.",
+          "message": "Field "token" on "beta" appears unused. But the capability has dynamic or computed accesses, or references this scanner's local dataflow analysis can't follow, that can't be attributed to one field. It may be one of them.",
           "position": {
             "column": 1,
             "line": 7,
@@ -970,7 +970,7 @@ describe("usage-report -- maximal fixture (exact output)", () => {
               "line": 3,
             },
           ],
-          "message": "Field "meta.tag" on "beta" appears unused, but there are instances of dynamic/computed access, or a reference this scanner's local dataflow analysis can't follow, on this capability that can't be statically attributed to a specific field -- it may be one of them.",
+          "message": "Field "meta.tag" on "beta" appears unused. But the capability has dynamic or computed accesses, or references this scanner's local dataflow analysis can't follow, that can't be attributed to one field. It may be one of them.",
           "position": {
             "column": 1,
             "line": 9,
@@ -1056,15 +1056,15 @@ describe("usage-report -- maximal fixture (exact output)", () => {
 
       | Severity | Code | Capability | Message |
       | --- | --- | --- | --- |
-      | warning | UNCONSUMED_FIELD | \`alpha\` | Field "secret" on "alpha" is written but never statically read in the scanned project -- if it's genuinely unused, remove it; if something reads it dynamically or from outside the scanned root, add a dynamicAccess citation so this scan can account for it. |
+      | warning | UNCONSUMED_FIELD | \`alpha\` | Field "secret" on "alpha" is written but never statically read in the scanned project. If it's genuinely unused, remove it; if something reads it dynamically or from outside the scanned root, add a dynamicAccess citation so this scan can account for it. |
       | info | FIELD_DYNAMIC_ACCESS_DECLARED | \`alpha\` | Per developers, this data point is dynamically accessed at src/legacy.ts:9:1. |
       | info | FIELD_DYNAMIC_ACCESS_DECLARED | \`alpha\` | Per developers, this data point is dynamically accessed at src/legacy.ts:20:4. |
-      | warning | UNCONSUMED_FIELD | \`alpha\` | Field "audit.trail" on "alpha" is written but never statically read in the scanned project -- if it's genuinely unused, remove it; if something reads it dynamically or from outside the scanned root, add a dynamicAccess citation so this scan can account for it. |
-      | warning | ABANDONED_CAPABILITY | \`gamma\` | "gamma" is never imported anywhere in the scanned project -- if it's genuinely unused, remove it; if something imports it dynamically or from outside the scanned root, add a dynamicAccess citation so this scan can account for it. |
-      | info | UNRESOLVED_CONSUMER | \`beta\` | "/project/barrel.ts" appears to import "beta" by name, but the import specifier didn't resolve directly to its declaring file (possibly a barrel re-export) -- not fully traced. |
-      | info | INDETERMINATE_CONSUMER | \`beta\` | "/project/dynamic.ts" accesses "beta" using a dynamic/computed property, or in a way this scanner's local dataflow analysis can't follow (passed elsewhere, assigned to a new binding, spread, returned, or handed to JSX as a prop) -- can't be statically characterized (ADR 0060). |
-      | info | FIELD_ACCESS_INDETERMINATE | \`beta\` | Field "token" on "beta" appears unused, but there are instances of dynamic/computed access, or a reference this scanner's local dataflow analysis can't follow, on this capability that can't be statically attributed to a specific field -- it may be one of them. |
-      | info | FIELD_ACCESS_INDETERMINATE | \`beta\` | Field "meta.tag" on "beta" appears unused, but there are instances of dynamic/computed access, or a reference this scanner's local dataflow analysis can't follow, on this capability that can't be statically attributed to a specific field -- it may be one of them. |
+      | warning | UNCONSUMED_FIELD | \`alpha\` | Field "audit.trail" on "alpha" is written but never statically read in the scanned project. If it's genuinely unused, remove it; if something reads it dynamically or from outside the scanned root, add a dynamicAccess citation so this scan can account for it. |
+      | warning | ABANDONED_CAPABILITY | \`gamma\` | "gamma" is never imported anywhere in the scanned project. If it's genuinely unused, remove it; if something imports it dynamically or from outside the scanned root, add a dynamicAccess citation so this scan can account for it. |
+      | info | UNRESOLVED_CONSUMER | \`beta\` | "/project/barrel.ts" appears to import "beta" by name, but the import specifier didn't resolve directly to its declaring file (possibly a barrel re-export), so it is not fully traced. |
+      | info | INDETERMINATE_CONSUMER | \`beta\` | "/project/dynamic.ts" accesses "beta" in a way this scanner's local dataflow analysis can't follow. The access uses a dynamic or computed property, or passes the value on (to a call, a new binding, a spread, a return or a JSX prop). It can't be statically characterized (ADR 0060). |
+      | info | FIELD_ACCESS_INDETERMINATE | \`beta\` | Field "token" on "beta" appears unused. But the capability has dynamic or computed accesses, or references this scanner's local dataflow analysis can't follow, that can't be attributed to one field. It may be one of them. |
+      | info | FIELD_ACCESS_INDETERMINATE | \`beta\` | Field "meta.tag" on "beta" appears unused. But the capability has dynamic or computed accesses, or references this scanner's local dataflow analysis can't follow, that can't be attributed to one field. It may be one of them. |
       "
     `)
   })

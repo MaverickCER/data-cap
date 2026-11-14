@@ -90,7 +90,7 @@
         "findings": [
           {
             "uuid": "734e6c02-fb84-54a4-826b-9a08dceb3286",
-            "title": "userData/no-role-to-log -- au-3",
+            "title": "userData/no-role-to-log: au-3",
             "description": "data-cap data-flow rule userData/no-role-to-log as evidence for au-3.",
             "target": {
               "type": "objective-id",
@@ -109,7 +109,7 @@
           },
           {
             "uuid": "78ef8058-cd35-5100-863e-81fcb5f4ee20",
-            "title": "userData/no-password-to-client -- sc-28",
+            "title": "userData/no-password-to-client: sc-28",
             "description": "data-cap data-flow rule userData/no-password-to-client as evidence for sc-28.",
             "target": {
               "type": "objective-id",
@@ -128,7 +128,7 @@
           },
           {
             "uuid": "b99c2b7f-da2b-5e1f-b317-dbbf468b9247",
-            "title": "userData/no-password-to-client -- ac-4",
+            "title": "userData/no-password-to-client: ac-4",
             "description": "data-cap data-flow rule userData/no-password-to-client as evidence for ac-4.",
             "target": {
               "type": "objective-id",

@@ -58,7 +58,7 @@ The reference projections are ordinary consumers of these public types: `project
 
 The flow evidence is part of the same Evidence Model ([ADR 0070](decisions/0070-flow-evidence-is-part-of-the-single-evidence-model.md)). Each export below is a pure function of it, exported from `data-cap/evidence`. `internal-package-contract generate` writes the table from `docs/surface.json`. Each row names the test that checks the format, and generation fails if that test is gone.
 
-A valid document is well formed; it does not mean the facts in it are complete. DOT, Mermaid, the Markdown view and CycloneDX state the coverage and the unknowns. PROV marks each claim's `dc:traceComplete`. OSCAL and OTLP carry only each result's status. Each of these projections carries the disclaimer; the SARIF log, which holds findings rather than flows, does not (`test/evidence/flow-disclaimer.test.ts`). The rows whose test lives under `examples/` run in CI's `examples` job, which does not block a merge.
+A valid document is well formed; it does not mean the facts in it are complete. DOT, Mermaid, the Markdown view and CycloneDX state the coverage and the unknowns. PROV marks each claim's `dc:traceComplete`. OSCAL and OTLP carry only each result's status. Each of these projections carries the disclaimer; the SARIF log, which holds findings rather than flows, does not (`test/evidence/flow-disclaimer.test.ts`). The rows whose test lives under `examples/` run in CI's `examples` job, which `required` waits for.
 
 <!-- ipc:begin standards -->
 

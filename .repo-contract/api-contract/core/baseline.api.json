@@ -178,7 +178,7 @@
   },
   "kind": "Package",
   "canonicalReference": "data-cap!",
-  "docComment": "",
+  "docComment": "/**\n * The `data-cap` entry: declare a capability's fields with `buildData`, and its documentation with\n * `documentData`. It also exports the `DataState` types and the error classes. It imports nothing.\n * Tests run it on Node 22 or later, as a bundle with Web globals only, and on Bun and Deno.\n *\n * @packageDocumentation\n */\n",
   "name": "data-cap",
   "preserveMemberOrder": false,
   "members": [
@@ -191,7 +191,7 @@
         {
           "kind": "Function",
           "canonicalReference": "data-cap!buildData:function(1)",
-          "docComment": "/**\n * Declares a schema's field contract. `data.fields` is synchronously readable\n * the instant this returns -- populated with declared defaults -- there is no\n * throw-until-ready gate (a deliberate divergence from `@maverickcer/env-cap`'s\n * `createEnv`; see specs/architecture.md).\n *\n * `buildData` is the low-level, pure/synchronous primitive: `config` only ever\n * reads `fields` (a `getters`/`mutators`/`subscriptions` section on the same\n * object, if present, is simply ignored here -- that's what the batteries-\n * included `createData` from `data-cap/runtime` is for). `data.\n * info` is present (mandatory, never optional) but starts empty: nothing has\n * executed yet, so there is nothing to report metadata for.\n *\n * @remarks\n *\n * Throws synchronously, at call time, for a structurally invalid field\n * default (a function value, or a cyclic reference) -- this is a\n * schema-authoring mistake the developer must fix, not a runtime condition\n * to warn-and-continue past.\n */\n",
+          "docComment": "/**\n * Declares a schema's fields and returns their state. `data.fields` is readable\n * synchronously the instant this returns, holding the declared defaults. There is\n * no throw-until-ready gate, unlike `@maverickcer/env-cap`'s `createEnv` (see\n * specs/architecture.md).\n *\n * `buildData` is the low-level, pure and synchronous primitive: it reads only\n * `config.fields`. It ignores a `getters`, `mutators` or `subscriptions` section\n * on the same object; `createData` from `data-cap/runtime` runs those.\n * `data.info` is always present but starts empty. Nothing has\n * executed yet, so there is no metadata to report.\n *\n * @remarks\n *\n * Throws synchronously, at call time, for a structurally invalid field default: a function value,\n * or a cyclic reference. That is a schema-authoring mistake to fix, not a runtime condition to warn\n * past.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -335,7 +335,7 @@
         {
           "kind": "TypeAlias",
           "canonicalReference": "data-cap!BuiltData:type",
-          "docComment": "/**\n * The synchronous `{fields, info}` state `buildData` returns -- structurally\n * just `DataState<InferFields<TFields>>`, not a distinct shape. This alias\n * exists so `buildData`'s own signature reads as \"the shape `buildData`\n * specifically returns,\" which is more informative at that one call site\n * than a bare `DataState` would be; every other consumer should keep using\n * `DataState` directly.\n */\n",
+          "docComment": "/**\n * The synchronous `{fields, info}` state `buildData` returns: structurally\n * `DataState<InferFields<TFields>>`, not a distinct shape. This alias makes `buildData`'s own\n * signature read as \"the shape `buildData` returns\". Every other consumer should keep using\n * `DataState` directly.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -397,7 +397,7 @@
         {
           "kind": "Interface",
           "canonicalReference": "data-cap!CapabilityDocs:interface",
-          "docComment": "",
+          "docComment": "/**\n * Governance metadata for one capability, passed to `documentData`. Its keys are checked against the schema.\n * Every value here is declared by the author: the build pass checks that it is present, never that it is true.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -501,7 +501,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!CapabilityDocs#category:member",
-              "docComment": "/**\n * Free-form classification -- never validated.\n */\n",
+              "docComment": "/**\n * Free-form classification: never validated.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -528,7 +528,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!CapabilityDocs#dataResidency:member",
-              "docComment": "/**\n * The declared jurisdiction(s) this capability's data is permitted/\n * expected to be *stored* in -- a policy constraint, not an observed\n * fact, not a processing-location claim, not a data-subject-location\n * claim. A field's own `dataResidency` overrides this for that field\n * specifically.\n */\n",
+              "docComment": "/**\n * The declared jurisdiction(s) this capability's data is permitted or\n * expected to be *stored* in. It is a policy constraint, not an observed\n * fact, a processing-location claim or a data-subject-location claim.\n * A field's own `dataResidency` overrides this for that field\n * specifically.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -636,7 +636,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!CapabilityDocs#evidence:member",
-              "docComment": "/**\n * Developer-supplied evidence assertions -- verified over time, unlike\n * every other field above, which is declared-only. Kept structurally\n * separate for exactly that reason (see `EvidenceFieldDocs`).\n */\n",
+              "docComment": "/**\n * Developer-supplied evidence assertions: verified over time, unlike\n * every other field above, which is declared-only. Kept structurally\n * separate for exactly that reason (see `EvidenceFieldDocs`).\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -717,7 +717,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!CapabilityDocs#expiresAt:member",
-              "docComment": "/**\n * When this capability's data (or the credential/source behind it) is\n * declared to stop being valid, as an ISO-8601 date. A field's own\n * `expiresAt` (see `FieldDocs`) overrides this for that field\n * specifically. Declared only -- nothing expires at runtime.\n */\n",
+              "docComment": "/**\n * When this capability's data (or the credential/source behind it) is\n * declared to stop being valid, as an ISO-8601 date. A field's own\n * `expiresAt` (see `FieldDocs`) overrides this for that field\n * specifically. Declared only: nothing expires at runtime.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -775,8 +775,44 @@
             },
             {
               "kind": "PropertySignature",
+              "canonicalReference": "data-cap!CapabilityDocs#flowPolicy:member",
+              "docComment": "/**\n * Declared data-flow rules for this capability's fields, evaluated against the Flow Model (see `FlowPolicyDocs`).\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly flowPolicy?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "readonly "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "FlowPolicyDocs",
+                  "canonicalReference": "data-cap!FlowPolicyDocs:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "flowPolicy",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 4
+              }
+            },
+            {
+              "kind": "PropertySignature",
               "canonicalReference": "data-cap!CapabilityDocs#getters:member",
-              "docComment": "/**\n * Per-getter documentation. Keys are checked against the schema's real `getters` names -- a nonexistent or misspelled getter name is a compile error.\n */\n",
+              "docComment": "/**\n * Per-getter documentation. Keys are checked against the schema's real `getters` names: a nonexistent or misspelled getter name is a compile error.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -808,7 +844,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!CapabilityDocs#legalBasis:member",
-              "docComment": "/**\n * The declared legal basis asserted for processing this capability's data\n * (e.g. `\"consent\"`, `\"contract\"`, `\"legitimate interest\"`). Records that\n * a basis was declared -- never that data-cap has determined the basis is\n * legally valid; data-cap records declared governance facts, it does not\n * determine whether those facts satisfy a law. A field's own `legalBasis`\n * overrides this for that field specifically.\n */\n",
+              "docComment": "/**\n * The declared legal basis asserted for processing this capability's data\n * (e.g. `\"consent\"`, `\"contract\"`, `\"legitimate interest\"`). Records that\n * a basis was declared, never that data-cap has determined the basis is\n * legally valid. It records declared governance facts; data-cap does not\n * determine whether those facts satisfy a law. A field's own `legalBasis`\n * overrides this for that field specifically.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -835,7 +871,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!CapabilityDocs#metadata:member",
-              "docComment": "/**\n * Free-form extension bag for anything data-cap itself has no named\n * concept for -- opaque, never inspected or validated by any code path in\n * this package (e.g. jurisdiction-specific regulatory classification:\n * `{ regulatory: \"GDPR,PCI-DSS\" }`). Once a concept matters enough for\n * data-cap to reason about, it gets its own named field above (as\n * `purpose`/`legalBasis`/`dataResidency`/`transferSafeguard`/`auditRequired`\n * did); everything else stays here.\n */\n",
+              "docComment": "/**\n * Free-form extension bag for anything data-cap itself has no named\n * concept for. It is opaque: no code path in this package inspects or\n * validates it. An example is a jurisdiction-specific regulatory\n * classification such as `{ regulatory: \"GDPR,PCI-DSS\" }`. Once a concept\n * matters enough for data-cap to reason about, it gets its own named field\n * above, as `purpose`, `legalBasis`, `dataResidency`, `transferSafeguard`\n * and `auditRequired` did. Everything else stays here.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -908,7 +944,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!CapabilityDocs#name:member",
-              "docComment": "/**\n * Display name -- falls back to the export/binding name when omitted.\n */\n",
+              "docComment": "/**\n * Display name: falls back to the export/binding name when omitted.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -962,7 +998,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!CapabilityDocs#protections:member",
-              "docComment": "/**\n * Documented safeguard -- presence only, never an adequacy claim.\n */\n",
+              "docComment": "/**\n * Documented safeguard: presence only, never an adequacy claim.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -989,7 +1025,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!CapabilityDocs#purpose:member",
-              "docComment": "/**\n * The declared reason this capability's data is collected/retained.\n * Declared only -- data-cap never verifies the stated purpose matches\n * actual usage. A field's own `purpose` (see `FieldDocs`) overrides this\n * for that field specifically.\n */\n",
+              "docComment": "/**\n * The declared reason this capability's data is collected or retained.\n * Declared only: data-cap never verifies the stated purpose matches\n * actual usage. A field's own `purpose` (see `FieldDocs`) overrides this\n * for that field specifically.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -1016,7 +1052,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!CapabilityDocs#retention:member",
-              "docComment": "/**\n * Documented retention policy -- presence only, never an enforcement claim.\n */\n",
+              "docComment": "/**\n * Documented retention policy: presence only, never an enforcement claim.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -1043,7 +1079,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!CapabilityDocs#sensitivity:member",
-              "docComment": "/**\n * Data classification. Standard vocabulary: `\"public\"` / `\"internal\"` / `\"confidential\"` / `\"restricted\"` (ascending) -- custom values are allowed but flagged as non-standard, never blocking.\n */\n",
+              "docComment": "/**\n * Data classification. Standard vocabulary: `\"public\"` / `\"internal\"` / `\"confidential\"` / `\"restricted\"` (ascending); custom values are allowed but flagged as non-standard, never blocking.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -1102,7 +1138,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!CapabilityDocs#transferSafeguard:member",
-              "docComment": "/**\n * The declared safeguard relied on for any transfer of this capability's\n * data out of `dataResidency`'s own jurisdiction(s) -- paired conceptually\n * with `dataResidency`, same presence-only discipline. A field's own\n * `transferSafeguard` (see `FieldDocs`) overrides this for that field\n * specifically.\n */\n",
+              "docComment": "/**\n * The declared safeguard relied on for any transfer of this capability's\n * data out of `dataResidency`'s own jurisdiction(s): paired conceptually\n * with `dataResidency`, same presence-only discipline. A field's own\n * `transferSafeguard` (see `FieldDocs`) overrides this for that field\n * specifically.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -1228,7 +1264,7 @@
         {
           "kind": "Class",
           "canonicalReference": "data-cap!DataCapError:class",
-          "docComment": "/**\n * Throw-based error hierarchy with a stable `code` discriminant, preferred\n * over `instanceof` for programmatic handling across bundling boundaries\n * (mirrors env-cap's own `EnvValidationError`/`EnvNotReadyError` convention).\n *\n * Invariant: no error here ever embeds a raw or processed field value in its\n * message -- only field paths (key names), which are never sensitive.\n */\n",
+          "docComment": "/**\n * Throw-based error hierarchy with a stable `code` discriminant, preferred\n * over `instanceof` for programmatic handling across bundling boundaries\n * (mirrors env-cap's own `EnvValidationError`/`EnvNotReadyError` convention).\n *\n * Invariant: no error here ever embeds a raw or processed field value in its\n * message; only field paths (key names), which are never sensitive.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -1253,7 +1289,7 @@
             {
               "kind": "Property",
               "canonicalReference": "data-cap!DataCapError#code:member",
-              "docComment": "/**\n * Stable, programmatic discriminant -- prefer this over `instanceof` across bundling boundaries.\n */\n",
+              "docComment": "/**\n * Stable, programmatic discriminant: prefer this over `instanceof` across bundling boundaries.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -1290,7 +1326,7 @@
         {
           "kind": "Interface",
           "canonicalReference": "data-cap!DataError:interface",
-          "docComment": "/**\n * The latest relevant error for a field/operation, never a history -- see FieldInfo.error.\n */\n",
+          "docComment": "/**\n * The latest relevant error for a field/operation, never a history: see FieldInfo.error.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -1362,7 +1398,7 @@
         {
           "kind": "TypeAlias",
           "canonicalReference": "data-cap!DataFlowDirection:type",
-          "docComment": "/**\n * Which direction data moves across a declared boundary, and what kind of\n * boundary it is. Author-declared documentation only -- never statically\n * verified against an operation's actual `execute`/`subscribe` body (those\n * stay opaque per AGENTS.md invariant 6). A report may never present an\n * endpoint as a proven fact; see AGENTS.md's declared-vs-proven invariant.\n */\n",
+          "docComment": "/**\n * Which direction data moves across a declared boundary, and what kind of\n * boundary it is. Author-declared documentation only: never statically\n * verified against an operation's actual `execute`/`subscribe` body (those\n * stay opaque per `AGENTS.md` invariant 6). A report may never present an\n * endpoint as a proven fact; see `AGENTS.md`'s declared-vs-proven invariant.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -1388,7 +1424,7 @@
         {
           "kind": "Interface",
           "canonicalReference": "data-cap!DataFlowEndpoint:interface",
-          "docComment": "/**\n * One declared data-flow boundary an operation crosses. A getter/\n * subscription's endpoints are typically `\"input\"` (where `execute`/\n * `subscribe` acquires data from); a mutator's are typically `\"output\"`\n * (where it sends data to) -- nothing enforces the typical case, since this\n * is documentation, not a runtime contract.\n */\n",
+          "docComment": "/**\n * One declared data-flow boundary an operation crosses. A getter's or subscription's endpoints are\n * typically `\"input\"`: where `execute` or `subscribe` acquires data from. A mutator's are typically\n * `\"output\"`: where it sends data to. Nothing enforces the typical case, since this is\n * documentation, not a runtime contract.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -1431,15 +1467,16 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!DataFlowEndpoint#handling:member",
-              "docComment": "/**\n * The declared data-safety state of this field's value AT this specific\n * boundary crossing -- e.g. a field that arrives `\"encrypted\"` on an\n * `\"input\"` endpoint and is sent back out `\"redacted\"` on an `\"output\"`\n * endpoint. Declared only, same presence-only discipline as every other\n * field in this vocabulary: this records what a developer states about\n * handling at this crossing, never that data-cap has verified the field's\n * actual runtime value matches the claim.\n */\n",
+              "docComment": "/**\n * The declared data-safety state of this field's value AT this specific\n * boundary crossing. For example, a field can arrive `\"encrypted\"` on an\n * `\"input\"` endpoint and leave `\"redacted\"` on an `\"output\"` endpoint.\n * Declared only, like every other field in this vocabulary. It records what a developer\n * states about handling at this crossing, never that data-cap verified the runtime value matches it.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
                   "text": "readonly handling?: "
                 },
                 {
-                  "kind": "Content",
-                  "text": "\"plaintext\" | \"masked\" | \"redacted\" | \"hashed\" | \"encrypted\""
+                  "kind": "Reference",
+                  "text": "FlowHandling",
+                  "canonicalReference": "data-cap!FlowHandling:type"
                 },
                 {
                   "kind": "Content",
@@ -1486,7 +1523,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!DataFlowEndpoint#name:member",
-              "docComment": "/**\n * Short identifier, e.g. \"stripe-api\", \"postgres:users\" -- a semantic label, not a sentence.\n */\n",
+              "docComment": "/**\n * Short identifier, e.g. \"stripe-api\", \"postgres:users\"; a semantic label, not a sentence.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -1513,7 +1550,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!DataFlowEndpoint#url:member",
-              "docComment": "/**\n * A literal, trackable location for this endpoint -- a URL, a route path, a `table:column` reference. Distinct from `name` (a short label): this is meant to be compared/matched across capabilities (e.g. flagging two capabilities that declare the same URL as likely-duplicate fetches), not just read by a person.\n */\n",
+              "docComment": "/**\n * A literal, trackable location for this endpoint: a URL, a route path, a `table:column` reference.\n * Unlike `name` (a short label), it is compared and matched across capabilities, not only read by\n * a person. For example, two capabilities that declare the same URL are flagged as likely\n * duplicate fetches.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -1543,7 +1580,7 @@
         {
           "kind": "TypeAlias",
           "canonicalReference": "data-cap!DataFlowEndpointKind:type",
-          "docComment": "/**\n * What kind of boundary a declared data-flow endpoint crosses -- a data store (`database`/`cache`/`storage`/`queue`), an external entity (`api`/`external-service`/`user-input`), or something internal to this codebase (`computed`/`internal`).\n */\n",
+          "docComment": "/**\n * What kind of boundary a declared data-flow endpoint crosses: a data store (`database`/`cache`/`storage`/`queue`), an external entity (`api`/`external-service`/`user-input`), or something internal to this codebase (`computed`/`internal`).\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -1569,7 +1606,7 @@
         {
           "kind": "TypeAlias",
           "canonicalReference": "data-cap!DataInfo:type",
-          "docComment": "/**\n * Mandatory, sparse metadata mirroring `fields`' logical structure -- never\n * generated eagerly for an untouched field. `fields` stay ordinary arrays;\n * only `info` represents array items as identity-keyed objects (a bare\n * `string` key here, since the identity-joining scheme lives in\n * `identity.ts`, added in a later phase).\n */\n",
+          "docComment": "/**\n * Mandatory, sparse metadata mirroring `fields`' logical structure: never\n * generated eagerly for an untouched field. `fields` stay ordinary arrays.\n * Only `info` represents array items as identity-keyed objects. The key is a\n * bare `string` here, because the identity-joining scheme lives in\n * `identity.ts`.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -1703,7 +1740,7 @@
         {
           "kind": "Interface",
           "canonicalReference": "data-cap!DataSchema:interface",
-          "docComment": "/**\n * The full schema shape both `buildData` and the runtime's `createData`\n * accept -- each reads only the part it needs (`buildData` only ever reads\n * `fields`; a `getters`/`mutators`/`subscriptions` section on the same\n * object is simply ignored by it). `documentData` accepts this same shape\n * so one `documentData(schema, docs)` call documents whichever of the two\n * a given schema is ultimately passed to.\n */\n",
+          "docComment": "/**\n * The full schema shape both `buildData` and the runtime's `createData` accept. Each reads only the\n * part it needs: `buildData` reads `fields` and ignores any `getters`, `mutators` or\n * `subscriptions` section. `documentData` accepts this same shape\n * so one `documentData(schema, docs)` call documents whichever of the two\n * a given schema is ultimately passed to.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -1911,7 +1948,7 @@
         {
           "kind": "Interface",
           "canonicalReference": "data-cap!DataState:interface",
-          "docComment": "/**\n * `fields` and `info` are always present and always committed/published\n * together as one atomic snapshot -- never independently. See\n * specs/architecture.md.\n */\n",
+          "docComment": "/**\n * `fields` and `info` are always present and always committed/published\n * together as one atomic snapshot: never independently. See\n * specs/architecture.md.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -1966,7 +2003,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!DataState#info:member",
-              "docComment": "/**\n * Execution metadata mirroring `fields`' shape -- status/error/timestamps, never the values themselves.\n */\n",
+              "docComment": "/**\n * Execution metadata mirroring `fields`' shape: status/error/timestamps, never the values themselves.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -2027,7 +2064,7 @@
         {
           "kind": "Interface",
           "canonicalReference": "data-cap!DataStore:interface",
-          "docComment": "/**\n * The store contract the standalone runtime implements --\n * `useSyncExternalStore`-compatible without importing React.\n */\n",
+          "docComment": "/**\n * The store contract the standalone runtime implements:\n * `useSyncExternalStore`-compatible without importing React.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -2136,7 +2173,7 @@
         {
           "kind": "Function",
           "canonicalReference": "data-cap!documentData:function(1)",
-          "docComment": "/**\n * Adds documentation/operational metadata to the same capability graph a\n * `buildData`/`createData` call describes, without introducing runtime\n * behavior.\n *\n * `config` should be the exact same schema object passed to `createData`/\n * `buildData` (typically a separately-declared `const` reused by both\n * calls, the same way a `fields` identifier is already shared) -- passing\n * the same object is what lets `docs`' `getters`/`mutators`/`subscriptions`\n * keys be checked against the schema's real operation names, not just its\n * `fields`. A `{fields}`-only config (no operations) still works for a\n * capability with none to document.\n *\n * @remarks\n *\n * Intentionally inert: everything here happens at build time, in build\n * tooling that statically discovers this call -- never at runtime, in every\n * process that imports the capability file, which is exactly what this\n * split (mirroring env-cap's `documentEnv`) exists to avoid. Never throws,\n * regardless of malformed input, and a `documentData` call is never itself\n * evidence that an executable capability exists -- static analysis (`build`)\n * inspects only real `buildData`/`createData` calls.\n */\n",
+          "docComment": "/**\n * Adds documentation/operational metadata to the same capability graph a\n * `buildData`/`createData` call describes, without introducing runtime\n * behavior.\n *\n * `config` should be the exact same schema object passed to `createData` or\n * `buildData`, typically a separately declared `const` that both calls reuse.\n * Passing the same object lets the `getters`, `mutators` and `subscriptions`\n * keys of `docs` be checked against the schema's real operation names, not\n * only its `fields`. A `{fields}`-only config still works for a capability\n * with no operations to document.\n *\n * @remarks\n *\n * Intentionally inert: build tooling discovers this call statically and does\n * all the work at build time. Nothing runs in a process that imports the\n * capability file. That is why this split exists, as it does for env-cap's\n * `documentEnv`. Never throws, whatever the input. A `documentData` call alone is\n * never evidence that a capability exists: static analysis (`build`) inspects\n * only real `buildData` and `createData` calls.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -2237,7 +2274,7 @@
         {
           "kind": "Interface",
           "canonicalReference": "data-cap!FieldDocs:interface",
-          "docComment": "/**\n * Documentation metadata for one field.\n *\n * `owner`, `sensitivity`, `protections`, and `transferSafeguard` override the\n * capability-level value of the same name for this field specifically -- not\n * every field in a capability is equally sensitive, equally owned, or\n * crosses the same transfer boundary. `protections` and `retention` are\n * documentation-presence signals only: a generator may say a safeguard/\n * policy is \"documented\" or \"not documented,\" never that it is adequate,\n * correct, or enforced. `purpose`/`legalBasis`/`dataResidency`/\n * `transferSafeguard`/`auditRequired` carry the same presence-only\n * discipline -- declared governance facts, never a claim that data-cap has\n * determined they satisfy any law (see `specs/decisions/0051-documentdata-metadata-and-governance-fields.md`).\n * `dataSubjectCategory`/`recipientCategories` are field-level only (no\n * capability-level counterpart) -- see each property's own doc comment for\n * why.\n *\n * The boundary this interface draws is deliberate: a named property here is\n * reserved for a concept data-cap itself understands, projects, or reports\n * on. Anything else -- organization-specific detail with no data-cap-defined\n * meaning -- belongs in `metadata`, never as an ad hoc extra property, so\n * this vocabulary stays bounded instead of accreting one-off keys over time.\n *\n * Note what is deliberately absent: there is no per-field `validate`/\n * `validator` property, and no `helpers.validators` combinator library\n * backing one, unlike `@maverickcer/env-cap`'s `EnvVarDocs`. That is a\n * design choice, not a gap. `env-cap` validates on a reject-and-throw\n * pipeline, where a failing validator must carry a message explaining the\n * rejection; `data-cap` has no reject path to write a message for --\n * invalid processor/operation output resets the field to its declared\n * default via `core/schema.ts`'s `checkValueAgainstSchema`, keeping fields\n * synchronously readable (AGENTS.md invariant 2) and surfacing the\n * mismatch through `DataInfo`. See `helpers/shape.ts`'s own module comment\n * for the full reasoning.\n */\n",
+          "docComment": "/**\n * Documentation metadata for one field.\n *\n * `owner`, `sensitivity`, `protections`, and `transferSafeguard` override the capability-level\n * value of the same name for this field. Fields in one capability can differ in sensitivity, owner\n * and transfer boundary. `protections` and `retention` only signal that documentation is present.\n * A generator may say a safeguard or policy is \"documented\" or \"not documented\", never that it is\n * adequate, correct or enforced. `purpose`, `legalBasis`, `dataResidency`, `transferSafeguard` and\n * `auditRequired` follow the same presence-only rule. They are declared governance facts, never a\n * claim that data-cap has determined they satisfy any law\n * (see `specs/decisions/0051-documentdata-metadata-and-governance-fields.md`).\n * `dataSubjectCategory` and `recipientCategories` are field-level only, with no capability-level\n * counterpart; each property's own doc comment says why.\n *\n * The boundary this interface draws is deliberate: a named property here is\n * reserved for a concept data-cap itself understands, projects, or reports\n * on. Anything else (organization-specific detail with no data-cap-defined meaning) belongs in\n * `metadata`, never in an ad hoc extra property. That keeps this vocabulary bounded instead of\n * accreting one-off keys over time.\n *\n * Note what is deliberately absent: there is no per-field `validate`/\n * `validator` property, and no `helpers.validators` combinator library\n * backing one, unlike `@maverickcer/env-cap`'s `EnvVarDocs`. That is a\n * design choice, not a gap. `env-cap` validates on a reject-and-throw\n * pipeline, where a failing validator must carry a message explaining the\n * rejection. `data-cap` has no reject path to write a message for.\n * Invalid processor/operation output resets the field to its declared\n * default via `core/schema.ts`'s `checkValueAgainstSchema`. That keeps fields\n * synchronously readable (`AGENTS.md` invariant 2) and surfaces the\n * mismatch through `DataInfo`. See `helpers/shape.ts`'s own module comment\n * for the full reasoning.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -2279,7 +2316,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!FieldDocs#dataResidency:member",
-              "docComment": "/**\n * The declared jurisdiction(s) this field's data is permitted/expected to\n * be *stored* in -- a policy constraint, not an observed fact, not a\n * processing-location claim, not a data-subject-location claim. Overrides\n * the capability's own `dataResidency` for this field specifically.\n */\n",
+              "docComment": "/**\n * The declared jurisdiction(s) this field's data is permitted or expected to be *stored* in.\n * It is a policy constraint, not an observed fact, a processing-location claim or a\n * data-subject-location claim. Overrides\n * the capability's own `dataResidency` for this field specifically.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -2306,7 +2343,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!FieldDocs#dataSubjectCategory:member",
-              "docComment": "/**\n * The declared category of data subject this field's data concerns (e.g.\n * `\"customers\"`, `\"employees\"`, `\"minors\"`). Declared only -- data-cap\n * never verifies who a field's actual data subjects are. Field-level only:\n * unlike `owner`/`sensitivity`/`purpose`/etc., this has no capability-level\n * counterpart to override -- which data subjects a field concerns is a\n * fact about that field's own data, not something a whole capability can\n * meaningfully state once for every field under it.\n */\n",
+              "docComment": "/**\n * The declared category of data subject this field's data concerns (e.g.\n * `\"customers\"`, `\"employees\"`, `\"minors\"`). Declared only: data-cap\n * never verifies who a field's actual data subjects are. Field-level only, with no\n * capability-level counterpart to override. Which data subjects a field concerns is a fact about\n * that field's own data, not one a capability can state for every field.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -2333,7 +2370,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!FieldDocs#deprecated:member",
-              "docComment": "/**\n * Whether this field is documented as deprecated. Presence-only, same discipline as every other declared fact here -- nothing warns at runtime.\n */\n",
+              "docComment": "/**\n * Whether this field is documented as deprecated. Presence-only, same discipline as every other declared fact here: nothing warns at runtime.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -2414,7 +2451,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!FieldDocs#expiresAt:member",
-              "docComment": "/**\n * When this field's data (or the credential/source behind it) is declared\n * to stop being valid, as an ISO-8601 date (`\"2026-12-31\"`). Declared\n * only: nothing expires anything at runtime, and `data-cap` never fetches\n * a real expiry from a provider. Build tooling reads it to report what is\n * expiring soon (see the Lifecycle Model) -- a date that has already\n * passed is reported as expired, never acted on.\n */\n",
+              "docComment": "/**\n * When this field's data (or the credential/source behind it) is declared\n * to stop being valid, as an ISO-8601 date (`\"2026-12-31\"`). Declared\n * only: nothing expires anything at runtime, and `data-cap` never fetches\n * a real expiry from a provider. Build tooling reads it to report what is\n * expiring soon (see the Lifecycle Model). A date that has already passed\n * is reported as expired, never acted on.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -2441,7 +2478,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!FieldDocs#legalBasis:member",
-              "docComment": "/**\n * The declared legal basis asserted for processing this field (e.g.\n * `\"consent\"`, `\"contract\"`, `\"legitimate interest\"`). Records that a\n * basis was declared -- never that data-cap has determined the basis is\n * legally valid. Overrides the capability's own `legalBasis` for this\n * field specifically.\n */\n",
+              "docComment": "/**\n * The declared legal basis asserted for processing this field (e.g.\n * `\"consent\"`, `\"contract\"`, `\"legitimate interest\"`). Records that a\n * basis was declared: never that data-cap has determined the basis is\n * legally valid. Overrides the capability's own `legalBasis` for this\n * field specifically.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -2468,7 +2505,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!FieldDocs#metadata:member",
-              "docComment": "/**\n * Free-form extension bag for anything data-cap itself has no named\n * concept for -- opaque, never inspected or validated by any code path in\n * this package. Once a concept matters enough for data-cap to reason\n * about, it gets its own named field above; everything else stays here.\n */\n",
+              "docComment": "/**\n * Free-form extension bag for anything data-cap itself has no named\n * concept for: opaque, never inspected or validated by any code path in\n * this package. Once a concept matters enough for data-cap to reason\n * about, it gets its own named field above; everything else stays here.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -2563,7 +2600,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!FieldDocs#purpose:member",
-              "docComment": "/**\n * The declared reason this field's data is collected/retained. Declared\n * only -- data-cap never verifies the stated purpose matches actual usage.\n * Overrides the capability's own `purpose` for this field specifically.\n */\n",
+              "docComment": "/**\n * The declared reason this field's data is collected/retained. Declared\n * only: data-cap never verifies the stated purpose matches actual usage.\n * Overrides the capability's own `purpose` for this field specifically.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -2590,7 +2627,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!FieldDocs#recipientCategories:member",
-              "docComment": "/**\n * The declared categories of recipient this field's data has been or will\n * be disclosed to (e.g. `\"payment processor\"`, `\"tax authority\"`,\n * `\"internal support staff\"`). Always explicitly authored -- data-cap\n * never infers a recipient category from its own dependency graph (a\n * proven *consumer* relationship inside this codebase is a categorically\n * different fact from a declared *external recipient*, and conflating the\n * two would misrepresent both). Field-level only, for the same reason as\n * `dataSubjectCategory`. See\n * `specs/decisions/0067-ropa-fields-recipient-categories-never-inferred.md`\n * for the full reasoning on why this is never derived.\n */\n",
+              "docComment": "/**\n * The declared categories of recipient this field's data has been or will\n * be disclosed to (e.g. `\"payment processor\"`, `\"tax authority\"`,\n * `\"internal support staff\"`). Always explicitly authored: data-cap never\n * infers a recipient category from its own dependency graph.\n * A proven *consumer* inside this codebase is a different fact from a\n * declared *external recipient*, and conflating them would misrepresent both.\n * Field-level only, for the same reason as `dataSubjectCategory`. See\n * `specs/decisions/0067-ropa-fields-recipient-categories-never-inferred.md`\n * for the full reasoning on why this is never derived.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -2617,7 +2654,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!FieldDocs#removeBy:member",
-              "docComment": "/**\n * The date by which a deprecated field is intended to be removed, ISO-8601.\n * Field-level only: a removal deadline is about one specific field's own\n * migration, and a capability-wide `removeBy` would say nothing about\n * which of its fields still need work.\n */\n",
+              "docComment": "/**\n * The date by which a deprecated field is intended to be removed, ISO-8601.\n * Field-level only: a removal deadline is about one field's own migration.\n * A capability-wide `removeBy` would say nothing about which of its fields\n * still need work.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -2644,7 +2681,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!FieldDocs#renamedFrom:member",
-              "docComment": "/**\n * The previous name of this field, when it was renamed. Field-level only,\n * for the same reason as `removeBy`. Build tooling uses this to correlate\n * an added-field/removed-field pair across two runs into one rename rather\n * than reporting an unrelated addition and deletion -- see `ChangeModel`'s\n * `renamedFields`. Only ever populated from an *authored* value, never\n * guessed from name similarity.\n */\n",
+              "docComment": "/**\n * The previous name of this field, when it was renamed. Field-level only,\n * for the same reason as `removeBy`. Build tooling uses it to read an added\n * field and a removed field across two runs as one rename. Without it they\n * are an unrelated addition and deletion (see `ChangeModel`'s `renamedFields`). Only ever populated from an *authored* value, never\n * guessed from name similarity.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -2671,7 +2708,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!FieldDocs#retention:member",
-              "docComment": "/**\n * Documented retention policy for this field -- presence only, never an enforcement claim.\n */\n",
+              "docComment": "/**\n * Documented retention policy for this field: presence only, never an enforcement claim.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -2725,7 +2762,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!FieldDocs#transferSafeguard:member",
-              "docComment": "/**\n * The declared safeguard relied on for any transfer of this field's data\n * out of `dataResidency`'s own jurisdiction(s) (e.g. `\"EU Standard\n * Contractual Clauses\"`, `\"adequacy decision\"`) -- paired conceptually\n * with `dataResidency` (which states where data is permitted to be\n * *stored*; this states what protects a transfer *out of* that\n * jurisdiction), same presence-only discipline as every other field here.\n * Declared only -- data-cap never verifies a transfer actually occurred or\n * that the named safeguard is legally adequate. Overrides the capability's\n * own `transferSafeguard` for this field specifically. See\n * `specs/decisions/0067-ropa-fields-recipient-categories-never-inferred.md`.\n */\n",
+              "docComment": "/**\n * The declared safeguard relied on for any transfer of this field's data out of `dataResidency`'s\n * jurisdictions, such as `\"EU Standard Contractual Clauses\"` or `\"adequacy decision\"`.\n * `dataResidency` states where data may be *stored*; this states what protects a transfer *out\n * of* that jurisdiction.\n * Declared only: data-cap never verifies a transfer actually occurred or\n * that the named safeguard is legally adequate. Overrides the capability's\n * own `transferSafeguard` for this field specifically. See\n * `specs/decisions/0067-ropa-fields-recipient-categories-never-inferred.md`.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -2755,7 +2792,7 @@
         {
           "kind": "Interface",
           "canonicalReference": "data-cap!FieldInfo:interface",
-          "docComment": "/**\n * Current authoritative execution metadata for one field -- never an event\n * history. `source` is the operation key that most recently established the\n * field's current value; `error` clears on the next successful establishing\n * operation unless a still-newer operation has since set a different one.\n */\n",
+          "docComment": "/**\n * Current authoritative execution metadata for one field: never an event\n * history. `source` is the operation key that most recently established the\n * field's current value. `error` clears on the next successful establishing\n * operation, unless a still-newer operation has since set a different one.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -2992,7 +3029,7 @@
         {
           "kind": "TypeAlias",
           "canonicalReference": "data-cap!FieldOwnership:type",
-          "docComment": "/**\n * Declares which fields an operation may write. `true` claims a whole\n * subtree (at any level, including the root -- a getter may legitimately\n * declare `fields: true` to mean \"the entire capability\"); a nested object\n * claims only the listed sub-keys. Arrays can only ever be owned wholesale\n * (`true`) -- there is no per-item ownership concept, matching arrays being\n * atomic, ordinary values.\n */\n",
+          "docComment": "/**\n * Declares which fields an operation may write. `true` claims a whole\n * subtree at any level, including the root: a getter may declare\n * `fields: true` to mean \"the entire capability\". A nested object claims only\n * the listed sub-keys. Arrays can only be owned whole (`true`). There is no\n * per-item ownership, because arrays are atomic, ordinary values.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -3191,7 +3228,7 @@
         {
           "kind": "TypeAlias",
           "canonicalReference": "data-cap!FieldsShape:type",
-          "docComment": "/**\n * The generic *bound* only, never surfaced to a consumer's inferred type --\n * the same variance workaround env-cap's `EnvSchema` uses so `TFields extends\n * FieldsShape` still infers a precise, per-key literal type from the actual\n * object literal passed to `buildData`.\n */\n",
+          "docComment": "/**\n * The generic *bound* only, never surfaced to a consumer's inferred type. It is\n * the variance workaround env-cap's `EnvSchema` uses. With it, `TFields extends\n * FieldsShape` still infers a precise literal type per key from the object\n * passed to `buildData`.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -3220,9 +3257,409 @@
           }
         },
         {
+          "kind": "TypeAlias",
+          "canonicalReference": "data-cap!FlowBoundaryKind:type",
+          "docComment": "/**\n * What a data-flow rule can name as a destination: the declared endpoint kinds, plus the two destinations only code analysis can see.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export type FlowBoundaryKind = "
+            },
+            {
+              "kind": "Reference",
+              "text": "DataFlowEndpointKind",
+              "canonicalReference": "data-cap!DataFlowEndpointKind:type"
+            },
+            {
+              "kind": "Content",
+              "text": " | \"client-response\" | \"log\""
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "src/core/document.ts",
+          "releaseTag": "Public",
+          "name": "FlowBoundaryKind",
+          "typeTokenRange": {
+            "startIndex": 1,
+            "endIndex": 3
+          }
+        },
+        {
+          "kind": "TypeAlias",
+          "canonicalReference": "data-cap!FlowHandling:type",
+          "docComment": "/**\n * The declared data-safety state of a value at a boundary crossing: the vocabulary of `DataFlowEndpoint.handling` and of flow policy rules.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export type FlowHandling = "
+            },
+            {
+              "kind": "Content",
+              "text": "\"plaintext\" | \"masked\" | \"redacted\" | \"hashed\" | \"encrypted\""
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "src/core/document.ts",
+          "releaseTag": "Public",
+          "name": "FlowHandling",
+          "typeTokenRange": {
+            "startIndex": 1,
+            "endIndex": 2
+          }
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "data-cap!FlowPolicyAppliesToDocs:interface",
+          "docComment": "/**\n * Which fields a data-flow rule governs; every supplied criterion must match, and `classification` or `field` is required.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface FlowPolicyAppliesToDocs "
+            }
+          ],
+          "fileUrlPath": "src/core/document.ts",
+          "releaseTag": "Public",
+          "name": "FlowPolicyAppliesToDocs",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!FlowPolicyAppliesToDocs#classification:member",
+              "docComment": "/**\n * Every field of this capability whose resolved `sensitivity` equals this value.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly classification?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "classification",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!FlowPolicyAppliesToDocs#field:member",
+              "docComment": "/**\n * One field of this capability, by its top-level key.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly field?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "field",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!FlowPolicyAppliesToDocs#path:member",
+              "docComment": "/**\n * Narrows the rule to one path inside each governed field (for example `[\"passwordHash\"]`).\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly path?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "readonly string[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "path",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "data-cap!FlowPolicyDocs:interface",
+          "docComment": "/**\n * One declared data-flow rule: which of this capability's fields it governs,\n * and what must hold wherever their data goes. Evaluated against the Flow Model\n * at build time. A rule is a declaration, never a runtime check. A result is\n * only as complete as the analysis behind it (see the Policy Model's\n * `indeterminate` outcome). At least one of `forbidDestinations`,\n * `allowedDestinations` and `requireHandling` is required.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface FlowPolicyDocs "
+            }
+          ],
+          "fileUrlPath": "src/core/document.ts",
+          "releaseTag": "Public",
+          "name": "FlowPolicyDocs",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!FlowPolicyDocs#allowedDestinations:member",
+              "docComment": "/**\n * If set, the only destinations the governed data may reach.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly allowedDestinations?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "readonly "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "FlowBoundaryKind",
+                  "canonicalReference": "data-cap!FlowBoundaryKind:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "allowedDestinations",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 4
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!FlowPolicyDocs#allowedHandling:member",
+              "docComment": "/**\n * Handling that exempts a crossing from `forbidDestinations`/`allowedDestinations`.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly allowedHandling?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "readonly "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "FlowHandling",
+                  "canonicalReference": "data-cap!FlowHandling:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "allowedHandling",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 4
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!FlowPolicyDocs#appliesTo:member",
+              "docComment": "/**\n * Which fields the rule governs.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly appliesTo: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "FlowPolicyAppliesToDocs",
+                  "canonicalReference": "data-cap!FlowPolicyAppliesToDocs:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "appliesTo",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!FlowPolicyDocs#description:member",
+              "docComment": "/**\n * Why the rule exists.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly description?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "description",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!FlowPolicyDocs#forbidDestinations:member",
+              "docComment": "/**\n * Destinations the governed data must never reach.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly forbidDestinations?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "readonly "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "FlowBoundaryKind",
+                  "canonicalReference": "data-cap!FlowBoundaryKind:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "forbidDestinations",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 4
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!FlowPolicyDocs#id:member",
+              "docComment": "/**\n * Unique within this capability.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly id: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "id",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "data-cap!FlowPolicyDocs#requireHandling:member",
+              "docComment": "/**\n * If set, every crossing of the governed data must declare one of these handlings.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly requireHandling?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "readonly "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "FlowHandling",
+                  "canonicalReference": "data-cap!FlowHandling:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "[]"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "requireHandling",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 4
+              }
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
           "kind": "Interface",
           "canonicalReference": "data-cap!GetterDefinition:interface",
-          "docComment": "/**\n * A getter operation: acquires data. `writes` is required and explicit\n * (ADR 0011) -- a getter's ownership is typically narrow and specific, so\n * an explicit declaration keeps that scope visible and enforced. `TParams`\n * is inferred purely from `params`'s own literal value (or an explicit `{}\n * as TParams` type-only anchor when there's no sensible runtime default) --\n * never derived from this capability's `fields` nullability, so a\n * `fields.nullable(...)` declaration elsewhere never leaks an `| null`/\n * `| undefined` into an operation's parameter type.\n */\n",
+          "docComment": "/**\n * A getter operation: acquires data. `writes` is required and explicit\n * (ADR 0011): a getter's ownership is typically narrow and specific, so\n * an explicit declaration keeps that scope visible and enforced. `TParams`\n * is inferred purely from `params`'s own literal value (or an explicit `{}\n * as TParams` type-only anchor when there's no sensible runtime default).\n * It is never derived from this capability's `fields` nullability. So a\n * `fields.nullable(...)` declaration elsewhere never leaks `| null` or\n * `| undefined` into an operation's parameter type.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -3368,7 +3805,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!GetterDefinition#processor:member",
-              "docComment": "/**\n * Defaults to identity when omitted -- `execute`'s raw result is then used directly as the patch, and must already be shaped like one.\n */\n",
+              "docComment": "/**\n * Defaults to identity when omitted: `execute`'s raw result is then used directly as the patch, and must already be shaped like one.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -3404,7 +3841,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!GetterDefinition#writes:member",
-              "docComment": "/**\n * Declares which fields this getter is permitted to write -- see `FieldOwnership`.\n */\n",
+              "docComment": "/**\n * Declares which fields this getter is permitted to write: see `FieldOwnership`.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -3491,7 +3928,7 @@
         {
           "kind": "TypeAlias",
           "canonicalReference": "data-cap!InferFieldValue:type",
-          "docComment": "/**\n * Resolves the application-facing type for one declared field default.\n * Functions are never valid field values -- a function-typed default\n * resolves to `never` (see fields.ts's runtime counterpart, which throws).\n */\n",
+          "docComment": "/**\n * Resolves the application-facing type for one declared field default.\n * Functions are never valid field values: a function-typed default\n * resolves to `never` (see fields.ts's runtime counterpart, which throws).\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -3611,7 +4048,7 @@
         {
           "kind": "Class",
           "canonicalReference": "data-cap!InvalidFieldDefaultError:class",
-          "docComment": "/**\n * Thrown synchronously by `buildData()`/`documentData()` when a declared\n * field default is structurally invalid: a function value (functions are\n * never valid field data) or a cyclic reference (a value that contains\n * itself, directly or transitively).\n */\n",
+          "docComment": "/**\n * Thrown synchronously by `buildData()`/`documentData()` when a declared field default is\n * structurally invalid. That is a function value (functions are never valid field data), or a value\n * that contains itself, directly or transitively.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -3755,7 +4192,7 @@
         {
           "kind": "Interface",
           "canonicalReference": "data-cap!MutatorDefinition:interface",
-          "docComment": "/**\n * A mutator operation: performs a side effect. `writes` is optional --\n * omitting it defaults to full-capability-tree ownership, bounded to the\n * declared schema (ADR 0011) -- the common \"this mutator can touch\n * anything the schema allows\" case doesn't pay a declaration tax.\n */\n",
+          "docComment": "/**\n * A mutator operation: performs a side effect. `writes` is optional. Without it the mutator owns\n * the whole capability tree, bounded to the declared schema (ADR 0011), so the common case needs no\n * declaration.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -3874,7 +4311,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!MutatorDefinition#optimistic:member",
-              "docComment": "/**\n * Computes an optimistic patch from CURRENT AUTHORITATIVE state (never the\n * visible/projected state -- a second concurrent optimistic transition\n * must never compute against a first transition's still-pending value).\n * Returning `undefined` means no optimistic transition for this call.\n */\n",
+              "docComment": "/**\n * Computes an optimistic patch from CURRENT AUTHORITATIVE state, never the\n * visible, projected state. A second concurrent optimistic transition must\n * never compute against a first transition's still-pending value.\n * Returning `undefined` means no optimistic transition for this call.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -3946,7 +4383,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!MutatorDefinition#processor:member",
-              "docComment": "/**\n * Defaults to identity when omitted -- `execute`'s raw result is then used directly as the patch.\n */\n",
+              "docComment": "/**\n * Defaults to identity when omitted: `execute`'s raw result is then used directly as the patch.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -3982,7 +4419,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!MutatorDefinition#writes:member",
-              "docComment": "/**\n * Declares which fields this mutator may write -- omitting it defaults to the full capability tree.\n */\n",
+              "docComment": "/**\n * Declares which fields this mutator may write: omitting it defaults to the full capability tree.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -4012,7 +4449,7 @@
         {
           "kind": "Interface",
           "canonicalReference": "data-cap!NullableMarker:interface",
-          "docComment": "/**\n * Produced by `fields.nullable(...)` -- recognized only during `buildData`'s schema-authoring walk; the resolved runtime default is always `null`.\n */\n",
+          "docComment": "/**\n * Produced by `fields.nullable(...)`: recognized only during `buildData`'s schema-authoring walk; the resolved runtime default is always `null`.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -4040,7 +4477,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!NullableMarker#[FIELD_MARKER]:member",
-              "docComment": "/**\n * Internal marker discriminant -- see the module doc comment.\n */\n",
+              "docComment": "/**\n * Internal marker discriminant: see the module doc comment.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -4076,7 +4513,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!NullableMarker#inner:member",
-              "docComment": "/**\n * The declared inner default, kept only so the underlying type can be inferred -- never the resolved runtime value.\n */\n",
+              "docComment": "/**\n * The declared inner default, kept only so the underlying type can be inferred: never the resolved runtime value.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -4106,7 +4543,7 @@
         {
           "kind": "Interface",
           "canonicalReference": "data-cap!OperationDocs:interface",
-          "docComment": "/**\n * Documentation metadata for one getter/mutator/subscription. Reserved keys\n * are explicitly typed (mirroring the vocabulary real capabilities tend to\n * document -- what it does, where it talks to, what it costs to call) while\n * still accepting arbitrary extra keys for anything project-specific, so\n * documenting never fights the type checker.\n *\n * `credentials` is descriptive only -- documenting `credentials: \"user\n * session\"` is never proof that authorization is actually enforced.\n * `endpoints` is likewise author-declared, never verified.\n */\n",
+          "docComment": "/**\n * Documentation metadata for one getter/mutator/subscription. Reserved keys\n * are explicitly typed (mirroring the vocabulary real capabilities tend to\n * document: what it does, where it talks to, what it costs to call). The type\n * still accepts arbitrary extra keys for anything project-specific, so\n * documenting never fights the type checker.\n *\n * `credentials` is descriptive only: documenting `credentials: \"user\n * session\"` is never proof that authorization is actually enforced.\n * `endpoints` is likewise author-declared, never verified.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -4165,7 +4602,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!OperationDocs#credentials:member",
-              "docComment": "/**\n * What's required to call this operation -- descriptive only, never an authorization/enforcement claim.\n */\n",
+              "docComment": "/**\n * What's required to call this operation: descriptive only, never an authorization/enforcement claim.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -4219,7 +4656,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!OperationDocs#endpoints:member",
-              "docComment": "/**\n * Declared data-flow boundaries this operation crosses -- see `DataFlowEndpoint`.\n */\n",
+              "docComment": "/**\n * Declared data-flow boundaries this operation crosses: see `DataFlowEndpoint`.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -4255,7 +4692,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!OperationDocs#metadata:member",
-              "docComment": "/**\n * Free-form extension bag for anything data-cap itself has no named\n * concept for -- opaque, never inspected or validated by any code path in\n * this package. The index signature below remains for the same reason it\n * always has (documenting never fights the type checker); `metadata` is\n * the recommended place for new extension data going forward.\n */\n",
+              "docComment": "/**\n * Free-form extension bag for anything data-cap itself has no named\n * concept for: opaque, never inspected or validated by any code path in\n * this package. The index signature below stays so documenting never\n * fights the type checker. `metadata` is the recommended place for new\n * extension data.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -4353,7 +4790,7 @@
         {
           "kind": "Interface",
           "canonicalReference": "data-cap!OptionalMarker:interface",
-          "docComment": "/**\n * Produced by `fields.optional(...)` -- recognized only during `buildData`'s schema-authoring walk; the resolved runtime default is always `undefined`.\n */\n",
+          "docComment": "/**\n * Produced by `fields.optional(...)`: recognized only during `buildData`'s schema-authoring walk; the resolved runtime default is always `undefined`.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -4381,7 +4818,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!OptionalMarker#[FIELD_MARKER]:member",
-              "docComment": "/**\n * Internal marker discriminant -- see the module doc comment.\n */\n",
+              "docComment": "/**\n * Internal marker discriminant: see the module doc comment.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -4417,7 +4854,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!OptionalMarker#inner:member",
-              "docComment": "/**\n * The declared inner default, kept only so the underlying type can be inferred -- never the resolved runtime value.\n */\n",
+              "docComment": "/**\n * The declared inner default, kept only so the underlying type can be inferred: never the resolved runtime value.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -4447,7 +4884,7 @@
         {
           "kind": "TypeAlias",
           "canonicalReference": "data-cap!OwnedPatch:type",
-          "docComment": "/**\n * Narrows `DeepPartial<T>` down to exactly the keys `TOwnership` (a\n * `FieldOwnership<T>` value) permits, mirroring its shape one-for-one. A\n * `processor`/`optimistic` callback declared against `writes: {user:\n * {email: true}}` cannot type-check while returning `{post: ...}`, or even\n * `{user: {name: ...}}` -- a sibling field it doesn't own. This narrows the\n * *legal* shape at compile time only; `resolveOperationPatch` still enforces\n * the same boundary at runtime regardless, since a processor's actual\n * return value is never statically provable to match its declared type.\n */\n",
+          "docComment": "/**\n * Narrows `DeepPartial<T>` down to exactly the keys `TOwnership` (a\n * `FieldOwnership<T>` value) permits, mirroring its shape one-for-one.\n * Take a `processor` or `optimistic` callback declared against\n * `writes: {user: {email: true}}`. It cannot type-check while returning\n * `{post: ...}`, or even `{user: {name: ...}}`, a sibling field it doesn't own. This narrows the *legal* shape at compile\n * time only. `resolveOperationPatch` still enforces the same boundary at runtime, since no type\n * proves what a processor actually returns.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -4542,7 +4979,7 @@
         {
           "kind": "Interface",
           "canonicalReference": "data-cap!SubscriptionDefinition:interface",
-          "docComment": "/**\n * A subscription operation: continuously observes data. `writes` is\n * required and explicit, same rationale as a getter's. `onEvent`/\n * `onStatusChange` map to `writes`-bounded `fields` commits and\n * `info.<field>.subscription` commits respectively -- a status transition\n * alone never touches `fields` (ADR 0029). `subscribe`'s own shape matches\n * `coordinator.acquireSubscription`'s `SubscribeFn` exactly (params bound in\n * by the runtime, handlers, a teardown function returned directly) -- no\n * separate `AbortSignal`, since the returned teardown function is already\n * the sanctioned way to stop a subscription.\n */\n",
+          "docComment": "/**\n * A subscription operation: continuously observes data. `writes` is\n * required and explicit, same rationale as a getter's. `onEvent`/\n * `onStatusChange` map to `writes`-bounded `fields` commits and\n * `info.<field>.subscription` commits respectively: a status transition\n * alone never touches `fields` (ADR 0029). `subscribe`'s own shape matches\n * `coordinator.acquireSubscription`'s `SubscribeFn` exactly: params bound in by\n * the runtime, handlers, and a returned teardown function. There is no separate\n * `AbortSignal`, since the returned teardown function is already\n * the sanctioned way to stop a subscription.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",
@@ -4643,7 +5080,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!SubscriptionDefinition#processor:member",
-              "docComment": "/**\n * Defaults to identity when omitted -- the raw event is used directly as the patch.\n */\n",
+              "docComment": "/**\n * Defaults to identity when omitted: the raw event is used directly as the patch.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -4715,7 +5152,7 @@
             {
               "kind": "PropertySignature",
               "canonicalReference": "data-cap!SubscriptionDefinition#writes:member",
-              "docComment": "/**\n * Declares which fields this subscription is permitted to write -- see `FieldOwnership`.\n */\n",
+              "docComment": "/**\n * Declares which fields this subscription is permitted to write: see `FieldOwnership`.\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -4745,7 +5182,7 @@
         {
           "kind": "Interface",
           "canonicalReference": "data-cap!SubscriptionEventHandlers:interface",
-          "docComment": "/**\n * Handlers a subscription's `subscribe` implementation drives -- the same shape `coordinator.acquireSubscription` already uses.\n */\n",
+          "docComment": "/**\n * Handlers a subscription's `subscribe` implementation drives: the same shape `coordinator.acquireSubscription` already uses.\n */\n",
           "excerptTokens": [
             {
               "kind": "Content",

@@ -1,9 +1,9 @@
 /**
- * The actual business logic -- framework-agnostic, no HTTP/SSE/React
+ * The actual business logic: framework-agnostic, no HTTP/SSE/React
  * concern of any kind. `http-handler.ts` exposes these over real HTTP;
  * nothing here knows that's how it's reached. This is the layer a
  * `capabilities/*.capability.ts` getter/mutator ultimately causes to run,
- * by way of a real network round trip -- never called directly by a
+ * by way of a real network round trip: never called directly by a
  * capability itself.
  */
 import { randomUUID } from "node:crypto"
@@ -150,7 +150,7 @@ export async function markInvoicePaid(
 }
 
 /**
- * Marks an invoice disputed -- the concrete scenario this example's own
+ * Marks an invoice disputed: the concrete scenario this example's own
  * data-handling record (`reports/data-handling-record.ts`) is scoped
  * to: "a client disputes a charge; prove what billing data existed and how
  * it was handled."

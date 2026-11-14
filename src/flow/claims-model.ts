@@ -1,8 +1,9 @@
 /**
- * `data-cap`'s Claims Model (ADR 0070, ADR 0071) -- statements the evidence
- * makes, each with the evidence that supports it, the evidence that
- * contradicts it, the scope it covers, and a verification status derived
- * from how static facts, policy results and runtime observations line up.
+ * `data-cap`'s Claims Model (ADR 0070, ADR 0071): statements the evidence
+ * makes. Each comes with the evidence that supports it, the evidence that
+ * contradicts it, and the scope it covers. Each also has a verification
+ * status derived from how static facts, policy results and runtime
+ * observations line up.
  *
  * Three claim kinds:
  *
@@ -17,35 +18,35 @@
  *   the Policy Model and re-judged against observed crossings.
  *
  * Verification (never collapsed, ADR 0071):
- *   `verified`      a static/declared/inferred fact corroborated by an observation
- *   `inferred`      rests on an inferred edge and was not observed
- *   `unobserved`    static/declared and no observation covers it (or none were run)
+ *   `verified`      a static/declared/inferred fact corroborated by an observation.
+ *   `inferred`      rests on an inferred edge and was not observed.
+ *   `unobserved`    static/declared and no observation covers it (or none were run).
  *   `contradicted`  an observation conflicts with a complete static trace, a
  *                   static evaluation found a violation, or an observation
- *                   violates a statically satisfied rule
+ *                   violates a statically satisfied rule.
  *   `observed-only` seen at runtime with no static counterpart, and the static
- *                   trace was incomplete so no contradiction can be asserted
+ *                   trace was incomplete so no contradiction can be asserted.
  *   `indeterminate` the policy could not be decided, or the recorder reported
  *                   leaving out part of the evidence near the field (a
- *                   truncated scope, see below)
+ *                   truncated scope, see below).
  *
  * Path coverage. A claim's subject is a field; an observation may be about a
  * narrower path inside it. Every claim with matching observations therefore
- * lists `observedPaths` (the observed names) and a `pathCoverage`: `whole`
- * when an observation covers the whole path scope of the claim (the field,
- * the static edge's path, or the rule's path), `partial` when only narrower
- * paths were seen. The verification itself is unchanged by coverage: read
- * `verified` together with `observedPaths`.
+ * lists `observedPaths` (the observed names) and a `pathCoverage`.
+ * `pathCoverage` is `whole` when an observation covers the whole path scope of
+ * the claim (the field, the static edge's path, or the rule's path). It is
+ * `partial` when only narrower paths were seen. The verification itself is
+ * unchanged by coverage: read `verified` together with `observedPaths`.
  *
- * Truncated scopes. When the recorder reported that it did not capture part of
+ * Truncated scopes. The recorder can report that it did not capture part of
  * a value (`ObservationModel.truncations`: a dotted key, depth/node limits, a
- * cycle) in a scope that contributed to a claim, and the skipped path is the
+ * cycle) in a scope that contributed to a claim. When the skipped path is the
  * claim's field, inside it, or contains it, a claim that would be `verified`
- * is `indeterminate` instead and `scope.truncatedScopes` names those scopes.
+ * is `indeterminate` instead. `scope.truncatedScopes` names those scopes.
  * A contradiction is never softened. The rule is deliberately conservative:
  * absence of evidence in a cut-off value is not evidence.
  *
- * Pure -- no filesystem access.
+ * Pure: no filesystem access.
  */
 
 import { compareById } from "./flow-model.js"
@@ -145,7 +146,7 @@ export interface ClaimsModelInputs {
   readonly observation?: ObservationModel | undefined
 }
 
-/** The statuses of facts a field is said to reach a boundary by -- everything but `observed` and `unknown`. */
+/** The statuses of facts a field is said to reach a boundary by: everything but `observed` and `unknown`. */
 function reachStatuses(): readonly FlowStatus[] {
   return ["static", "declared", "inferred"]
 }
@@ -362,7 +363,7 @@ function fieldReachClaims(context: ClaimContext, covered: Set<string>): Claim[] 
         )
         .map(({ observation }) => observation)
       for (const observation of matching) covered.add(observation.id)
-      // Stryker disable next-line ArrayDeclaration: equivalent -- a stand-in path that is no prefix of anything observed covers exactly as the empty one does.
+      // Stryker disable next-line ArrayDeclaration: equivalent: a stand-in path that is no prefix of anything observed covers exactly as the empty one does.
       const required = path.flatMap((edge) => (edge.path === undefined ? [] : [edge.path]))
       const { scope, verification } = qualified(
         context,
@@ -417,7 +418,7 @@ function sourcedClaims(context: ClaimContext, covered: Set<string>): Claim[] {
         true,
         matching.length > 0 ? "verified" : "unobserved",
       )
-      // Stryker disable next-line ArrayDeclaration: equivalent -- a stand-in path that is no prefix of anything observed covers exactly as the empty one does.
+      // Stryker disable next-line ArrayDeclaration: equivalent: a stand-in path that is no prefix of anything observed covers exactly as the empty one does.
       const sourcePath = edge.path === undefined ? [] : [edge.path]
       claims.push({
         id: `claim:field-sourced-from-boundary:${field.name}<-${source.boundaryKind ?? "-"}:${source.name}`,
@@ -523,7 +524,7 @@ function policyClaims(context: ClaimContext): Claim[] {
 
   for (const [key, { sample, results }] of groupPolicyResults(policy)) {
     const rule = rules.get(sample.ruleId)
-    // Stryker disable next-line ConditionalExpression: equivalent -- Map.get(undefined) is undefined too; the guard only satisfies the type checker.
+    // Stryker disable next-line ConditionalExpression: equivalent: Map.get(undefined) is undefined too; the guard only satisfies the type checker.
     const subject = sample.subject === undefined ? undefined : nodesById.get(sample.subject)
     if (rule === undefined || subject === undefined) continue
 
@@ -564,7 +565,7 @@ function policyClaims(context: ClaimContext): Claim[] {
       (observation) => !violatingObservations.includes(observation),
     )
 
-    // Stryker disable next-line ArrayDeclaration: equivalent -- a stand-in path that is no prefix of anything observed covers exactly as the empty one does.
+    // Stryker disable next-line ArrayDeclaration: equivalent: a stand-in path that is no prefix of anything observed covers exactly as the empty one does.
     const governedPath = rule.appliesTo.path === undefined ? [] : [rule.appliesTo.path]
     claims.push({
       id: `claim:policy-holds:${rule.id}:${subject.name}`,

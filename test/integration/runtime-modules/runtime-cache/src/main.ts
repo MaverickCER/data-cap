@@ -1,6 +1,6 @@
 /**
  * Client-side pattern: `runtime/cache` is an optional, bounded cache of
- * complete `DataState` snapshots -- `fields` AND `info` together, atomically,
+ * complete `DataState` snapshots; `fields` AND `info` together, atomically,
  * never `fields` alone and never a raw unvalidated response. Rehydrating
  * `fields` without `info` would let a consumer see a real value while
  * incorrectly believing its `status` is still unknown/idle. It's a separate
@@ -31,7 +31,7 @@ const cache = createDataCache<UserFields>({ maxEntries: 2 })
 
 async function getUserThroughCache(id: string): Promise<UserFields> {
   // The cache key is an integration concern the cache itself has no
-  // opinion about -- canonicalize mirrors the same scheme the coordinator's
+  // opinion about: canonicalize mirrors the same scheme the coordinator's
   // own dedup key uses.
   const key = canonicalize(id)
   assert.ok(key !== undefined)
@@ -45,18 +45,18 @@ async function getUserThroughCache(id: string): Promise<UserFields> {
   return capability.fields
 }
 
-// -- Cache hit avoids a real fetch --
+// (Cache hit avoids a real fetch)
 const first = await getUserThroughCache("u1")
 assert.equal(fetchCallCount, 1)
 const second = await getUserThroughCache("u1")
 assert.equal(fetchCallCount, 1, "a cache hit never triggers a second fetch")
 assert.deepEqual(second, first)
 
-// -- A genuinely different key still fetches --
+// (A genuinely different key still fetches)
 await getUserThroughCache("u2")
 assert.equal(fetchCallCount, 2)
 
-// -- Bounded LRU eviction: maxEntries is 2, so a third distinct key evicts the least-recently-used one --
+// (Bounded LRU eviction: maxEntries is 2, so a third distinct key evicts the least-recently-used one)
 assert.equal(cache.size, 2)
 await getUserThroughCache("u3")
 assert.equal(cache.size, 2, "the cache never grows past maxEntries")

@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://maverickcer.github.io/data-cap/schema/policy-model.schema.json",
   "title": "data-cap Policy Model",
-  "description": "Canonical, versioned declared data-flow rules and their evaluation results against the Flow Model (see ADR 0070). Generated from src/flow/policy-model.ts's PolicyModel type -- never hand-authored.",
+  "description": "Canonical, versioned declared data-flow rules and their evaluation results against the Flow Model (see ADR 0070). Generated from src/flow/policy-model.ts's PolicyModel type. Never hand-authored.",
   "$ref": "#/definitions/PolicyModel",
   "definitions": {
     "PolicyModel": {
@@ -147,7 +147,7 @@
         "computed",
         "internal"
       ],
-      "description": "What kind of boundary a declared data-flow endpoint crosses -- a data store (`database`/`cache`/`storage`/`queue`), an external entity (`api`/`external-service`/`user-input`), or something internal to this codebase (`computed`/`internal`)."
+      "description": "What kind of boundary a declared data-flow endpoint crosses: a data store (`database`/`cache`/`storage`/`queue`), an external entity (`api`/`external-service`/`user-input`), or something internal to this codebase (`computed`/`internal`)."
     },
     "FlowHandling": {
       "type": "string",
@@ -158,7 +158,7 @@
         "hashed",
         "encrypted"
       ],
-      "description": "The declared data-safety state of a value at a boundary crossing -- the vocabulary of `DataFlowEndpoint.handling` and of flow policy rules."
+      "description": "The declared data-safety state of a value at a boundary crossing: the vocabulary of `DataFlowEndpoint.handling` and of flow policy rules."
     },
     "PolicyResult": {
       "type": "object",
