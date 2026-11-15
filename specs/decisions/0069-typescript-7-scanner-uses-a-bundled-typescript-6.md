@@ -5,6 +5,15 @@
 Accepted. Implemented in `src/build/typescript.ts`. Replaces the "TypeScript major that removes the
 classic API is unsupported" rule in `VERSIONING.md`'s Supported toolchain.
 
+## Amendment
+
+`bundleDependencies` lists `@typescript/typescript6` only. npm also bundles the dependencies of a
+bundled package, so its `@typescript/old` payload still ships in the tarball. Listing
+`@typescript/old` by name without a matching `dependencies` entry made npm add
+`"@typescript/old": "*"` to the published manifest. The manifest then no longer matched the
+tarball's package.json, which Socket reports as manifest confusion.
+`test/build/typescript-bundled.test.ts` pins both facts.
+
 ## Context
 
 The build-time scanner (`src/build/parse.ts`, `scan-dependencies.ts`, `dependency-graph.ts`, `link.ts`, `literal-eval.ts`,
