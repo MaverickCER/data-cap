@@ -1,6 +1,6 @@
 {
   "name": "data-cap",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "description": "Declare who owns your app's data and how it may be handled. Lint and build checks enforce those rules, and the data documentation regenerates from your code, so it never falls behind. Works next to fetch, TanStack Query, Redux and Zustand.",
   "keywords": [
     "typescript",
