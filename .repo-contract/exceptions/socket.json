@@ -161,6 +161,26 @@
       "whyPreferable": "Bundling the compiler lets a TypeScript 7 project run the scanner at all. The alternative is a scanner that refuses to run until the project reworks its own dependencies."
     },
     {
+      "id": "socket:data-cap@self:manifestConfusion",
+      "version": 2,
+      "justification": "Raised on the published 0.10.1 tarball. Its package.json lists `@typescript/old` in `bundleDependencies` but not in `dependencies`, so npm added `\"@typescript/old\": \"*\"` to the registry manifest and the two no longer match. The source no longer lists it; this record covers the published version until the next release replaces it.",
+      "alternatives": "None for 0.10.1: a published npm version cannot be changed, and deprecating it leaves its manifest as it is.",
+      "attempted": "Compared the tarball's package.json with `npm view data-cap@0.10.1 --json`: `dependencies` differ only by `@typescript/old`; the other differences are key order and npm's `bin` path normalization. Removed the entry. `npm pack --dry-run` still ships `node_modules/@typescript/old/lib/`, as a dependency of `@typescript/typescript6`, and test/build/typescript-bundled.test.ts pins both facts.",
+      "constraint": "Socket scores the latest published version, and a published version cannot be changed.",
+      "exceptionType": "accepted-risk",
+      "expires": "",
+      "method": "mechanical-reverification",
+      "package": "data-cap",
+      "packageVersion": "self",
+      "remediation": "Fixed in the source by the change that added this record; the next release publishes a manifest that matches its tarball.",
+      "residualRisk": "None to users: the extra entry names a package the tarball already bundles, so an install uses the bundled copy.",
+      "revisitWhen": "Socket scores the release after 0.10.1 without this alert. Delete the record then; the check fails on a stale record.",
+      "ruleBroken": "A published package's manifest should match the package.json inside its tarball.",
+      "severity": "middle",
+      "type": "manifestConfusion",
+      "whyPreferable": "Recording the alert keeps the gate green while the fix reaches a release, and the record turns stale, and must be deleted, as soon as it does."
+    },
+    {
       "id": "socket:data-cap@self:networkAccess",
       "version": 2,
       "justification": "Raised on the published tarball. Network access is present in the package. Only `node_modules/@typescript/old/lib/_tsserver.js` imports a network module (the language server); this package's own `dist/` imports none and never calls `fetch`, and the scanner uses `createSourceFile`, never the language server.",
