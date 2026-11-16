@@ -101,4 +101,4 @@ Report any check you could not run, and any assumption you made.
 
 ## Authority
 
-Target `data-cap@0.10.1`. The installed package's exports and type declarations are the API: use only what they declare. Its tests and examples establish its behaviour. When this skill and the code disagree, report the disagreement before acting on either.
+Target `data-cap@0.10.2`. The installed package's exports and type declarations are the API: use only what they declare. Its tests and examples establish its behaviour. When this skill and the code disagree, report the disagreement before acting on either.
