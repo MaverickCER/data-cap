@@ -1,6 +1,6 @@
 {
   "packageName": "data-cap",
-  "packageVersion": "0.10.1",
+  "packageVersion": "0.10.2",
   "surface": {
     "action": {
       "inputs": {
